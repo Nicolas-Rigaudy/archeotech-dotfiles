@@ -1,0 +1,29 @@
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Secrets (never commit these!)
+.env
+*.key
+*.pem
+.aws/credentials
+.ssh/id_*
+.ssh/*.key
+
+# Session-specific
+.current-session-goal
+.last-packages
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Logs
+*.log
+
+# OS-specific
+Thumbs.db
+desktop.ini
