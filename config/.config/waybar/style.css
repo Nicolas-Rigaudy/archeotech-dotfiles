@@ -1,0 +1,49 @@
+@import "catppuccin-macchiato.css";
+
+* {
+    font-family: "FiraCode Nerd Font";
+    font-size: 13px;
+}
+
+window#waybar {
+    background-color: @base;
+    border-bottom: 2px solid @surface0;
+    color: @text;
+}
+
+#workspaces button {
+    padding: 0 10px;
+    color: @text;
+}
+
+#workspaces button.active {
+    color: @blue;
+    background-color: alpha(@blue, 0.2);
+}
+
+#workspaces button:hover {
+    background-color: alpha(@overlay0, 0.3);
+}
+
+#clock,
+#battery,
+#network,
+#pulseaudio,
+#tray {
+    padding: 0 10px;
+    color: @text;
+}
+
+#battery.warning {
+    color: @yellow;
+}
+
+#battery.critical {
+    color: @red;
+}
+
+#custom-power {
+    padding: 0 15px;
+    margin-right: 5px;
+    font-size: 16px;
+}

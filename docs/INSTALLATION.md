@@ -427,17 +427,35 @@ git clone https://github.com/Nicolas-Rigaudy/archeotech-dotfiles.git
 cd archeotech-dotfiles
 ```
 
-### 2. Deploy Configs (Manual Method)
+### 2. Deploy Configs with GNU Stow
 
-> **Note:** Automated script coming soon!
+This repository uses GNU Stow to manage dotfiles through symlinks.
 
+**Install Stow:**
 ```bash
-# Backup existing configs
-mkdir -p ~/config-backup
-cp -r ~/.config/{hypr,waybar,kitty,rofi,fish,starship.toml} ~/config-backup/
+sudo pacman -S stow
+```
 
-# Copy dotfiles configs
-# TODO: This will be automated in restore.sh
+**Deploy all configs:**
+```bash
+./scripts/install.sh
+```
+
+This script will:
+- Check that Stow is installed
+- Backup any existing configs to `~/.config-backup-TIMESTAMP/`
+- Create symlinks from `~/.config/` → repo configs
+- Verify symlinks are working
+
+**How it works:**
+- Your configs are stored in the repo: `config/.config/hypr/`
+- Symlinks point from: `~/.config/hypr/` → `~/Projects/archeotech-dotfiles/config/.config/hypr/`
+- When you edit `~/.config/hypr/hyprland.conf`, you're editing the repo file directly
+- Changes are automatically tracked by git
+
+**To uninstall (remove symlinks):**
+```bash
+./scripts/uninstall.sh
 ```
 
 ### 3. Configure Audio
