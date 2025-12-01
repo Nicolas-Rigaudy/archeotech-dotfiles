@@ -1,0 +1,19 @@
+[aws]
+force_display = true
+
+[terraform]
+disabled = true
+
+[time]
+disabled = false
+format = '🕙[$time]($style) '
+style = 'bold green'
+
+[python]
+style = 'bold blue'
+
+[package]
+disabled = true
+
+[fill]
+symbol = "-"
