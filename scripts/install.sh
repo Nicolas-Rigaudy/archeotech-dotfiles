@@ -47,7 +47,7 @@ print_error() {
 }
 
 print_warning() {
-    echo -e "${YELLOW} ${NC} $1"
+    echo -e "${YELLOW}ï¿½${NC} $1"
 }
 
 print_info() {
@@ -93,6 +93,7 @@ backup_existing_configs() {
         "gtk-3.0"
         "gtk-4.0"
         "dunst"
+        "mango"
     )
 
     BACKED_UP=0
@@ -137,13 +138,14 @@ verify_deployment() {
         "waybar"
         "kitty"
         "fish"
+        "mango"
     )
 
     ALL_OK=1
     for config in "${CRITICAL_CONFIGS[@]}"; do
         if [[ -L "$HOME/.config/$config" ]]; then
             TARGET=$(readlink "$HOME/.config/$config")
-            print_success "$config ’ $(basename "$TARGET")"
+            print_success "$config ï¿½ $(basename "$TARGET")"
         else
             print_error "$config is not a symlink!"
             ALL_OK=0
