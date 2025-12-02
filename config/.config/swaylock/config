@@ -1,0 +1,78 @@
+################################################################################
+# SWAYLOCK CONFIGURATION
+# Lock screen for MangoWC - Official Catppuccin Macchiato theme
+# Source: https://github.com/catppuccin/swaylock
+################################################################################
+
+# Display settings
+ignore-empty-password
+show-failed-attempts
+show-keyboard-layout
+daemonize
+
+# Wallpaper
+image=~/Pictures/Wallpapers/arasaka.png
+scaling=fill
+
+# Font
+font=FiraCode Nerd Font
+font-size=30
+
+# Indicator settings (centered on screen with larger radius)
+indicator
+indicator-caps-lock
+indicator-radius=140
+indicator-thickness=20
+
+# Clock settings
+clock
+timestr=%H:%M
+# Shorter date format to fit better (day and date only)
+datestr=%a, %d %b
+
+# Effects (blur and vignette for aesthetic)
+effect-blur=7x5
+effect-vignette=0.5:0.5
+
+# Grace period before lock (0 = immediate)
+grace=0
+grace-no-mouse
+grace-no-touch
+
+# Fade in effect
+fade-in=0.3
+
+################################################################################
+# CATPPUCCIN MACCHIATO COLORS (Official Theme)
+# Source: https://raw.githubusercontent.com/catppuccin/swaylock/main/themes/macchiato.conf
+################################################################################
+
+color=24273a
+bs-hl-color=f4dbd6
+caps-lock-bs-hl-color=f4dbd6
+caps-lock-key-hl-color=a6da95
+inside-color=00000000
+inside-clear-color=00000000
+inside-caps-lock-color=00000000
+inside-ver-color=00000000
+inside-wrong-color=00000000
+key-hl-color=a6da95
+layout-bg-color=00000000
+layout-border-color=00000000
+layout-text-color=cad3f5
+line-color=00000000
+line-clear-color=00000000
+line-caps-lock-color=00000000
+line-ver-color=00000000
+line-wrong-color=00000000
+ring-color=b7bdf8
+ring-clear-color=f4dbd6
+ring-caps-lock-color=f5a97f
+ring-ver-color=8aadf4
+ring-wrong-color=ee99a0
+separator-color=00000000
+text-color=cad3f5
+text-clear-color=f4dbd6
+text-caps-lock-color=f5a97f
+text-ver-color=8aadf4
+text-wrong-color=ee99a0

@@ -94,6 +94,8 @@ backup_existing_configs() {
         "gtk-4.0"
         "dunst"
         "mango"
+        "swaylock"
+        "swayidle"
     )
 
     BACKED_UP=0
@@ -139,6 +141,8 @@ verify_deployment() {
         "kitty"
         "fish"
         "mango"
+        "swaylock"
+        "swayidle"
     )
 
     ALL_OK=1

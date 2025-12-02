@@ -7,8 +7,8 @@
 # Wait a moment for compositor to fully start
 sleep 1
 
-# Status bar
-waybar &
+# Status bar (using MangoWC-compatible config)
+waybar -c ~/.config/waybar/config-mango &
 
 # Notifications
 dunst &
@@ -29,10 +29,5 @@ swww img ~/Pictures/Wallpapers/arasaka.png &
 wl-paste --type text --watch cliphist store &
 wl-paste --type image --watch cliphist store &
 
-# Idle manager (will use swayidle once configured)
-# swayidle will be configured separately
-# swayidle &
-
-# Keyboard layout setup (US/FR switching with Alt+Shift)
-# Note: MangoWC might handle this differently than Hyprland
-# Testing needed to see if this works or needs compositor-level config
+# Idle manager (auto-lock after 10 minutes, dim at 5 minutes, screen off at 15 minutes)
+~/.config/swayidle/config.sh &
