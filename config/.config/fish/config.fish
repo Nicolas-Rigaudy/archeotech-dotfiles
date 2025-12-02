@@ -5,6 +5,7 @@ if status is-interactive
 	thefuck --alias | source
 	alias ls "exa -al --icons"
 	alias cat "bat"
+	alias c "clear"
 	fastfetch
 end
 
