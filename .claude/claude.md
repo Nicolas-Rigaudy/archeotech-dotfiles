@@ -59,6 +59,7 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 | **Distribution** | Arch Linux | Rolling release, full control, learn everything |
 | **Filesystem** | btrfs | Snapshots for safety, familiar from Fedora |
 | **Subvolumes** | @, @home, @snapshots, @cache, @log | Separate snapshots, exclude cache/logs from backups |
+| **Snapshots** | Snapper + snap-pac + grub-btrfs | Automatic snapshots on pacman operations, bootable from GRUB |
 | **Bootloader** | GRUB | Dual-boot friendly, themeable, auto-detects Fedora |
 | **AUR Helper** | paru | Faster (Rust-based), more modern than yay |
 | **Init System** | systemd | Default, no reason to change |
@@ -242,6 +243,7 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 - [x] Image viewer (imv)
 - [x] PDF viewer (zathura)
 - [x] Archive tools (file-roller, unzip, unrar, p7zip)
+- [x] Snapshot management (snapper + snap-pac + grub-btrfs + snapper-gui)
 
 ### ⏸️ NOT YET DONE
 
@@ -350,9 +352,16 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 │       ├── gtk-3.0/            # GTK3 theme
 │       ├── gtk-4.0/            # GTK4 theme
 │       └── dunst/              # Notifications config
+├── system/                     # System-level configs (requires root)
+│   ├── etc/
+│   │   └── snapper/
+│   │       └── configs/
+│   │           └── root        # Snapper snapshot configuration
+│   └── README.md               # System config deployment guide
 ├── scripts/
 │   ├── install.sh              # Deploy dotfiles with GNU Stow
-│   └── uninstall.sh            # Remove symlinks
+│   ├── uninstall.sh            # Remove symlinks
+│   └── setup-snapper.sh        # Automated Snapper setup
 ├── docs/
 │   ├── INSTALLATION.md         # Step-by-step install guide
 │   ├── KEYBINDS.md             # All keybindings reference
@@ -581,6 +590,46 @@ hyprlock
 
 # Test idle config
 hypridle
+```
+
+### Managing Snapshots
+```bash
+# List all snapshots
+sudo snapper list
+
+# Create manual snapshot
+sudo snapper create -d "Before system changes"
+
+# Compare two snapshots (see what changed)
+sudo snapper status 1..2
+
+# Show file differences between snapshots
+sudo snapper diff 1..2
+
+# Rollback to a snapshot (careful!)
+sudo snapper rollback <snapshot_number>
+# Then reboot to apply
+
+# Delete a snapshot
+sudo snapper delete <snapshot_number>
+
+# GUI interface (Wayland-compatible)
+pkexec snapper-gui
+
+# View snapshot in filesystem
+ls /.snapshots/<number>/snapshot/
+
+# Boot into snapshot (no system changes)
+# 1. Reboot
+# 2. In GRUB menu, go to "Arch Linux snapshots"
+# 3. Select snapshot to boot
+# 4. System boots read-only from that snapshot
+# 5. Can verify system state before committing rollback
+
+# Automatic snapshots happen:
+# - Before/after every pacman operation (snap-pac)
+# - Hourly (timeline snapshots)
+# - GRUB menu auto-updates with new snapshots (grub-btrfsd)
 ```
 
 ---
