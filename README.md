@@ -156,26 +156,6 @@ cd archeotech-dotfiles
 
 ---
 
-## System Specifications
-
-Built and tested on:
-- **Laptop:** HP EliteBook 860 G10
-- **CPU:** Intel i7-1355U (13th gen)
-- **RAM:** 32GB
-- **GPU:** Intel Iris Xe (integrated)
-- **Display:** 1920x1200 @ 60Hz
-- **Multi-monitor:** 3-screen setup (laptop + 2 external)
-
----
-
-## Managed with Claude Code
-
-This repository is designed to work with [Claude Code](https://claude.com/claude-code) for assisted development.
-
-See [.claude/README.md](.claude/README.md) for Claude Code setup instructions.
-
----
-
 ## License
 
 Personal dotfiles - use at your own risk. Feel free to steal anything useful!
