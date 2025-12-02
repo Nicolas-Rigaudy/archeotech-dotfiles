@@ -5,11 +5,15 @@ if status is-interactive
 	thefuck --alias | source
 	alias ls "exa -al --icons"
 	alias cat "bat"
-	alias c "clear"
 	fastfetch
 end
 
 # Add local bin to PATH
 export PATH="$HOME/.local/bin:$PATH"
-alias cp /usr/local/bin/advcp -g
-alias mv /usr/local/bin/advmv -g
+alias cp "/usr/local/bin/advcp -g"
+alias mv "/usr/local/bin/advmv -g"
+
+function c
+	clear
+	fastfetch
+end

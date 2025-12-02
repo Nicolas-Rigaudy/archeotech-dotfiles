@@ -55,7 +55,7 @@ claude code .
 
 On first open, tell Claude:
 
-> "Read `.claude/claude.md` to understand this project. This is an Arch + Hyprland dotfiles project. The system is already fully installed and working. Review the current status and help me with [what you want to do]."
+> "Read `.claude/claude.md` to understand this project. This is an Arch + Hyprland + MangoWC dotfiles project. The system is already fully installed and working. Make sure you readd all the documentation and the previous session summary before starting this one. Review the current status and help me with [what you want to do]. Treat this as the goal for a new session "
 
 ---
 
@@ -112,10 +112,20 @@ This will:
 - Offer to commit changes
 - Update `claude.md` timestamp
 
-**Option 2: Tell Claude Code**
-> "End session. Create a summary of what we did."
+**Option 2: Tell Claude Code (REQUIRED WORKFLOW)**
+> "ok let's finish the session here"
 
-Claude will create a session summary in `.claude/sessions/`.
+**Claude MUST do the following (in order):**
+1. Create session summary in `.claude/sessions/YYYY-MM-DD-session-name.md` following the template
+2. Prepare commit message following the git commit guidelines in `claude.md`:
+   - Format: `type[SCOPE]: brief description (50 chars max)`
+   - Types: `new`, `chg`, `fix`
+   - Scopes: `[MANGOWC]`, `[HYPR]`, `[WAYBAR]`, `[DOTFILES]`, `[MD]`, etc.
+   - Title only, no body, lowercase description, no period
+3. Show git status summary
+4. Provide the commit command ready to execute
+
+**This workflow is saved for all future sessions.**
 
 ---
 
