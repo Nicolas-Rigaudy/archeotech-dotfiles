@@ -96,6 +96,9 @@ backup_existing_configs() {
         "mango"
         "swaylock"
         "swayidle"
+        "bat"
+        "cava"
+        "zathura"
     )
 
     BACKED_UP=0
@@ -143,6 +146,12 @@ verify_deployment() {
         "mango"
         "swaylock"
         "swayidle"
+        "bat"
+        "btop"
+        "yazi"
+        "zathura"
+        "cava"
+        "dunst"
     )
 
     ALL_OK=1

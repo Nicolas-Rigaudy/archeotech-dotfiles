@@ -1,0 +1,14 @@
+# bat configuration with Catppuccin Macchiato theme
+# Official theme from: https://github.com/catppuccin/bat
+
+# Set the theme
+--theme="Catppuccin Macchiato"
+
+# Show line numbers
+--style="numbers,changes,header"
+
+# Use italic text on the terminal
+--italic-text=always
+
+# Show non-printable characters like space, tab, newline, etc.
+# --show-all
