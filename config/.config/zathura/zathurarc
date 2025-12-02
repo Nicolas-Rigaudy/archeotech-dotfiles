@@ -1,0 +1,5 @@
+# Zathura configuration with Catppuccin Macchiato theme
+# Official theme from: https://github.com/catppuccin/zathura
+
+# Include Catppuccin Macchiato theme
+include catppuccin-macchiato

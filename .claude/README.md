@@ -116,7 +116,7 @@ This will:
 > "ok let's finish the session here"
 
 **Claude MUST do the following (in order):**
-1. Create session summary in `.claude/sessions/YYYY-MM-DD-session-name.md` following the template
+1. Create session summary in `.claude/sessions/YYYY-MM-DD-{session_number}-{session-name}.md` following the template with multiple session numbers per day if needed.
 2. Prepare commit message following the git commit guidelines in `claude.md`:
    - Format: `type[SCOPE]: brief description (50 chars max)`
    - Types: `new`, `chg`, `fix`
