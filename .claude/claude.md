@@ -66,14 +66,15 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 ### Desktop Environment ✅
 | Component | Choice | Rationale |
 |-----------|--------|-----------|
-| **Window Manager** | Hyprland 0.52.1 | Modern Wayland compositor, smooth animations, tiling |
-| **Display Manager** | SDDM | Best for Hyprland, Catppuccin themes available |
+| **Window Manager (Primary)** | Hyprland 0.52.1 | Modern Wayland compositor, smooth animations, tiling |
+| **Window Manager (Testing)** | MangoWC (latest) | Testing scrolling layout feature, parallel install |
+| **Display Manager** | SDDM | Best for Wayland compositors, Catppuccin themes available |
 | **Status Bar** | Waybar 0.14.0 | CSS+JSON config, huge community, themeable |
 | **App Launcher** | rofi-wayland | Most features, extensible |
 | **Notifications** | dunst | Lightweight, themeable, simple config |
 | **Wallpaper** | swww | Animated transitions between wallpapers |
-| **Lock Screen** | hyprlock | Official Hyprland locker, themeable |
-| **Idle Manager** | hypridle | Pairs with hyprlock, official Hyprland |
+| **Lock Screen** | hyprlock (Hyprland) / swaylock (MangoWC planned) | Official Hyprland locker, themeable |
+| **Idle Manager** | hypridle (Hyprland) / swayidle (MangoWC planned) | Pairs with lock screens |
 
 ### Core Applications ✅
 | Type | Application | Notes |
@@ -326,42 +327,61 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 /etc/default/grub               # GRUB bootloader config
 ```
 
-### Planned Dotfiles Repository Structure
+### Actual Dotfiles Repository Structure (Stow-based)
 ```
-~/Projects/dotfiles/
+~/Projects/archeotech-dotfiles/
 ├── .claude/
 │   ├── claude.md               # This file - main project knowledge
 │   ├── DECISIONS.md            # Log of all technical decisions made
 │   ├── TROUBLESHOOTING.md      # Known issues and solutions
 │   └── sessions/               # Session summaries
 │       └── YYYY-MM-DD-session-name.md
-├── .config/                    # Symlinked configs
-│   ├── hypr/
-│   ├── waybar/
-│   ├── kitty/
-│   ├── rofi/
-│   ├── fish/
-│   └── ...
+├── config/                     # Stow package for .config
+│   └── .config/
+│       ├── hypr/               # Hyprland configs (MASTER COPY)
+│       ├── waybar/             # Waybar configs (MASTER COPY)
+│       ├── kitty/              # Kitty configs (MASTER COPY)
+│       ├── rofi/               # Rofi configs (MASTER COPY)
+│       ├── fish/               # Fish shell configs (MASTER COPY)
+│       ├── mango/              # MangoWC configs (MASTER COPY)
+│       ├── starship.toml       # Starship prompt config
+│       ├── btop/               # System monitor config
+│       ├── yazi/               # File manager config
+│       ├── gtk-3.0/            # GTK3 theme
+│       ├── gtk-4.0/            # GTK4 theme
+│       └── dunst/              # Notifications config
 ├── scripts/
-│   ├── install.sh              # Fresh install automation
-│   ├── setup.sh                # Post-install setup
-│   ├── backup.sh               # Backup current configs
-│   ├── restore.sh              # Deploy configs
-│   ├── session-finish.sh       # End-of-session summary
-│   └── session-start.sh        # Start-of-session setup
-├── themes/
-│   ├── catppuccin-macchiato/   # Current theme configs
-│   └── catppuccin-mocha/       # Alternative theme
+│   ├── install.sh              # Deploy dotfiles with GNU Stow
+│   └── uninstall.sh            # Remove symlinks
 ├── docs/
 │   ├── INSTALLATION.md         # Step-by-step install guide
 │   ├── KEYBINDS.md             # All keybindings reference
-│   ├── PACKAGES.md             # Package list with explanations
-│   └── ORIGINAL-PLAN.md        # The original build plan
-├── assets/
-│   └── wallpapers/             # Wallpaper collection
+│   └── PACKAGES.md             # Package list with explanations
 └── README.md                   # Project overview
 ```
 
+### **IMPORTANT: GNU Stow Workflow**
+
+**How It Works:**
+- All config files live ONLY in `~/Projects/archeotech-dotfiles/config/.config/`
+- GNU Stow creates symlinks from `~/.config/` TO the repo
+- Editing `~/.config/hypr/hyprland.conf` edits the repo file directly
+- Changes are automatically tracked by git
+
+**Symlink Structure:**
+```
+~/.config/hypr/ -> ../Projects/archeotech-dotfiles/config/.config/hypr/
+~/.config/waybar/ -> ../Projects/archeotech-dotfiles/config/.config/waybar/
+~/.config/mango/ -> ../Projects/archeotech-dotfiles/config/.config/mango/
+... (all config dirs are symlinks)
+```
+
+**Adding New Config Directories:**
+1. Create directory in repo: `mkdir -p ~/Projects/archeotech-dotfiles/config/.config/newapp/`
+2. Add config files to repo directory
+3. Create symlink: `ln -s ../Projects/archeotech-dotfiles/config/.config/newapp ~/.config/newapp`
+4. OR use stow: `cd ~/Projects/archeotech-dotfiles && stow -R config`
+5. Update `scripts/install.sh` to include the new directory in CONFIGS array
 ---
 
 ## Keybindings Reference
@@ -710,18 +730,46 @@ another_setting = value
 ```
 
 ### Git Commit Messages
+
+**Format:** Conventional Commits with scope (title only, no description)
+
+**Structure:**
 ```
-type: brief description (50 chars max)
+type[SCOPE]: brief description (50 chars max)
+```
 
-Longer explanation if needed (72 chars per line).
-Explain WHAT and WHY, not HOW.
+**Types (keep it simple):**
+- `new` - New features, additions, implementations
+- `chg` - Changes to existing features, updates, modifications
+- `fix` - Bug fixes, corrections
 
-Examples:
-- feat: add AWS profile switcher script
-- fix: resolve audio not working after reboot
-- docs: update keybindings reference
-- refactor: reorganize hyprland config by section
-- style: apply Catppuccin Macchiato to waybar
+**Scopes (technology/component-based):**
+- `[DOTFILES]` - General dotfiles/config changes
+- `[HYPR]` - Hyprland configuration
+- `[MANGOWC]` - MangoWC configuration
+- `[WAYBAR]` - Waybar configuration
+- `[KITTY]` - Kitty terminal configuration
+- `[FISH]` - Fish shell configuration
+- `[ROFI]` - Rofi launcher configuration
+- `[BASH]` - Shell scripts
+- `[MD]` - Documentation (Markdown)
+- `[REPO]` - Repository structure changes
+
+**Rules:**
+- Always include scope in square brackets
+- Title only, no body/description
+- Keep under 50 characters total
+- Start description with lowercase
+- No period at the end
+
+**Examples:**
+```
+new[MANGOWC]: add parallel compositor with complete config
+chg[HYPR]: update keybindings for azerty layout
+fix[BASH]: resolve stow symlink creation issue
+new[DOTFILES]: add gnu stow installation script
+chg[WAYBAR]: update modules for multi-monitor setup
+new[MD]: add installation guide and keybinds reference
 ```
 
 ---
@@ -892,7 +940,8 @@ By the end of this project, the following should be true:
 
 ---
 
-**Last Updated:** 2025-11-28
+**Last Updated:** 2025-12-02
 **System Status:** ✅ Fully Functional
-**Daily Driver Ready:** Yes
-**Dotfiles Repository:** Not yet created (next step)
+**Daily Driver Ready:** Yes (Hyprland stable, MangoWC testing)
+**Dotfiles Repository:** ✅ Complete with Stow
+**Compositors Available:** Hyprland (primary), MangoWC (testing scrolling layouts)

@@ -1,19 +1,22 @@
-# Archeotech Dotfiles - Arch + Hyprland
+# Archeotech Dotfiles - Arch + Hyprland + MangoWC
 
-Personal dotfiles for Arch Linux + Hyprland desktop environment with Catppuccin Macchiato theming.
+Personal dotfiles for Arch Linux with Hyprland (primary) and MangoWC (testing) desktop environments with Catppuccin Macchiato theming.
 
 **Theme:** Catppuccin Macchiato with Mauve accent
 **Managed with:** GNU Stow + Git
+**Compositors:** Hyprland (stable daily driver), MangoWC (testing scrolling layouts)
 
 ---
 
 ## Features
 
-- ✨ **Hyprland** - Modern Wayland compositor with animations
+- ✨ **Hyprland** - Modern Wayland compositor with animations (primary)
+- 🔄 **MangoWC** - Testing scrolling layout feature (parallel install)
 - 🎨 **Catppuccin Macchiato** - Consistent theming across all apps
 - 🔗 **Stow-based** - Symlink management for easy deployment
 - 📝 **Fully documented** - Complete installation and usage guides
 - 🔄 **Git-tracked** - Version controlled configs
+- 🖥️ **Multi-compositor** - Switch between Hyprland/MangoWC at login
 
 ---
 
