@@ -48,6 +48,8 @@ if [ "$COMPOSITOR" = "hyprland" ]; then
     add_bind "$SUPER + E" "Editor (VSCode)"
     add_bind "$SUPER + N" "Notes (Obsidian)"
     add_bind "$SUPER + D" "Directory/File Explorer"
+    add_bind "$SUPER + G" "Git TUI (Lazygit)"
+    add_bind "$SUPER + $SHIFT + N" "Cheatsheets (Navi)"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━ 󱂬 WINDOW CONTROLS ━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
@@ -78,6 +80,7 @@ if [ "$COMPOSITOR" = "hyprland" ]; then
     add_bind "$SUPER + S" "Region screenshot"
     add_bind "$SUPER + P" "Full screenshot"
     add_bind "Print" "Full screenshot"
+    add_bind "$SUPER + $SHIFT + C" "Color picker"
     add_bind "$SUPER + V" "Clipboard history"
     echo "" >> "$TEMP_RAW"
 
@@ -111,6 +114,8 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + E" "Editor (VSCode)"
     add_bind "$SUPER + N" "Notes (Obsidian)"
     add_bind "$SUPER + D" "Directory/File Explorer"
+    add_bind "$SUPER + G" "Git TUI (Lazygit)"
+    add_bind "$SUPER + $SHIFT + N" "Cheatsheets (Navi)"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━ 󱂬 WINDOW CONTROLS ━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
@@ -159,6 +164,7 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + S" "Region screenshot"
     add_bind "$SUPER + P" "Full screenshot"
     add_bind "Print" "Full screenshot"
+    add_bind "$SUPER + $SHIFT + C" "Color picker"
     add_bind "$SUPER + V" "Clipboard history"
     echo "" >> "$TEMP_RAW"
 

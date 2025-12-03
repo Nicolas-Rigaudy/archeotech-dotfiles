@@ -1,0 +1,72 @@
+################################################################################
+# LAZYGIT - Git TUI Configuration
+# Official Catppuccin Macchiato Mauve Theme
+# Source: https://github.com/catppuccin/lazygit
+################################################################################
+
+gui:
+  # Official Catppuccin Macchiato Mauve Theme
+  theme:
+    activeBorderColor:
+      - '#c6a0f6'
+      - bold
+    inactiveBorderColor:
+      - '#a5adcb'
+    optionsTextColor:
+      - '#8aadf4'
+    selectedLineBgColor:
+      - '#363a4f'
+    cherryPickedCommitBgColor:
+      - '#494d64'
+    cherryPickedCommitFgColor:
+      - '#c6a0f6'
+    unstagedChangesColor:
+      - '#ed8796'
+    defaultFgColor:
+      - '#cad3f5'
+    searchingActiveBorderColor:
+      - '#eed49f'
+
+  authorColors:
+    '*': '#b7bdf8'
+
+  # UI preferences
+  showFileTree: true
+  showListFooter: true
+  showCommandLog: true
+  showBottomLine: true
+  showIcons: true
+  nerdFontsVersion: "3"
+  mouseEvents: true
+  border: "rounded"
+
+  # Window size
+  windowSize: "normal"
+  sidePanelWidth: 0.3333
+
+git:
+  # Auto fetch/refresh
+  autoFetch: true
+  autoRefresh: true
+
+  # Commit settings
+  commit:
+    signOff: false
+    autoWrapCommitMessage: true
+    autoWrapWidth: 72
+
+  # Log settings
+  log:
+    order: "topo-order"
+    showGraph: "always"
+
+  # Emoji support
+  parseEmoji: true
+
+# Update checking disabled
+update:
+  method: "never"
+
+# Confirmation settings
+confirmOnQuit: false
+quitOnTopLevelReturn: false

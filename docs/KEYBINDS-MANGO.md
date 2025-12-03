@@ -29,6 +29,8 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + E` | Open editor (VSCode) | Code editor |
 | `Super + N` | Open notes (Obsidian) | Markdown notes |
 | `Super + D` | Open file manager (thunar) | GUI file browser |
+| `Super + G` | Open Lazygit | Git TUI with Catppuccin theme |
+| `Super + Shift + N` | Open Navi | Interactive command cheatsheets |
 
 ---
 
@@ -134,6 +136,7 @@ MangoWC supports multiple layout algorithms. This is one of its key features!
 | `Super + S` | Screenshot region | Select area, save + clipboard |
 | `Super + P` | Screenshot fullscreen | Save + clipboard |
 | `Print` | Screenshot fullscreen | Alternative (laptop key) |
+| `Super + Shift + C` | Color picker | Pick color from screen, copies hex to clipboard |
 
 Screenshots are saved to `~/Pictures/Screenshots/` with timestamp format: `YYYYMMDD_HHMMSS.png`
 
