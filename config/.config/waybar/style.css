@@ -1,5 +1,10 @@
 @import "catppuccin-macchiato.css";
 
+/*
+ * Hyprland Waybar Styling
+ * For Hyprland compositor only
+ */
+
 * {
     font-family: "FiraCode Nerd Font";
     font-size: 13px;
@@ -11,6 +16,7 @@ window#waybar {
     color: @text;
 }
 
+/* Hyprland workspaces styling */
 #workspaces button {
     padding: 0 10px;
     color: @text;
@@ -25,47 +31,7 @@ window#waybar {
     background-color: alpha(@overlay0, 0.3);
 }
 
-/* DWL Tags - Dynamic visibility */
-#tags button {
-    padding: 0;
-    margin: 0;
-    min-width: 0;
-    opacity: 0;
-    visibility: hidden;
-}
-
-/* Only show occupied tags prominently */
-#tags button.occupied {
-    padding: 0 10px;
-    color: @text;
-    background-color: transparent;
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Focused tag */
-#tags button.focused {
-    padding: 0 10px;
-    color: @mauve;
-    background-color: alpha(@mauve, 0.2);
-    font-weight: bold;
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Urgent tag */
-#tags button.urgent {
-    padding: 0 10px;
-    color: @red;
-    background-color: alpha(@red, 0.2);
-    opacity: 1;
-    visibility: visible;
-}
-
-#tags button:hover {
-    background-color: alpha(@overlay0, 0.3);
-}
-
+/* Module styling */
 #clock,
 #battery,
 #network,

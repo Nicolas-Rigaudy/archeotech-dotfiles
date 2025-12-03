@@ -1,0 +1,237 @@
+@import "catppuccin-macchiato.css";
+
+/*
+ * MangoWC Waybar Styling
+ * Improved visual grouping and modern effects
+ */
+
+* {
+    font-family: "FiraCode Nerd Font";
+    font-size: 13px;
+    min-height: 0;
+    /* Smooth transitions for all state changes */
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+window#waybar {
+    /* Semi-transparent background for modern look */
+    background-color: alpha(@base, 0.9);
+    border-bottom: 2px solid @surface0;
+    color: @text;
+}
+
+/* ===== LEFT MODULES ===== */
+
+/* DWL Tags - Dynamic visibility with smooth transitions */
+#tags button {
+    /* Hidden by default - only show occupied/focused tags */
+    padding: 0;
+    margin: 0 2px;
+    min-width: 0;
+    opacity: 0;
+    /* Bouncy animation for appearing/disappearing tags */
+    transition: all 0.3s cubic-bezier(0.55, -0.68, 0.48, 1.682);
+}
+
+/* Occupied tags (has windows but not focused) */
+#tags button.occupied {
+    padding: 0 12px;
+    color: @text;
+    background-color: alpha(@surface0, 0.7);
+    border-radius: 10px;
+    opacity: 1;
+}
+
+/* Focused tag (currently active workspace) */
+#tags button.focused {
+    padding: 0 12px;
+    color: @crust;                    /* Dark text for contrast */
+    background-color: @mauve;         /* Accent color (mauve) */
+    border-radius: 10px;
+    font-weight: bold;
+    opacity: 1;
+}
+
+/* Urgent tag (needs attention) */
+#tags button.urgent {
+    padding: 0 12px;
+    color: @crust;
+    background-color: @red;
+    border-radius: 10px;
+    opacity: 1;
+    /* Blinking animation to draw attention */
+    animation: urgent-blink 1s ease-in-out infinite;
+}
+
+@keyframes urgent-blink {
+    50% {
+        background-color: @peach;     /* Alternate between red and peach */
+    }
+}
+
+#tags button:hover {
+    background-color: alpha(@overlay0, 0.5);
+    opacity: 1;
+}
+
+/* Window title - shows active window name with icon */
+#window {
+    padding: 0 15px;
+    color: @subtext1;                 /* Slightly dimmed to not compete with tags */
+    font-style: italic;               /* Distinguishes from other text */
+}
+
+/* ===== CENTER MODULES ===== */
+
+#clock {
+    padding: 0 15px;
+    color: @text;
+    font-weight: bold;
+    background-color: alpha(@surface0, 0.5);
+    border-radius: 10px;
+}
+
+#clock:hover {
+    background-color: alpha(@surface1, 0.8);
+}
+
+/* ===== RIGHT MODULES ===== */
+
+/*
+ * Audio modules - paired group with visual connection
+ * Speaker and mic are connected (no gap between them)
+ * Left module has rounded left corners, right module has rounded right corners
+ */
+#pulseaudio,
+#pulseaudio.microphone {
+    padding: 0 12px;
+    background-color: alpha(@surface0, 0.7);
+    margin: 0;                        /* No margin between the two modules */
+}
+
+/* Speaker volume (left side of audio group) */
+#pulseaudio {
+    color: @mauve;                    /* Mauve for speaker */
+    border-radius: 10px 0 0 10px;     /* Only round the left corners */
+    margin-left: 6px;                 /* Space before this group starts */
+}
+
+#pulseaudio.muted {
+    color: @overlay0;                 /* Gray when muted */
+}
+
+/* Microphone volume (right side of audio group) */
+#pulseaudio.microphone {
+    color: @teal;                     /* Teal for microphone */
+    border-radius: 0 10px 10px 0;     /* Only round the right corners */
+    margin-right: 6px;                /* Space after this group ends */
+}
+
+#pulseaudio:hover,
+#pulseaudio.microphone:hover {
+    background-color: alpha(@surface1, 0.9);
+}
+
+/*
+ * Network and Bluetooth - separate but coordinated
+ * Each has its own rounded background
+ */
+#network,
+#bluetooth {
+    padding: 0 12px;
+    background-color: alpha(@surface0, 0.7);
+    border-radius: 10px;
+}
+
+#network {
+    color: @sky;                      /* Sky blue for network */
+}
+
+#network.disconnected {
+    color: @overlay0;                 /* Gray when disconnected */
+}
+
+#network:hover {
+    background-color: alpha(@surface1, 0.9);
+}
+
+#bluetooth {
+    color: @blue;                     /* Blue for bluetooth */
+}
+
+#bluetooth.disabled {
+    color: @overlay0;                 /* Gray when disabled */
+}
+
+#bluetooth.connected {
+    color: @sapphire;                 /* Brighter blue when connected */
+}
+
+#bluetooth:hover {
+    background-color: alpha(@surface1, 0.9);
+}
+
+/*
+ * Battery - standalone with state-based colors
+ * Changes color based on battery level
+ */
+#battery {
+    padding: 0 12px;
+    background-color: alpha(@surface0, 0.7);
+    border-radius: 10px;
+    color: @green;                    /* Green when healthy */
+}
+
+#battery.warning {
+    color: @yellow;                   /* Yellow when below 30% */
+}
+
+#battery.critical {
+    color: @red;                      /* Red when below 15% */
+    animation: battery-critical 1s ease-in-out infinite;
+}
+
+@keyframes battery-critical {
+    50% {
+        background-color: alpha(@red, 0.3);  /* Pulsing red background */
+    }
+}
+
+#battery.charging,
+#battery.plugged {
+    color: @green;                    /* Green when charging */
+}
+
+#battery:hover {
+    background-color: alpha(@surface1, 0.9);
+}
+
+/* System tray - for apps in background */
+#tray {
+    padding: 0 10px;
+    background-color: alpha(@surface0, 0.7);
+    border-radius: 10px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;            /* Dim icons for passive apps */
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;      /* Highlight apps needing attention */
+    background-color: @red;
+}
+
+/* Power button - for wlogout menu */
+#custom-power {
+    padding: 0 15px;
+    margin-right: 5px;
+    font-size: 16px;                  /* Slightly larger than other icons */
+    color: @red;                      /* Red power symbol */
+    background-color: alpha(@surface0, 0.7);
+    border-radius: 10px;
+}
+
+#custom-power:hover {
+    background-color: alpha(@red, 0.2);  /* Red tint on hover */
+}

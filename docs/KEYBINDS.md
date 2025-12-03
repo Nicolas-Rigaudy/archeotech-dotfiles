@@ -45,21 +45,18 @@ Complete reference for all keybindings in the Arch + Hyprland setup.
 | Keybind | Action | Notes |
 |---------|--------|-------|
 | `Super + Arrow Keys` | Move focus | Between windows |
-| `Super + H/J/K/L` | Move focus (vim keys) | Left/Down/Up/Right |
 
 ### Window Movement
 
 | Keybind | Action | Notes |
 |---------|--------|-------|
 | `Super + Shift + Arrows` | Move window | In current workspace |
-| `Super + Shift + H/J/K/L` | Move window (vim keys) | Same as shift+arrows |
 
 ### Window Resizing
 
 | Keybind | Action | Notes |
 |---------|--------|-------|
 | `Super + Ctrl + Arrows` | Resize window | ±20px increments |
-| `Super + Ctrl + H/J/K/L` | Resize window (vim keys) | Same as ctrl+arrows |
 
 ---
 
@@ -110,6 +107,7 @@ Screenshots are saved to `~/Pictures/Screenshots/` with timestamp format: `YYYYM
 | Keybind | Action | Notes |
 |---------|--------|-------|
 | `Super + L` | Lock screen | Hyprlock with configured wallpaper |
+| `Super + K` | Show keybinds | Display this keybind reference |
 | `Alt + Shift` | Toggle keyboard layout | US ” FR (QWERTY ” AZERTY) |
 
 ### Audio Controls
@@ -177,5 +175,5 @@ This configuration uses **layout-aware bindings** (`resolve_binds_by_sym = true`
 
 ---
 
-**Last Updated:** 2025-11-28
+**Last Updated:** 2025-12-02
 **For:** archeotech-dotfiles
