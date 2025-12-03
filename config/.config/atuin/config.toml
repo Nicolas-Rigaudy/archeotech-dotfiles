@@ -1,0 +1,79 @@
+################################################################################
+# ATUIN - Enhanced Shell History Configuration
+# Synced shell history with advanced search capabilities
+################################################################################
+
+## Search mode: fuzzy search anywhere in command
+search_mode = "fuzzy"
+
+## Filter mode: search all history by default
+filter_mode = "global"
+
+## UI style: compact view for better terminal integration
+style = "compact"
+
+## Show preview of command context
+show_preview = true
+max_preview_height = 4
+
+## Inline height (number of lines in TUI)
+inline_height = 10
+
+## Show help text in TUI
+show_help = true
+
+## Enable ctrl-n/ctrl-p navigation
+ctrl_n_shortcuts = true
+
+## Enter behavior: false = Tab to edit, Enter to select
+## true = Enter executes immediately
+enter_accept = false
+
+## Exit mode: return-query keeps your search term
+exit_mode = "return-query"
+
+## Auto-sync disabled by default (can enable with atuin login)
+auto_sync = false
+sync_frequency = "0"
+
+## Update check disabled
+update_check = false
+
+## Filter out simple navigation commands from history
+history_filter = [
+    "^ls$",
+    "^cd$",
+    "^cd ..$",
+    "^pwd$",
+    "^exit$",
+    "^clear$",
+    "^c$",
+]
+
+[stats]
+## Track subcommands for better statistics
+common_subcommands = [
+  "apt",
+  "cargo",
+  "docker",
+  "git",
+  "kubectl",
+  "npm",
+  "pacman",
+  "paru",
+  "systemctl",
+  "terraform",
+  "aws",
+]
+
+## Strip sudo from stats
+common_prefix = ["sudo"]
+
+## Ignore these commands from stats
+ignored_commands = [
+  "cd",
+  "ls",
+  "pwd",
+  "exit",
+  "clear",
+]

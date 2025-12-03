@@ -1,0 +1,30 @@
+################################################################################
+# NAVI - Interactive Cheatsheet Configuration
+# Custom cheatsheets for dev workflows (Terraform, AWS, Docker, etc.)
+################################################################################
+
+# Cheat sheet paths (colon-separated)
+cheats:
+  paths:
+    - ~/.local/share/navi/cheats
+    - ~/Projects/archeotech-dotfiles/navi-cheats
+
+# FZF finder overrides (integrates with Catppuccin terminal colors)
+finder:
+  overrides: --height=80% --preview-window=right:60% --bind=ctrl-y:execute-silent(echo {} | pbcopy)
+
+# Shell integration
+shell:
+  command: fish
+
+# Style (uses terminal colors - Catppuccin from Kitty)
+style:
+  comment:
+    foreground: grey
+    background: null
+  tag:
+    foreground: cyan
+    background: null
+  snippet:
+    foreground: white
+    background: null

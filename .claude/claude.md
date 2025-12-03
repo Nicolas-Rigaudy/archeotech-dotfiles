@@ -851,6 +851,7 @@ See `session-summary-template.md` in this directory for the format to use when d
 3. **Check syntax:** Use appropriate validators (shellcheck for bash, etc.)
 4. **Verify permissions:** Some files need specific permissions (e.g., 755 for scripts)
 5. **Reload services:** Many changes require reloading (hyprctl reload, pkill waybar, etc.)
+6. **Use official Catppuccin themes:** Always fetch official themes from https://github.com/catppuccin/ repositories, never create custom color schemes
 
 ### When Installing Packages
 1. **Check if already installed:** `pacman -Q package-name`
