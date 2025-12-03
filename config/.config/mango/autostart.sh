@@ -7,15 +7,11 @@
 # Wait a moment for compositor to fully start
 sleep 1
 
-# Status bar (using MangoWC-compatible config)
-waybar -c ~/.config/waybar/config-mango &
+# Status bar (using MangoWC-compatible config and styling)
+waybar -c ~/.config/waybar/config-mango -s ~/.config/waybar/style-mango.css &
 
 # Notifications
 dunst &
-
-# System tray applets
-nm-applet --indicator &    # WiFi icon
-blueman-applet &           # Bluetooth icon
 
 # Keyring (for password management)
 gnome-keyring-daemon --start --components=secrets &
