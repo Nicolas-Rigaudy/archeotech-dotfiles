@@ -1,22 +1,22 @@
-# Archeotech Dotfiles - Arch + Hyprland + MangoWC
+# Archeotech Dotfiles - Arch + MangoWC/Hyprland
 
-Personal dotfiles for Arch Linux with Hyprland (primary) and MangoWC (testing) desktop environments with Catppuccin Macchiato theming.
+Personal dotfiles for Arch Linux with MangoWC (primary) and Hyprland (backup) desktop environments with Catppuccin Macchiato theming.
 
 **Theme:** Catppuccin Macchiato with Mauve accent
 **Managed with:** GNU Stow + Git
-**Compositors:** Hyprland (stable daily driver), MangoWC (testing scrolling layouts)
+**Compositors:** MangoWC (primary - scrolling layouts), Hyprland (backup)
 
 ---
 
 ## Features
 
-- ✨ **Hyprland** - Modern Wayland compositor with animations (primary)
-- 🔄 **MangoWC** - Testing scrolling layout feature (parallel install)
+- ✨ **MangoWC** - Modern Wayland compositor with scrolling layouts (primary)
+- 🔄 **Hyprland** - Stable fallback compositor with animations (backup)
 - 🎨 **Catppuccin Macchiato** - Consistent theming across all apps
 - 🔗 **Stow-based** - Symlink management for easy deployment
 - 📝 **Fully documented** - Complete installation and usage guides
 - 🔄 **Git-tracked** - Version controlled configs
-- 🖥️ **Multi-compositor** - Switch between Hyprland/MangoWC at login
+- 🖥️ **Multi-compositor** - Switch between MangoWC/Hyprland at login
 
 ---
 
@@ -79,29 +79,32 @@ archeotech-dotfiles/
 ├── scripts/
 │   ├── install.sh       # Deploy dotfiles (stow)
 │   ├── uninstall.sh     # Remove symlinks
-│   ├── backup.sh        # Backup utility
-│   └── session-*.sh     # Session management
+│   └── setup-snapper.sh # Snapshot management setup
 ├── docs/
-│   ├── INSTALLATION.md  # Full Arch + Hyprland install guide
-│   ├── KEYBINDS.md      # All keybindings reference
-│   └── PACKAGES.md      # Package list with explanations
-├── .claude/             # Claude Code project files
-│   ├── claude.md        # Main project knowledge base
-│   ├── DECISIONS.md     # Technical decisions log
-│   ├── TROUBLESHOOTING.md # Known issues & solutions
-│   └── STYLE_GUIDE.md   # Aesthetic guidelines
-└── README.md            # This file
+│   ├── INSTALLATION.md      # Full Arch + MangoWC/Hyprland install guide
+│   ├── KEYBINDS-MANGO.md    # MangoWC keybindings (primary)
+│   ├── KEYBINDS.md          # Hyprland keybindings (backup)
+│   ├── PACKAGES.md          # Package list with explanations
+│   └── TOOLS.md             # Tool configurations and usage
+├── .claude/                 # Claude Code project files
+│   ├── claude.md            # Main project knowledge base
+│   ├── DECISIONS.md         # Technical decisions log
+│   ├── TROUBLESHOOTING.md   # Known issues & solutions
+│   ├── STYLE_GUIDE.md       # Theme and design patterns
+│   └── sessions/            # Session summaries
+└── README.md                # This file
 ```
 
 ---
 
 ## Included Configs
 
-- **Hyprland** - Window manager config, keybinds, animations
-- **Waybar** - Status bar with Catppuccin styling
+- **MangoWC** - Primary compositor with scrolling layout configs
+- **Hyprland** - Backup compositor config, keybinds, animations
+- **Waybar** - Status bar with Catppuccin styling (works on both)
 - **Kitty** - Terminal with FiraCode Nerd Font
 - **Rofi** - Application launcher
-- **Fish** - Shell configuration
+- **Fish** - Shell configuration with productivity tools
 - **Starship** - Prompt configuration
 - **GTK 3/4** - Theme settings
 - **Btop** - System monitor
@@ -111,10 +114,12 @@ archeotech-dotfiles/
 
 ## Documentation
 
-- 📖 **[Installation Guide](docs/INSTALLATION.md)** - Complete Arch + Hyprland setup
-- ⌨️ **[Keybindings](docs/KEYBINDS.md)** - All keyboard shortcuts
+- 📖 **[Installation Guide](docs/INSTALLATION.md)** - Complete Arch + MangoWC/Hyprland setup
+- ⌨️ **[MangoWC Keybindings](docs/KEYBINDS-MANGO.md)** - Primary compositor shortcuts
+- ⌨️ **[Hyprland Keybindings](docs/KEYBINDS.md)** - Backup compositor shortcuts
 - 📦 **[Package List](docs/PACKAGES.md)** - What's installed and why
-- 🎨 **[Style Guide](.claude/STYLE_GUIDE.md)** - Aesthetic direction
+- 🛠️ **[Tools Guide](docs/TOOLS.md)** - Tool configurations and usage
+- 🎨 **[Style Guide](.claude/STYLE_GUIDE.md)** - Theme and design patterns
 - 🔧 **[Troubleshooting](.claude/TROUBLESHOOTING.md)** - Common issues & fixes
 
 ---
@@ -162,6 +167,8 @@ Personal dotfiles - use at your own risk. Feel free to steal anything useful!
 
 ---
 
-**Last Updated:** 2025-12-01
+**Last Updated:** 2025-12-04
 **Status:** ✅ Fully Functional
+**Primary Compositor:** MangoWC (scrolling layouts)
+**Backup Compositor:** Hyprland
 **Daily Driver:** Yes

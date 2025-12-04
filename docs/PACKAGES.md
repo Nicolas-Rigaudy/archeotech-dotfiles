@@ -1,6 +1,6 @@
 # Package List
 
-Complete list of all packages used in this Arch + Hyprland setup, organized by category with explanations.
+Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organized by category with explanations.
 
 ---
 
@@ -49,13 +49,14 @@ Complete list of all packages used in this Arch + Hyprland setup, organized by c
 
 ---
 
-## Hyprland & Wayland
+## Wayland Compositors
 
-### Compositor
+### Compositors
 
 | Package | Purpose | Notes |
 |---------|---------|-------|
-| `hyprland` | Wayland compositor | v0.52.1 - Tiling window manager |
+| `mangowc-git` (AUR) | Wayland compositor | PRIMARY - Scrolling layout compositor |
+| `hyprland` | Wayland compositor | BACKUP - v0.52.1 - Tiling window manager |
 | `xdg-desktop-portal-hyprland` | Desktop portal | Screen sharing, file pickers |
 | `xdg-desktop-portal-gtk` | GTK portal | Fallback for GTK apps |
 
@@ -107,8 +108,10 @@ Complete list of all packages used in this Arch + Hyprland setup, organized by c
 
 | Package | Purpose | Notes |
 |---------|---------|-------|
-| `hyprlock` | Screen locker | Official Hyprland locker |
-| `hypridle` | Idle manager | Auto-lock, screen off |
+| `swaylock` | Screen locker | For MangoWC (primary) |
+| `swayidle` | Idle manager | For MangoWC - Auto-lock, screen off |
+| `hyprlock` | Screen locker | For Hyprland (backup) |
+| `hypridle` | Idle manager | For Hyprland - Auto-lock, screen off |
 
 ### Power Menu
 
@@ -144,6 +147,10 @@ Complete list of all packages used in this Arch + Hyprland setup, organized by c
 | `zoxide` | Smart cd | Jump to frequent directories |
 | `thefuck` | Command corrector | Fix typos in commands |
 | `yazi` | File manager (TUI) | Modern, Rust-based, image preview |
+| `navi` | CLI cheatsheets | Interactive cheatsheet tool |
+| `atuin` | Shell history | Advanced shell history with sync |
+| `gping` | Ping with graph | Visual ping tool |
+| `tealdeer` | tldr client | Rust rewrite of tldr (man page summaries) |
 
 ---
 
@@ -204,12 +211,14 @@ Complete list of all packages used in this Arch + Hyprland setup, organized by c
 |---------|---------|-------|
 | `git` | Version control | Distributed VCS |
 | `github-cli` | GitHub CLI | gh command-line tool |
+| `lazygit` | Git TUI | Terminal UI for git |
 
 ### Cloud & Infrastructure
 
 | Package | Purpose | Notes |
 |---------|---------|-------|
 | `aws-cli-v2` (AUR) | AWS CLI | v1.43.2 - AWS management |
+| `granted` (AUR) | AWS profile switcher | Easy AWS account switching & console access |
 | `terraform` | Infrastructure as Code | v1.14.0 - IaC tool |
 
 ### Programming Languages
@@ -230,12 +239,13 @@ Complete list of all packages used in this Arch + Hyprland setup, organized by c
 
 ## Utilities
 
-### Screenshots
+### Screenshots & Color Picking
 
 | Package | Purpose | Notes |
 |---------|---------|-------|
 | `grim` | Screenshot tool | Wayland screenshot utility |
 | `slurp` | Region selector | Select screen regions |
+| `wl-color-picker` | Color picker | Compositor-agnostic color picker for Wayland |
 
 ### Network
 
@@ -259,6 +269,15 @@ Complete list of all packages used in this Arch + Hyprland setup, organized by c
 | `brightnessctl` | Brightness control | Screen brightness management |
 | `playerctl` | Media control | Media player controls |
 | `pavucontrol` | Audio control | PulseAudio/PipeWire volume GUI |
+
+### Snapshot Management
+
+| Package | Purpose | Notes |
+|---------|---------|-------|
+| `snapper` | Snapshot manager | Btrfs snapshot management |
+| `snap-pac` | Pacman hook | Auto snapshots on pacman operations |
+| `grub-btrfs` | GRUB integration | Boot from snapshots in GRUB menu |
+| `snapper-gui-git` (AUR) | Snapshot GUI | Wayland-compatible GUI for snapper |
 
 ---
 
@@ -386,5 +405,6 @@ This is a minimal, focused installation optimized for development work and daily
 
 ---
 
-**Last Updated:** 2025-11-28
+**Last Updated:** 2025-12-04
 **For:** archeotech-dotfiles
+**Compositors:** MangoWC (primary), Hyprland (backup)

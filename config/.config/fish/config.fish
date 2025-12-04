@@ -25,7 +25,8 @@ if status is-interactive
 	alias lg "lazygit"
 	alias cp "/usr/local/bin/advcp -g"
 	alias mv "/usr/local/bin/advmv -g"
-
+	alias fuzzy="fzf --preview='cat {}' | xargs -r code"
+	
 	# Granted AWS profile switcher - needs to be sourced to export env vars
 	alias assume="source /usr/bin/assume.fish"
 
