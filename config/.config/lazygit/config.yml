@@ -26,10 +26,8 @@ gui:
       - '#cad3f5'
     searchingActiveBorderColor:
       - '#eed49f'
-
   authorColors:
     '*': '#b7bdf8'
-
   # UI preferences
   showFileTree: true
   showListFooter: true
@@ -39,34 +37,27 @@ gui:
   nerdFontsVersion: "3"
   mouseEvents: true
   border: "rounded"
-
   # Window size
-  windowSize: "normal"
+  screenMode: "normal"
   sidePanelWidth: 0.3333
-
 git:
   # Auto fetch/refresh
   autoFetch: true
   autoRefresh: true
-
   # Commit settings
   commit:
     signOff: false
     autoWrapCommitMessage: true
     autoWrapWidth: 72
-
   # Log settings
   log:
     order: "topo-order"
     showGraph: "always"
-
   # Emoji support
   parseEmoji: true
-
 # Update checking disabled
 update:
   method: "never"
-
 # Confirmation settings
 confirmOnQuit: false
 quitOnTopLevelReturn: false

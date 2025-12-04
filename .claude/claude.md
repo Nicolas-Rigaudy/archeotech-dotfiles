@@ -1,21 +1,22 @@
-# Arch + Hyprland Dotfiles Project
+# Arch + MangoWC/Hyprland Dotfiles Project
 
 ## Project Overview
 
-This is a comprehensive Arch Linux + Hyprland desktop environment built from scratch. Every component is understood, documented, and reproducible. This project serves as both a daily driver system and a learning journey into Linux customization.
+This is a comprehensive Arch Linux desktop environment with MangoWC (primary) and Hyprland (backup) compositors, built from scratch. Every component is understood, documented, and reproducible. This project serves as both a daily driver system and a learning journey into Linux customization.
 
 **Project Goals:**
-1. Build a fully functional, beautiful Arch + Hyprland system
+1. Build a fully functional, beautiful Arch + Wayland compositor system
 2. Understand every component and configuration decision
 3. Create reproducible dotfiles that can be deployed to any machine
 4. Document everything for future reference and learning
 5. Eventually deploy to personal Windows PC (dual-boot or full switch)
 
 **Current Status:** ✅ **FULLY FUNCTIONAL - Daily Driver Ready**
-- System installation complete
+- System installation complete (MangoWC primary, Hyprland backup)
 - Development environment working
 - Theming applied (Catppuccin Macchiato)
 - All core features operational
+- Comprehensive documentation in docs/ and .claude/ folders
 
 ---
 
@@ -67,15 +68,15 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 ### Desktop Environment ✅
 | Component | Choice | Rationale |
 |-----------|--------|-----------|
-| **Window Manager (Primary)** | Hyprland 0.52.1 | Modern Wayland compositor, smooth animations, tiling |
-| **Window Manager (Testing)** | MangoWC (latest) | Testing scrolling layout feature, parallel install |
+| **Window Manager (Primary)** | MangoWC (latest) | Scrolling layout feature, modern Wayland compositor |
+| **Window Manager (Backup)** | Hyprland 0.52.1 | Fallback option, well-established compositor |
 | **Display Manager** | SDDM | Best for Wayland compositors, Catppuccin themes available |
 | **Status Bar** | Waybar 0.14.0 | CSS+JSON config, huge community, themeable |
 | **App Launcher** | rofi-wayland | Most features, extensible |
 | **Notifications** | dunst | Lightweight, themeable, simple config |
 | **Wallpaper** | swww | Animated transitions between wallpapers |
-| **Lock Screen** | hyprlock (Hyprland) / swaylock (MangoWC planned) | Official Hyprland locker, themeable |
-| **Idle Manager** | hypridle (Hyprland) / swayidle (MangoWC planned) | Pairs with lock screens |
+| **Lock Screen** | swaylock (MangoWC) / hyprlock (Hyprland) | Compositor-specific lock screens |
+| **Idle Manager** | swayidle (MangoWC) / hypridle (Hyprland) | Pairs with lock screens |
 
 ### Core Applications ✅
 | Type | Application | Notes |
@@ -181,19 +182,20 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 - [x] Intel microcode installed
 - [x] All work files and configs migrated from Fedora
 
-#### Hyprland Core
-- [x] Hyprland 0.52.1 installed
+#### Wayland Compositors & Desktop
+- [x] MangoWC (primary) - with scrolling layout configured
+- [x] Hyprland 0.52.1 (backup) - fully functional fallback
 - [x] SDDM with Catppuccin theme
 - [x] Multi-monitor configuration (3 screens, one portrait)
 - [x] Workspace per monitor assignments (1-3 laptop, 4-6 ext1, 7-9 ext2)
 - [x] Animations, blur, shadows, rounded corners configured
-- [x] Waybar with clickable modules
+- [x] Waybar with clickable modules (works on both compositors)
 - [x] Rofi launcher styled
-- [x] Dunst notifications
+- [x] Dunst notifications configured (theming not yet applied)
 - [x] Swww wallpaper daemon (Arasaka wallpaper set)
-- [x] Hyprlock screen lock configured
-- [x] Hypridle auto-lock (10min idle)
-- [x] All keybindings configured
+- [x] swaylock (MangoWC) and hyprlock (Hyprland) configured
+- [x] swayidle (MangoWC) and hypridle (Hyprland) auto-lock
+- [x] All keybindings configured (see docs/KEYBINDS-MANGO.md and docs/KEYBINDS.md)
 
 #### Audio & Hardware
 - [x] PipeWire audio stack installed
@@ -210,14 +212,20 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 - [x] Zoxide (smart cd) integrated
 - [x] Thefuck (command corrector) installed
 - [x] Eza, bat, btop, fastfetch utilities
+- [x] Navi (CLI cheatsheets)
+- [x] Atuin (shell history with sync capabilities)
+- [x] Gping (ping with graph visualization)
+- [x] Tealdeer (Rust tldr replacement)
 
 #### Development Environment
 - [x] Git configured with restored SSH keys
 - [x] AWS CLI with SSO authentication working
+- [x] Granted (AWS account switcher & console launcher)
 - [x] Terraform installed and working
 - [x] Python + pip configured
 - [x] Docker + docker-compose installed
-- [x] VSCode with all extensions synced
+- [x] VSCode with all extensions synced (including Vim extension)
+- [x] Lazygit (TUI git client)
 - [x] All work repositories accessible
 
 #### Theming
@@ -228,11 +236,13 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 - [x] Kitty fully themed
 - [x] Waybar styled with Catppuccin
 - [x] Rofi dark theme
-- [x] SDDM Catppuccin login screen
+- [ ] SDDM login screen (needs Catppuccin theme application)
+- [ ] Dunst notifications (needs Catppuccin theme application)
 - [x] GRUB Catppuccin boot menu
 
 #### Utilities & Tools
 - [x] Screenshot tools (grim + slurp) with keybinds
+- [x] Color picker (wl-color-picker - compositor-agnostic)
 - [x] Clipboard history (cliphist) with rofi integration
 - [x] Power menu (wlogout) in waybar
 - [x] Bluetooth applet (blueman-applet)
@@ -247,11 +257,50 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 
 ### ⏸️ NOT YET DONE
 
+#### Productivity Tools (High Priority - Quick Wins)
+- [ ] Frog (OCR - copy text from images)
+- [ ] Mdcat (markdown preview in terminal)
+- [ ] Espanso (text expander/keyword replacer)
+- [ ] Mission Center (modern system monitoring GUI)
+- [ ] Dunst notification scripts (low battery, network status, volume/brightness indicators)
+- [ ] Apply Catppuccin theme to Dunst notifications
+- [ ] Apply Catppuccin theme to SDDM login screen
+
+#### Development Tools & Learning (Medium Priority)
+- [ ] Learn Vim motions (vim-be-good game, practice with VSCode extension)
+- [ ] LazyVim/Neovim setup exploration
+- [ ] Kickstart.nvim configuration
+
+#### Desktop Enhancement (Medium Priority)
+- [ ] Kanata (caps lock rebinding & advanced key remapping)
+- [ ] Walker vs Rofi comparison/testing
+- [ ] Dropdown/magic terminal for MangoWC (similar to Hyprland scratchpad)
+- [ ] Rofi settings menu (Bluetooth, WiFi, system settings)
+- [ ] Context menu with tools (color picker, screenshot, etc.)
+
+#### Multimedia & Content (Low-Medium Priority)
+- [ ] Ncspot (TUI Spotify client)
+- [ ] Style Spotify with Catppuccin themes
+- [ ] Stylus + Catppuccin themes for Zen browser
+- [ ] Explore RSS feeds integration
+- [ ] YouTube app/client exploration
+
+#### Communication & Productivity Apps (Medium Priority)
+- [ ] Thunderbird/Betterbird (email outside browser)
+- [ ] Teams outside browser (research if possible)
+- [ ] Excalidraw (drawing/whiteboard tool)
+
+#### Research & Exploration (Low Priority)
+- [ ] LM Studio (local LLM exploration)
+- [ ] Obsidian/Appflowy + Claude AI integration
+- [ ] Reading setup for technical books (SICP, Computer Systems, Designing Data-Intensive Applications)
+
 #### Advanced Features (Low Priority)
 - [ ] Caps Lock indicator in waybar (module not detecting, low priority)
 - [ ] Touchpad gestures (workspace swipe - not working in current Hyprland version)
 - [ ] Gaming mode (disable compositor for performance)
 - [ ] Focus mode (hide waybar, minimal distractions)
+- [ ] Hex animation open/close effects (like KDE/GNOME animations)
 
 #### Workflow Enhancements (Medium Priority)
 - [ ] Custom rofi scripts
@@ -364,8 +413,10 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 │   └── setup-snapper.sh        # Automated Snapper setup
 ├── docs/
 │   ├── INSTALLATION.md         # Step-by-step install guide
-│   ├── KEYBINDS.md             # All keybindings reference
-│   └── PACKAGES.md             # Package list with explanations
+│   ├── KEYBINDS.md             # Hyprland keybindings reference
+│   ├── KEYBINDS-MANGO.md       # MangoWC keybindings reference (primary)
+│   ├── PACKAGES.md             # Package list with explanations
+│   └── TOOLS.md                # Tool configurations and usage guide
 └── README.md                   # Project overview
 ```
 
@@ -393,71 +444,27 @@ This is a comprehensive Arch Linux + Hyprland desktop environment built from scr
 5. Update `scripts/install.sh` to include the new directory in CONFIGS array
 ---
 
-## Keybindings Reference
+## Documentation Structure
 
-### Application Launchers
-| Keybind | Action | Notes |
-|---------|--------|-------|
-| `Super + Q` | Open terminal (kitty) | Primary terminal |
-| `Super + R` | Open app launcher (rofi) | Search all installed apps |
-| `Super + B` | Open browser (zen-browser) | |
-| `Super + E` | Open editor (VSCode) | |
-| `Super + N` | Open notes (Obsidian) | |
-| `Super + D` | Open file manager (thunar) | GUI file browser |
+This project maintains comprehensive documentation across multiple files:
 
-### Window Management
-| Keybind | Action | Notes |
-|---------|--------|-------|
-| `Super + C` | Close active window | Kill focused window |
-| `Super + M` | Exit Hyprland | Logout menu |
-| `Super + F` | Toggle fullscreen | Current window |
-| `Super + Shift + Space` | Toggle floating | Tile ↔ Float |
-| `Super + T` | Toggle split | Dwindle layout |
-| `Super + Arrow Keys` | Move focus | Between windows |
-| `Super + H/J/K/L` | Move focus (vim keys) | Same as arrows |
-| `Super + Shift + Arrows` | Move window | In current workspace |
-| `Super + Shift + H/J/K/L` | Move window (vim keys) | Same as shift+arrows |
-| `Super + Ctrl + Arrows` | Resize window | ±20px |
-| `Super + Ctrl + H/J/K/L` | Resize window (vim keys) | Same as ctrl+arrows |
+### Main Documentation Files
+- **[README.md](../README.md)** - Project overview and quick start guide
+- **[docs/KEYBINDS-MANGO.md](../docs/KEYBINDS-MANGO.md)** - Complete keybindings reference for MangoWC (primary)
+- **[docs/KEYBINDS.md](../docs/KEYBINDS.md)** - Complete keybindings reference for Hyprland (backup)
+- **[docs/PACKAGES.md](../docs/PACKAGES.md)** - Full package list with explanations
+- **[docs/INSTALLATION.md](../docs/INSTALLATION.md)** - Step-by-step installation guide
+- **[docs/TOOLS.md](../docs/TOOLS.md)** - Detailed tool configurations and usage
 
-### Workspace Navigation
-| Keybind | Action | Notes |
-|---------|--------|-------|
-| `Super + [1-9]` | Switch to workspace N | Direct workspace switch |
-| `Super + Shift + [1-9]` | Move window to workspace N | Send window to workspace |
-| `Super + Tab` | Next workspace | Cycles through workspaces |
-| `Super + Shift + Tab` | Previous workspace | Reverse cycle |
-| `Super + Mouse Scroll` | Scroll through workspaces | While holding Super |
+### Claude Code Documentation (.claude/)
+- **[.claude/claude.md](claude.md)** - This file - comprehensive project knowledge base
+- **[.claude/STYLE_GUIDE.md](STYLE_GUIDE.md)** - Theme style guide (Catppuccin colors, design patterns)
+- **[.claude/DECISIONS.md](DECISIONS.md)** - Log of all technical decisions made
+- **[.claude/TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Known issues and solutions
+- **[.claude/sessions/](sessions/)** - Session summaries for major work periods
 
-### Screenshots & Media
-| Keybind | Action | Notes |
-|---------|--------|-------|
-| `Super + S` | Screenshot region | Select area, save + clipboard |
-| `Super + P` | Screenshot fullscreen | Save + clipboard |
-| `Print` | Screenshot fullscreen (laptop) | Save + clipboard |
-| `Super + Print` | Screenshot region (laptop) | Select area, save + clipboard |
-| `Super + V` | Clipboard history | Rofi selector |
-
-### System Controls
-| Keybind | Action | Notes |
-|---------|--------|-------|
-| `Super + L` | Lock screen | Hyprlock with Arasaka wallpaper |
-| `Alt + Shift` | Toggle keyboard layout | US ↔ FR |
-| `XF86AudioRaiseVolume` | Volume up | +5% |
-| `XF86AudioLowerVolume` | Volume down | -5% |
-| `XF86AudioMute` | Toggle mute | Audio |
-| `XF86AudioMicMute` | Toggle mic mute | Microphone |
-| `XF86MonBrightnessUp` | Brightness up | +5% |
-| `XF86MonBrightnessDown` | Brightness down | -5% |
-| `XF86AudioPlay` | Play/Pause | Media control |
-| `XF86AudioNext` | Next track | Media control |
-| `XF86AudioPrev` | Previous track | Media control |
-
-### Mouse Bindings
-| Keybind | Action | Notes |
-|---------|--------|-------|
-| `Super + Left Click Drag` | Move window | Drag to reposition |
-| `Super + Right Click Drag` | Resize window | Drag to resize |
+### System Configuration
+- **[system/README.md](../system/README.md)** - System-level configuration deployment guide
 
 ---
 
@@ -832,14 +839,109 @@ new[MD]: add installation guide and keybinds reference
 4. **Document as you go** (update DECISIONS.md, TROUBLESHOOTING.md)
 
 ### Ending a Session
-1. **Run session summary script** (`./scripts/session-finish.sh`)
-2. **Update status sections** (move tasks from "Not Done" to "Done")
-3. **Commit all changes** with descriptive message
-4. **Push to remote** (if using git)
-5. **Create session summary** in `.claude/sessions/`
+
+**CRITICAL: Before ending ANY session, Claude Code MUST update ALL documentation files.**
+
+#### Step 1: Update Documentation Files
+
+**A. Update .claude/claude.md (THIS FILE)**
+- [ ] Move completed tasks from "NOT YET DONE" to "COMPLETED" sections
+- [ ] Update package versions if any were installed/updated
+- [ ] Add new tools to appropriate sections (Terminal & Shell, Development Environment, etc.)
+- [ ] Update "Recent Additions" line at bottom
+- [ ] Update "Last Updated" date to current date (YYYY-MM-DD format)
+- [ ] Verify all compositor references (MangoWC primary, Hyprland backup)
+- [ ] Check that theming status is accurate (what's themed, what's not)
+
+**B. Update docs/PACKAGES.md**
+- [ ] Add any newly installed packages to appropriate categories
+- [ ] Include package name, purpose, and notes
+- [ ] Update version numbers if packages were upgraded
+- [ ] Update "Last Updated" date
+- [ ] Verify package count approximation is still accurate
+- [ ] Ensure compositor info is correct (MangoWC primary, Hyprland backup)
+
+**C. Update docs/KEYBINDS.md and docs/KEYBINDS-MANGO.md**
+- [ ] Add any new keybindings created during session
+- [ ] Update keybindings that were modified
+- [ ] Remove deprecated keybindings
+- [ ] Ensure consistency between both files where applicable
+- [ ] Add notes about compositor-specific bindings
+
+**D. Update docs/TOOLS.md**
+- [ ] Add configuration details for newly installed tools
+- [ ] Document usage examples for new tools
+- [ ] Update existing tool configurations if changed
+- [ ] Add troubleshooting tips if discovered during session
+
+**E. Update .claude/DECISIONS.md**
+- [ ] Document ALL technical decisions made during session
+- [ ] Include rationale for choices (why X over Y)
+- [ ] Note any trade-offs or compromises
+- [ ] Reference related commits or issues
+- [ ] Date each decision entry
+
+**F. Update .claude/TROUBLESHOOTING.md**
+- [ ] Add any new issues encountered and their solutions
+- [ ] Update existing entries if better solutions found
+- [ ] Include error messages for searchability
+- [ ] Add steps to reproduce and fix
+- [ ] Cross-reference with DECISIONS.md if relevant
+
+**G. Update README.md (if needed)**
+- [ ] Update project description if scope changed
+- [ ] Add new features to feature list
+- [ ] Update screenshots/examples if visual changes made
+- [ ] Ensure installation instructions are current
+
+#### Step 2: Create Session Summary
+- [ ] Create new file in `.claude/sessions/YYYY-MM-DD-session-name.md`
+- [ ] Use session-summary-template.md as guide
+- [ ] Document what was accomplished
+- [ ] List all files modified
+- [ ] Note any outstanding issues or TODOs
+- [ ] Include relevant commands or code snippets
+
+#### Step 3: Verify Documentation Consistency
+- [ ] All documentation files reference correct compositor (MangoWC primary)
+- [ ] Package lists match across PACKAGES.md and claude.md
+- [ ] Dates are updated (use format: YYYY-MM-DD)
+- [ ] All new packages are documented
+- [ ] All new keybindings are documented
+- [ ] All decisions are logged
+- [ ] All issues/solutions are documented
+
+#### Step 4: Prepare Commit Message
+- [ ] Review all changes: `git status` and `git diff`
+- [ ] Draft commit message following the format in "Git Commit Messages" section below
+  - Example: `chg[MD]: update all documentation after tool installation session`
+- [ ] Present commit message to user - DO NOT commit automatically
+- [ ] User will stage, commit, and push manually
+- [ ] DO NOT include "Co-Authored-By: Claude" or any AI attribution in commit messages
+
+#### Step 5: Final Verification
+- [ ] Read through claude.md "Current Status" - is it accurate?
+- [ ] Check "NOT YET DONE" section - reflects remaining work?
+- [ ] Verify "Recent Additions" includes everything from this session
+- [ ] Confirm all dates are current
+- [ ] Ensure no placeholder text or TODOs left in docs
 
 ### Session Summary Template
 See `session-summary-template.md` in this directory for the format to use when documenting sessions.
+
+### Documentation Update Checklist Quick Reference
+
+Every session end MUST update:
+1. ✅ `.claude/claude.md` - Main project knowledge base
+2. ✅ `docs/PACKAGES.md` - Package list
+3. ✅ `docs/KEYBINDS.md` & `docs/KEYBINDS-MANGO.md` - Keybindings
+4. ✅ `docs/TOOLS.md` - Tool configurations
+5. ✅ `.claude/DECISIONS.md` - Technical decisions
+6. ✅ `.claude/TROUBLESHOOTING.md` - Issues and solutions
+7. ✅ `.claude/sessions/DATE-session.md` - Session summary
+8. ✅ `README.md` - If needed
+
+**Remember: Documentation is not optional. If it's not documented, it didn't happen.**
 
 ---
 
@@ -886,26 +988,41 @@ See `session-summary-template.md` in this directory for the format to use when d
 
 ## Next Steps & Priorities
 
-### Immediate (High Priority)
-1. **Create dotfiles git repository structure**
-2. **Write backup script** to snapshot current working config
-3. **Create install script** for reproducible deployment
+### Immediate (High Priority) - Quick Wins
+1. **Install productivity tools** (Frog, Mdcat, Espanso, Mission Center)
+2. **Learn Vim motions** (practice with VSCode extension, try vim-be-good game)
+3. **Complete keybindings documentation** in KEYBINDS.md
 4. **Document all packages** with explanations in PACKAGES.md
-5. **Complete keybindings documentation** in KEYBINDS.md
+5. **Configure Thunar** file manager settings
 
-### Short Term (Medium Priority)
-1. **Build custom rofi scripts** (AWS, Terraform, SSH)
-2. **Add custom waybar modules** (git branch, AWS profile)
-3. **Implement theme switcher** (Mocha ↔ Macchiato)
-4. **Create advanced window rules** for work apps
-5. **Write comprehensive installation guide**
+### Short Term (Medium Priority) - Dotfiles & Workflow
+1. **Write backup script** to snapshot current working config
+2. **Create install script** for reproducible deployment
+3. **Build custom rofi scripts** (AWS, Terraform, SSH, settings menu)
+4. **Add custom waybar modules** (git branch, AWS profile, VPN status)
+5. **Create advanced window rules** for work apps
+6. **Write comprehensive installation guide**
 
-### Long Term (Low Priority)
-1. **Deploy to personal Windows PC** (dual-boot)
-2. **Explore Quickshell** as Waybar alternative
-3. **Add per-workspace wallpapers**
-4. **Implement gaming mode**
-5. **Build project workspace switcher**
+### Medium Term (Medium Priority) - Enhancement & Learning
+1. **Explore LazyVim/Neovim** setup (Kickstart.nvim)
+2. **Kanata setup** for caps lock rebinding
+3. **Walker vs Rofi** comparison and testing
+4. **MangoWC dropdown terminal** implementation
+5. **Implement theme switcher** (Mocha ↔ Macchiato)
+6. **Zen browser deep configuration** and Stylus themes
+7. **Waybar icons** - ensure all working with click actions
+
+### Long Term (Low Priority) - Advanced Features
+1. **Multimedia setup** (Ncspot, Spotify styling, YouTube client)
+2. **Communication tools** (Thunderbird/Betterbird, Teams alternatives)
+3. **Technical reading setup** (SICP, Computer Systems, Designing Data-Intensive Applications)
+4. **LM Studio** local LLM exploration
+5. **Obsidian/Appflowy + Claude AI** integration
+6. **Deploy to personal Windows PC** (dual-boot)
+7. **Add per-workspace wallpapers**
+8. **Implement gaming mode**
+9. **Build project workspace switcher**
+10. **Hex animation effects** (like KDE/GNOME)
 
 ---
 
@@ -990,8 +1107,10 @@ By the end of this project, the following should be true:
 
 ---
 
-**Last Updated:** 2025-12-02
+**Last Updated:** 2025-12-04
 **System Status:** ✅ Fully Functional
-**Daily Driver Ready:** Yes (Hyprland stable, MangoWC testing)
+**Daily Driver Ready:** Yes (MangoWC primary, Hyprland backup)
 **Dotfiles Repository:** ✅ Complete with Stow
-**Compositors Available:** Hyprland (primary), MangoWC (testing scrolling layouts)
+**Primary Compositor:** MangoWC (scrolling layouts) with Hyprland as fallback
+**Recent Additions:** Navi, Atuin, Gping, Granted, Lazygit, wl-color-picker, Vim VSCode extension
+**Documentation:** See docs/ folder and .claude/ folder for complete references

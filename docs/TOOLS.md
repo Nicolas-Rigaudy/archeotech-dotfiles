@@ -2,7 +2,7 @@
 
 Complete reference for all tools and utilities in this Arch + MangoWC/Hyprland setup.
 
-**Last Updated:** 2025-12-03
+**Last Updated:** 2025-12-04
 
 ---
 

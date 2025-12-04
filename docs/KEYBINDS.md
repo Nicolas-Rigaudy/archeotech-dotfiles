@@ -175,5 +175,5 @@ This configuration uses **layout-aware bindings** (`resolve_binds_by_sym = true`
 
 ---
 
-**Last Updated:** 2025-12-02
+**Last Updated:** 2025-12-04
 **For:** archeotech-dotfiles
