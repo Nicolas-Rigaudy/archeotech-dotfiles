@@ -31,6 +31,8 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + D` | Open file manager (thunar) | GUI file browser |
 | `Super + G` | Open Lazygit | Git TUI with Catppuccin theme |
 | `Super + Shift + N` | Open Navi | Interactive command cheatsheets |
+| `Super + W` | Open wallpaper picker (rofi grid) | Thumbnail grid — select wallpaper or toggle logo |
+| `Super + Shift + W` | Toggle Arch logo overlay | On/Off on current wallpaper |
 
 ---
 
@@ -41,7 +43,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + C` | Close active window | Kill focused window |
 | `Super + M` | Exit MangoWC | Logout/quit compositor |
 | `Super + F` | Toggle fullscreen | Current window |
-| `Super + Shift + Space` | Toggle floating | Tile ↔ Float |
+| `Super + Shift + Space` | Toggle floating / snap back to tile | Float ↔ Tile — use this to re-tile a window you moved with the mouse |
 | `Super + T` | Toggle split | Change split direction |
 
 ### Focus Movement
@@ -248,9 +250,14 @@ Super + Shift + R
 ## Window Rules
 
 Certain windows automatically float:
-- `pavucontrol` (volume control)
+- `pavucontrol` (volume control) — 800×600
 - `blueman-manager` (Bluetooth manager)
 - `nm-connection-editor` (network manager)
+- `bitwarden` (password manager) — 900×600
+- `waypaper` (wallpaper picker) — 900×600
+- `org.gnome.Calculator` (calculator)
+- File dialog windows (`xdg-portal`, `gtk-file-chooser`) — 800×600
+- Browser extension sub-windows (popup panels) — `ignore_maximize:1`
 - Picture-in-Picture windows
 
 ---
@@ -265,5 +272,5 @@ Certain windows automatically float:
 
 ---
 
-**Last Updated:** 2025-12-04
+**Last Updated:** 2026-02-19
 **For:** archeotech-dotfiles (MangoWC configuration)

@@ -390,6 +390,88 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
+### [2026-02-19] Wallpaper Picker: waypaper vs rofi custom picker
+
+**Context:** Need a wallpaper switcher UI. waypaper installed but opened fullscreen (ugly, takes whole screen).
+
+**Options Considered:**
+1. **waypaper**
+   - Pros: Ready-made GUI, thumbnail grid, built-in swww support
+   - Cons: Opens fullscreen, can't be easily resized, UI not matching theme
+2. **rofi custom picker (wallpaper-picker.sh)**
+   - Pros: Full control over appearance, integrates with Catppuccin glass theme, floating popup, same tool as app launcher
+   - Cons: Required writing custom script + rasi theme
+
+**Decision:** rofi custom picker (scripts/wallpaper-picker.sh + scripts/assets/wallpaper-picker.rasi)
+
+**Rationale:**
+- Rofi already used for app launcher — consistent UX
+- Can theme it exactly like the rest of the system
+- Floating popup vs fullscreen is a huge UX win
+- Can embed logo toggle as a first entry in the same picker
+- Thumbnails generated via ImageMagick and cached
+
+**Trade-offs Accepted:** Required more implementation work; waypaper kept installed as config backup (backend=custom)
+
+---
+
+### [2026-02-19] SVG Renderer: rsvg-convert vs ImageMagick for Arch logo
+
+**Context:** Need to render arch-logo.svg (with transparency) to PNG for compositing onto wallpaper.
+
+**Options Considered:**
+1. **ImageMagick (magick)**
+   - Pros: Already a dependency for color extraction
+   - Cons: Renders SVG with white background — transparency lost
+2. **rsvg-convert (librsvg)**
+   - Pros: Native SVG transparency support, respects fill/opacity, clean output
+   - Cons: Extra package dependency (librsvg)
+
+**Decision:** rsvg-convert for SVG→PNG, ImageMagick for color extraction and compositing
+
+**Rationale:**
+- ImageMagick's SVG renderer doesn't preserve transparency correctly
+- rsvg-convert is the standard Arch SVG renderer and already recommended in the ecosystem
+- librsvg is a small package with no heavy dependencies
+
+**Trade-offs Accepted:** Two tools instead of one; minor extra dependency
+
+---
+
+### [2026-02-19] Wallpaper Logo Color Cache: separate LAST_COLOR_FOR file
+
+**Context:** Color extraction from wallpaper was always returning stale color (arasaka color) even after switching wallpapers.
+
+**Root Cause:** `LAST_WALL` was written *before* calling `get_wallpaper_color`, so the cache check inside `get_wallpaper_color` saw the new wallpaper path in `LAST_WALL` but the old color in `LAST_COLOR` — cache never invalidated.
+
+**Decision:** Separate `LAST_COLOR_FOR` file, written only *after* successful color extraction
+
+**Rationale:**
+- `LAST_WALL` must be written before color extraction (it's the authoritative source for --toggle and --restore)
+- `LAST_COLOR_FOR` is only a cache key for the color — written after extraction succeeds
+- Keeps the two concerns properly separated
+
+**Trade-offs Accepted:** One extra cache file in ~/.cache/wallpaper/
+
+---
+
+### [2026-02-19] MangoWC Keybind: spawn vs spawn_shell for scripts
+
+**Context:** `binds=SUPER,w,spawn,~/.local/bin/wallpaper-picker.sh` silently failed — script ran but swww socket was unreachable.
+
+**Root Cause:** MangoWC `spawn` runs the process without a shell environment — no `$HOME`, no `$XDG_RUNTIME_DIR`, no swww socket path resolution.
+
+**Decision:** Use `spawn_shell` for all script keybinds
+
+**Rationale:**
+- Scripts rely on environment variables (`$HOME`, etc.)
+- swww socket is found via `$XDG_RUNTIME_DIR/swww/` — needs shell env
+- `spawn_shell` is semantically correct for shell scripts
+
+**Trade-offs Accepted:** Slightly heavier (spawns a shell process) — negligible for keybinds
+
+---
+
 ## Decision Review Schedule
 
 Some decisions should be periodically reviewed:
@@ -422,5 +504,5 @@ Some decisions should be periodically reviewed:
 
 ---
 
-**Last Updated:** 2025-11-28
-**Total Decisions:** 14
+**Last Updated:** 2026-02-19
+**Total Decisions:** 18

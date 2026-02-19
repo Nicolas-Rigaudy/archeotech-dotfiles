@@ -1,0 +1,96 @@
+/* Wallpaper picker — clean grid, Catppuccin Macchiato glass */
+
+* {
+    bg:       rgba(30, 30, 46, 0.88);
+    surface:  rgba(49, 50, 68, 0.75);
+    accent:   #89b4fa;
+    fg:       #cdd6f4;
+    fg-dim:   #585b70;
+
+    background-color: transparent;
+    text-color:       #cdd6f4;
+    font:             "JetBrainsMono Nerd Font 10";
+}
+
+window {
+    transparency:     "real";
+    background-color: @bg;
+    border:           1px;
+    border-color:     @accent;
+    border-radius:    16px;
+    padding:          16px;
+    width:            960px;
+    height:           640px;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing:          10px;
+    children:         [ inputbar, listview ];
+}
+
+inputbar {
+    background-color: @surface;
+    border-radius:    10px;
+    padding:          10px 16px;
+    spacing:          10px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @accent;
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @fg;
+    placeholder:      "wallpapers...";
+    placeholder-color: @fg-dim;
+}
+
+listview {
+    background-color: transparent;
+    layout:           vertical;
+    lines:            3;
+    columns:          4;
+    spacing:          8px;
+    padding:          2px;
+    scrollbar:        false;
+    dynamic:          false;
+}
+
+element {
+    background-color: @surface;
+    border-radius:    12px;
+    padding:          4px;
+    orientation:      vertical;
+    spacing:          0px;
+    cursor:           pointer;
+}
+
+element normal.normal,
+element alternate.normal {
+    background-color: @surface;
+}
+
+element selected.normal {
+    background-color: rgba(49, 50, 68, 0.95);
+    border:           2px;
+    border-color:     @accent;
+}
+
+element-icon {
+    background-color: transparent;
+    size:             200px;
+    border-radius:    10px;
+    cursor:           inherit;
+}
+
+/* Hide text labels — images speak for themselves */
+element-text {
+    background-color: transparent;
+    text-color:       rgba(205, 214, 244, 0);
+    font:             "JetBrainsMono Nerd Font 1";
+    cursor:           inherit;
+}

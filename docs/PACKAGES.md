@@ -105,6 +105,9 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | Package | Purpose | Notes |
 |---------|---------|-------|
 | `swww` | Wallpaper daemon | Animated transitions |
+| `waypaper` (AUR) | Wallpaper picker GUI | Backup picker; configured with backend=custom to call wallpaper-set.sh |
+| `librsvg` | SVG renderer | rsvg-convert — renders Arch logo SVG to PNG with transparency |
+| `imagemagick` | Image processing | Color extraction from wallpapers, image compositing for logo overlay |
 
 ### Lock Screen & Idle
 
@@ -407,6 +410,6 @@ This is a minimal, focused installation optimized for development work and daily
 
 ---
 
-**Last Updated:** 2025-12-09
+**Last Updated:** 2026-02-19
 **For:** archeotech-dotfiles
 **Compositors:** MangoWC (primary), Hyprland (backup)

@@ -74,7 +74,8 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 | **Status Bar** | Waybar 0.14.0 | CSS+JSON config, huge community, themeable |
 | **App Launcher** | rofi-wayland | Most features, extensible |
 | **Notifications** | dunst | Lightweight, themeable, simple config |
-| **Wallpaper** | swww | Animated transitions between wallpapers |
+| **Wallpaper** | swww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay |
+| **Wallpaper Picker** | rofi (thumbnail grid) | scripts/wallpaper-picker.sh — 4-col grid, logo toggle entry |
 | **Lock Screen** | swaylock (MangoWC) / hyprlock (Hyprland) | Compositor-specific lock screens |
 | **Idle Manager** | swayidle (MangoWC) / hypridle (Hyprland) | Pairs with lock screens |
 
@@ -192,7 +193,11 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Waybar with clickable modules (works on both compositors) - macOS-style floating glass pill bar
 - [x] Rofi launcher styled
 - [x] Dunst notifications configured (theming not yet applied)
-- [x] Swww wallpaper daemon (Arasaka wallpaper set)
+- [x] Swww wallpaper daemon with wallpaper collection in wallpapers/
+- [x] Rofi wallpaper picker with thumbnail grid (Super+W) - 4-column glass grid, Catppuccin Macchiato themed
+- [x] Waypaper installed as backup picker (configured with custom_command = wallpaper-set.sh)
+- [x] Arch logo overlay system (wallpaper-set.sh) - adaptive color extracted from wallpaper, toggle Super+Shift+W
+- [x] Window rules for floating windows (waypaper, pavucontrol, bitwarden, file dialogs, calculator, browser popups)
 - [x] swaylock (MangoWC) and hyprlock (Hyprland) configured
 - [x] swayidle (MangoWC) and hypridle (Hyprland) auto-lock
 - [x] All keybindings configured (see docs/KEYBINDS-MANGO.md and docs/KEYBINDS.md)
@@ -372,8 +377,8 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 ├── gtk-4.0/                    # GTK4 theme settings
 └── yazi/                       # Terminal file manager config
 
-~/Pictures/Wallpapers/
-└── arasaka.png                 # Current wallpaper (cyberpunk themed)
+~/Projects/archeotech-dotfiles/wallpapers/
+└── *.jpg / *.png               # Wallpaper collection (auto-detected by picker)
 
 /etc/sddm.conf                  # Display manager config
 /usr/share/sddm/scripts/Xsetup  # SDDM keyboard layout script
@@ -397,6 +402,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │       ├── rofi/               # Rofi configs (MASTER COPY)
 │       ├── fish/               # Fish shell configs (MASTER COPY)
 │       ├── mango/              # MangoWC configs (MASTER COPY)
+│       ├── waypaper/           # Waypaper config (backend=custom, points to wallpaper-set.sh)
 │       ├── starship.toml       # Starship prompt config
 │       ├── btop/               # System monitor config
 │       ├── yazi/               # File manager config
@@ -412,7 +418,13 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 ├── scripts/
 │   ├── install.sh              # Deploy dotfiles with GNU Stow
 │   ├── uninstall.sh            # Remove symlinks
-│   └── setup-snapper.sh        # Automated Snapper setup
+│   ├── setup-snapper.sh        # Automated Snapper setup
+│   ├── wallpaper-set.sh        # Wallpaper setter with Arch logo overlay system
+│   ├── wallpaper-picker.sh     # Rofi thumbnail grid wallpaper picker
+│   └── assets/
+│       ├── arch-logo.svg       # Arch crystal logo (ARCH_COLOR/ARCH_OPACITY placeholders)
+│       └── wallpaper-picker.rasi  # Rofi theme for wallpaper picker (Catppuccin glass)
+├── wallpapers/                 # Wallpaper collection (tracked in git)
 ├── docs/
 │   ├── INSTALLATION.md         # Step-by-step install guide
 │   ├── KEYBINDS.md             # Hyprland keybindings reference
@@ -435,7 +447,12 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 ~/.config/hypr/ -> ../Projects/archeotech-dotfiles/config/.config/hypr/
 ~/.config/waybar/ -> ../Projects/archeotech-dotfiles/config/.config/waybar/
 ~/.config/mango/ -> ../Projects/archeotech-dotfiles/config/.config/mango/
+~/.config/waypaper/ -> ../Projects/archeotech-dotfiles/config/.config/waypaper/
 ... (all config dirs are symlinks)
+
+# Script symlinks (manual, not via stow):
+~/.local/bin/wallpaper-set.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-set.sh
+~/.local/bin/wallpaper-picker.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-picker.sh
 ```
 
 **Adding New Config Directories:**
@@ -500,9 +517,30 @@ hyprctl reload
 
 # Check Hyprland config for errors
 hyprctl reload 2>&1 | grep -i error
+```
 
-# Set new wallpaper
-swww img ~/Pictures/Wallpapers/new-wallpaper.png
+### Managing Wallpapers
+```bash
+# Open rofi wallpaper picker (thumbnail grid)
+# Keybind: Super+W
+~/.local/bin/wallpaper-picker.sh
+
+# Set wallpaper directly (respects logo toggle state)
+~/.local/bin/wallpaper-set.sh ~/Projects/archeotech-dotfiles/wallpapers/image.jpg
+
+# Toggle Arch logo overlay on/off
+# Keybind: Super+Shift+W
+~/.local/bin/wallpaper-set.sh --toggle-logo
+
+# Re-apply last wallpaper (e.g. after reboot — called by MangoWC startup)
+~/.local/bin/wallpaper-set.sh --restore
+
+# Check current wallpaper and logo state
+~/.local/bin/wallpaper-set.sh --status
+
+# Scripts live in repo at scripts/ and are symlinked to ~/.local/bin/
+# Wallpapers stored in wallpapers/ (tracked in git)
+# Cache: ~/.cache/wallpaper/ (composed.png, thumbs/, last-wallpaper, etc.)
 ```
 
 ### Package Management
@@ -1137,5 +1175,5 @@ By the end of this project, the following should be true:
 **Daily Driver Ready:** Yes (MangoWC primary, Hyprland backup)
 **Dotfiles Repository:** ✅ Complete with Stow
 **Primary Compositor:** MangoWC (scrolling layouts) with Hyprland as fallback
-**Recent Additions:** Battery alert script (dunst notifications + auto-suspend), macOS-style floating glass waybar
+**Recent Additions:** Rofi wallpaper picker (thumbnail grid, Super+W), Arch logo overlay system (adaptive color from wallpaper, Super+Shift+W), waypaper as backup picker
 **Documentation:** See docs/ folder and .claude/ folder for complete references
