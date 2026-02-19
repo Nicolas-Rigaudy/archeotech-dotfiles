@@ -114,7 +114,8 @@ archeotech-dotfiles/
 
 ## Documentation
 
-- 📖 **[Installation Guide](docs/INSTALLATION.md)** - Complete Arch + MangoWC/Hyprland setup
+- 📖 **[Installation Guide](docs/INSTALLATION.md)** - Complete Arch + Hyprland setup
+- 🖥️ **[MangoWC Setup](docs/MANGOWC-SETUP.md)** - MangoWC installation & screen sharing setup
 - ⌨️ **[MangoWC Keybindings](docs/KEYBINDS-MANGO.md)** - Primary compositor shortcuts
 - ⌨️ **[Hyprland Keybindings](docs/KEYBINDS.md)** - Backup compositor shortcuts
 - 📦 **[Package List](docs/PACKAGES.md)** - What's installed and why

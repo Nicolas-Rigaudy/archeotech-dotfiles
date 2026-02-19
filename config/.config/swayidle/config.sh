@@ -14,9 +14,9 @@
 ################################################################################
 
 swayidle -w \
-    timeout 300 'brightnessctl -s set 10' \
+    timeout 600 'brightnessctl -s set 10' \
         resume 'brightnessctl -r' \
-    timeout 600 'swaylock' \
-    timeout 900 'wlopm --off \*' \
+    timeout 900 'swaylock' \
+    timeout 1200 'wlopm --off \*' \
         resume 'wlopm --on \*' \
     before-sleep 'swaylock'

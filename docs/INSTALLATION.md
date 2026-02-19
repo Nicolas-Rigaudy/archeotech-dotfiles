@@ -281,7 +281,7 @@ makepkg -si
 
 ```bash
 sudo pacman -S hyprland hyprlock hypridle \
-    xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
+    xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
     wayland wayland-protocols \
     sddm qt5-wayland qt6-wayland
 ```

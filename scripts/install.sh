@@ -99,6 +99,7 @@ backup_existing_configs() {
         "bat"
         "cava"
         "zathura"
+        "xdg-desktop-portal"
     )
 
     BACKED_UP=0
@@ -152,6 +153,7 @@ verify_deployment() {
         "zathura"
         "cava"
         "dunst"
+        "xdg-desktop-portal"
     )
 
     ALL_OK=1
@@ -182,9 +184,9 @@ show_usage() {
     echo "Your configs are now managed by this repository."
     echo ""
     echo "Key points:"
-    echo "  " Editing ~/.config/hypr/hyprland.conf edits the repo file"
-    echo "  " Changes are automatically tracked by git"
-    echo "  " Commit changes: cd $DOTFILES_DIR && git add . && git commit"
+    echo "  • Editing ~/.config/hypr/hyprland.conf edits the repo file"
+    echo "  • Changes are automatically tracked by git"
+    echo "  • Commit changes: cd $DOTFILES_DIR && git add . && git commit"
     echo ""
     echo "To uninstall (remove symlinks):"
     echo "  ./scripts/uninstall.sh"

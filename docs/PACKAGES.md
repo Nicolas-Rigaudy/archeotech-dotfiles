@@ -57,8 +57,10 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 |---------|---------|-------|
 | `mangowc-git` (AUR) | Wayland compositor | PRIMARY - Scrolling layout compositor |
 | `hyprland` | Wayland compositor | BACKUP - v0.52.1 - Tiling window manager |
-| `xdg-desktop-portal-hyprland` | Desktop portal | Screen sharing, file pickers |
-| `xdg-desktop-portal-gtk` | GTK portal | Fallback for GTK apps |
+| `xdg-desktop-portal` | Desktop portal base | Core portal functionality |
+| `xdg-desktop-portal-wlr` | wlroots portal | Screen sharing for MangoWC (wlroots-based) |
+| `xdg-desktop-portal-hyprland` | Desktop portal | Screen sharing for Hyprland |
+| `xdg-desktop-portal-gtk` | GTK portal | File pickers, GTK apps |
 
 ### Wayland Utilities
 
@@ -405,6 +407,6 @@ This is a minimal, focused installation optimized for development work and daily
 
 ---
 
-**Last Updated:** 2025-12-04
+**Last Updated:** 2025-12-09
 **For:** archeotech-dotfiles
 **Compositors:** MangoWC (primary), Hyprland (backup)

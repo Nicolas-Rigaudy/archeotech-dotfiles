@@ -17,4 +17,22 @@ if [ -f "$DOTFILES_DIR/system/etc/snapper/configs/root" ]; then
     sudo chown root:root /etc/snapper/configs/root
 fi
 
+# SDDM config (login screen theme)
+if [ -f "$DOTFILES_DIR/system/etc/sddm.conf" ]; then
+    echo "  → /etc/sddm.conf (Catppuccin theme)"
+    sudo cp "$DOTFILES_DIR/system/etc/sddm.conf" /etc/sddm.conf
+    sudo chmod 644 /etc/sddm.conf
+    sudo chown root:root /etc/sddm.conf
+fi
+
+# GRUB custom entries (Fedora dual-boot)
+if [ -f "$DOTFILES_DIR/system/etc/grub.d/40_custom" ]; then
+    echo "  → /etc/grub.d/40_custom (Fedora boot entries)"
+    sudo cp "$DOTFILES_DIR/system/etc/grub.d/40_custom" /etc/grub.d/40_custom
+    sudo chmod 755 /etc/grub.d/40_custom
+    sudo chown root:root /etc/grub.d/40_custom
+    echo "  → Regenerating GRUB config..."
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
+fi
+
 echo "Done!"

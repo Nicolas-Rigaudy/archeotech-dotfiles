@@ -185,17 +185,18 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 #### Wayland Compositors & Desktop
 - [x] MangoWC (primary) - with scrolling layout configured
 - [x] Hyprland 0.52.1 (backup) - fully functional fallback
-- [x] SDDM with Catppuccin theme
+- [x] SDDM with Catppuccin Macchiato theme (sddm-catppuccin-git)
 - [x] Multi-monitor configuration (3 screens, one portrait)
 - [x] Workspace per monitor assignments (1-3 laptop, 4-6 ext1, 7-9 ext2)
 - [x] Animations, blur, shadows, rounded corners configured
-- [x] Waybar with clickable modules (works on both compositors)
+- [x] Waybar with clickable modules (works on both compositors) - macOS-style floating glass pill bar
 - [x] Rofi launcher styled
 - [x] Dunst notifications configured (theming not yet applied)
 - [x] Swww wallpaper daemon (Arasaka wallpaper set)
 - [x] swaylock (MangoWC) and hyprlock (Hyprland) configured
 - [x] swayidle (MangoWC) and hypridle (Hyprland) auto-lock
 - [x] All keybindings configured (see docs/KEYBINDS-MANGO.md and docs/KEYBINDS.md)
+- [x] xdg-desktop-portal configured for screen sharing (Teams, Zoom, etc.)
 
 #### Audio & Hardware
 - [x] PipeWire audio stack installed
@@ -236,9 +237,9 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Kitty fully themed
 - [x] Waybar styled with Catppuccin
 - [x] Rofi dark theme
-- [ ] SDDM login screen (needs Catppuccin theme application)
+- [x] SDDM login screen (Catppuccin Macchiato theme applied)
 - [ ] Dunst notifications (needs Catppuccin theme application)
-- [x] GRUB Catppuccin boot menu
+- [x] GRUB Catppuccin Macchiato boot menu
 
 #### Utilities & Tools
 - [x] Screenshot tools (grim + slurp) with keybinds
@@ -254,6 +255,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] PDF viewer (zathura)
 - [x] Archive tools (file-roller, unzip, unrar, p7zip)
 - [x] Snapshot management (snapper + snap-pac + grub-btrfs + snapper-gui)
+- [x] Battery alert script (dunst notifications at 20%/10%/5%, auto-suspend at 3%)
 
 ### ⏸️ NOT YET DONE
 
@@ -262,9 +264,9 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [ ] Mdcat (markdown preview in terminal)
 - [ ] Espanso (text expander/keyword replacer)
 - [ ] Mission Center (modern system monitoring GUI)
-- [ ] Dunst notification scripts (low battery, network status, volume/brightness indicators)
+- [x] Dunst notification script - low battery (scripts/battery-alert.sh)
+- [ ] Dunst notification scripts (network status, volume/brightness indicators)
 - [ ] Apply Catppuccin theme to Dunst notifications
-- [ ] Apply Catppuccin theme to SDDM login screen
 
 #### Development Tools & Learning (Medium Priority)
 - [ ] Learn Vim motions (vim-be-good game, practice with VSCode extension)
@@ -643,17 +645,40 @@ ls /.snapshots/<number>/snapshot/
 
 ## Known Issues & Solutions
 
-### Issue: Fedora Won't Boot After Arch Install
-**Symptom:** GRUB doesn't show Fedora in boot menu
-**Cause:** btrfs device size mismatch after partition resize
-**Solution:**
-```bash
-# Boot from Arch
-sudo mount /dev/nvme0n1p7 /mnt/fedora  # Will fail if mismatch
-sudo btrfs rescue fix-device-size /dev/nvme0n1p7
-sudo mount /dev/nvme0n1p7 /mnt/fedora  # Should work now
-sudo grub-mkconfig -o /boot/grub/grub.cfg
-```
+### Issue: Fedora Won't Boot from GRUB (Partially Fixed)
+**Status:** ⚠️ Partially working - boots but login environment incorrect
+
+**Progress Made:**
+1. ✅ Fixed GRUB entry - kernel loads successfully from shared `/boot`
+2. ✅ Fixed Fedora's `/etc/fstab` - updated `/boot` UUID to shared partition
+3. ✅ Fixed Fedora's `/etc/fstab` - updated `/boot/efi` UUID to shared EFI partition
+4. ⚠️ Boots but shows plain SDDM instead of Fedora's themed KDE environment
+
+**Current Workaround:** Boot Fedora from BIOS boot menu (works perfectly)
+
+**Diagnostic Scripts Created:**
+- `scripts/diagnose-fedora-boot.sh` - Check btrfs subvolumes and fstab
+- `scripts/fix-fedora-fstab.sh` - Fix `/boot` UUID
+- `scripts/fix-fedora-efi.sh` - Fix `/boot/efi` UUID
+
+**Custom GRUB Entries:**
+- `system/etc/grub.d/40_custom` - Manual Fedora boot entries (Fedora 43 and 42)
+
+**What's Working:**
+- Fedora kernel loads from GRUB
+- Root filesystem mounts correctly
+- `/boot` and `/boot/efi` mount successfully
+- Login screen appears and accepts password
+
+**What's Not Working:**
+- Gets wrong desktop environment (Arch's plain SDDM vs Fedora's KDE)
+- After login, returns to login screen
+
+**Next Steps to Try (Future Session):**
+1. Check if issue is with display manager initialization order
+2. Verify Fedora's systemd services are starting correctly
+3. May need to investigate systemd-boot as alternative to GRUB for Fedora
+4. Consider keeping BIOS boot as primary Fedora boot method
 
 ### Issue: No Audio / No Microphone
 **Symptom:** `pactl list sinks` shows only `auto_null`
@@ -1107,10 +1132,10 @@ By the end of this project, the following should be true:
 
 ---
 
-**Last Updated:** 2025-12-04
+**Last Updated:** 2026-02-19
 **System Status:** ✅ Fully Functional
 **Daily Driver Ready:** Yes (MangoWC primary, Hyprland backup)
 **Dotfiles Repository:** ✅ Complete with Stow
 **Primary Compositor:** MangoWC (scrolling layouts) with Hyprland as fallback
-**Recent Additions:** Navi, Atuin, Gping, Granted, Lazygit, wl-color-picker, Vim VSCode extension
+**Recent Additions:** Battery alert script (dunst notifications + auto-suspend), macOS-style floating glass waybar
 **Documentation:** See docs/ folder and .claude/ folder for complete references
