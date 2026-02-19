@@ -75,7 +75,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 | **App Launcher** | rofi-wayland | Most features, extensible |
 | **Notifications** | dunst | Lightweight, themeable, simple config |
 | **Wallpaper** | swww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay |
-| **Wallpaper Picker** | rofi (thumbnail grid) | scripts/wallpaper-picker.sh — 4-col grid, logo toggle entry |
+| **Wallpaper Picker** | rofi (thumbnail grid) | scripts/wallpaper-picker.sh — 3-col grid, logos row 1, wallpapers below, vertical scroll |
 | **Lock Screen** | swaylock (MangoWC) / hyprlock (Hyprland) | Compositor-specific lock screens |
 | **Idle Manager** | swayidle (MangoWC) / hypridle (Hyprland) | Pairs with lock screens |
 
@@ -194,9 +194,9 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Rofi launcher styled
 - [x] Dunst notifications configured (theming not yet applied)
 - [x] Swww wallpaper daemon with wallpaper collection in wallpapers/
-- [x] Rofi wallpaper picker with thumbnail grid (Super+W) - 4-column glass grid, Catppuccin Macchiato themed
+- [x] Rofi wallpaper picker with thumbnail grid (Super+W) - 3-col glass grid, logos on row 1, vertical scroll, Catppuccin Macchiato themed
 - [x] Waypaper installed as backup picker (configured with custom_command = wallpaper-set.sh)
-- [x] Arch logo overlay system (wallpaper-set.sh) - adaptive color extracted from wallpaper, toggle Super+Shift+W
+- [x] Multi-logo overlay system (wallpaper-set.sh) - Arch Linux, Rebel Alliance, Imperial Aquila logos; adaptive color from wallpaper, toggle Super+Shift+W, remembers last active logo
 - [x] Window rules for floating windows (waypaper, pavucontrol, bitwarden, file dialogs, calculator, browser popups)
 - [x] swaylock (MangoWC) and hyprlock (Hyprland) configured
 - [x] swayidle (MangoWC) and hypridle (Hyprland) auto-lock
@@ -422,8 +422,10 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │   ├── wallpaper-set.sh        # Wallpaper setter with Arch logo overlay system
 │   ├── wallpaper-picker.sh     # Rofi thumbnail grid wallpaper picker
 │   └── assets/
-│       ├── arch-logo.svg       # Arch crystal logo (ARCH_COLOR/ARCH_OPACITY placeholders)
-│       └── wallpaper-picker.rasi  # Rofi theme for wallpaper picker (Catppuccin glass)
+│       ├── arch-logo.svg       # Arch crystal logo (LOGO_COLOR/LOGO_OPACITY placeholders)
+│       ├── rebel-logo.svg      # Rebel Alliance logo (LOGO_COLOR/LOGO_OPACITY placeholders)
+│       ├── imperial-logo.svg   # Imperial Aquila logo (LOGO_COLOR/LOGO_OPACITY placeholders)
+│       └── wallpaper-picker.rasi  # Rofi theme for wallpaper picker (Catppuccin glass, 3-col grid)
 ├── wallpapers/                 # Wallpaper collection (tracked in git)
 ├── docs/
 │   ├── INSTALLATION.md         # Step-by-step install guide
@@ -528,9 +530,14 @@ hyprctl reload 2>&1 | grep -i error
 # Set wallpaper directly (respects logo toggle state)
 ~/.local/bin/wallpaper-set.sh ~/Projects/archeotech-dotfiles/wallpapers/image.jpg
 
-# Toggle Arch logo overlay on/off
+# Toggle logo overlay on/off (cycles: last active logo ↔ off)
 # Keybind: Super+Shift+W
 ~/.local/bin/wallpaper-set.sh --toggle-logo
+
+# Activate a specific logo (arch | rebel | imperial)
+~/.local/bin/wallpaper-set.sh --toggle-logo arch
+~/.local/bin/wallpaper-set.sh --toggle-logo rebel
+~/.local/bin/wallpaper-set.sh --toggle-logo imperial
 
 # Re-apply last wallpaper (e.g. after reboot — called by MangoWC startup)
 ~/.local/bin/wallpaper-set.sh --restore
@@ -1175,5 +1182,5 @@ By the end of this project, the following should be true:
 **Daily Driver Ready:** Yes (MangoWC primary, Hyprland backup)
 **Dotfiles Repository:** ✅ Complete with Stow
 **Primary Compositor:** MangoWC (scrolling layouts) with Hyprland as fallback
-**Recent Additions:** Rofi wallpaper picker (thumbnail grid, Super+W), Arch logo overlay system (adaptive color from wallpaper, Super+Shift+W), waypaper as backup picker
+**Recent Additions:** Multi-logo overlay system (Arch Linux, Rebel Alliance, Imperial Aquila — adaptive color from wallpaper, toggle Super+Shift+W), rofi wallpaper picker (3-col grid, logos row 1, vertical scroll, Super+W), waypaper as backup picker
 **Documentation:** See docs/ folder and .claude/ folder for complete references

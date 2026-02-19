@@ -1,15 +1,13 @@
 /* Wallpaper picker — clean grid, Catppuccin Macchiato glass */
 
 * {
-    bg:       rgba(30, 30, 46, 0.88);
-    surface:  rgba(49, 50, 68, 0.75);
-    accent:   #89b4fa;
-    fg:       #cdd6f4;
-    fg-dim:   #585b70;
+    bg:      rgba(30, 30, 46, 0.88);
+    surface: rgba(49, 50, 68, 0.75);
+    accent:  #c6a0f6;
 
     background-color: transparent;
-    text-color:       #cdd6f4;
-    font:             "JetBrainsMono Nerd Font 10";
+    text-color:       transparent;
+    font:             "Sans 1";
 }
 
 window {
@@ -19,54 +17,40 @@ window {
     border-color:     @accent;
     border-radius:    16px;
     padding:          16px;
-    width:            960px;
-    height:           640px;
+    /* 3 cols × 260px + 2×8px gaps + 32px padding = 828px                */
+    width:            828px;
+    /* max 2.5 rows visible; shrinks to fit fewer entries on last page     */
+    /* 2×260 + 2×8gaps + 130half + 32pad = 698px                          */
+    max-height:       698px;
 }
 
 mainbox {
     background-color: transparent;
-    spacing:          10px;
-    children:         [ inputbar, listview ];
-}
-
-inputbar {
-    background-color: @surface;
-    border-radius:    10px;
-    padding:          10px 16px;
-    spacing:          10px;
-    children:         [ prompt, entry ];
-}
-
-prompt {
-    background-color: transparent;
-    text-color:       @accent;
-}
-
-entry {
-    background-color: transparent;
-    text-color:       @fg;
-    placeholder:      "wallpapers...";
-    placeholder-color: @fg-dim;
+    children:         [ listview ];
 }
 
 listview {
     background-color: transparent;
-    layout:           vertical;
+    /* flow: horizontal = fill rows left→right, then next row (like reading order) */
+    flow:             horizontal;
     lines:            3;
-    columns:          4;
+    columns:          3;
     spacing:          8px;
-    padding:          2px;
+    padding:          0px;
     scrollbar:        false;
-    dynamic:          false;
+    dynamic:          true;
+    fixed-height:     false;
+    cycle:            false;
 }
 
 element {
     background-color: @surface;
-    border-radius:    12px;
-    padding:          4px;
+    border-radius:    10px;
+    padding:          0px;
     orientation:      vertical;
-    spacing:          0px;
     cursor:           pointer;
+    /* Fixed tile height so rows are always 260px regardless of lines     */
+    height:           260px;
 }
 
 element normal.normal,
@@ -75,22 +59,31 @@ element alternate.normal {
 }
 
 element selected.normal {
-    background-color: rgba(49, 50, 68, 0.95);
-    border:           2px;
+    background-color: @surface;
+    border:           3px;
     border-color:     @accent;
+}
+
+element normal.active,
+element alternate.active {
+    border:           3px;
+    border-color:     #a6e3a1;
+}
+
+element selected.active {
+    background-color: @surface;
+    border:           3px;
+    border-color:     #a6e3a1;
 }
 
 element-icon {
     background-color: transparent;
-    size:             200px;
+    size:             260px;
     border-radius:    10px;
     cursor:           inherit;
+    expand:           true;
 }
 
-/* Hide text labels — images speak for themselves */
 element-text {
-    background-color: transparent;
-    text-color:       rgba(205, 214, 244, 0);
-    font:             "JetBrainsMono Nerd Font 1";
-    cursor:           inherit;
+    enabled:          false;
 }
