@@ -1,25 +1,26 @@
 #!/bin/bash
-# battery-alert.sh - Monitor battery and send dunst notifications
+# battery-alert.sh - Monitor battery and send swaync notifications
 # Thresholds: 20% warning, 10% urgent, 5% critical (repeating), 3% auto-suspend
 
 BATTERY="/sys/class/power_supply/BAT0"
 CAPACITY_FILE="$BATTERY/capacity"
 STATUS_FILE="$BATTERY/status"
 
+# Fixed replace-ID so swaync replaces the previous battery notification
+# instead of stacking them. Any integer works; just needs to be consistent.
+BATTERY_NOTIFY_ID=9901
+
 # Track which notifications have already been sent (reset when plugged in)
 NOTIFIED_20=false
 NOTIFIED_10=false
 NOTIFIED_5=false
-
-# Catppuccin Macchiato urgency colors are handled by dunst config
-# Using dunst urgency levels: normal, critical
 
 send_notification() {
     local urgency="$1"
     local title="$2"
     local message="$3"
     local icon="$4"
-    dunstify -u "$urgency" -t 0 -i "$icon" -h string:x-dunst-stack-tag:battery "$title" "$message"
+    notify-send -u "$urgency" -r "$BATTERY_NOTIFY_ID" -i "$icon" "$title" "$message"
 }
 
 while true; do
@@ -31,8 +32,14 @@ while true; do
         NOTIFIED_20=false
         NOTIFIED_10=false
         NOTIFIED_5=false
-        # Dismiss any existing battery notification
-        dunstify -C 9999 2>/dev/null || true
+        # Dismiss the battery notification if it's still showing
+        # notify-send with replace-id and empty body closes it on some implementations;
+        # gdbus is the reliable way to close a specific notification by id.
+        gdbus call --session \
+            --dest org.freedesktop.Notifications \
+            --object-path /org/freedesktop/Notifications \
+            --method org.freedesktop.Notifications.CloseNotification \
+            "$BATTERY_NOTIFY_ID" 2>/dev/null || true
         sleep 30
         continue
     fi

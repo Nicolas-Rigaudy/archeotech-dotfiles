@@ -135,6 +135,40 @@ deploy_with_stow() {
     fi
 }
 
+install_local_scripts() {
+    print_header "Installing Local Scripts"
+
+    mkdir -p "$HOME/.local/bin"
+
+    # Scripts managed in dotfiles repo but need to be in PATH
+    LOCAL_SCRIPTS=(
+        "wallpaper-set.sh"
+        "wallpaper-picker.sh"
+        "battery-alert.sh"
+    )
+
+    for script in "${LOCAL_SCRIPTS[@]}"; do
+        ln -sf "$DOTFILES_DIR/scripts/$script" "$HOME/.local/bin/$script"
+        print_success "Linked: $script -> ~/.local/bin/$script"
+    done
+}
+
+enable_user_services() {
+    print_header "Enabling Systemd User Services"
+
+    # battery-alert.service lives in a pre-existing systemd dir stow can't manage
+    ln -sf "$DOTFILES_DIR/config/.config/systemd/user/battery-alert.service" \
+        "$HOME/.config/systemd/user/battery-alert.service"
+
+    systemctl --user daemon-reload
+
+    if systemctl --user enable --now battery-alert.service 2>/dev/null; then
+        print_success "battery-alert.service enabled and started"
+    else
+        print_warning "Could not enable battery-alert.service (may need graphical session)"
+    fi
+}
+
 verify_deployment() {
     print_header "Verifying Deployment"
 
@@ -218,6 +252,8 @@ deploy_with_stow "$DRY_RUN"
 
 if [[ -z "$DRY_RUN" ]]; then
     verify_deployment
+    install_local_scripts
+    enable_user_services
     show_usage
 fi
 

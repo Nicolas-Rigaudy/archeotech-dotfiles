@@ -14,6 +14,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 - [Layout System](#layout-system)
 - [Monitor Management](#monitor-management)
 - [Screenshots & Media](#screenshots--media)
+- [Wallpaper & Logo System](#wallpaper--logo-system)
 - [System Controls](#system-controls)
 - [Mouse Bindings](#mouse-bindings)
 
@@ -31,8 +32,8 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + D` | Open file manager (thunar) | GUI file browser |
 | `Super + G` | Open Lazygit | Git TUI with Catppuccin theme |
 | `Super + Shift + N` | Open Navi | Interactive command cheatsheets |
-| `Super + W` | Open wallpaper picker (rofi grid) | Thumbnail grid — select wallpaper or toggle logo |
-| `Super + Shift + W` | Toggle Arch logo overlay | On/Off on current wallpaper |
+| `Super + W` | Open wallpaper picker (rofi grid) | Thumbnail grid — select wallpaper or toggle logo (arch / rebel / imperial) |
+| `Super + Shift + W` | Toggle logo overlay | Cycles last active logo on/off on current wallpaper |
 
 ---
 
@@ -150,6 +151,32 @@ Screenshots are saved to `~/Pictures/Screenshots/` with timestamp format: `YYYYM
 
 ---
 
+## Wallpaper & Logo System
+
+| Keybind | Action | Notes |
+|---------|--------|-------|
+| `Super + W` | Open wallpaper picker | Rofi thumbnail grid — logos on row 1, wallpapers below |
+| `Super + Shift + W` | Toggle logo overlay | Cycles last active logo on/off; no logo → restores last used |
+
+### Logo overlay commands (via `wallpaper-set.sh`)
+```bash
+# Activate a specific logo (arch | rebel | imperial)
+wallpaper-set.sh --toggle-logo arch
+wallpaper-set.sh --toggle-logo rebel
+wallpaper-set.sh --toggle-logo imperial
+
+# Toggle last active logo on/off
+wallpaper-set.sh --toggle-logo
+
+# Check current state
+wallpaper-set.sh --status
+```
+
+Logo color is auto-extracted from the wallpaper (dark wallpaper → bright logo, light wallpaper → dark logo).
+Portrait monitors (e.g. DP-3) get their own correctly-sized composite automatically.
+
+---
+
 ## System Controls
 
 ### Screen & Session
@@ -158,6 +185,7 @@ Screenshots are saved to `~/Pictures/Screenshots/` with timestamp format: `YYYYM
 |---------|--------|-------|
 | `Super + L` | Lock screen | Swaylock (MangoWC uses swaylock, not hyprlock) |
 | `Super + K` | Show keybinds | Display this keybind reference |
+| `Super + ;` | Toggle notification panel | Open/close swaync notification center |
 | `Super + Shift + R` | Reload config | Reload MangoWC configuration |
 | `Alt + Shift` | Toggle keyboard layout | US ↔ FR (QWERTY ↔ AZERTY) |
 
@@ -272,5 +300,5 @@ Certain windows automatically float:
 
 ---
 
-**Last Updated:** 2026-02-19
+**Last Updated:** 2026-04-09
 **For:** archeotech-dotfiles (MangoWC configuration)

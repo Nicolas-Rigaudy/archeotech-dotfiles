@@ -1,0 +1,434 @@
+/* =============================================================================
+   SwayNC — Catppuccin Macchiato
+   Matches waybar glass pill aesthetic
+   ============================================================================= */
+
+/* ── Palette ─────────────────────────────────────────────────────────────── */
+@define-color rosewater #f4dbd6;
+@define-color flamingo  #f0c6c6;
+@define-color pink      #f5bde6;
+@define-color mauve     #c6a0f6;
+@define-color red       #ed8796;
+@define-color maroon    #ee99a0;
+@define-color peach     #f5a97f;
+@define-color yellow    #eed49f;
+@define-color green     #a6da95;
+@define-color teal      #8bd5ca;
+@define-color sky       #91d7e3;
+@define-color sapphire  #7dc4e4;
+@define-color blue      #8aadf4;
+@define-color lavender  #b7bdf8;
+@define-color text      #cad3f5;
+@define-color subtext1  #b8c0e0;
+@define-color subtext0  #a5adcb;
+@define-color overlay2  #939ab7;
+@define-color overlay1  #8087a2;
+@define-color overlay0  #6e738d;
+@define-color surface2  #5b6078;
+@define-color surface1  #494d64;
+@define-color surface0  #363a4f;
+@define-color base      #24273a;
+@define-color mantle    #1e2030;
+@define-color crust     #181926;
+
+/* ── Window roots — MUST be transparent to avoid blur bleed rectangle ─────── */
+controlcenter,
+notificationwindow,
+blankwindow {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* ── Notification popup ───────────────────────────────────────────────────── */
+.notification-row {
+  outline: none;
+  margin: 0 0 6px 0;
+}
+
+.notification-row:focus,
+.notification-row:hover {
+  background: transparent;
+}
+
+.notification {
+  background-color: alpha(@crust, 0.88);
+  border: 1px solid alpha(@surface1, 0.35);
+  border-radius: 14px;
+  padding: 14px;
+  color: @text;
+  font-family: "FiraCode Nerd Font", "Noto Sans";
+  font-size: 13px;
+  box-shadow: 0 4px 20px alpha(@crust, 0.5);
+}
+
+.notification.critical {
+  border-color: alpha(@red, 0.6);
+  box-shadow: 0 4px 20px alpha(@red, 0.2);
+}
+
+.notification-content {
+  padding: 2px 0;
+}
+
+.notification-default-action {
+  border-radius: 14px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.notification-default-action:hover {
+  background: transparent;
+}
+
+.notification-action {
+  padding: 4px 12px;
+  margin: 6px 2px 0;
+  background: alpha(@surface0, 0.5);
+  border: 1px solid alpha(@surface1, 0.3);
+  border-radius: 8px;
+  color: @subtext0;
+  font-size: 11px;
+  transition: all 0.15s ease;
+}
+
+.notification-action:hover {
+  background: alpha(@surface1, 0.7);
+  color: @text;
+}
+
+.close-button {
+  background: transparent;
+  color: @overlay0;
+  border-radius: 100%;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-width: 22px;
+  min-height: 22px;
+  margin: 4px 4px 0 0;
+  transition: all 0.15s ease;
+}
+
+.close-button:hover {
+  background: alpha(@red, 0.25);
+  color: @red;
+}
+
+.summary {
+  font-size: 13px;
+  font-weight: bold;
+  color: @text;
+}
+
+.body {
+  font-size: 12px;
+  color: @subtext0;
+  padding-top: 2px;
+}
+
+.app-name {
+  font-size: 11px;
+  color: @overlay1;
+}
+
+.time {
+  font-size: 11px;
+  color: @overlay0;
+}
+
+.image {
+  border-radius: 8px;
+  margin-right: 4px;
+}
+
+/* ── Control Center panel ─────────────────────────────────────────────────── */
+.control-center {
+  background-color: alpha(@crust, 0.88);
+  border: 1px solid alpha(@surface1, 0.25);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 8px 40px alpha(@crust, 0.7);
+  color: @text;
+  font-family: "FiraCode Nerd Font", "Noto Sans";
+}
+
+.control-center-list {
+  background: transparent;
+}
+
+.control-center-list-placeholder {
+  color: @overlay0;
+  font-size: 13px;
+  padding: 24px 0;
+}
+
+/* Notification rows inside control center — slightly inset look */
+.control-center .notification-row {
+  margin: 0 0 4px 0;
+}
+
+.control-center .notification-row .notification {
+  background-color: alpha(@mantle, 0.7);
+  border-color: alpha(@surface0, 0.5);
+  border-radius: 12px;
+  box-shadow: none;
+  font-size: 12px;
+  padding: 10px 12px;
+}
+
+.control-center .notification-row .notification:hover {
+  background-color: alpha(@surface0, 0.5);
+}
+
+/* ── Widgets ──────────────────────────────────────────────────────────────── */
+
+/* Title row */
+.widget-title {
+  color: @subtext0;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.8px;
+  padding: 0 2px 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid alpha(@surface1, 0.25);
+}
+
+.widget-title > label {
+  color: @text;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0;
+}
+
+.widget-title > button {
+  background: alpha(@surface0, 0.5);
+  border: 1px solid alpha(@surface1, 0.3);
+  border-radius: 8px;
+  color: @subtext0;
+  font-size: 11px;
+  padding: 3px 10px;
+  transition: all 0.15s ease;
+}
+
+.widget-title > button:hover {
+  background: alpha(@red, 0.2);
+  color: @red;
+  border-color: alpha(@red, 0.35);
+}
+
+/* DND row */
+.widget-dnd {
+  padding: 6px 2px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid alpha(@surface1, 0.2);
+  font-size: 13px;
+  color: @subtext0;
+}
+
+.widget-dnd > switch {
+  background: alpha(@surface1, 0.4);
+  border-radius: 100px;
+  border: 1px solid alpha(@surface2, 0.3);
+  min-width: 40px;
+  min-height: 22px;
+}
+
+.widget-dnd > switch:checked {
+  background: alpha(@mauve, 0.7);
+  border-color: alpha(@mauve, 0.5);
+}
+
+.widget-dnd > switch slider {
+  background: @text;
+  border-radius: 100%;
+  min-width: 16px;
+  min-height: 16px;
+  margin: 2px;
+  box-shadow: 0 1px 4px alpha(@crust, 0.5);
+}
+
+/* Buttons grid */
+.widget-buttons-grid {
+  padding: 8px 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid alpha(@surface1, 0.2);
+}
+
+.widget-buttons-grid > flowbox > flowboxchild {
+  background: transparent;
+  border: none;
+  padding: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild:focus {
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  border: none;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button {
+  background: alpha(@surface0, 0.5);
+  border: 1px solid alpha(@surface1, 0.25);
+  border-radius: 14px;
+  color: @subtext0;
+  font-size: 20px;
+  min-width: 74px;
+  min-height: 56px;
+  margin: 3px;
+  transition: all 0.2s ease;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+  background: alpha(@surface1, 0.6);
+  color: @text;
+  border-color: alpha(@surface2, 0.4);
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button.active {
+  background: alpha(@mauve, 0.2);
+  border-color: alpha(@mauve, 0.5);
+  color: @mauve;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button.active:hover {
+  background: alpha(@mauve, 0.3);
+}
+
+/* Volume slider */
+.widget-volume {
+  padding: 4px 2px 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid alpha(@surface1, 0.2);
+}
+
+.widget-volume > box > button {
+  background: transparent;
+  border: none;
+  color: @mauve;
+  font-size: 16px;
+  min-width: 28px;
+  padding: 0;
+}
+
+/* Backlight slider */
+.widget-backlight {
+  padding: 4px 2px 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid alpha(@surface1, 0.2);
+}
+
+.widget-backlight > box > button {
+  background: transparent;
+  border: none;
+  color: @yellow;
+  font-size: 16px;
+  min-width: 28px;
+  padding: 0;
+}
+
+/* Shared slider track */
+.widget-volume scale,
+.widget-backlight scale {
+  margin: 0 4px;
+}
+
+.widget-volume scale trough,
+.widget-backlight scale trough {
+  background: alpha(@surface1, 0.4);
+  border-radius: 6px;
+  min-height: 5px;
+}
+
+.widget-volume scale trough highlight,
+.widget-backlight scale trough highlight {
+  border-radius: 6px;
+}
+
+.widget-volume scale highlight {
+  background: @mauve;
+  border-radius: 6px;
+}
+
+.widget-backlight scale highlight {
+  background: @yellow;
+  border-radius: 6px;
+}
+
+.widget-volume scale slider,
+.widget-backlight scale slider {
+  background: @text;
+  border-radius: 100%;
+  min-width: 14px;
+  min-height: 14px;
+  box-shadow: 0 1px 5px alpha(@crust, 0.6);
+  border: none;
+}
+
+/* MPRIS */
+.widget-mpris {
+  padding: 8px 2px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid alpha(@surface1, 0.2);
+}
+
+.widget-mpris-player {
+  background: alpha(@mantle, 0.6);
+  border: 1px solid alpha(@surface0, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.widget-mpris-album-art {
+  border-radius: 8px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.widget-mpris-title {
+  font-weight: bold;
+  font-size: 13px;
+  color: @text;
+}
+
+.widget-mpris-subtitle {
+  font-size: 11px;
+  color: @subtext0;
+}
+
+/* ── Progress bar ─────────────────────────────────────────────────────────── */
+progressbar,
+progress,
+trough {
+  border-radius: 6px;
+}
+
+progressbar trough {
+  background: alpha(@surface1, 0.4);
+  min-height: 5px;
+}
+
+progressbar progress {
+  background: @blue;
+  border-radius: 6px;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+scrollbar {
+  background: transparent;
+  min-width: 4px;
+}
+
+scrollbar slider {
+  background: alpha(@surface2, 0.4);
+  border-radius: 6px;
+  min-width: 4px;
+}
+
+scrollbar slider:hover {
+  background: alpha(@overlay0, 0.6);
+}

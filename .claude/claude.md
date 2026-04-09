@@ -41,7 +41,10 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 **Home Setup:**
 - Laptop screen only, OR
 - One 27" 2K monitor, OR
-- One ultrawide 1080p monitor
+- One ultrawide 1080p monitor, OR
+- TV via HDMI (any unknown display)
+
+**Monitor fallback rules (MangoWC):** Named rules for work setup; wildcard `HDMI.*` and `DP-.*` rules catch any other display (landscape, preferred native res, positioned at x:1920,y:60)
 
 ### Dual-Boot Configuration
 - **Primary OS:** Arch Linux (232GB partition on nvme0n1p4)
@@ -74,7 +77,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 | **Status Bar** | Waybar 0.14.0 | CSS+JSON config, huge community, themeable |
 | **App Launcher** | rofi-wayland | Most features, extensible |
 | **Notifications** | dunst | Lightweight, themeable, simple config |
-| **Wallpaper** | swww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay |
+| **Wallpaper** | awww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay (note: package was renamed from swww → awww) |
 | **Wallpaper Picker** | rofi (thumbnail grid) | scripts/wallpaper-picker.sh — 3-col grid, logos row 1, wallpapers below, vertical scroll |
 | **Lock Screen** | swaylock (MangoWC) / hyprlock (Hyprland) | Compositor-specific lock screens |
 | **Idle Manager** | swayidle (MangoWC) / hypridle (Hyprland) | Pairs with lock screens |
@@ -169,6 +172,151 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 
 ---
 
+## 🎯 NEXT MAJOR PROJECT: Unified Control System
+
+### Vision
+
+Turn this setup into something that makes Mac/Windows users jealous — a cohesive, beautiful, instantly accessible control layer over the whole system. Everything reachable in 1–2 keystrokes. Everything looks like it belongs together. Easy to extend.
+
+The two pillars:
+1. **SwayNC** ✅ DONE — replaces dunst. Notification history panel with DND toggle. Keybind to open/close.
+2. **Rofi Settings Hub** — a single keybind opens a beautiful rofi menu giving access to every settings area: display profiles, wallpaper, appearance, audio, power, system tools.
+
+Everything themed Catppuccin Macchiato, cohesive with the existing waybar/rofi style.
+
+---
+
+### Phase 1 — SwayNC ✅ COMPLETE
+
+**What was built:**
+- swaync installed, replaces dunst entirely
+- Catppuccin Macchiato CSS — glass panel matching waybar aesthetic
+- Notification history + DND toggle only (quick-toggle buttons were tried and abandoned — swaync's toggle buttons don't properly reflect real state, and waybar already covers volume/network/bluetooth)
+- Waybar bell icon (󰂜) showing unread count, click to open panel, right-click to toggle DND
+- `Super+;` keybind to toggle panel
+- battery-alert.sh updated to use `notify-send` instead of `dunstify`
+- `blur_layer=0` and `layer_shadows=0` in mango config to prevent compositor blur/shadow bleeding onto the panel
+
+**Lessons learned:**
+- swaync's `buttons-grid` toggle type does NOT reliably reflect real system state — `update-command` is not called on panel open, only on a timer. Don't use it for stateful toggles.
+- MangoWC `layerrule=noblur/noshadow` for layer-shell surfaces didn't work — had to disable `blur_layer` and `layer_shadows` globally instead
+- `mmsg reload` does NOT reliably reapply `monitorrule` — always log out/in for monitor config changes
+- swww was renamed to awww after `pacman -Syu` — updated all references in mango config and wallpaper-set.sh
+- swaync has no click-outside-to-close — Escape key closes it
+
+**Config files:**
+- `config/.config/swaync/config.json` — widgets: title, dnd, notifications only
+- `config/.config/swaync/style.css` — Catppuccin Macchiato glass theme
+- `config/.config/waybar/config-mango` — added `custom/notifications` module
+- `config/.config/waybar/style-mango.css` — bell icon styles
+- `config/.config/mango/config.conf` — swapped dunst→swaync in autostart, added Super+; keybind, blur_layer=0, layer_shadows=0, awww-daemon
+
+---
+
+### Phase 2 — Rofi Settings Hub
+
+**Goal:** One keybind (`Super+,` or `Super+S`) opens a rofi menu that is the "Settings" of this system. Every setting reachable in max 2 clicks.
+
+**Menu structure (planned):**
+
+```
+⚙  Settings
+├── 🖥  Display          → opens wdisplays (drag-and-drop monitor layout)
+├── 🎨  Appearance       → opens nwg-look (GTK theme, icons, cursor, fonts)
+├── 🔊  Audio            → opens pavucontrol
+├── 📡  Network          → opens nm-connection-editor
+├── 🎵  Media            → opens playerctl / spotify
+├── 🖼  Wallpaper        → runs wallpaper-picker.sh (existing rofi picker)
+├── ⚡  Power            → opens power profile submenu (balanced/performance/saver)
+├── 💾  Disk             → opens gnome-disk-utility
+├── 🔵  Bluetooth        → opens blueman-manager
+└── 🔒  Lock             → runs swaylock
+```
+
+**Design:**
+- Same glass Catppuccin Macchiato style as the wallpaper picker
+- Icons via Papirus-Dark (already installed)
+- Each entry either: launches a GUI app, calls a script, or opens a sub-menu
+- Submenus for things like Power (with profile choices) and Display (profiles vs wdisplays)
+
+**Implementation steps:**
+1. `paru -S wdisplays nwg-look wlsunset mission-center gnome-disk-utility`
+2. Write `scripts/settings-hub.sh` — rofi dmenu script with icons, each line maps to a command
+3. Write `scripts/assets/settings-hub.rasi` — rofi theme matching wallpaper-picker glass style
+4. Wire `Super+,` keybind in mango config
+5. Add "Settings" button to waybar (gear icon, right side)
+
+---
+
+### Phase 3 — Display Profiles (kanshi)
+
+**Goal:** Never think about monitors again. Plug in any screen, it just works correctly.
+
+**Profiles planned:**
+- `desk` — 3 monitors: eDP-1 (laptop left), HDMI-A-1 (landscape middle), DP-3 (portrait right, Iiyama)
+- `home` — 2 monitors: eDP-1 + any single external in landscape
+- `solo` — laptop only
+- `present` — eDP-1 + any external, both mirrored or extended landscape (for meetings/TV)
+
+**Key insight from earlier work:** Need to identify Iiyama by EDID make/model, not port name. Must verify exact strings MangoWC uses via `mmsg` with a screen connected.
+
+**Implementation steps:**
+1. `paru -S kanshi`
+2. Connect each monitor setup, run `mmsg -O` to confirm output names
+3. Write `config/.config/kanshi/config` with named profiles
+4. Add kanshi to mango autostart
+5. Add "Display" entry in settings hub that offers: [Open wdisplays] [Desk profile] [Home profile] [Present profile] [Solo]
+6. Keybind `Super+F1/F2/F3` for instant profile switching as a power-user shortcut
+
+---
+
+### Phase 4 — Polish & Cohesion
+
+**Goal:** Everything feels like one system, not a collection of scripts.
+
+- [ ] Waybar bell icon showing swaync unread count
+- [ ] Waybar gear icon opening settings hub
+- [ ] Consistent animation timing across rofi menus, swaync panel, waybar
+- [ ] All rofi menus use same `.rasi` base theme (one source of truth for colors/radius/blur)
+- [ ] swaync CSS matches waybar glass pill aesthetic exactly
+- [ ] Keyboard shortcuts documented in a cheatsheet accessible via keybind
+- [ ] `Super+?` → rofi keybinds cheatsheet
+
+---
+
+### Keybind Plan (new additions)
+
+| Keybind | Action |
+|---|---|
+| `Super+;` | Toggle swaync notification panel ✅ |
+| `Super+,` | Open settings hub (rofi) — TODO |
+| `Super+F1` | Display profile: desk (3 monitors) — TODO |
+| `Super+F2` | Display profile: present (laptop + external landscape) — TODO |
+| `Super+F3` | Display profile: solo (laptop only) — TODO |
+| `Super+?` | Keybinds cheatsheet — TODO |
+
+---
+
+### Packages to Install
+
+```bash
+paru -S swaync wdisplays kanshi nwg-look wlsunset mission-center gnome-disk-utility
+```
+
+---
+
+### Design Rules for This System
+
+1. **One color palette** — Catppuccin Macchiato everywhere. No exceptions.
+2. **One rasi base** — all rofi menus import a shared `base.rasi` for colors/radius/font
+3. **Glass aesthetic** — blur + transparency consistent with waybar pill style
+4. **Icons everywhere** — Papirus-Dark icons in all menus, no text-only entries
+5. **Max 2 keystrokes** to reach any setting from anywhere
+6. **No fake toggles** — swaync button-grid toggles don't reflect real state reliably; use launcher buttons that open the right tool instead
+7. **Nothing hardcoded** — colors in one place, easy to switch flavor (Mocha/Macchiato)
+
+---
+
 ## Current Implementation Status
 
 ### ✅ COMPLETED (100%)
@@ -192,11 +340,11 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Animations, blur, shadows, rounded corners configured
 - [x] Waybar with clickable modules (works on both compositors) - macOS-style floating glass pill bar
 - [x] Rofi launcher styled
-- [x] Dunst notifications configured (theming not yet applied)
+- [x] SwayNC notifications — replaces dunst, Catppuccin glass panel, DND toggle, notification history, waybar bell icon
 - [x] Swww wallpaper daemon with wallpaper collection in wallpapers/
 - [x] Rofi wallpaper picker with thumbnail grid (Super+W) - 3-col glass grid, logos on row 1, vertical scroll, Catppuccin Macchiato themed
 - [x] Waypaper installed as backup picker (configured with custom_command = wallpaper-set.sh)
-- [x] Multi-logo overlay system (wallpaper-set.sh) - Arch Linux, Rebel Alliance, Imperial Aquila logos; adaptive color from wallpaper, toggle Super+Shift+W, remembers last active logo
+- [x] Multi-logo overlay system (wallpaper-set.sh) - Arch Linux, Rebel Alliance, Imperial Aquila logos; adaptive color from wallpaper, toggle Super+Shift+W, remembers last active logo; portrait screen support (DP-3), area-normalized sizing, shape-hugging drop shadow, SVG cropping for imperial
 - [x] Window rules for floating windows (waypaper, pavucontrol, bitwarden, file dialogs, calculator, browser popups)
 - [x] swaylock (MangoWC) and hyprlock (Hyprland) configured
 - [x] swayidle (MangoWC) and hypridle (Hyprland) auto-lock
@@ -243,7 +391,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Waybar styled with Catppuccin
 - [x] Rofi dark theme
 - [x] SDDM login screen (Catppuccin Macchiato theme applied)
-- [ ] Dunst notifications (needs Catppuccin theme application)
+- [x] Notifications themed — replaced dunst with swaync, Catppuccin Macchiato glass CSS
 - [x] GRUB Catppuccin Macchiato boot menu
 
 #### Utilities & Tools
@@ -260,7 +408,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] PDF viewer (zathura)
 - [x] Archive tools (file-roller, unzip, unrar, p7zip)
 - [x] Snapshot management (snapper + snap-pac + grub-btrfs + snapper-gui)
-- [x] Battery alert script (dunst notifications at 20%/10%/5%, auto-suspend at 3%)
+- [x] Battery alert script (dunst notifications at 20%/10%/5%, auto-suspend at 3%) - running as systemd user service (battery-alert.service)
 
 ### ⏸️ NOT YET DONE
 
@@ -269,9 +417,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [ ] Mdcat (markdown preview in terminal)
 - [ ] Espanso (text expander/keyword replacer)
 - [ ] Mission Center (modern system monitoring GUI)
-- [x] Dunst notification script - low battery (scripts/battery-alert.sh)
-- [ ] Dunst notification scripts (network status, volume/brightness indicators)
-- [ ] Apply Catppuccin theme to Dunst notifications
+- [ ] SwayNC: volume/brightness OSD notifications (show a popup when media keys pressed)
 
 #### Development Tools & Learning (Medium Priority)
 - [ ] Learn Vim motions (vim-be-good game, practice with VSCode extension)
@@ -326,8 +472,8 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
   - [ ] Floating window exceptions (calculator, file pickers)
   - [ ] Per-app workspace assignments
 - [ ] Multi-monitor hotplug scripts
-  - [ ] Auto-detect dock/undock
-  - [ ] Reconfigure workspaces on monitor change
+  - [x] Fallback monitorrule for unknown displays (TV, home monitors) — landscape, preferred res, x:1920
+  - [ ] Auto-detect dock/undock (workspace reconfiguration)
   - [ ] Workspace migration scripts
 
 #### Theme System Expansion (Low Priority)
@@ -338,13 +484,13 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [ ] Smooth theme transition animations
 
 #### Dotfiles & Reproducibility (High Priority)
-- [ ] Git repository structure
-- [ ] Install script (fresh Arch to working system in <1 hour)
+- [x] Git repository structure (stow-based, fully tracked)
+- [x] Install script (scripts/install.sh — stow deploy + local scripts + systemd services)
 - [ ] Backup script (automated config snapshots)
 - [ ] Restore script (deploy configs to new machine)
-- [ ] Documentation
-  - [ ] Full installation guide
-  - [ ] Keybindings reference
+- [x] Documentation
+  - [x] Full installation guide (docs/INSTALLATION.md)
+  - [x] Keybindings reference (docs/KEYBINDS-MANGO.md, docs/KEYBINDS.md)
   - [ ] Troubleshooting guide
   - [ ] Package list with explanations
 
@@ -402,6 +548,8 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │       ├── rofi/               # Rofi configs (MASTER COPY)
 │       ├── fish/               # Fish shell configs (MASTER COPY)
 │       ├── mango/              # MangoWC configs (MASTER COPY)
+│       ├── systemd/user/       # Systemd user services (battery-alert.service)
+│       ├── swaync/             # Notification center (config.json + style.css)
 │       ├── waypaper/           # Waypaper config (backend=custom, points to wallpaper-set.sh)
 │       ├── starship.toml       # Starship prompt config
 │       ├── btop/               # System monitor config
@@ -421,6 +569,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │   ├── setup-snapper.sh        # Automated Snapper setup
 │   ├── wallpaper-set.sh        # Wallpaper setter with Arch logo overlay system
 │   ├── wallpaper-picker.sh     # Rofi thumbnail grid wallpaper picker
+│   ├── battery-alert.sh        # Battery monitor daemon (dunst alerts at 20/10/5%, suspend at 3%)
 │   └── assets/
 │       ├── arch-logo.svg       # Arch crystal logo (LOGO_COLOR/LOGO_OPACITY placeholders)
 │       ├── rebel-logo.svg      # Rebel Alliance logo (LOGO_COLOR/LOGO_OPACITY placeholders)
@@ -452,9 +601,13 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 ~/.config/waypaper/ -> ../Projects/archeotech-dotfiles/config/.config/waypaper/
 ... (all config dirs are symlinks)
 
-# Script symlinks (manual, not via stow):
+# Script symlinks (manual, managed by install.sh):
 ~/.local/bin/wallpaper-set.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-set.sh
 ~/.local/bin/wallpaper-picker.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-picker.sh
+~/.local/bin/battery-alert.sh -> ~/Projects/archeotech-dotfiles/scripts/battery-alert.sh
+
+# Systemd service (manual symlink — stow can't merge into existing systemd dir):
+~/.config/systemd/user/battery-alert.service -> ~/Projects/archeotech-dotfiles/config/.config/systemd/user/battery-alert.service
 ```
 
 **Adding New Config Directories:**
@@ -1177,10 +1330,10 @@ By the end of this project, the following should be true:
 
 ---
 
-**Last Updated:** 2026-02-19
+**Last Updated:** 2026-03-11
 **System Status:** ✅ Fully Functional
 **Daily Driver Ready:** Yes (MangoWC primary, Hyprland backup)
 **Dotfiles Repository:** ✅ Complete with Stow
 **Primary Compositor:** MangoWC (scrolling layouts) with Hyprland as fallback
-**Recent Additions:** Multi-logo overlay system (Arch Linux, Rebel Alliance, Imperial Aquila — adaptive color from wallpaper, toggle Super+Shift+W), rofi wallpaper picker (3-col grid, logos row 1, vertical scroll, Super+W), waypaper as backup picker
+**Recent Additions:** Wallpaper/logo overlay system improvements — portrait screen support (separate composed-portrait.png routed to DP-3 via swww --outputs), awk-based accent color extraction (saturation+contrast scoring), area-normalized logo sizing (sqrt(w×h)=render_px gives equal visual weight across all aspect ratios), shape-hugging drop shadow (blur alpha first then colorize), SVG viewBox crop for imperial aquila (0 620 2000 780), inner margin to prevent shadow edge clipping, rofi picker tile margins (60% fit), keybinds helper updated with wallpaper section
 **Documentation:** See docs/ folder and .claude/ folder for complete references

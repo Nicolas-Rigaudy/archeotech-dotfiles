@@ -76,6 +76,11 @@ if [ "$COMPOSITOR" = "hyprland" ]; then
     add_bind "$SUPER + $SHIFT + \`" "Move to scratchpad"
     echo "" >> "$TEMP_RAW"
 
+    echo "━━━━━━━━━━━━━━━━━━━━━━ 󰋫 WALLPAPER ━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
+    add_bind "$SUPER + W" "Wallpaper picker (rofi grid)"
+    add_bind "$SUPER + $SHIFT + W" "Toggle logo overlay on/off"
+    echo "" >> "$TEMP_RAW"
+
     echo "━━━━━━━━━━━━━━ 󰹑 SCREENSHOTS & CLIPBOARD ━━━━━━━━━━━━━━" >> "$TEMP_RAW"
     add_bind "$SUPER + S" "Region screenshot"
     add_bind "$SUPER + P" "Full screenshot"
@@ -158,6 +163,11 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + =" "Increase gaps"
     add_bind "$SUPER + -" "Decrease gaps"
     add_bind "$SUPER + 0" "Toggle gaps"
+    echo "" >> "$TEMP_RAW"
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━ 󰋫 WALLPAPER ━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
+    add_bind "$SUPER + W" "Wallpaper picker (rofi grid)"
+    add_bind "$SUPER + $SHIFT + W" "Toggle logo overlay on/off"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━ 󰹑 SCREENSHOTS & CLIPBOARD ━━━━━━━━━━━━━━" >> "$TEMP_RAW"

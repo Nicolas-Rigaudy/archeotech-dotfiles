@@ -145,6 +145,8 @@ sleep 1
 - **[~/.config/waybar/style-mango.css](../config/.config/waybar/style-mango.css)** - Waybar styling
 - **[~/.config/swaylock/config](../config/.config/swaylock/config)** - Lock screen
 - **[~/.config/swayidle/config.sh](../config/.config/swayidle/config.sh)** - Idle management
+- **[~/.config/swaync/config.json](../config/.config/swaync/config.json)** - Notification center config
+- **[~/.config/swaync/style.css](../config/.config/swaync/style.css)** - Notification center Catppuccin theme
 
 ### Keybinds
 
@@ -157,6 +159,7 @@ Quick reference:
 - `Super + Space` - Switch to scroller layout
 - `Super + L` - Lock screen
 - `Super + K` - Show keybinds
+- `Super + ;` - Toggle swaync notification panel
 
 ### Switching Between Layouts
 
@@ -265,6 +268,54 @@ cat ~/.config/mango/config.conf
 # Try starting MangoWC from terminal to see errors
 mangowc
 ```
+
+---
+
+## Notifications — Swaync
+
+dunst has been replaced by swaync as the notification daemon. Key details:
+
+- **Autostart:** `exec-once=swaync` in mango config (replaces `dunst`)
+- **Toggle panel:** `Super + ;` or click the waybar bell icon (`󰂜`)
+- **DND:** Right-click the waybar bell, or toggle inside the panel
+- **Compositor:** `blur_layer=0` and `layer_shadows=0` are set globally in mango config — this prevents the compositor blurring/shadowing the swaync layer-shell panel (MangoWC `layerrule=noblur` for layer surfaces doesn't work reliably)
+
+**Notification scripts** must use `notify-send -r <id>` for deduplication — dunst's `-h string:x-dunst-stack-tag` hints are silently ignored by swaync. See [TOOLS.md](TOOLS.md) for the compatibility table.
+
+**What swaync's toggle buttons can't do:** The `buttons-grid` widget type in swaync does not reliably reflect real system state — `update-command` is only called on a timer, not when the panel opens. Don't use it for stateful toggles (volume, network, bluetooth). Use waybar modules for those instead.
+
+---
+
+## Wallpaper System — awww
+
+> **Note:** The `swww` package was renamed to `awww` after a system update (`pacman -Syu`). All references in configs and scripts use `awww`/`awww-daemon` now.
+
+The wallpaper system supports per-output routing — landscape images go to landscape monitors, portrait-adapted images go to portrait monitors (e.g. DP-3 rotated 90°):
+
+- `wallpaper-set.sh` detects portrait outputs via `awww query` and builds a portrait composite automatically
+- For wallpapers without a logo, a blurred-backdrop version is generated for portrait outputs so the image doesn't just zoom in
+- Logo sizing uses area normalization (`sqrt(w*h) = target_px`) so wide and tall logos appear the same visual weight
+
+---
+
+## Monitor Configuration
+
+### Named Rules
+
+MangoWC uses `monitorrule` with PCRE2 regex name matching. The first matching rule wins:
+
+```
+# Work desk (3 monitors)
+monitorrule=name:eDP-1,width:1920,height:1200,refresh:60,x:0,y:0,scale:1,rr:0
+monitorrule=name:HDMI-A-1,width:1920,height:1080,refresh:60,x:1920,y:60,scale:1,rr:0
+monitorrule=name:DP-3,width:1920,height:1080,refresh:60,x:3840,y:0,scale:1,rr:3
+
+# Fallback: any other display (TV, home monitor, meeting room)
+monitorrule=name:HDMI.*,x:1920,y:60,scale:1,rr:0
+monitorrule=name:DP-.*,x:1920,y:60,scale:1,rr:0
+```
+
+**Important:** `mmsg reload` does NOT reliably reapply `monitorrule` entries. Log out and back in for monitor config changes to take effect.
 
 ---
 

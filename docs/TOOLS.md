@@ -2,7 +2,7 @@
 
 Complete reference for all tools and utilities in this Arch + MangoWC/Hyprland setup.
 
-**Last Updated:** 2025-12-04
+**Last Updated:** 2026-04-09
 
 ---
 
@@ -439,9 +439,164 @@ fuck
 # Suggests: git commit
 ```
 
+### Text Expansion
+
+#### Espanso
+**Package:** `espanso`
+**Status:** To install
+
+**What it does:**
+- System-wide keyword replacement and snippet expansion
+- Triggers work in any app (terminal, browser, editors, etc.)
+- YAML-based config — define triggers and replacements
+
+**Example use cases:**
+```yaml
+# ~/.config/espanso/match/base.yml
+matches:
+  - trigger: ":tf"
+    replace: "terraform"
+
+  - trigger: ":tfp"
+    replace: "terraform plan -var-file=terraform.tfvars"
+
+  - trigger: ":shrug"
+    replace: "¯\\_(ツ)_/¯"
+
+  - trigger: ":sig"
+    replace: "Nicolas Rigaudy\nArcheotech"
+```
+
+**Great for:** Long CLI commands, boilerplate text, custom signatures
+
+### Key Remapping
+
+#### Kanata
+**Package:** `kanata`
+**Status:** To evaluate
+
+**What it does:**
+- Low-level keyboard remapping via software
+- Runs as a daemon, works globally
+- Can do tap/hold (e.g. Caps Lock = Esc on tap, Ctrl on hold)
+
+**Planned config:**
+```
+# Caps Lock → Esc when tapped, Ctrl when held
+(defsrc capslock)
+(deflayer default (tap-hold 200 esc lctl))
+```
+
+**Why:** Caps Lock is wasted real estate. Vim users remap it universally.
+
+### Markdown Viewer
+
+#### Mdcat
+**Package:** `mdcat`
+**Status:** To install
+
+**What it does:**
+- Render markdown files with colors, formatting, and links directly in terminal
+- Understands images (shows inline in Kitty)
+- Great for reading docs without opening a browser
+
+**Usage:**
+```bash
+mdcat README.md
+mdcat docs/TOOLS.md
+```
+
+### TUI Spotify
+
+#### Ncspot
+**Package:** `ncspot`
+**Status:** To install
+
+**What it does:**
+- Rust-based Spotify TUI client
+- Keyboard-driven, minimal
+- Low resource usage vs Electron Spotify
+
+**Usage:**
+```bash
+ncspot
+# q - quit
+# p - play/pause
+# Space - play/pause
+# +/- - volume
+# / - search
+```
+
+### Terminal Screensavers
+
+A collection of fun terminal animations, ideal for idle lock screen overlays or just fun:
+
+| Tool | Package | Effect |
+|------|---------|--------|
+| `cmatrix` | `cmatrix` | Matrix digital rain |
+| `cbonsai` | `cbonsai` | Animated ASCII bonsai tree |
+| `asciiquarium` | `asciiquarium` (AUR) | Fish swimming across terminal |
+| `pipes` | `pipes.sh` (AUR) | Colorful flowing pipe maze |
+
+**Planned use:** Rotate these as a lock screen screensaver layer, or set one as the SDDM idle animation.
+
+```bash
+# Example: random screensaver picker
+case $((RANDOM % 4)) in
+  0) cmatrix ;;
+  1) cbonsai -l ;;
+  2) asciiquarium ;;
+  3) pipes.sh ;;
+esac
+```
+
+### Neovim / LazyVim
+
+#### Neovim
+**Package:** `neovim`
+**Status:** To evaluate — complement or replace VSCode for terminal editing
+
+**Recommended starter config:** [kickstart.nvim](https://github.com/nvjim-lua/kickstart.nvim) — minimal, well-documented, easy to extend
+
+**Why it's interesting:**
+- Modal editing — extremely fast text manipulation once learned
+- Runs in terminal, integrates with kitty/yazi
+- LazyVim preset gives you IDE features out of the box
+
+**Vim motions in VSCode (no full switch needed):**
+- Extension: `VSCodeVim` or `vscode-neovim`
+- Learn Vim motions gradually without leaving VSCode
+- `vscode-neovim` uses real Neovim under the hood
+
+**Learning resources:**
+- Game: [vim-be-good](https://github.com/ThePrimeagen/vim-be-good) — practice vim motions
+- Book exercises: complement with SICP / CSAPP reading
+
 ---
 
 ## Media & Graphics
+
+### OCR - Text Extraction from Images
+
+#### Frog
+**Package:** `frog` (AUR) — GNOME Text Extractor
+**Status:** To install
+
+**What it does:**
+- Select a region of screen (like a screenshot)
+- Extracts text using OCR (Tesseract under the hood)
+- Copies text to clipboard
+- Works for: code in images, text in memes, PDFs without text layer, photos of docs
+
+**Usage:**
+```bash
+frog
+# Click region → text extracted to clipboard
+```
+
+**Wayland-compatible:** Yes, uses portal for screen capture
+
+---
 
 ### Screenshots
 
@@ -548,6 +703,92 @@ mpv video.mp4
 # Arrow keys - seek
 # q - quit
 ```
+
+### Notification Scripts Compatibility (Dunst → Swaync)
+
+All notification scripts must use `notify-send` flags compatible with swaync. Dunst-specific hints are silently ignored by swaync, causing notifications to not appear or behave wrongly.
+
+| Feature | Dunst (old) | Swaync (correct) |
+|---------|------------|-----------------|
+| Replace/deduplicate | `-h string:x-dunst-stack-tag:NAME` | `-r <integer-id>` |
+| Persistent notification | `-t 0` | omit `-t`; swaync uses `timeout-critical: 0` from config |
+| Close specific notification | `swaync-client --close-all` | `gdbus call ... CloseNotification <id>` |
+
+**Template for new notification scripts:**
+```bash
+NOTIFY_ID=9901  # unique integer per script, consistent across calls
+notify-send -u normal -r "$NOTIFY_ID" -i "icon-name" "Title" "Message"
+
+# To close it:
+gdbus call --session \
+    --dest org.freedesktop.Notifications \
+    --object-path /org/freedesktop/Notifications \
+    --method org.freedesktop.Notifications.CloseNotification \
+    "$NOTIFY_ID" 2>/dev/null || true
+```
+
+**Scripts audited:**
+- [x] `battery-alert.sh` — fixed
+
+### Notification Center
+
+#### Swaync
+**Package:** `swaync`
+**Config:** [~/.config/swaync/](../config/.config/swaync/)
+**Status:** Active — replaces dunst for MangoWC
+**Keybind:** `Super + ;` (toggle panel), waybar bell icon (click = open, right-click = DND toggle)
+
+**What it does:**
+- GTK4 notification daemon with a slide-out notification panel
+- Like GNOME's notification drawer — click a waybar module to open
+- Supports Do Not Disturb mode
+- Much more capable than dunst for a full notification history panel
+
+**Usage:**
+```bash
+# Toggle notification panel
+swaync-client -t
+
+# Toggle DND
+swaync-client -d
+
+# Clear all notifications
+swaync-client -C
+```
+
+**Waybar integration:** Add a module that shows unread count and opens panel on click.
+
+---
+
+## Terminal Alternatives - To Evaluate
+
+Worth investigating as kitty replacements or complements:
+
+### Ghostty
+**Status:** To evaluate when more mature
+- Built by Mitchell Hashimoto (Terraform creator)
+- Native GPU renderer, very fast
+- Growing fast — watch for stability
+
+### Tabby
+**Status:** To evaluate
+- Electron-based but very feature-rich
+- Tab overview, SSH management, serial port support
+- Cross-platform (Linux/Mac/Windows)
+- Good split pane support
+
+### Ptyxis
+**Status:** Noted — interesting features to borrow
+- GNOME terminal with tab overview view (like a bird's eye of all tabs)
+- Container-aware tabs
+- **What to replicate in kitty:** Tab overview (`kitty @ ls` + custom script), better tab management keybinds
+
+### Kitty Tab Improvements (without switching)
+Current kitty setup can be improved to match Ptyxis features:
+- `Ctrl+Shift+T` — new tab
+- `Ctrl+Shift+[/]` — prev/next tab
+- Tab bar at top with window titles
+- Detach/reattach windows with `kitty @ detach-window`
 
 ---
 

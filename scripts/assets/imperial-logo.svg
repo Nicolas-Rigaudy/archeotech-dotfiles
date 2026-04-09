@@ -3,7 +3,7 @@
 <!-- LOGO_COLOR is replaced dynamically by wallpaper-set.sh             -->
 <!-- LOGO_OPACITY is replaced dynamically (0.0 - 1.0)                   -->
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-	 x="0px" y="0px" viewBox="0 0 2000 2000" xml:space="preserve">
+	 x="0px" y="0px" viewBox="0 620 2000 780" xml:space="preserve">
 <g fill="LOGO_COLOR" fill-opacity="LOGO_OPACITY">
 	<path d="M830.805,913.588l-8.501,5.222l4.692,50.297c-16.745,18.744-35.845,39.556-52.76,58.148l0.662-93.712l-8.589,1.971
 		l-30.476,123.318l-69.634,40.684l52.472-165.183l-8.079-1.649l-90.259,179.566l-73.196-10.757l110.747-182.602l-10.362-5.948

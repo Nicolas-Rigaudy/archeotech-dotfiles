@@ -98,13 +98,14 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 
 | Package | Purpose | Notes |
 |---------|---------|-------|
-| `dunst` | Notification daemon | Lightweight, themeable |
+| `dunst` | Notification daemon | Lightweight, themeable — used in Hyprland only |
+| `swaync` | Notification center | GTK4 notification center with panel — **active for MangoWC**, replaces dunst |
 
 ### Wallpaper
 
 | Package | Purpose | Notes |
 |---------|---------|-------|
-| `swww` | Wallpaper daemon | Animated transitions |
+| `awww` | Wallpaper daemon | Animated transitions — **note: package renamed from `swww` → `awww` after pacman update** |
 | `waypaper` (AUR) | Wallpaper picker GUI | Backup picker; configured with backend=custom to call wallpaper-set.sh |
 | `librsvg` | SVG renderer | rsvg-convert — renders Arch logo SVG to PNG with transparency |
 | `imagemagick` | Image processing | Color extraction from wallpapers, image compositing for logo overlay |
@@ -156,6 +157,19 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `atuin` | Shell history | Advanced shell history with sync |
 | `gping` | Ping with graph | Visual ping tool |
 | `tealdeer` | tldr client | Rust rewrite of tldr (man page summaries) |
+| `ncspot` | TUI Spotify client | Rust-based Spotify player in terminal |
+| `mdcat` | Markdown terminal viewer | Render markdown with colors/formatting in terminal |
+| `espanso` | Text expander | Keyword replacement / snippet expansion system-wide |
+| `kanata` | Key remapper | Low-level keyboard remapping (e.g. Caps Lock → Esc/Ctrl) |
+
+### Terminal Eye Candy / Screensavers
+
+| Package | Purpose | Notes |
+|---------|---------|-------|
+| `cmatrix` | Matrix rain animation | Classic terminal screensaver |
+| `cbonsai` | Animated bonsai tree | Growing ASCII bonsai in terminal |
+| `asciiquarium` | ASCII aquarium | Fish swimming in your terminal |
+| `pipes.sh` | Animated pipes | Colorful flowing pipes screensaver |
 
 ---
 
@@ -187,6 +201,19 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | Package | Purpose | Notes |
 |---------|---------|-------|
 | `obsidian` (AUR) | Note taking | Markdown-based knowledge base |
+| `appflowy` (AUR) | Open source Notion | Self-hosted, Notion-like workspace — to evaluate |
+
+### OCR / Text Extraction
+
+| Package | Purpose | Notes |
+|---------|---------|-------|
+| `frog` (AUR) | OCR text extraction | Copy text from images/screenshots — GNOME Text Extractor |
+
+### System Monitoring (GUI)
+
+| Package | Purpose | Notes |
+|---------|---------|-------|
+| `mission-center` (AUR) | GUI system monitor | GNOME-style resource monitor, good Wayland support |
 
 ### Media Viewers
 
@@ -217,6 +244,7 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `git` | Version control | Distributed VCS |
 | `github-cli` | GitHub CLI | gh command-line tool |
 | `lazygit` | Git TUI | Terminal UI for git |
+| `neovim` | Modal text editor | Highly extensible, use kickstart.nvim as base config |
 
 ### Cloud & Infrastructure
 
@@ -274,6 +302,12 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `brightnessctl` | Brightness control | Screen brightness management |
 | `playerctl` | Media control | Media player controls |
 | `pavucontrol` | Audio control | PulseAudio/PipeWire volume GUI |
+
+### System Services
+
+| Service | Purpose | Notes |
+|---------|---------|-------|
+| `battery-alert.service` | Battery notifications | systemd user service — runs battery-alert.sh; installed to `~/.config/systemd/user/` via install.sh |
 
 ### Snapshot Management
 
@@ -410,6 +444,6 @@ This is a minimal, focused installation optimized for development work and daily
 
 ---
 
-**Last Updated:** 2026-02-19
+**Last Updated:** 2026-04-09
 **For:** archeotech-dotfiles
 **Compositors:** MangoWC (primary), Hyprland (backup)

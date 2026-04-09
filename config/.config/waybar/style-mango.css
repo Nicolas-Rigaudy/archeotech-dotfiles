@@ -109,6 +109,7 @@ window#waybar > box {
 #bluetooth,
 #battery,
 #tray,
+#custom-notifications,
 #custom-power {
     padding: 1px 8px;
     margin: 2px 1px;
@@ -172,6 +173,24 @@ window#waybar > box {
     -gtk-icon-effect: highlight;
     background-color: alpha(@red, 0.25);
     border-radius: 5px;
+}
+
+/* Notifications bell */
+#custom-notifications {
+    color: @lavender;
+    font-size: 13px;
+    border-radius: 7px;
+}
+#custom-notifications.dnd-none,
+#custom-notifications.dnd-notification,
+#custom-notifications.dnd-inhibited-none,
+#custom-notifications.dnd-inhibited-notification {
+    color: @overlay0;
+}
+#custom-notifications:hover {
+    background-color: alpha(@surface1, 0.6);
+    color: @mauve;
+    border-radius: 7px;
 }
 
 /* Power */

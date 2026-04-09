@@ -19,6 +19,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)"
 CACHE_DIR="$HOME/.cache/wallpaper"
 COMPOSED_IMG="$CACHE_DIR/composed.png"
+COMPOSED_PORTRAIT_IMG="$CACHE_DIR/composed-portrait.png"
+PLAIN_PORTRAIT_IMG="$CACHE_DIR/plain-portrait.png"
 COMPOSED_CACHE="$CACHE_DIR/composed-for"   # stores "<logo>:<wallpaper>" for cache key
 LOGO_STATE="$CACHE_DIR/logo-active"        # contains active logo name, or empty/absent = no logo
 LAST_LOGO="$CACHE_DIR/logo-last"           # remembers last active logo for keybind restore
@@ -37,10 +39,10 @@ LOGO_PATH[imperial]="$SCRIPT_DIR/assets/imperial-logo.svg"
 LOGO_TYPE[imperial]="svg"
 
 # ── Appearance ────────────────────────────────────────────────────────────────
-LOGO_SIZE_PERCENT=40    # % of wallpaper height
+LOGO_SIZE_PERCENT=40    # % of the shorter wallpaper dimension
 LOGO_OPACITY=60         # 0-100
 
-# ── swww transition settings ─────────────────────────────────────────────────
+# ── awww transition settings ─────────────────────────────────────────────────
 TRANSITION="grow"
 TRANSITION_POS="center"
 TRANSITION_FPS=60
@@ -69,30 +71,45 @@ get_wallpaper_color() {
         fi
     fi
 
-    # Use the existing thumb if available (already small = fast), else scale inline
     local thumb="$HOME/.cache/wallpaper/thumbs/$(basename "$img").jpg"
     local src="${thumb:-$img}"
 
+    local avg_brightness
+    avg_brightness=$(magick "$src" -resize 1x1! -format "%[fx:int(255*(r+g+b)/3)]" info: 2>/dev/null)
+    avg_brightness="${avg_brightness:-128}"
+
+    # Score each palette color: saturation (weighted 2x) + contrast vs wallpaper avg.
+    # Two passes: first prefer saturated+contrasty, fall back to purely contrasty.
+    # This ensures desaturated wallpapers (grey mountains, etc.) still get a visible color.
     local color
     color=$(magick "$src" \
         -resize 50x50! \
-        +dither -colors 8 \
+        +dither -colors 24 \
         -format "%c" histogram:info:- 2>/dev/null \
-        | grep -oP '\d+:.*#[0-9A-Fa-f]{6}' \
-        | sort -rn \
         | grep -oP '#[0-9A-Fa-f]{6}' \
-        | while read -r hex; do
-            r=$(printf "%d" "0x${hex:1:2}")
-            g=$(printf "%d" "0x${hex:3:2}")
-            b=$(printf "%d" "0x${hex:5:2}")
-            brightness=$(( (r + g + b) / 3 ))
-            if [ "$brightness" -gt 40 ] && [ "$brightness" -lt 210 ]; then
-                echo "$hex"
-                break
-            fi
-        done)
+        | awk -v avg="$avg_brightness" '
+        {
+            hex = $0
+            r = strtonum("0x" substr(hex,2,2))
+            g = strtonum("0x" substr(hex,4,2))
+            b = strtonum("0x" substr(hex,6,2))
+            bright = (r + g + b) / 3
+            cmax = (r>g ? (r>b ? r : b) : (g>b ? g : b))
+            cmin = (r<g ? (r<b ? r : b) : (g<b ? g : b))
+            sat = cmax - cmin
+            contrast = (bright > avg) ? bright - avg : avg - bright
+            # Pass 1: saturated accent (sat>=20 to handle muted palettes)
+            if (sat >= 20 && contrast >= 25)
+                score1 = sat * 2 + contrast
+            else
+                score1 = 0
+            if (score1 > best1_score) { best1_score = score1; best1 = hex }
+            # Pass 2: pure contrast fallback (any color, just maximum contrast)
+            if (contrast > best2_score) { best2_score = contrast; best2 = hex }
+        }
+        END { print (best1 != "" ? best1 : best2) }
+        ')
 
-    color="${color:-#1793d1}"
     echo "$color" > "$LAST_COLOR"
     echo "$img" > "$LAST_COLOR_FOR"
     echo "$color"
@@ -105,7 +122,9 @@ render_logo() {
     local wall_w="$3"
     local wall_h="$4"
 
-    local logo_px=$(( wall_h * LOGO_SIZE_PERCENT / 100 ))
+    # Size relative to the shorter dimension so logos fit on portrait screens too
+    local shorter=$(( wall_w < wall_h ? wall_w : wall_h ))
+    local logo_px=$(( shorter * LOGO_SIZE_PERCENT / 100 ))
     local logo_type="${LOGO_TYPE[$logo_name]}"
     local logo_src="${LOGO_PATH[$logo_name]}"
     local logo_out="$CACHE_DIR/logo-rendered.png"
@@ -115,6 +134,11 @@ render_logo() {
 
     local logo_raw="$CACHE_DIR/logo-raw.png"
 
+    # Inner margin so sharp logo edges never sit at the canvas boundary.
+    # The shadow blur can then spread freely without clipping.
+    local inner_margin=16
+    local render_px=$(( logo_px - inner_margin * 2 ))
+
     if [ "$logo_type" = "svg" ]; then
         # Inject color/opacity placeholders and rasterize
         sed \
@@ -122,11 +146,40 @@ render_logo() {
             -e "s/LOGO_OPACITY/$opacity_decimal/g" \
             "$logo_src" > "$CACHE_DIR/logo-colored.svg"
 
+        # Normalize by area: target sqrt(w*h) = render_px for all logos.
+        # This gives equal visual weight regardless of aspect ratio — a wide flat
+        # logo and a tall square logo appear as the same "sticker size".
+        local raw_render="$CACHE_DIR/logo-raw-render.png"
+        local norm_w norm_h
+        read -r norm_w norm_h < <(python3 -c "
+import xml.etree.ElementTree as ET, re, math
+t = ET.parse('$CACHE_DIR/logo-colored.svg')
+vb = t.getroot().get('viewBox', '')
+parts = re.split(r'[\s,]+', vb.strip())
+vw = float(parts[2]) if len(parts) >= 4 else 1.0
+vh = float(parts[3]) if len(parts) >= 4 else 1.0
+ratio = vw / vh
+target = $render_px
+# sqrt(w*h)=target, w/h=ratio → w=target*sqrt(ratio), h=target/sqrt(ratio)
+w = target * math.sqrt(ratio)
+h = target / math.sqrt(ratio)
+print(round(w), round(h))
+" 2>/dev/null || echo "$render_px $render_px")
         rsvg-convert \
-            -w "$logo_px" -h "$logo_px" \
-            --keep-aspect-ratio \
+            -w "${norm_w}" -h "${norm_h}" \
             "$CACHE_DIR/logo-colored.svg" \
-            -o "$logo_raw"
+            -o "$raw_render"
+        # Pad with inner_margin on all sides
+        local actual_w actual_h canvas_w canvas_h
+        actual_w=$(magick "$raw_render" -format "%w" info:)
+        actual_h=$(magick "$raw_render" -format "%h" info:)
+        canvas_w=$(( actual_w + inner_margin * 2 ))
+        canvas_h=$(( actual_h + inner_margin * 2 ))
+        magick "$raw_render" \
+            -gravity Center \
+            -background none \
+            -extent "${canvas_w}x${canvas_h}" \
+            "$logo_raw"
 
     elif [ "$logo_type" = "png" ]; then
         # Colorize greyscale PNG: tint with extracted color, apply opacity
@@ -136,7 +189,7 @@ render_logo() {
         b=$(printf "%d" "0x${color:5:2}")
 
         magick "$logo_src" \
-            -resize "${logo_px}x${logo_px}" \
+            -resize "${render_px}x${render_px}" \
             -alpha set \
             \( +clone -alpha extract \) \
             -channel RGB \
@@ -147,22 +200,75 @@ render_logo() {
             \( -clone 0 -alpha extract \) \
             -compose CopyOpacity -composite \
             -channel Alpha -evaluate multiply "$opacity_decimal" +channel \
+            -gravity Center -background none -extent "${logo_px}x${logo_px}" \
             "$logo_raw"
     fi
 
-    # Add shape-hugging drop-shadow (blur only, no dilate — avoids square edges)
-    local shadow_blur=$(( logo_px / 20 ))
+    # Soft centred shadow/halo: blur the logo's alpha shape outward, fill black,
+    # place centred behind the logo. No offset — pure even glow under the shape.
+    # logo_raw already has inner_margin padding baked in — shadow blurs into that space
+    local shadow_blur=12
+    local raw_w raw_h
+    raw_w=$(magick "$logo_raw" -format "%w" info:)
+    raw_h=$(magick "$logo_raw" -format "%h" info:)
     magick "$logo_raw" \
-        \( +clone \
-           -fill black -colorize 100 \
-           -channel Alpha -blur 0x${shadow_blur} -evaluate multiply 0.40 +channel \) \
-        -reverse -composite \
+        -channel Alpha -blur "0x${shadow_blur}" +channel \
+        -fill black -colorize 100 \
+        -channel Alpha -evaluate multiply 0.95 +channel \
+        /tmp/logo-shadow-layer.png
+    magick -size "${raw_w}x${raw_h}" xc:none \
+        /tmp/logo-shadow-layer.png -gravity Center -composite \
+        "$logo_raw" -gravity Center -composite \
         "$logo_out"
 
     echo "$logo_out"
 }
 
+# ── Helper: composite logo onto wallpaper at given dimensions ────────────────
+# For landscape wallpapers on portrait canvases (and vice versa), we use a
+# "blurred backdrop" approach: the image is blurred/darkened to fill the canvas,
+# then the sharp image (fitted to contain) is composited centered on top.
+# This avoids heavy zoom/crop while filling the full screen.
+_compose_at_size() {
+    local wallpaper="$1"
+    local logo_name="$2"
+    local color="$3"
+    local out_w="$4"
+    local out_h="$5"
+    local out_file="$6"
+
+    local logo_png
+    logo_png=$(render_logo "$logo_name" "$color" "$out_w" "$out_h")
+
+    # Detect if wallpaper and output have mismatched orientation (landscape vs portrait)
+    local wall_w wall_h
+    wall_w=$(magick "$wallpaper" -format "%w" info: 2>/dev/null)
+    wall_h=$(magick "$wallpaper" -format "%h" info: 2>/dev/null)
+    local wall_is_portrait=$(( wall_h > wall_w ? 1 : 0 ))
+    local out_is_portrait=$(( out_h > out_w ? 1 : 0 ))
+
+    if [ "$wall_is_portrait" != "$out_is_portrait" ]; then
+        # Orientation mismatch: blurred backdrop + sharp centered image
+        magick \
+            \( "$wallpaper" -resize "${out_w}x${out_h}^" -gravity Center -extent "${out_w}x${out_h}" \
+               -blur 0x20 -fill black -colorize 40 \) \
+            \( "$wallpaper" -resize "${out_w}x${out_h}" \) \
+            -gravity Center -composite \
+            \( "$logo_png" \) \
+            -gravity Center -composite \
+            "$out_file"
+    else
+        # Same orientation: simple cover crop (original behaviour)
+        magick \
+            \( "$wallpaper" -resize "${out_w}x${out_h}^" -gravity Center -extent "${out_w}x${out_h}" \) \
+            \( "$logo_png" \) \
+            -gravity Center -composite \
+            "$out_file"
+    fi
+}
+
 # ── Helper: composite logo onto wallpaper (cached per logo+wallpaper combo) ──
+# Also creates a portrait variant if a portrait output is detected.
 composite_logo() {
     local wallpaper="$1"
     local logo_name="$2"
@@ -175,35 +281,98 @@ composite_logo() {
         fi
     fi
 
-    # Always compose at 1920x1080 — swww scales to screen, and this is ~5x faster
-    # than compositing onto multi-megapixel source images
-    local wall_w=1920
-    local wall_h=1080
-
     local color
     color=$(get_wallpaper_color "$wallpaper")
     echo "  Logo color: $color" >&2
 
-    local logo_png
-    logo_png=$(render_logo "$logo_name" "$color" "$wall_w" "$wall_h")
+    # Build landscape composite (default 1920x1080)
+    _compose_at_size "$wallpaper" "$logo_name" "$color" 1920 1080 "$COMPOSED_IMG"
 
-    magick \
-        \( "$wallpaper" -resize "${wall_w}x${wall_h}^" -gravity Center -extent "${wall_w}x${wall_h}" \) \
-        \( "$logo_png" \) \
-        -gravity Center -composite \
-        "$COMPOSED_IMG"
+    # Build portrait composite for any portrait outputs (e.g. DP-3 at 1080x1920)
+    if command -v awww >/dev/null 2>&1; then
+        local portrait_res
+        portrait_res=$(awww query 2>/dev/null \
+            | grep -oP '\d+x\d+' \
+            | awk -F'x' '$2 > $1 {print; exit}')
+        if [ -n "$portrait_res" ]; then
+            local pw ph
+            pw=$(echo "$portrait_res" | cut -dx -f1)
+            ph=$(echo "$portrait_res" | cut -dx -f2)
+            echo "  Portrait output detected (${pw}x${ph}), compositing portrait variant" >&2
+            _compose_at_size "$wallpaper" "$logo_name" "$color" "$pw" "$ph" "$COMPOSED_PORTRAIT_IMG"
+        else
+            rm -f "$COMPOSED_PORTRAIT_IMG"
+        fi
+    fi
 
     echo "$cache_key" > "$COMPOSED_CACHE"
 }
 
-# ── Helper: apply wallpaper via swww ─────────────────────────────────────────
+# ── Helper: build a portrait-adapted plain wallpaper (no logo) ───────────────
+# If a landscape wallpaper is being sent to a portrait output, generate a
+# blurred-backdrop version so it doesn't look zoomed in.
+_prepare_plain_portrait() {
+    local wallpaper="$1"
+    local pw="$2"
+    local ph="$3"
+
+    local wall_w wall_h
+    wall_w=$(magick "$wallpaper" -format "%w" info: 2>/dev/null)
+    wall_h=$(magick "$wallpaper" -format "%h" info: 2>/dev/null)
+    local wall_is_portrait=$(( wall_h > wall_w ? 1 : 0 ))
+    local out_is_portrait=$(( ph > pw ? 1 : 0 ))
+
+    if [ "$wall_is_portrait" != "$out_is_portrait" ]; then
+        magick \
+            \( "$wallpaper" -resize "${pw}x${ph}^" -gravity Center -extent "${pw}x${ph}" \
+               -blur 0x20 -fill black -colorize 40 \) \
+            \( "$wallpaper" -resize "${pw}x${ph}" \) \
+            -gravity Center -composite \
+            "$PLAIN_PORTRAIT_IMG"
+    else
+        # Already matching orientation — cover crop is fine
+        magick "$wallpaper" -resize "${pw}x${ph}^" -gravity Center -extent "${pw}x${ph}" \
+            "$PLAIN_PORTRAIT_IMG"
+    fi
+}
+
+# ── Helper: apply wallpaper via awww ─────────────────────────────────────────
+# apply_wallpaper <landscape_img> [portrait_img]
+# If portrait_img is given, routes it to portrait outputs; landscape_img to the rest.
+# If portrait_img is omitted, builds a plain portrait variant on the fly if needed.
 apply_wallpaper() {
     local img="$1"
-    swww img "$img" \
-        --transition-type "$TRANSITION" \
-        --transition-pos "$TRANSITION_POS" \
-        --transition-fps "$TRANSITION_FPS" \
+    local portrait_img="${2:-}"
+
+    local swww_opts=(
+        --transition-type "$TRANSITION"
+        --transition-pos "$TRANSITION_POS"
+        --transition-fps "$TRANSITION_FPS"
         --transition-duration "$TRANSITION_DURATION"
+    )
+
+    if command -v awww >/dev/null 2>&1; then
+        # Route per output, building a portrait variant on the fly if needed
+        while IFS= read -r line; do
+            local output res pw ph
+            output=$(echo "$line" | grep -oP '^: \K\S+(?=:)')
+            res=$(echo "$line" | grep -oP '\d+x\d+' | head -1)
+            pw=$(echo "$res" | cut -dx -f1)
+            ph=$(echo "$res" | cut -dx -f2)
+            if [ -n "$ph" ] && [ "$ph" -gt "$pw" ] 2>/dev/null; then
+                if [ -n "$portrait_img" ]; then
+                    awww img "$portrait_img" --outputs "$output" "${swww_opts[@]}"
+                else
+                    _prepare_plain_portrait "$img" "$pw" "$ph"
+                    awww img "$PLAIN_PORTRAIT_IMG" --outputs "$output" "${swww_opts[@]}"
+                fi
+            else
+                awww img "$img" --outputs "$output" "${swww_opts[@]}"
+            fi
+        done < <(awww query 2>/dev/null)
+    else
+        awww img "$img" "${swww_opts[@]}"
+    fi
 }
 
 # ── Main logic ────────────────────────────────────────────────────────────────
@@ -252,7 +421,7 @@ case "${1:-}" in
             echo "$REQUESTED" > "$LAST_LOGO"
             echo "Logo: $REQUESTED ON" >&2
             composite_logo "$ORIGINAL" "$REQUESTED"
-            apply_wallpaper "$COMPOSED_IMG"
+            apply_wallpaper "$COMPOSED_IMG" "$( [ -f "$COMPOSED_PORTRAIT_IMG" ] && echo "$COMPOSED_PORTRAIT_IMG" )"
         fi
         ;;
 
@@ -296,7 +465,7 @@ case "${1:-}" in
         CURRENT="$(active_logo)"
         if [ -n "$CURRENT" ]; then
             composite_logo "$WALLPAPER" "$CURRENT"
-            apply_wallpaper "$COMPOSED_IMG"
+            apply_wallpaper "$COMPOSED_IMG" "$( [ -f "$COMPOSED_PORTRAIT_IMG" ] && echo "$COMPOSED_PORTRAIT_IMG" )"
         else
             apply_wallpaper "$WALLPAPER"
         fi

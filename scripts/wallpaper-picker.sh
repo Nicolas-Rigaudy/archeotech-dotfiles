@@ -33,7 +33,9 @@ make_thumb() {
     echo "$thumb"
 }
 
-# Generate a preview PNG for a logo (Catppuccin Mauve on dark bg tile, cached)
+# Generate a preview PNG for a logo (Catppuccin Mauve centred on dark bg tile)
+# The logo is scaled to fit within 70% of the tile's shorter dimension so all
+# three logos appear at a comparable visual size regardless of their aspect ratio.
 make_logo_preview() {
     local name="$1"
     local preview="$THUMB_DIR/logo-preview-${name}.png"
@@ -43,9 +45,15 @@ make_logo_preview() {
             -e "s/LOGO_OPACITY/$LOGO_PREVIEW_OPACITY/g" \
             "$SCRIPT_DIR/assets/${name}-logo.svg" \
             > "/tmp/logo-preview-${name}.svg"
-        # Render SVG then composite onto dark surface tile (same size as wallpaper thumbs)
-        rsvg-convert -w 180 -h 180 --keep-aspect-ratio \
-            "/tmp/logo-preview-${name}.svg" -o "$preview" 2>/dev/null
+        # Render at 60% of tile width (leaving ~20% margin total) so logos
+        # never clip against the tile edges regardless of aspect ratio
+        local logo_fit=$(( THUMB_W * 60 / 100 ))
+        rsvg-convert -w "$logo_fit" -h "$logo_fit" --keep-aspect-ratio \
+            "/tmp/logo-preview-${name}.svg" -o "/tmp/logo-preview-${name}-raw.png" 2>/dev/null
+        magick -size "${THUMB_W}x${THUMB_H}" "xc:#1e1e2e" \
+            "/tmp/logo-preview-${name}-raw.png" \
+            -gravity Center -composite \
+            "$preview" 2>/dev/null
     fi
     echo "$preview"
 }
