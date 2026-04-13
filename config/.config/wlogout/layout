@@ -1,11 +1,11 @@
 {
     "label" : "lock",
-    "action" : "swaylock",
+    "action" : "swaylock-launch.sh",
     "keybind" : "l"
 }
 {
     "label" : "logout",
-    "action" : "loginctl terminate-user $USER",
+    "action" : "mmsg -q",
     "keybind" : "e"
 }
 {

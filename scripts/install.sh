@@ -145,6 +145,7 @@ install_local_scripts() {
         "wallpaper-set.sh"
         "wallpaper-picker.sh"
         "battery-alert.sh"
+        "swaylock-launch.sh"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do

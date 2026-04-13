@@ -8,10 +8,9 @@
 ignore-empty-password
 show-failed-attempts
 show-keyboard-layout
-daemonize
 
-# Wallpaper
-image=~/Pictures/Wallpapers/arasaka.png
+# Wallpaper is passed dynamically via --image flag in swayidle config
+# (reads from ~/.cache/wallpaper/last-wallpaper at lock time)
 scaling=fill
 
 # Font

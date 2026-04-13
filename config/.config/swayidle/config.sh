@@ -16,7 +16,7 @@
 swayidle -w \
     timeout 600 'brightnessctl -s set 10' \
         resume 'brightnessctl -r' \
-    timeout 900 'swaylock' \
+    timeout 900 'swaylock-launch.sh' \
     timeout 1200 'wlopm --off \*' \
         resume 'wlopm --on \*' \
-    before-sleep 'swaylock'
+    before-sleep 'swaylock-launch.sh'
