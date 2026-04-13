@@ -472,6 +472,54 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
+### [2025-12-08] Screen Sharing: Portal Backend for MangoWC
+
+**Context:** Teams/Zoom/Discord couldn't share screen on MangoWC.
+
+**Options Considered:**
+1. **xdg-desktop-portal-hyprland** — wrong backend (MangoWC is wlroots, not Hyprland)
+2. **xdg-desktop-portal-wlr** — correct wlroots backend
+
+**Decision:** xdg-desktop-portal-wlr with user-level config at `~/.config/xdg-desktop-portal/mangowc-portals.conf`
+
+**Rationale:**
+- MangoWC uses wlroots, needs wlr backend
+- User-level config managed by stow, tracked in git — avoids root-owned system config
+
+**Trade-offs Accepted:** Extra package dependency; portals must be running (they autostart)
+
+---
+
+### [2025-12-08] SDDM Config Location: system/etc vs config/
+
+**Context:** SDDM config lives at `/etc/sddm.conf` — can't be symlinked with stow.
+
+**Decision:** Store in `system/etc/sddm.conf`, deploy via `scripts/update-system-configs.sh`
+
+**Rationale:**
+- System-level config requires root — can't use stow
+- Consistent with other system-level configs (snapper, grub custom entry)
+- Still tracked in git
+
+**Trade-offs Accepted:** Manual deploy step needed (not automatic like stow configs)
+
+---
+
+### [2025-12-04] Atuin Up Arrow: Full Integration vs Ctrl+R Only
+
+**Context:** Atuin can take over the up arrow for history search, or just add Ctrl+R fuzzy search while keeping up arrow as simple last-command.
+
+**Decision:** Ctrl+R only — keep up arrow as simple last command (`--disable-up-arrow` flag)
+
+**Rationale:**
+- Workflow involves frequent rerun of the exact last command (apply → test → apply → test)
+- Simple up arrow is faster for that pattern
+- Ctrl+R provides powerful fuzzy search when needed
+
+**Trade-offs Accepted:** Less powerful up-arrow history navigation
+
+---
+
 ## Decision Review Schedule
 
 Some decisions should be periodically reviewed:
@@ -504,5 +552,5 @@ Some decisions should be periodically reviewed:
 
 ---
 
-**Last Updated:** 2026-02-19
-**Total Decisions:** 18
+**Last Updated:** 2026-04-13
+**Total Decisions:** 21

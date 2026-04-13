@@ -12,6 +12,7 @@ This document contains all known issues, their symptoms, causes, and solutions. 
 - [Keyboard & Input Issues](#keyboard--input-issues)
 - [Hyprland Issues](#hyprland-issues)
 - [Waybar Issues](#waybar-issues)
+- [wlogout Issues](#wlogout-issues)
 - [Network Issues](#network-issues)
 - [Package Management Issues](#package-management-issues)
 - [General Troubleshooting Steps](#general-troubleshooting-steps)
@@ -50,6 +51,27 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 **Prevention:**
 - Always resize btrfs filesystem BEFORE resizing partition
 - Or resize filesystem immediately after resizing partition
+
+---
+
+### Fedora Boots to Wrong Environment from GRUB (Known Partial Issue)
+
+**Symptoms:**
+- Fedora kernel loads from GRUB successfully
+- Login screen appears, password accepted
+- Shows Arch's SDDM instead of Fedora's KDE — desktop environment fails to start, returns to login screen
+
+**Cause:**
+- Arch's SDDM is used instead of Fedora's display manager (systemd service init ordering issue)
+
+**Current Status:** Unresolved. Workaround: boot Fedora via BIOS boot menu (F9) — works perfectly.
+
+**Diagnosis scripts available:**
+```bash
+scripts/diagnose-fedora-boot.sh   # Check btrfs subvolumes and fstab
+scripts/fix-fedora-fstab.sh       # Fix /boot UUID in Fedora's fstab
+scripts/fix-fedora-efi.sh         # Fix /boot/efi UUID in Fedora's fstab
+```
 
 ---
 
@@ -337,6 +359,133 @@ Then: `hyprctl reload`
 
 ---
 
+## MangoWC Issues
+
+### XF86 Media Keys Don't Work (Volume, Brightness, Media)
+
+**Symptoms:**
+- Volume up/down keys do nothing in MangoWC
+- Media play/pause/next/prev have no effect
+- Brightness keys unresponsive
+
+**Cause:**
+- MangoWC requires `NONE` as explicit modifier for XF86 keys — empty modifier doesn't work
+
+**Solution:**
+```conf
+# Wrong:
+bind=,XF86AudioRaiseVolume,spawn,wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+
+# Correct:
+bind=NONE,XF86AudioRaiseVolume,spawn,wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+```
+
+Apply to all XF86 keys: volume, mic mute, brightness, media playback, print screen.
+
+---
+
+### Touchpad Two-Finger Scroll Not Working
+
+**Symptoms:**
+- Trackpad scroll does nothing or behaves erratically
+
+**Cause:**
+- Wrong parameter names — MangoWC uses different names than Hyprland
+
+**Solution:**
+```conf
+# Wrong:
+natural_scrolling=1
+scroll_method=2fg
+
+# Correct:
+trackpad_natural_scrolling=1
+scroll_method=1   # 1=two-finger, 2=edge, 4=button
+```
+
+---
+
+### Script Keybind Silently Fails (swww socket, $HOME not found)
+
+**Symptoms:**
+- Keybind runs but script does nothing
+- Script works fine from terminal, not from MangoWC keybind
+
+**Cause:**
+- `spawn` runs without a shell environment — no `$HOME`, no `$XDG_RUNTIME_DIR`, swww socket unreachable
+
+**Solution:**
+Use `spawn_shell` instead of `spawn` for any script that uses environment variables:
+```conf
+bind=SUPER,W,spawn_shell,~/.local/bin/wallpaper-picker.sh
+```
+
+---
+
+### mmsg reload Doesn't Apply Monitor Rules
+
+**Symptoms:**
+- `mmsg reload` runs but monitor layout changes don't take effect
+
+**Cause:**
+- Known MangoWC limitation: `mmsg reload` does not reliably reapply `monitorrule`
+
+**Solution:**
+Log out and log back in (via SDDM) for monitor config changes to apply.
+
+---
+
+### Screen Sharing Doesn't Work in Teams/Zoom/Discord
+
+**Symptoms:**
+- Can't share screen in video call apps
+- Screen share option grayed out or black screen
+
+**Cause:**
+- Missing xdg-desktop-portal-wlr (MangoWC is wlroots-based, needs wlr backend — not `-hyprland`)
+
+**Solution:**
+```bash
+sudo pacman -S xdg-desktop-portal xdg-desktop-portal-wlr
+```
+
+Config at `~/.config/xdg-desktop-portal/mangowc-portals.conf`:
+```ini
+[preferred]
+default=wlr;gtk
+org.freedesktop.impl.portal.ScreenCast=wlr
+org.freedesktop.impl.portal.Screenshot=wlr
+org.freedesktop.impl.portal.FileChooser=gtk
+org.freedesktop.impl.portal.Notification=gtk
+```
+
+Portals autostart on login. To restart manually:
+```bash
+killall xdg-desktop-portal-wlr xdg-desktop-portal
+/usr/lib/xdg-desktop-portal-wlr &
+/usr/lib/xdg-desktop-portal &
+```
+
+---
+
+### swaync Panel Has Compositor Blur/Shadow Bleeding
+
+**Symptoms:**
+- MangoWC blur or shadow effect bleeds through the swaync notification panel
+- Panel looks wrong / has extra visual artifacts
+
+**Cause:**
+- `layerrule=noblur/noshadow` for layer-shell surfaces doesn't work in MangoWC
+
+**Solution:**
+Disable globally in mango config:
+```conf
+blur_layer=0
+layer_shadows=0
+```
+
+---
+
 ## Hyprland Issues
 
 ### Hyprland Won't Start / Crashes on Launch
@@ -479,6 +628,45 @@ ls ~/.config/waybar/catppuccin-macchiato.css
 
 ---
 
+## wlogout Issues
+
+### wlogout Layout Ignored / Wrong Buttons Shown
+
+**Symptoms:**
+- 6 default buttons appear instead of custom layout
+- Custom icons not showing
+
+**Cause:**
+- Flag collision: `-l` (layout) and `-L` (margin-left) — short flags silently conflict
+
+**Solution:**
+Always use long-form flags: `--layout`, `--css`, `--margin-left` etc. Never `-l` or `-L`.
+
+### wlogout Icons Black / Not Showing
+
+**Symptoms:**
+- Icons are black or invisible
+- `background-image: none` in a `*` selector overrides all icon URLs
+
+**Solution:**
+- Never put `background-image: none` in a `*` selector — it silently overrides `#lock`, `#logout` etc.
+- SVGs need explicit `fill` attribute — copy system icons and inject `fill="#cad3f5"` via sed.
+
+### wlogout Button Shapes Inconsistent Across Monitors
+
+**Symptoms:**
+- Buttons are square on one monitor, tall rectangles on another
+
+**Cause:**
+- GTK stretches buttons to fill available height — a wlogout/GTK3 limitation.
+- `max-height` in CSS also breaks transparency.
+
+**Workaround:**
+- Use `--margin-top` / `--margin-bottom` computed from the focused monitor height to constrain vertical space. See `scripts/wlogout-launch.sh`.
+- Button shapes will still vary slightly — no clean fix without switching to a different tool.
+
+---
+
 ## Network Issues
 
 ### WiFi Not Connecting on Boot
@@ -567,6 +755,65 @@ paru -Ss package-name
 
 # Or search explicitly in AUR
 paru -S package-name
+```
+
+---
+
+## Clipboard / Waybar / Window Rules
+
+### Clipboard History Empty
+
+**Symptoms:**
+- `Super+V` shows no clipboard history
+- cliphist returns nothing
+
+**Cause:**
+- cliphist daemon not running
+
+**Solution:**
+Add to Hyprland or MangoWC autostart:
+```conf
+exec-once = wl-paste --type text --watch cliphist store
+exec-once = wl-paste --type image --watch cliphist store
+```
+
+---
+
+### Bluetooth Icon Not Showing in Waybar
+
+**Symptoms:**
+- Waybar bluetooth module missing or blank
+
+**Cause:**
+- Bluetooth service not enabled
+
+**Solution:**
+```bash
+sudo systemctl enable --now bluetooth
+pkill waybar && waybar &
+```
+
+---
+
+### Window Doesn't Float (pavucontrol, file dialogs, etc.)
+
+**Symptoms:**
+- Expected floating window opens tiled
+
+**Cause:**
+- Missing window rule in compositor config
+
+**Solution (Hyprland):**
+```conf
+windowrulev2 = float, class:^(pavucontrol)$
+windowrulev2 = center, class:^(pavucontrol)$
+windowrulev2 = size 800 600, class:^(pavucontrol)$
+```
+
+**Solution (MangoWC):**
+```conf
+windowrule=app_id:pavucontrol,float
+windowrule=app_id:pavucontrol,center
 ```
 
 ---
@@ -675,4 +922,6 @@ When documenting new issues, use this format:
 
 ---
 
-**Last Updated:** 2025-11-28
+**Last Updated:** 2026-04-13
+- Added MangoWC-specific section (XF86 keys, touchpad, spawn_shell, mmsg reload, screen sharing, swaync blur)
+- Added Fedora partial boot issue with workaround

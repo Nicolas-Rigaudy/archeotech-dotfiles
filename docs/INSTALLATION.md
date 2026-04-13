@@ -1,6 +1,6 @@
 # Installation Guide
 
-Complete step-by-step guide to install Arch Linux + Hyprland desktop environment from scratch.
+Complete step-by-step guide to install Arch Linux + MangoWC/Hyprland desktop environment from scratch.
 
 > **Warning:** This guide assumes you're comfortable with the command line and understand the risks of partitioning. Always backup your data before proceeding.
 

@@ -2,7 +2,137 @@
 
 Everything worth building, customizing, or investigating — from deep workflow automation to visual flair. This is a living document.
 
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-04-13
+
+---
+
+## Settings Hub & Control System
+
+### Phase 1 — SwayNC ✅ COMPLETE
+
+swaync installed, replaces dunst. Catppuccin glass panel, DND toggle, notification history. Waybar bell icon (`󰂜`) with unread count. `Super+;` keybind.
+
+Key lessons (also in TROUBLESHOOTING.md):
+- `buttons-grid` toggle type doesn't reflect real state — don't use for stateful toggles
+- `blur_layer=0` + `layer_shadows=0` required globally — `layerrule=noblur` doesn't work for layer-shell surfaces
+- swaync has no click-outside-to-close — Escape only
+
+### Phase 2 — Rofi Settings Hub
+
+**Keybind:** `Super+,`
+
+**Menu structure:**
+```
+⚙  Settings
+├── 🖥  Display     → wdisplays or kanshi profile picker
+├── 🎨  Appearance  → nwg-look (GTK theme, icons, cursor, fonts)
+├── 🔊  Audio       → pavucontrol
+├── 📡  Network     → nm-connection-editor
+├── 🖼  Wallpaper   → wallpaper-picker.sh (existing rofi picker)
+├── ⚡  Power       → submenu: Balanced / Performance / Power Saver (power-profiles-daemon)
+│                     + Night Light: Off / 4500K / 3500K / 2700K (wlsunset)
+├── 💾  Disk        → duf in kitty
+├── 🔵  Bluetooth   → blueman-manager
+└── 🔒  Power menu  → wlogout (already themed ✅)
+```
+
+**Implementation steps:**
+1. `paru -S wdisplays nwg-look wlsunset mission-center gnome-disk-utility kanshi`
+2. Write `scripts/settings-hub.sh` — rofi dmenu with icons, each line maps to a command
+3. Write `scripts/assets/settings-hub.rasi` — matches wallpaper-picker glass style
+4. Wire `Super+,` keybind in mango config
+5. Add waybar gear icon (right of bell) opening settings hub
+
+**Design rules:**
+- Same glass Catppuccin Macchiato style as the wallpaper picker
+- Icons via Papirus-Dark; no text-only entries
+- No fake toggles — open the real tool, don't try to reflect state in rofi
+
+- [~] **Rofi Settings Hub** (`Super+,`) — script + rasi theme written (`scripts/settings-hub.sh`, `scripts/assets/settings-hub.rasi`); keybind and waybar gear icon still TODO
+- [x] **wlogout theme** — Catppuccin Macchiato glass pill buttons, icon-only, full-span overlay, adaptive portrait layout; launched via `scripts/wlogout-launch.sh` (computes per-monitor margins via xrandr)
+  - **Known limitation**: button shapes inconsistent across monitors (GTK/wlogout limitation, no clean fix)
+- [ ] **Waybar gear icon** — opens settings hub, sits right of notification bell
+
+### Phase 3 — Display Profiles (kanshi)
+
+**Goal:** Never think about monitors again. Plug in, it just works.
+
+**Profiles planned:**
+- `desk` — eDP-1 (laptop left) + HDMI-A-1 (landscape middle) + DP-3 (portrait right, Iiyama)
+- `home` — eDP-1 + any single external landscape
+- `solo` — laptop only
+- `present` — eDP-1 + any external, extended landscape (meetings/TV)
+
+**Key insight:** Must identify Iiyama by EDID make/model, not port name. Verify exact strings via `mmsg -O` with the screen connected — port names can change.
+
+**Implementation steps:**
+1. Connect each monitor setup, run `mmsg -O` to confirm output names/EDID
+2. Write `config/.config/kanshi/config` with named profiles
+3. Add kanshi to mango autostart
+4. Add "Display" entry in settings hub: [wdisplays] [Desk] [Home] [Present] [Solo]
+5. Keybinds `Super+F1/F2/F3` for instant power-user profile switching
+
+### Phase 4 — Polish & Cohesion
+
+- [ ] Waybar gear icon opening settings hub
+- [ ] All rofi menus share one `.rasi` base theme (single source of truth for colors/radius/blur)
+- [ ] Consistent animation timing across rofi menus, swaync panel, waybar
+- [ ] `Super+?` → rofi keybinds cheatsheet
+
+### Keybind Plan
+
+| Keybind | Action | Status |
+|---------|--------|--------|
+| `Super+;` | Toggle swaync notification panel | ✅ Done |
+| `Super+,` | Open settings hub (rofi) | TODO |
+| `Super+F1` | Display profile: desk (3 monitors) | TODO |
+| `Super+F2` | Display profile: present (laptop + external) | TODO |
+| `Super+F3` | Display profile: solo (laptop only) | TODO |
+| `Super+?` | Keybinds cheatsheet | TODO |
+
+---
+
+## Tool Discovery System
+
+A system to help remember and discover all the installed tools and utilities.
+
+### Phase 0 — Quick Installs
+
+Small productivity tools worth installing whenever:
+
+- [ ] **Frog** — OCR: copy text from screen/images (`paru -S frog`)
+- [ ] **Mdcat** — render markdown in terminal (`paru -S mdcat`)
+- [ ] **Espanso** — text expander / keyword replacer (`paru -S espanso`)
+- [ ] **Mission Center** — modern system monitoring GUI (`paru -S mission-center`)
+- [ ] **SwayNC OSD** — volume/brightness popup on media key press (overlay notification when keys pressed)
+
+### Phase 1 — Navi Cheatsheets (Quick Win)
+
+Write custom navi cheatsheets (`navi-cheats/`) for all installed tools, grouped by category. Already wired to `Super+Shift+N`. Just needs content.
+
+- [ ] Write cheatsheets for: terminal tools (duf, ncdu, dust, gdu, lsblk, bat, eza, zoxide, yazi)
+- [ ] Write cheatsheets for: dev tools (lazygit, atuin, navi, granted, terraform)
+- [ ] Write cheatsheets for: system tools (btop, fastfetch, gping, thefuck, tealdeer)
+
+### Phase 2 — Tools Rofi Launcher
+
+A rofi menu grouped by category (Development / System / Media / etc.) — select a tool to launch it or see a description. Backed by the same data as navi cheatsheets.
+
+- [ ] `scripts/tools-launcher.sh` — categorized rofi list of all tools
+- [ ] Each entry: icon + tool name + one-line description
+- [ ] Keybind: `Super+Shift+T` (or integrate into settings hub)
+
+### Phase 3 — Welcome / Dashboard Screen (Future)
+
+A rich startup dashboard shown on login or on demand — combines multiple info sources into one beautiful screen:
+
+- **Tip of the day** — random tool from your installed arsenal with a usage example
+- **System snapshot** — uptime, current profile, battery, last snapshot date
+- **Today's agenda** — git status of active projects, any pending updates
+- **Quick launch** — most-used tools one click away
+- Inspired by: `fastfetch` but interactive, more like a dashboard than a status dump
+- Could be built with: a rofi custom mode, a waybar popup, or a standalone GTK/QML window
+- [ ] Design the layout and data sources before picking the implementation
 
 ---
 
@@ -377,6 +507,10 @@ echo ""
 PROFILE="${AWS_PROFILE:-${AWS_DEFAULT_PROFILE:-none}}"
 echo " $PROFILE"
 ```
+
+### Caps Lock Indicator
+
+- [ ] Caps Lock indicator module in waybar (module not detecting currently — low priority)
 
 ### Waybar Icons
 
@@ -781,6 +915,21 @@ From the project principles — worth writing down explicitly so it doesn't get 
 
 ---
 
+## References
+
+### Official Docs
+- [Arch Wiki](https://wiki.archlinux.org/)
+- [Hyprland Wiki](https://wiki.hyprland.org/)
+- [Waybar Wiki](https://github.com/Alexays/Waybar/wiki)
+- [Catppuccin](https://github.com/catppuccin/catppuccin)
+- [MangoWC GitHub](https://github.com/dov-vai/MaGoWC)
+
+### Communities
+- r/unixporn, r/hyprland, r/archlinux
+- Hyprland Discord
+
+---
+
 ## Inspiration Sources
 
 Reference these when planning new features — steal ideas, not configs:
@@ -822,6 +971,15 @@ Things from the notes that need investigation before committing:
 - Omarchy is a curated Arch Linux setup by DHH (creator of Rails)
 - Interesting for: opinionated tool choices, clean config philosophy
 - Worth reading the source even if not using directly
+
+---
+
+## Dotfiles & Reproducibility
+
+- [x] Git repository structure (stow-based, fully tracked)
+- [x] Install script (`scripts/install.sh` — stow deploy + local scripts + systemd services)
+- [ ] Backup script — automated snapshot of current working configs
+- [ ] Restore script — deploy configs to a new machine
 
 ---
 

@@ -184,6 +184,7 @@ Portrait monitors (e.g. DP-3) get their own correctly-sized composite automatica
 | Keybind | Action | Notes |
 |---------|--------|-------|
 | `Super + L` | Lock screen | Swaylock (MangoWC uses swaylock, not hyprlock) |
+| Waybar power button | Power menu | wlogout — Catppuccin themed, icon-only buttons, full overlay |
 | `Super + K` | Show keybinds | Display this keybind reference |
 | `Super + ;` | Toggle notification panel | Open/close swaync notification center |
 | `Super + Shift + R` | Reload config | Reload MangoWC configuration |

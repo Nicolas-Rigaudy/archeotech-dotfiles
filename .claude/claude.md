@@ -172,139 +172,6 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 
 ---
 
-## 🎯 NEXT MAJOR PROJECT: Unified Control System
-
-### Vision
-
-Turn this setup into something that makes Mac/Windows users jealous — a cohesive, beautiful, instantly accessible control layer over the whole system. Everything reachable in 1–2 keystrokes. Everything looks like it belongs together. Easy to extend.
-
-The two pillars:
-1. **SwayNC** ✅ DONE — replaces dunst. Notification history panel with DND toggle. Keybind to open/close.
-2. **Rofi Settings Hub** — a single keybind opens a beautiful rofi menu giving access to every settings area: display profiles, wallpaper, appearance, audio, power, system tools.
-
-Everything themed Catppuccin Macchiato, cohesive with the existing waybar/rofi style.
-
----
-
-### Phase 1 — SwayNC ✅ COMPLETE
-
-**What was built:**
-- swaync installed, replaces dunst entirely
-- Catppuccin Macchiato CSS — glass panel matching waybar aesthetic
-- Notification history + DND toggle only (quick-toggle buttons were tried and abandoned — swaync's toggle buttons don't properly reflect real state, and waybar already covers volume/network/bluetooth)
-- Waybar bell icon (󰂜) showing unread count, click to open panel, right-click to toggle DND
-- `Super+;` keybind to toggle panel
-- battery-alert.sh updated to use `notify-send` instead of `dunstify`
-- `blur_layer=0` and `layer_shadows=0` in mango config to prevent compositor blur/shadow bleeding onto the panel
-
-**Lessons learned:**
-- swaync's `buttons-grid` toggle type does NOT reliably reflect real system state — `update-command` is not called on panel open, only on a timer. Don't use it for stateful toggles.
-- MangoWC `layerrule=noblur/noshadow` for layer-shell surfaces didn't work — had to disable `blur_layer` and `layer_shadows` globally instead
-- `mmsg reload` does NOT reliably reapply `monitorrule` — always log out/in for monitor config changes
-- swww was renamed to awww after `pacman -Syu` — updated all references in mango config and wallpaper-set.sh
-- swaync has no click-outside-to-close — Escape key closes it
-
-**Config files:**
-- `config/.config/swaync/config.json` — widgets: title, dnd, notifications only
-- `config/.config/swaync/style.css` — Catppuccin Macchiato glass theme
-- `config/.config/waybar/config-mango` — added `custom/notifications` module
-- `config/.config/waybar/style-mango.css` — bell icon styles
-- `config/.config/mango/config.conf` — swapped dunst→swaync in autostart, added Super+; keybind, blur_layer=0, layer_shadows=0, awww-daemon
-
----
-
-### Phase 2 — Rofi Settings Hub
-
-**Goal:** One keybind (`Super+,` or `Super+S`) opens a rofi menu that is the "Settings" of this system. Every setting reachable in max 2 clicks.
-
-**Menu structure (planned):**
-
-```
-⚙  Settings
-├── 🖥  Display          → opens wdisplays (drag-and-drop monitor layout)
-├── 🎨  Appearance       → opens nwg-look (GTK theme, icons, cursor, fonts)
-├── 🔊  Audio            → opens pavucontrol
-├── 📡  Network          → opens nm-connection-editor
-├── 🎵  Media            → opens playerctl / spotify
-├── 🖼  Wallpaper        → runs wallpaper-picker.sh (existing rofi picker)
-├── ⚡  Power            → opens power profile submenu (balanced/performance/saver)
-├── 💾  Disk             → opens gnome-disk-utility
-├── 🔵  Bluetooth        → opens blueman-manager
-└── 🔒  Lock             → runs swaylock
-```
-
-**Design:**
-- Same glass Catppuccin Macchiato style as the wallpaper picker
-- Icons via Papirus-Dark (already installed)
-- Each entry either: launches a GUI app, calls a script, or opens a sub-menu
-- Submenus for things like Power (with profile choices) and Display (profiles vs wdisplays)
-
-**Implementation steps:**
-1. `paru -S wdisplays nwg-look wlsunset mission-center gnome-disk-utility`
-2. Write `scripts/settings-hub.sh` — rofi dmenu script with icons, each line maps to a command
-3. Write `scripts/assets/settings-hub.rasi` — rofi theme matching wallpaper-picker glass style
-4. Wire `Super+,` keybind in mango config
-5. Add "Settings" button to waybar (gear icon, right side)
-
----
-
-### Phase 3 — Display Profiles (kanshi)
-
-**Goal:** Never think about monitors again. Plug in any screen, it just works correctly.
-
-**Profiles planned:**
-- `desk` — 3 monitors: eDP-1 (laptop left), HDMI-A-1 (landscape middle), DP-3 (portrait right, Iiyama)
-- `home` — 2 monitors: eDP-1 + any single external in landscape
-- `solo` — laptop only
-- `present` — eDP-1 + any external, both mirrored or extended landscape (for meetings/TV)
-
-**Key insight from earlier work:** Need to identify Iiyama by EDID make/model, not port name. Must verify exact strings MangoWC uses via `mmsg` with a screen connected.
-
-**Implementation steps:**
-1. `paru -S kanshi`
-2. Connect each monitor setup, run `mmsg -O` to confirm output names
-3. Write `config/.config/kanshi/config` with named profiles
-4. Add kanshi to mango autostart
-5. Add "Display" entry in settings hub that offers: [Open wdisplays] [Desk profile] [Home profile] [Present profile] [Solo]
-6. Keybind `Super+F1/F2/F3` for instant profile switching as a power-user shortcut
-
----
-
-### Phase 4 — Polish & Cohesion
-
-**Goal:** Everything feels like one system, not a collection of scripts.
-
-- [ ] Waybar bell icon showing swaync unread count
-- [ ] Waybar gear icon opening settings hub
-- [ ] Consistent animation timing across rofi menus, swaync panel, waybar
-- [ ] All rofi menus use same `.rasi` base theme (one source of truth for colors/radius/blur)
-- [ ] swaync CSS matches waybar glass pill aesthetic exactly
-- [ ] Keyboard shortcuts documented in a cheatsheet accessible via keybind
-- [ ] `Super+?` → rofi keybinds cheatsheet
-
----
-
-### Keybind Plan (new additions)
-
-| Keybind | Action |
-|---|---|
-| `Super+;` | Toggle swaync notification panel ✅ |
-| `Super+,` | Open settings hub (rofi) — TODO |
-| `Super+F1` | Display profile: desk (3 monitors) — TODO |
-| `Super+F2` | Display profile: present (laptop + external landscape) — TODO |
-| `Super+F3` | Display profile: solo (laptop only) — TODO |
-| `Super+?` | Keybinds cheatsheet — TODO |
-
----
-
-### Packages to Install
-
-```bash
-paru -S swaync wdisplays kanshi nwg-look wlsunset mission-center gnome-disk-utility
-```
-
----
-
 ### Design Rules for This System
 
 1. **One color palette** — Catppuccin Macchiato everywhere. No exceptions.
@@ -398,7 +265,7 @@ paru -S swaync wdisplays kanshi nwg-look wlsunset mission-center gnome-disk-util
 - [x] Screenshot tools (grim + slurp) with keybinds
 - [x] Color picker (wl-color-picker - compositor-agnostic)
 - [x] Clipboard history (cliphist) with rofi integration
-- [x] Power menu (wlogout) in waybar
+- [x] Power menu (wlogout) in waybar — Catppuccin themed, icon-only, full-span overlay; launched via `wlogout-launch.sh` for adaptive per-monitor margins
 - [x] Bluetooth applet (blueman-applet)
 - [x] Network applet (nm-applet)
 - [x] Volume control (pavucontrol)
@@ -410,89 +277,6 @@ paru -S swaync wdisplays kanshi nwg-look wlsunset mission-center gnome-disk-util
 - [x] Snapshot management (snapper + snap-pac + grub-btrfs + snapper-gui)
 - [x] Battery alert script (dunst notifications at 20%/10%/5%, auto-suspend at 3%) - running as systemd user service (battery-alert.service)
 
-### ⏸️ NOT YET DONE
-
-#### Productivity Tools (High Priority - Quick Wins)
-- [ ] Frog (OCR - copy text from images)
-- [ ] Mdcat (markdown preview in terminal)
-- [ ] Espanso (text expander/keyword replacer)
-- [ ] Mission Center (modern system monitoring GUI)
-- [ ] SwayNC: volume/brightness OSD notifications (show a popup when media keys pressed)
-
-#### Development Tools & Learning (Medium Priority)
-- [ ] Learn Vim motions (vim-be-good game, practice with VSCode extension)
-- [ ] LazyVim/Neovim setup exploration
-- [ ] Kickstart.nvim configuration
-
-#### Desktop Enhancement (Medium Priority)
-- [ ] Kanata (caps lock rebinding & advanced key remapping)
-- [ ] Walker vs Rofi comparison/testing
-- [ ] Dropdown/magic terminal for MangoWC (similar to Hyprland scratchpad)
-- [ ] Rofi settings menu (Bluetooth, WiFi, system settings)
-- [ ] Context menu with tools (color picker, screenshot, etc.)
-
-#### Multimedia & Content (Low-Medium Priority)
-- [ ] Ncspot (TUI Spotify client)
-- [ ] Style Spotify with Catppuccin themes
-- [ ] Stylus + Catppuccin themes for Zen browser
-- [ ] Explore RSS feeds integration
-- [ ] YouTube app/client exploration
-
-#### Communication & Productivity Apps (Medium Priority)
-- [ ] Thunderbird/Betterbird (email outside browser)
-- [ ] Teams outside browser (research if possible)
-- [ ] Excalidraw (drawing/whiteboard tool)
-
-#### Research & Exploration (Low Priority)
-- [ ] LM Studio (local LLM exploration)
-- [ ] Obsidian/Appflowy + Claude AI integration
-- [ ] Reading setup for technical books (SICP, Computer Systems, Designing Data-Intensive Applications)
-
-#### Advanced Features (Low Priority)
-- [ ] Caps Lock indicator in waybar (module not detecting, low priority)
-- [ ] Touchpad gestures (workspace swipe - not working in current Hyprland version)
-- [ ] Gaming mode (disable compositor for performance)
-- [ ] Focus mode (hide waybar, minimal distractions)
-- [ ] Hex animation open/close effects (like KDE/GNOME animations)
-
-#### Workflow Enhancements (Medium Priority)
-- [ ] Custom rofi scripts
-  - [ ] AWS profile switcher / console launcher
-  - [ ] Terraform commands (plan/apply/destroy)
-  - [ ] SSH quick connect to saved hosts
-- [ ] Custom waybar modules
-  - [ ] Git branch indicator (for current project directory)
-  - [ ] VPN status indicator
-  - [ ] AWS profile indicator
-  - [ ] Docker container status
-  - [ ] Terraform workspace indicator
-- [ ] Advanced window rules
-  - [ ] VSCode always on workspace 2
-  - [ ] Browser always on workspace 3
-  - [ ] Floating window exceptions (calculator, file pickers)
-  - [ ] Per-app workspace assignments
-- [ ] Multi-monitor hotplug scripts
-  - [x] Fallback monitorrule for unknown displays (TV, home monitors) — landscape, preferred res, x:1920
-  - [ ] Auto-detect dock/undock (workspace reconfiguration)
-  - [ ] Workspace migration scripts
-
-#### Theme System Expansion (Low Priority)
-- [ ] Theme switcher script (Mocha ↔ Macchiato)
-- [ ] Catppuccin Mocha configuration
-- [ ] Per-workspace wallpapers
-- [ ] Theme preview with rofi
-- [ ] Smooth theme transition animations
-
-#### Dotfiles & Reproducibility (High Priority)
-- [x] Git repository structure (stow-based, fully tracked)
-- [x] Install script (scripts/install.sh — stow deploy + local scripts + systemd services)
-- [ ] Backup script (automated config snapshots)
-- [ ] Restore script (deploy configs to new machine)
-- [x] Documentation
-  - [x] Full installation guide (docs/INSTALLATION.md)
-  - [x] Keybindings reference (docs/KEYBINDS-MANGO.md, docs/KEYBINDS.md)
-  - [ ] Troubleshooting guide
-  - [ ] Package list with explanations
 
 ---
 
@@ -538,8 +322,7 @@ paru -S swaync wdisplays kanshi nwg-look wlsunset mission-center gnome-disk-util
 │   ├── claude.md               # This file - main project knowledge
 │   ├── DECISIONS.md            # Log of all technical decisions made
 │   ├── TROUBLESHOOTING.md      # Known issues and solutions
-│   └── sessions/               # Session summaries
-│       └── YYYY-MM-DD-session-name.md
+│   └── STYLE_GUIDE.md          # Creative direction and aesthetic intent
 ├── config/                     # Stow package for .config
 │   └── .config/
 │       ├── hypr/               # Hyprland configs (MASTER COPY)
@@ -550,6 +333,7 @@ paru -S swaync wdisplays kanshi nwg-look wlsunset mission-center gnome-disk-util
 │       ├── mango/              # MangoWC configs (MASTER COPY)
 │       ├── systemd/user/       # Systemd user services (battery-alert.service)
 │       ├── swaync/             # Notification center (config.json + style.css)
+│       ├── wlogout/            # Power menu config (layout, style.css, icons/)
 │       ├── waypaper/           # Waypaper config (backend=custom, points to wallpaper-set.sh)
 │       ├── starship.toml       # Starship prompt config
 │       ├── btop/               # System monitor config
@@ -569,12 +353,15 @@ paru -S swaync wdisplays kanshi nwg-look wlsunset mission-center gnome-disk-util
 │   ├── setup-snapper.sh        # Automated Snapper setup
 │   ├── wallpaper-set.sh        # Wallpaper setter with Arch logo overlay system
 │   ├── wallpaper-picker.sh     # Rofi thumbnail grid wallpaper picker
-│   ├── battery-alert.sh        # Battery monitor daemon (dunst alerts at 20/10/5%, suspend at 3%)
+│   ├── battery-alert.sh        # Battery monitor daemon (alerts at 20/10/5%, suspend at 3%)
+│   ├── settings-hub.sh         # Rofi settings launcher (Super+,) — display/audio/network/power/etc
+│   ├── wlogout-launch.sh       # wlogout with adaptive per-monitor margins (via xrandr + mmsg)
 │   └── assets/
 │       ├── arch-logo.svg       # Arch crystal logo (LOGO_COLOR/LOGO_OPACITY placeholders)
 │       ├── rebel-logo.svg      # Rebel Alliance logo (LOGO_COLOR/LOGO_OPACITY placeholders)
 │       ├── imperial-logo.svg   # Imperial Aquila logo (LOGO_COLOR/LOGO_OPACITY placeholders)
-│       └── wallpaper-picker.rasi  # Rofi theme for wallpaper picker (Catppuccin glass, 3-col grid)
+│       ├── wallpaper-picker.rasi  # Rofi theme for wallpaper picker (Catppuccin glass, 3-col grid)
+│       └── settings-hub.rasi   # Rofi theme for settings hub (matches wallpaper-picker glass style)
 ├── wallpapers/                 # Wallpaper collection (tracked in git)
 ├── docs/
 │   ├── INSTALLATION.md         # Step-by-step install guide
@@ -622,20 +409,20 @@ paru -S swaync wdisplays kanshi nwg-look wlsunset mission-center gnome-disk-util
 
 This project maintains comprehensive documentation across multiple files:
 
-### Main Documentation Files
-- **[README.md](../README.md)** - Project overview and quick start guide
-- **[docs/KEYBINDS-MANGO.md](../docs/KEYBINDS-MANGO.md)** - Complete keybindings reference for MangoWC (primary)
-- **[docs/KEYBINDS.md](../docs/KEYBINDS.md)** - Complete keybindings reference for Hyprland (backup)
+### Human-readable docs (`docs/`)
+- **[docs/KEYBINDS-MANGO.md](../docs/KEYBINDS-MANGO.md)** - Keybindings reference for MangoWC (primary)
+- **[docs/KEYBINDS.md](../docs/KEYBINDS.md)** - Keybindings reference for Hyprland (backup)
 - **[docs/PACKAGES.md](../docs/PACKAGES.md)** - Full package list with explanations
+- **[docs/TOOLS.md](../docs/TOOLS.md)** - Tool configurations and usage guide
 - **[docs/INSTALLATION.md](../docs/INSTALLATION.md)** - Step-by-step installation guide
-- **[docs/TOOLS.md](../docs/TOOLS.md)** - Detailed tool configurations and usage
+- **[docs/MANGOWC-SETUP.md](../docs/MANGOWC-SETUP.md)** - MangoWC setup, screen sharing, wallpaper system
 
-### Claude Code Documentation (.claude/)
-- **[.claude/claude.md](claude.md)** - This file - comprehensive project knowledge base
-- **[.claude/STYLE_GUIDE.md](STYLE_GUIDE.md)** - Theme style guide (Catppuccin colors, design patterns)
-- **[.claude/DECISIONS.md](DECISIONS.md)** - Log of all technical decisions made
-- **[.claude/TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Known issues and solutions
-- **[.claude/sessions/](sessions/)** - Session summaries for major work periods
+### Claude context (`.claude/`)
+- **[claude.md](claude.md)** - This file — system state, architecture, how things work
+- **[ROADMAP.md](ROADMAP.md)** - Everything planned, in-progress, and ideas
+- **[DECISIONS.md](DECISIONS.md)** - Technical decisions with rationale
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Known issues and solutions
+- **[STYLE_GUIDE.md](STYLE_GUIDE.md)** - Creative direction and aesthetic intent (Corvus persona)
 
 ### System Configuration
 - **[system/README.md](../system/README.md)** - System-level configuration deployment guide
@@ -841,108 +628,6 @@ ls /.snapshots/<number>/snapshot/
 
 ---
 
-## Known Issues & Solutions
-
-### Issue: Fedora Won't Boot from GRUB (Partially Fixed)
-**Status:** ⚠️ Partially working - boots but login environment incorrect
-
-**Progress Made:**
-1. ✅ Fixed GRUB entry - kernel loads successfully from shared `/boot`
-2. ✅ Fixed Fedora's `/etc/fstab` - updated `/boot` UUID to shared partition
-3. ✅ Fixed Fedora's `/etc/fstab` - updated `/boot/efi` UUID to shared EFI partition
-4. ⚠️ Boots but shows plain SDDM instead of Fedora's themed KDE environment
-
-**Current Workaround:** Boot Fedora from BIOS boot menu (works perfectly)
-
-**Diagnostic Scripts Created:**
-- `scripts/diagnose-fedora-boot.sh` - Check btrfs subvolumes and fstab
-- `scripts/fix-fedora-fstab.sh` - Fix `/boot` UUID
-- `scripts/fix-fedora-efi.sh` - Fix `/boot/efi` UUID
-
-**Custom GRUB Entries:**
-- `system/etc/grub.d/40_custom` - Manual Fedora boot entries (Fedora 43 and 42)
-
-**What's Working:**
-- Fedora kernel loads from GRUB
-- Root filesystem mounts correctly
-- `/boot` and `/boot/efi` mount successfully
-- Login screen appears and accepts password
-
-**What's Not Working:**
-- Gets wrong desktop environment (Arch's plain SDDM vs Fedora's KDE)
-- After login, returns to login screen
-
-**Next Steps to Try (Future Session):**
-1. Check if issue is with display manager initialization order
-2. Verify Fedora's systemd services are starting correctly
-3. May need to investigate systemd-boot as alternative to GRUB for Fedora
-4. Consider keeping BIOS boot as primary Fedora boot method
-
-### Issue: No Audio / No Microphone
-**Symptom:** `pactl list sinks` shows only `auto_null`
-**Cause:** Missing SOF firmware for Intel audio
-**Solution:**
-```bash
-sudo pacman -S sof-firmware
-reboot
-# Audio should work after reboot
-```
-
-### Issue: SDDM Shows Wrong Keyboard Layout
-**Symptom:** Login screen defaults to US instead of FR
-**Cause:** Xsetup script needs to set FR as default
-**Solution:**
-```bash
-sudo nano /usr/share/sddm/scripts/Xsetup
-# Set to: setxkbmap fr
-sudo chmod +x /usr/share/sddm/scripts/Xsetup
-```
-
-### Issue: Hyprland Keybinds Don't Follow Keyboard Layout
-**Symptom:** Super+Q opens terminal on AZERTY 'A' key instead of 'Q' key
-**Cause:** Hyprland uses keycodes by default, not keysyms
-**Solution:**
-Add to `~/.config/hypr/hyprland.conf`:
-```conf
-input {
-    resolve_binds_by_sym = true
-}
-```
-
-### Issue: Clipboard History Empty
-**Symptom:** Super+V shows no clipboard history
-**Cause:** cliphist daemon not running
-**Solution:**
-Add to `~/.config/hypr/hyprland.conf`:
-```conf
-exec-once = wl-paste --type text --watch cliphist store
-exec-once = wl-paste --type image --watch cliphist store
-```
-
-### Issue: Bluetooth Icon Not Showing in Waybar
-**Symptom:** Waybar bluetooth module doesn't display
-**Cause:** Bluetooth service not enabled
-**Solution:**
-```bash
-sudo systemctl enable bluetooth
-sudo systemctl start bluetooth
-pkill waybar
-waybar &
-```
-
-### Issue: Window Doesn't Float (pavucontrol, etc.)
-**Symptom:** Expected floating window opens tiled
-**Cause:** Missing window rule
-**Solution:**
-Add to `~/.config/hypr/hyprland.conf`:
-```conf
-windowrulev2 = float, class:^(pavucontrol)$
-windowrulev2 = center, class:^(pavucontrol)$
-windowrulev2 = size 800 600, class:^(pavucontrol)$
-```
-
----
-
 ## Coding Standards & Best Practices
 
 ### Configuration Files
@@ -1053,118 +738,20 @@ new[MD]: add installation guide and keybinds reference
 
 ---
 
-## Session Management
+## End of Session — Documentation Checklist
 
-### Starting a New Session
-1. **Pull latest changes** (if using git)
-2. **Review current status** (check this file's "Current Status" section)
-3. **Set session goal** (what do you want to accomplish?)
-4. **Document as you go** (update DECISIONS.md, TROUBLESHOOTING.md)
+After any significant work, update these files before committing:
 
-### Ending a Session
+1. **`.claude/claude.md`** — move completed tasks, update "Recent Additions" and "Last Updated"
+2. **`docs/PACKAGES.md`** — add newly installed packages
+3. **`docs/KEYBINDS-MANGO.md`** / **`docs/KEYBINDS.md`** — add/update keybindings
+4. **`docs/TOOLS.md`** — document new tool configs/usage
+5. **`.claude/ROADMAP.md`** — update in-progress/done items if scope changed
+6. **`docs/MANGOWC-SETUP.md`** — update if MangoWC setup steps changed
+7. **`.claude/DECISIONS.md`** — log any technical choices made (why X over Y)
+8. **`.claude/TROUBLESHOOTING.md`** — add any issues encountered and solved
 
-**CRITICAL: Before ending ANY session, Claude Code MUST update ALL documentation files.**
-
-#### Step 1: Update Documentation Files
-
-**A. Update .claude/claude.md (THIS FILE)**
-- [ ] Move completed tasks from "NOT YET DONE" to "COMPLETED" sections
-- [ ] Update package versions if any were installed/updated
-- [ ] Add new tools to appropriate sections (Terminal & Shell, Development Environment, etc.)
-- [ ] Update "Recent Additions" line at bottom
-- [ ] Update "Last Updated" date to current date (YYYY-MM-DD format)
-- [ ] Verify all compositor references (MangoWC primary, Hyprland backup)
-- [ ] Check that theming status is accurate (what's themed, what's not)
-
-**B. Update docs/PACKAGES.md**
-- [ ] Add any newly installed packages to appropriate categories
-- [ ] Include package name, purpose, and notes
-- [ ] Update version numbers if packages were upgraded
-- [ ] Update "Last Updated" date
-- [ ] Verify package count approximation is still accurate
-- [ ] Ensure compositor info is correct (MangoWC primary, Hyprland backup)
-
-**C. Update docs/KEYBINDS.md and docs/KEYBINDS-MANGO.md**
-- [ ] Add any new keybindings created during session
-- [ ] Update keybindings that were modified
-- [ ] Remove deprecated keybindings
-- [ ] Ensure consistency between both files where applicable
-- [ ] Add notes about compositor-specific bindings
-
-**D. Update docs/TOOLS.md**
-- [ ] Add configuration details for newly installed tools
-- [ ] Document usage examples for new tools
-- [ ] Update existing tool configurations if changed
-- [ ] Add troubleshooting tips if discovered during session
-
-**E. Update .claude/DECISIONS.md**
-- [ ] Document ALL technical decisions made during session
-- [ ] Include rationale for choices (why X over Y)
-- [ ] Note any trade-offs or compromises
-- [ ] Reference related commits or issues
-- [ ] Date each decision entry
-
-**F. Update .claude/TROUBLESHOOTING.md**
-- [ ] Add any new issues encountered and their solutions
-- [ ] Update existing entries if better solutions found
-- [ ] Include error messages for searchability
-- [ ] Add steps to reproduce and fix
-- [ ] Cross-reference with DECISIONS.md if relevant
-
-**G. Update README.md (if needed)**
-- [ ] Update project description if scope changed
-- [ ] Add new features to feature list
-- [ ] Update screenshots/examples if visual changes made
-- [ ] Ensure installation instructions are current
-
-#### Step 2: Create Session Summary
-- [ ] Create new file in `.claude/sessions/YYYY-MM-DD-session-name.md`
-- [ ] Use session-summary-template.md as guide
-- [ ] Document what was accomplished
-- [ ] List all files modified
-- [ ] Note any outstanding issues or TODOs
-- [ ] Include relevant commands or code snippets
-
-#### Step 3: Verify Documentation Consistency
-- [ ] All documentation files reference correct compositor (MangoWC primary)
-- [ ] Package lists match across PACKAGES.md and claude.md
-- [ ] Dates are updated (use format: YYYY-MM-DD)
-- [ ] All new packages are documented
-- [ ] All new keybindings are documented
-- [ ] All decisions are logged
-- [ ] All issues/solutions are documented
-
-#### Step 4: Prepare Commit Message
-- [ ] Review all changes: `git status` and `git diff`
-- [ ] Draft commit message following the format in "Git Commit Messages" section below
-  - Example: `chg[MD]: update all documentation after tool installation session`
-- [ ] Present commit message to user - DO NOT commit automatically
-- [ ] User will stage, commit, and push manually
-- [ ] DO NOT include "Co-Authored-By: Claude" or any AI attribution in commit messages
-
-#### Step 5: Final Verification
-- [ ] Read through claude.md "Current Status" - is it accurate?
-- [ ] Check "NOT YET DONE" section - reflects remaining work?
-- [ ] Verify "Recent Additions" includes everything from this session
-- [ ] Confirm all dates are current
-- [ ] Ensure no placeholder text or TODOs left in docs
-
-### Session Summary Template
-See `session-summary-template.md` in this directory for the format to use when documenting sessions.
-
-### Documentation Update Checklist Quick Reference
-
-Every session end MUST update:
-1. ✅ `.claude/claude.md` - Main project knowledge base
-2. ✅ `docs/PACKAGES.md` - Package list
-3. ✅ `docs/KEYBINDS.md` & `docs/KEYBINDS-MANGO.md` - Keybindings
-4. ✅ `docs/TOOLS.md` - Tool configurations
-5. ✅ `.claude/DECISIONS.md` - Technical decisions
-6. ✅ `.claude/TROUBLESHOOTING.md` - Issues and solutions
-7. ✅ `.claude/sessions/DATE-session.md` - Session summary
-8. ✅ `README.md` - If needed
-
-**Remember: Documentation is not optional. If it's not documented, it didn't happen.**
+Then prepare a commit message following the Git Commit Messages format. Present it to the user — do not commit automatically. Do NOT include "Co-Authored-By: Claude" in commit messages.
 
 ---
 
@@ -1205,135 +792,12 @@ Every session end MUST update:
 - **Keep "Current Status" section accurate** (move tasks as completed)
 - **Log all decisions in DECISIONS.md**
 - **Document all issues in TROUBLESHOOTING.md**
-- **Create session summaries** for major work sessions
 
 ---
 
-## Next Steps & Priorities
-
-### Immediate (High Priority) - Quick Wins
-1. **Install productivity tools** (Frog, Mdcat, Espanso, Mission Center)
-2. **Learn Vim motions** (practice with VSCode extension, try vim-be-good game)
-3. **Complete keybindings documentation** in KEYBINDS.md
-4. **Document all packages** with explanations in PACKAGES.md
-5. **Configure Thunar** file manager settings
-
-### Short Term (Medium Priority) - Dotfiles & Workflow
-1. **Write backup script** to snapshot current working config
-2. **Create install script** for reproducible deployment
-3. **Build custom rofi scripts** (AWS, Terraform, SSH, settings menu)
-4. **Add custom waybar modules** (git branch, AWS profile, VPN status)
-5. **Create advanced window rules** for work apps
-6. **Write comprehensive installation guide**
-
-### Medium Term (Medium Priority) - Enhancement & Learning
-1. **Explore LazyVim/Neovim** setup (Kickstart.nvim)
-2. **Kanata setup** for caps lock rebinding
-3. **Walker vs Rofi** comparison and testing
-4. **MangoWC dropdown terminal** implementation
-5. **Implement theme switcher** (Mocha ↔ Macchiato)
-6. **Zen browser deep configuration** and Stylus themes
-7. **Waybar icons** - ensure all working with click actions
-
-### Long Term (Low Priority) - Advanced Features
-1. **Multimedia setup** (Ncspot, Spotify styling, YouTube client)
-2. **Communication tools** (Thunderbird/Betterbird, Teams alternatives)
-3. **Technical reading setup** (SICP, Computer Systems, Designing Data-Intensive Applications)
-4. **LM Studio** local LLM exploration
-5. **Obsidian/Appflowy + Claude AI** integration
-6. **Deploy to personal Windows PC** (dual-boot)
-7. **Add per-workspace wallpapers**
-8. **Implement gaming mode**
-9. **Build project workspace switcher**
-10. **Hex animation effects** (like KDE/GNOME)
-
 ---
 
-## References & Resources
-
-### Official Documentation
-- [Arch Wiki](https://wiki.archlinux.org/)
-- [Hyprland Wiki](https://wiki.hyprland.org/)
-- [Waybar Wiki](https://github.com/Alexays/Waybar/wiki)
-- [Catppuccin](https://github.com/catppuccin/catppuccin)
-
-### Inspiration Sources
-- [Adnan's Dotfiles](https://github.com/Adnan-Malik-26/dotfiles)
-- [prasanthrangan/hyprdots](https://github.com/prasanthrangan/hyprdots)
-- [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland)
-- [caelestia-dots/shell](https://github.com/caelestia-dots/shell)
-
-### Communities
-- r/unixporn - Eye candy and inspiration
-- r/hyprland - Hyprland-specific help
-- r/archlinux - Arch support
-- Hyprland Discord - Real-time help
-
----
-
-## Project History
-
-**2025-11-28:** Initial system installation and setup
-- Installed Arch Linux alongside Fedora
-- Set up Hyprland with full desktop environment
-- Applied Catppuccin Macchiato theming
-- Migrated all work files and development tools
-- System fully operational as daily driver
-
-**2025-11-28 (Later):** Project documentation and Claude Code setup
-- Created comprehensive project knowledge base
-- Organized all decisions and current status
-- Prepared for dotfiles repository creation
-- Ready for iterative improvements and automation
-
----
-
-## Success Criteria
-
-By the end of this project, the following should be true:
-
-✅ **Functional**
-- System boots reliably (Arch and Fedora dual-boot)
-- All work tools operational (VSCode, AWS, Terraform, Docker)
-- Audio, video, networking all working
-- Multi-monitor setup works seamlessly
-
-✅ **Documented**
-- Every config file commented and explained
-- Complete installation guide exists
-- Troubleshooting guide covers common issues
-- All decisions documented with rationale
-
-✅ **Reproducible**
-- Install script can deploy to fresh Arch in <1 hour
-- Dotfiles repository contains everything needed
-- Backup/restore scripts work reliably
-- Can migrate to new machine easily
-
-✅ **Maintainable**
-- Clear organization of configs and scripts
-- Version controlled with meaningful commits
-- Session summaries track progress
-- Easy to update and modify
-
-✅ **Beautiful**
-- Consistent Catppuccin theming throughout
-- Smooth animations and transitions
-- Professional appearance
-- Personal touches (wallpaper, etc.)
-
-✅ **Productive**
-- Keybindings are intuitive and efficient
-- Quick access to common tasks
-- Work-specific integrations (AWS, etc.)
-- Minimal friction in daily use
-
----
-
-**Last Updated:** 2026-03-11
-**System Status:** ✅ Fully Functional
-**Daily Driver Ready:** Yes (MangoWC primary, Hyprland backup)
-**Dotfiles Repository:** ✅ Complete with Stow
-**Primary Compositor:** MangoWC (scrolling layouts) with Hyprland as fallback
-**Recent Additions:** Wallpaper/logo overlay system improvements — portrait screen support (separate composed-portrait.png routed to DP-3 via swww --outputs), awk-based accent color extraction (saturation+contrast scoring), area-normalized logo sizing (sqrt(w×h)=render_px gives equal visual weight across all aspect ratios), shape-hugging drop shadow (blur alpha first then colorize), SVG viewBox crop for imperial aquila (0 620 2000 780), inner margin to prevent shadow edge clipping, rofi picker tile margins (60% fit), keybinds helper updated with wallpaper section
-**Documentation:** See docs/ folder and .claude/ folder for complete references
+**Last Updated:** 2026-04-13
+**System Status:** ✅ Fully Functional — Daily Driver
+**Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
+**Roadmap:** See `.claude/ROADMAP.md` for all planned work and ideas

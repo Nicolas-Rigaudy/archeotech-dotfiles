@@ -1,0 +1,114 @@
+/* Settings Hub — vertical list, Catppuccin Macchiato glass */
+/* Shares the same palette/aesthetic as wallpaper-picker.rasi */
+
+* {
+    bg:       rgba(30, 30, 46, 0.92);
+    surface:  rgba(49, 50, 68, 0.70);
+    accent:   #c6a0f6;
+    text:     #cad3f5;
+    subtext:  #a5adcb;
+    urgent:   #ed8796;
+
+    background-color: transparent;
+    text-color:       @text;
+    font:             "Noto Sans 12";
+}
+
+window {
+    transparency:     "real";
+    background-color: @bg;
+    border:           1px;
+    border-color:     @accent;
+    border-radius:    16px;
+    padding:          12px;
+    width:            380px;
+}
+
+mainbox {
+    background-color: transparent;
+    spacing:          8px;
+    children:         [ inputbar, listview ];
+}
+
+/* ── Search / filter bar ──────────────────────────────────────────────────── */
+inputbar {
+    background-color: rgba(49, 50, 68, 0.60);
+    border-radius:    10px;
+    padding:          8px 12px;
+    spacing:          8px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @accent;
+    font:             "Noto Sans 13";
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @text;
+    placeholder:      "Search…";
+    placeholder-color: @subtext;
+}
+
+/* ── List ─────────────────────────────────────────────────────────────────── */
+listview {
+    background-color: transparent;
+    lines:            11;
+    columns:          1;
+    spacing:          4px;
+    padding:          0px;
+    scrollbar:        false;
+    dynamic:          true;
+    fixed-height:     false;
+    cycle:            false;
+}
+
+/* ── Individual entries ───────────────────────────────────────────────────── */
+element {
+    background-color: transparent;
+    border-radius:    10px;
+    padding:          10px 12px;
+    spacing:          12px;
+    orientation:      horizontal;
+    cursor:           pointer;
+}
+
+element normal.normal,
+element alternate.normal {
+    background-color: transparent;
+}
+
+element selected.normal {
+    background-color: @surface;
+    border:           1px;
+    border-color:     @accent;
+}
+
+/* urgent = active state indicator (e.g. night light currently ON) */
+element normal.urgent,
+element alternate.urgent {
+    text-color: @urgent;
+}
+
+element selected.urgent {
+    background-color: @surface;
+    border:           1px;
+    border-color:     @urgent;
+    text-color:       @urgent;
+}
+
+element-icon {
+    background-color: transparent;
+    size:             24px;
+    cursor:           inherit;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    highlight:        bold @accent;
+    cursor:           inherit;
+    vertical-align:   0.5;
+}
