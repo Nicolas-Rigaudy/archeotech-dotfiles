@@ -11,6 +11,7 @@ STATUS_FILE="$BATTERY/status"
 BATTERY_NOTIFY_ID=9901
 
 # Track which notifications have already been sent (reset when plugged in)
+NOTIFIED_50=false
 NOTIFIED_20=false
 NOTIFIED_10=false
 NOTIFIED_5=false
@@ -29,6 +30,7 @@ while true; do
 
     # Reset notification flags when plugged in
     if [[ "$STATUS" == "Charging" || "$STATUS" == "Full" ]]; then
+        NOTIFIED_50=false
         NOTIFIED_20=false
         NOTIFIED_10=false
         NOTIFIED_5=false
@@ -47,18 +49,21 @@ while true; do
     # Only alert when discharging
     if [[ "$STATUS" == "Discharging" ]]; then
         if [[ "$CAPACITY" -le 3 ]]; then
-            send_notification "critical" "Battery Critical: ${CAPACITY}%" "Suspending system now to protect your work." "battery-caution"
+            send_notification "critical" "Battery Dead: ${CAPACITY}%" "Suspending now to protect your work." "battery-caution"
             sleep 5
             systemctl suspend
         elif [[ "$CAPACITY" -le 5 && "$NOTIFIED_5" == false ]]; then
             NOTIFIED_5=true
-            send_notification "critical" "Battery Critical: ${CAPACITY}%" "Plug in NOW or your system will suspend soon." "battery-caution"
+            send_notification "critical" "Battery Critical: ${CAPACITY}%" "Plug in NOW — system will suspend in minutes." "battery-caution"
         elif [[ "$CAPACITY" -le 10 && "$NOTIFIED_10" == false ]]; then
             NOTIFIED_10=true
-            send_notification "critical" "Battery Low: ${CAPACITY}%" "Connect your charger soon." "battery-low"
+            send_notification "critical" "Battery Low: ${CAPACITY}%" "Plug in your charger immediately." "battery-caution"
         elif [[ "$CAPACITY" -le 20 && "$NOTIFIED_20" == false ]]; then
             NOTIFIED_20=true
-            send_notification "normal" "Battery Low: ${CAPACITY}%" "Consider plugging in your charger." "battery-low"
+            send_notification "normal" "Battery Low: ${CAPACITY}%" "You should plug in your charger." "battery-caution"
+        elif [[ "$CAPACITY" -le 50 && "$NOTIFIED_50" == false ]]; then
+            NOTIFIED_50=true
+            send_notification "low" "Battery at ${CAPACITY}%" "Consider plugging in soon." "battery-low"
         fi
     fi
 

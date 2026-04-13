@@ -275,7 +275,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] PDF viewer (zathura)
 - [x] Archive tools (file-roller, unzip, unrar, p7zip)
 - [x] Snapshot management (snapper + snap-pac + grub-btrfs + snapper-gui)
-- [x] Battery alert script (dunst notifications at 20%/10%/5%, auto-suspend at 3%) - running as systemd user service (battery-alert.service)
+- [x] Battery alert script (swaync notifications at 20%/10%/5%, auto-suspend at 3%) - running as systemd user service (battery-alert.service)
 
 
 ---

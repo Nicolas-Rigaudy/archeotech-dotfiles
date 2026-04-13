@@ -1,13 +1,13 @@
 [Unit]
 Description=Battery low alert notifications
-After=graphical-session.target
-PartOf=graphical-session.target
 
 [Service]
 Type=simple
 ExecStart=%h/.local/bin/battery-alert.sh
 Restart=on-failure
 RestartSec=10
+# Wait for D-Bus (needed for notify-send) before first run
+ExecStartPre=/bin/sleep 5
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=default.target

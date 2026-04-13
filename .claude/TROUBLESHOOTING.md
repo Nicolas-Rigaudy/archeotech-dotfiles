@@ -818,6 +818,44 @@ windowrule=app_id:pavucontrol,center
 
 ---
 
+## Battery Alert Service
+
+### battery-alert.service Inactive (Dead) — Never Starts
+
+**Symptoms:**
+- `systemctl --user status battery-alert.service` shows `inactive (dead)`
+- Logs show `ConditionResult=no`
+- No battery notifications at any charge level
+
+**Cause:**
+- Service was `WantedBy=graphical-session.target` — MangoWC never activates this target, so the service never starts
+
+**Solution:**
+Change the service to use `default.target` instead:
+```ini
+[Unit]
+Description=Battery low alert notifications
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/battery-alert.sh
+Restart=on-failure
+RestartSec=10
+ExecStartPre=/bin/sleep 5
+
+[Install]
+WantedBy=default.target
+```
+
+The 5s `ExecStartPre` sleep ensures D-Bus is ready for `notify-send` at startup.
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now battery-alert.service
+```
+
+---
+
 ## General Troubleshooting Steps
 
 ### Debugging Checklist
