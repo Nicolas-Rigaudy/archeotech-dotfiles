@@ -213,7 +213,8 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Waypaper installed as backup picker (configured with custom_command = wallpaper-set.sh)
 - [x] Multi-logo overlay system (wallpaper-set.sh) - Arch Linux, Rebel Alliance, Imperial Aquila logos; adaptive color from wallpaper, toggle Super+Shift+W, remembers last active logo; portrait screen support (DP-3), area-normalized sizing, shape-hugging drop shadow, SVG cropping for imperial
 - [x] Window rules for floating windows (waypaper, pavucontrol, bitwarden, file dialogs, calculator, browser popups)
-- [x] swaylock (MangoWC) and hyprlock (Hyprland) configured
+- [x] swaylock (MangoWC) and hyprlock (Hyprland) configured — swaylock uses dynamic wallpaper via swaylock-launch.sh
+- [x] SDDM login screen customized — Arch logo background (replaces cat), password masking immediate (no character reveal)
 - [x] swayidle (MangoWC) and hypridle (Hyprland) auto-lock
 - [x] All keybindings configured (see docs/KEYBINDS-MANGO.md and docs/KEYBINDS.md)
 - [x] xdg-desktop-portal configured for screen sharing (Teams, Zoom, etc.)
@@ -356,6 +357,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │   ├── battery-alert.sh        # Battery monitor daemon (alerts at 20/10/5%, suspend at 3%)
 │   ├── settings-hub.sh         # Rofi settings launcher (Super+,) — display/audio/network/power/etc
 │   ├── wlogout-launch.sh       # wlogout with adaptive per-monitor margins (via xrandr + mmsg)
+│   ├── swaylock-launch.sh      # swaylock wrapper — reads ~/.cache/wallpaper/last-wallpaper for dynamic bg
 │   └── assets/
 │       ├── arch-logo.svg       # Arch crystal logo (LOGO_COLOR/LOGO_OPACITY placeholders)
 │       ├── rebel-logo.svg      # Rebel Alliance logo (LOGO_COLOR/LOGO_OPACITY placeholders)
@@ -392,6 +394,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 ~/.local/bin/wallpaper-set.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-set.sh
 ~/.local/bin/wallpaper-picker.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-picker.sh
 ~/.local/bin/battery-alert.sh -> ~/Projects/archeotech-dotfiles/scripts/battery-alert.sh
+~/.local/bin/swaylock-launch.sh -> ~/Projects/archeotech-dotfiles/scripts/swaylock-launch.sh
 
 # Systemd service (manual symlink — stow can't merge into existing systemd dir):
 ~/.config/systemd/user/battery-alert.service -> ~/Projects/archeotech-dotfiles/config/.config/systemd/user/battery-alert.service

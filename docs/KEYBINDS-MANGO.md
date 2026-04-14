@@ -183,7 +183,8 @@ Portrait monitors (e.g. DP-3) get their own correctly-sized composite automatica
 
 | Keybind | Action | Notes |
 |---------|--------|-------|
-| `Super + L` | Lock screen | Swaylock (MangoWC uses swaylock, not hyprlock) |
+| `Super + L` | Lock screen | swaylock-launch.sh — shows current wallpaper as background |
+| `Super + M` | Logout (quit compositor) | mmsg -q — exits MangoWC cleanly, returns to SDDM |
 | Waybar power button | Power menu | wlogout — Catppuccin themed, icon-only buttons, full overlay |
 | `Super + K` | Show keybinds | Display this keybind reference |
 | `Super + ;` | Toggle notification panel | Open/close swaync notification center |
