@@ -48,6 +48,15 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + Shift + Space` | Toggle floating / snap back to tile | Float ↔ Tile — use this to re-tile a window you moved with the mouse |
 | `Super + T` | Toggle split | Change split direction |
 
+### Scratchpad
+
+| Keybind | Action | Notes |
+|---------|--------|-------|
+| `Super + `` ` | Toggle scratchpad terminal | Shows/hides a floating kitty — auto-spawned on first press |
+| `Super + Shift + `` ` | Send window to scratchpad | Move focused window into the scratchpad pool |
+
+The scratchpad terminal persists across tag switches. Size is 75% width × 85% height, centered on screen.
+
 ### Focus Movement
 
 | Keybind | Action | Notes |

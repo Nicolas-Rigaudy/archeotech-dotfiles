@@ -326,7 +326,7 @@ Beyond just colors — make each theme feel distinct:
 ### MangoWC
 
 - [ ] **Explore Hyprland plugins** — see if they can replicate MangoWC's scrolling layout, and evaluate whether to switch back or stay on MangoWC
-- [ ] **Scratchpad terminal** — dropdown terminal on keybind (like Guake/YAKUAKE). Possible with MangoWC's special workspace/floating rules
+- [x] **Scratchpad terminal** — `Super+grave` toggle, `Super+Shift+grave` to send window; uses `toggle_named_scratchpad` (auto-spawns kitty on first press); 75%×85% centered float; **note:** MangoWC always centers — true top-drop (Yakuake-style) not possible without patching compositor
 - [ ] **Window rules** — pin specific apps to specific tags: VSCode → tag 2, browser → tag 3, terminal → tag 1
 - [ ] **Floating window exceptions** — calculator, file pickers, pavucontrol already done; refine for all popup windows
 - [ ] **Special layouts for dev workflow** — define named layout presets: "code mode" (editor 60% + terminal 40%), "research mode" (browser 50% + notes 50%)
