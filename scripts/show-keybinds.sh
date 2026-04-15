@@ -72,8 +72,7 @@ if [ "$COMPOSITOR" = "hyprland" ]; then
     add_bind "$SUPER + $SHIFT + 1-9" "Move window to workspace"
     add_bind "$SUPER + Tab" "Next workspace"
     add_bind "$SUPER + $SHIFT + Tab" "Previous workspace"
-    add_bind "$SUPER + \`" "Toggle scratchpad"
-    add_bind "$SUPER + $SHIFT + \`" "Move to scratchpad"
+    add_bind "$SUPER + \`" "Toggle scratchpad terminal"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━━━━━ 󰋫 WALLPAPER ━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"

@@ -53,7 +53,6 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | Keybind | Action | Notes |
 |---------|--------|-------|
 | `Super + `` ` | Toggle scratchpad terminal | Shows/hides a floating kitty — auto-spawned on first press |
-| `Super + Shift + `` ` | Send window to scratchpad | Move focused window into the scratchpad pool |
 
 The scratchpad terminal persists across tag switches. Size is 75% width × 85% height, centered on screen.
 
