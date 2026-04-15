@@ -108,7 +108,7 @@ element-icon {
 element-text {
     background-color: transparent;
     text-color:       inherit;
-    highlight:        bold @accent;
+    highlight:        bold;
     cursor:           inherit;
     vertical-align:   0.5;
 }
