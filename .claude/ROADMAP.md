@@ -49,28 +49,41 @@ Key lessons (also in TROUBLESHOOTING.md):
 - No fake toggles — open the real tool, don't try to reflect state in rofi
 
 - [x] **Rofi Settings Hub** (`Super+,`) — script + rasi theme + keybind + waybar gear icon (󰒓, left of bell) all done
+  - Icons fixed: `icon-theme: "Papirus-Dark"` added to rofi config.rasi (was missing)
+  - Back navigation: all submenus have `← Back` + Escape returns to main menu
+  - Power → `wlogout-launch.sh`, Lock → `swaylock-launch.sh` (dynamic wallpaper)
+  - Appearance removed — nwg-look is GTK-only, misleading as a full theme switcher
+- [x] **Display submenu** — extend/mirror/laptop-only/external-only/adjust via wlr-randr; detects connected externals dynamically; wdisplays as manual escape hatch
+- [x] **Night Light** — wlsunset off/4500K/3500K/2700K submenu
+- [x] **Power Profile** — power-profiles-daemon balanced/performance/power-saver submenu
+- [x] **Cursor theme** — catppuccin-macchiato-mauve-cursors set in mango.conf + environment.d/cursor.conf (nwg-look only affects GTK, not compositor)
 - [x] **wlogout theme** — Catppuccin Macchiato glass pill buttons, icon-only, full-span overlay, adaptive portrait layout; launched via `scripts/wlogout-launch.sh` (computes per-monitor margins via xrandr)
   - **Known limitation**: button shapes inconsistent across monitors (GTK/wlogout limitation, no clean fix)
 - [x] **Waybar gear icon** — `custom/settings-hub` module, 󰒓 icon, `@subtext1` color, mauve hover, sits left of notification bell
 
-### Phase 3 — Display Profiles (kanshi)
+### Phase 3 — Display Profiles (kanshi) — DROPPED
 
-**Goal:** Never think about monitors again. Plug in, it just works.
+kanshi auto-switches monitor layouts on plug/unplug, but MangoWC's wildcard monitorrules already handle this. The manual Display submenu in the settings hub covers ad-hoc layout switching (meetings, TVs, presentations) better than kanshi's profile system would. Not worth the setup complexity.
 
-**Profiles planned:**
-- `desk` — eDP-1 (laptop left) + HDMI-A-1 (landscape middle) + DP-3 (portrait right, Iiyama)
-- `home` — eDP-1 + any single external landscape
-- `solo` — laptop only
-- `present` — eDP-1 + any external, extended landscape (meetings/TV)
+### Phase X — Theme Switcher (Future)
 
-**Key insight:** Must identify Iiyama by EDID make/model, not port name. Verify exact strings via `mmsg -O` with the screen connected — port names can change.
+A script that changes the full system theme at once — not just GTK.
 
-**Implementation steps:**
-1. Connect each monitor setup, run `mmsg -O` to confirm output names/EDID
-2. Write `config/.config/kanshi/config` with named profiles
-3. Add kanshi to mango autostart
-4. Add "Display" entry in settings hub: [wdisplays] [Desk] [Home] [Present] [Solo]
-5. Keybinds `Super+F1/F2/F3` for instant power-user profile switching
+**Problem:** nwg-look only writes to `gtk-3.0/settings.ini` and `gtk-4.0/settings.ini`. The compositor cursor (`mango.conf` + `environment.d/cursor.conf`), Waybar (`style.css`), Kitty (`kitty.conf`), and Rofi (`theme.rasi`) are all independent — no single tool controls them all.
+
+**Goal:** `theme-switch.sh [macchiato|mocha|latte]` — patches all config files and restarts affected services in one command.
+
+**Scope:**
+- [ ] Patch `gtk-3.0/settings.ini` (GTK theme, icon theme, cursor)
+- [ ] Patch `mango/config.conf` (cursor_theme)
+- [ ] Patch `environment.d/cursor.conf` (XCURSOR_THEME)
+- [ ] Patch `waybar/style.css` (color variables or @import swap)
+- [ ] Patch `kitty/kitty.conf` (color include swap)
+- [ ] Patch `rofi/theme.rasi` (color variables)
+- [ ] Restart waybar, reload mango config
+- [ ] Inspired by Hyde/Caelestia theme switching approach
+
+**Note:** Appearance entry removed from settings hub until this exists — nwg-look gave false impression of full theme control.
 
 ### Phase 4 — Polish & Cohesion
 

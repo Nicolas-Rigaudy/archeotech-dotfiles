@@ -277,6 +277,11 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Archive tools (file-roller, unzip, unrar, p7zip)
 - [x] Snapshot management (snapper + snap-pac + grub-btrfs + snapper-gui)
 - [x] Battery alert script (swaync notifications at 20%/10%/5%, auto-suspend at 3%) - running as systemd user service (battery-alert.service)
+- [x] Settings hub (Super+,) — rofi menu: display submenu (extend/mirror/laptop-only/external-only/adjust), audio, network, bluetooth, wallpaper, night light, power profile, disk, power, lock; back navigation in all submenus
+- [x] Display layout switching via wlr-randr — extend/mirror/laptop-only/external-only from settings hub
+- [x] Cursor theme — catppuccin-macchiato-mauve-cursors set in mango.conf + environment.d/cursor.conf
+- [x] power-profiles-daemon — balanced/performance/power-saver switchable from settings hub
+- [x] wlsunset night light — off/4500K/3500K/2700K switchable from settings hub
 
 
 ---
@@ -355,7 +360,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │   ├── wallpaper-set.sh        # Wallpaper setter with Arch logo overlay system
 │   ├── wallpaper-picker.sh     # Rofi thumbnail grid wallpaper picker
 │   ├── battery-alert.sh        # Battery monitor daemon (alerts at 20/10/5%, suspend at 3%)
-│   ├── settings-hub.sh         # Rofi settings launcher (Super+,) — display/audio/network/power/etc
+│   ├── settings-hub.sh         # Rofi settings launcher (Super+,) — display submenu (extend/mirror/laptop-only/external-only), audio, network, bluetooth, wallpaper, night light, power profile, disk, power, lock
 │   ├── wlogout-launch.sh       # wlogout with adaptive per-monitor margins (via xrandr + mmsg)
 │   ├── swaylock-launch.sh      # swaylock wrapper — reads ~/.cache/wallpaper/last-wallpaper for dynamic bg
 │   ├── mango-reload.sh         # Safe MangoWC reload — reloads config then re-applies monitor layout via wlr-randr

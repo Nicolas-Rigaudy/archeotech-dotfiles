@@ -100,6 +100,7 @@ backup_existing_configs() {
         "cava"
         "zathura"
         "xdg-desktop-portal"
+        "environment.d"
     )
 
     BACKED_UP=0
@@ -191,6 +192,7 @@ verify_deployment() {
         "cava"
         "dunst"
         "xdg-desktop-portal"
+        "environment.d"
     )
 
     ALL_OK=1

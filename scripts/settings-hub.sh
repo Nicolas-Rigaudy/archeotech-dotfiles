@@ -5,15 +5,14 @@
 # Structure:
 #   Main menu → flat list of entries, each launches a tool or opens a submenu
 #   Submenus  → Night Light temperatures, Power Profiles
+#   Back navigation → submenus return to main menu on Escape or "← Back"
 #
-# Dependencies: rofi, wdisplays, nwg-look, pavucontrol, nm-connection-editor,
+# Dependencies: rofi, wlr-randr, wdisplays, pavucontrol, nm-connection-editor,
 #               blueman-manager, wlsunset, power-profiles-daemon (powerprofilesctl),
-#               wlogout, swaylock, kitty
+#               wlogout-launch.sh, swaylock-launch.sh, kitty
 
 SCRIPT_DIR="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)"
 ROFI_THEME="$SCRIPT_DIR/assets/settings-hub.rasi"
-
-WLOGOUT_CMD="wlogout -b 5 -c 20 -r 10 -m 20 -L ~/.config/wlogout/layout -C ~/.config/wlogout/style.css"
 
 # ── Night light state ─────────────────────────────────────────────────────────
 # wlsunset doesn't have a daemon check built-in; we track it with a pidfile
@@ -38,24 +37,91 @@ night_light_start() {
     echo $! > "$WLSUNSET_PID"
 }
 
-# ── Night light submenu ───────────────────────────────────────────────────────
-submenu_night_light() {
-    local current_label="Off"
-    night_light_running && current_label="On"
+# ── Display submenu ──────────────────────────────────────────────────────────
+# Uses wlr-randr to apply layouts. External monitors are positioned to the right
+# of the laptop (eDP-1 always at 0,0). Mirror uses 1920x1080 as common resolution.
+# "unknown" external = whatever is currently connected that isn't eDP-1.
+
+display_get_externals() {
+    wlr-randr 2>/dev/null | grep "^[^ ]" | grep -v "^eDP-1" | awk '{print $1}'
+}
+
+submenu_display() {
+    local externals
+    externals=$(display_get_externals)
+    local ext_count
+    ext_count=$(echo "$externals" | grep -c . 2>/dev/null || echo 0)
 
     local choice
-    choice=$(printf "Off\nEvening  (4500K)\nWarm     (3500K)\nVery Warm (2700K)" \
+    choice=$(printf '← Back\0icon\x1fgo-previous\n'\
+'Extend  (laptop left, external right)\0icon\x1fpreferences-desktop-display\n'\
+'Mirror  (same image on all)\0icon\x1fview-fullscreen\n'\
+'Laptop only\0icon\x1fcomputer-laptop\n'\
+'External only\0icon\x1fvideo-display\n'\
+'Adjust…\0icon\x1fpreferences-system\n' \
         | rofi -dmenu \
-            -p "Night Light" \
+            -p "Display (${ext_count} external)" \
             -theme "$ROFI_THEME" \
-            -no-show-icons \
+            -show-icons \
             2>/dev/null)
 
     case "$choice" in
+        "← Back") show_main_menu; return ;;
+        "Extend  (laptop left, external right)")
+            # Laptop at 0,0 — external(s) to the right at x:1920
+            wlr-randr --output eDP-1 --on --pos 0,0
+            for ext in $externals; do
+                wlr-randr --output "$ext" --on --pos 1920,0
+            done
+            ;;
+        "Mirror  (same image on all)")
+            # Both outputs at same position, laptop scaled to 1920x1080
+            wlr-randr --output eDP-1 --on --mode 1920x1200 --pos 0,0
+            for ext in $externals; do
+                wlr-randr --output "$ext" --on --pos 0,0
+            done
+            ;;
+        "Laptop only")
+            wlr-randr --output eDP-1 --on
+            for ext in $externals; do
+                wlr-randr --output "$ext" --off
+            done
+            ;;
+        "External only")
+            wlr-randr --output eDP-1 --off
+            for ext in $externals; do
+                wlr-randr --output "$ext" --on --pos 0,0
+            done
+            ;;
+        "Adjust…") wdisplays & ;;
+        "") show_main_menu; return ;;  # Escape → back
+    esac
+}
+
+# ── Night light submenu ───────────────────────────────────────────────────────
+submenu_night_light() {
+    local status_label="Off"
+    night_light_running && status_label="On"
+
+    local choice
+    choice=$(printf '← Back\0icon\x1fgo-previous\n'\
+'Off\0icon\x1fstock_weather-night-clear\n'\
+'Evening  (4500K)\0icon\x1fstock_weather-night-clear\n'\
+'Warm     (3500K)\0icon\x1fstock_weather-night-clear\n'\
+'Very Warm (2700K)\0icon\x1fstock_weather-night-clear\n' \
+        | rofi -dmenu \
+            -p "Night Light (${status_label})" \
+            -theme "$ROFI_THEME" \
+            -show-icons \
+            2>/dev/null)
+
+    case "$choice" in
+        "← Back")           show_main_menu; return ;;
         "Off")              night_light_stop ;;
         "Evening  (4500K)") night_light_start 4500 ;;
         "Warm     (3500K)") night_light_start 3500 ;;
         "Very Warm (2700K)") night_light_start 2700 ;;
+        "")                 show_main_menu; return ;;  # Escape → back
     esac
 }
 
@@ -65,60 +131,66 @@ submenu_power_profile() {
     current=$(powerprofilesctl get 2>/dev/null || echo "unknown")
 
     local choice
-    choice=$(printf "Balanced\nPerformance\nPower Saver" \
+    choice=$(printf '← Back\0icon\x1fgo-previous\n'\
+'Balanced\0icon\x1fbattery-100-profile-balanced\n'\
+'Performance\0icon\x1fbattery-100-profile-performance\n'\
+'Power Saver\0icon\x1fbattery-100-profile-powersave\n' \
         | rofi -dmenu \
-            -p "Power Profile  (current: $current)" \
+            -p "Power Profile (${current})" \
             -theme "$ROFI_THEME" \
-            -no-show-icons \
+            -show-icons \
             2>/dev/null)
 
     case "$choice" in
+        "← Back")       show_main_menu; return ;;
         "Balanced")     powerprofilesctl set balanced ;;
         "Performance")  powerprofilesctl set performance ;;
         "Power Saver")  powerprofilesctl set power-saver ;;
+        "")             show_main_menu; return ;;  # Escape → back
     esac
 }
 
-# ── Main menu entries ─────────────────────────────────────────────────────────
+# ── Main menu ─────────────────────────────────────────────────────────────────
 # Format: "Label\0icon\x1fICON_NAME\n"
 # Icons are looked up from the active icon theme (Papirus-Dark)
 
-build_main_menu() {
-    printf 'Display\0icon\x1fpreferences-desktop-display\n'
-    printf 'Appearance\0icon\x1fpreferences-desktop-theme\n'
-    printf 'Audio\0icon\x1faudio-volume-high\n'
-    printf 'Network\0icon\x1fnetwork-wireless\n'
-    printf 'Bluetooth\0icon\x1fbluetooth\n'
-    printf 'Wallpaper\0icon\x1fpreferences-desktop-wallpaper\n'
-    printf 'Night Light\0icon\x1fcs-nightlight\n'
-    printf 'Power Profile\0icon\x1fdisplay-brightness\n'
-    printf 'Disk\0icon\x1fdrive-harddisk\n'
-    printf 'Power\0icon\x1fsystem-shutdown\n'
-    printf 'Lock\0icon\x1fsystem-lock-screen\n'
+show_main_menu() {
+    local choice
+    choice=$(printf \
+'Display\0icon\x1fpreferences-desktop-display\n'\
+'Audio\0icon\x1faudio-volume-high\n'\
+'Network\0icon\x1fnetwork-wireless\n'\
+'Bluetooth\0icon\x1fbluetooth\n'\
+'Wallpaper\0icon\x1fpreferences-desktop-wallpaper\n'\
+'Night Light\0icon\x1fstock_weather-night-clear\n'\
+'Power Profile\0icon\x1fbattery-100-profile-balanced\n'\
+'Disk\0icon\x1fdrive-harddisk\n'\
+'Power\0icon\x1fsystem-shutdown\n'\
+'Lock\0icon\x1fsystem-lock-screen\n' \
+        | rofi \
+            -dmenu \
+            -i \
+            -p "⚙" \
+            -theme "$ROFI_THEME" \
+            -show-icons \
+            -format "s" \
+            2>/dev/null)
+
+    [ -z "$choice" ] && return
+
+    case "$choice" in
+        "Display")        submenu_display ;;
+        "Audio")          pavucontrol & ;;
+        "Network")        nm-connection-editor & ;;
+        "Bluetooth")      blueman-manager & ;;
+        "Wallpaper")      ~/.local/bin/wallpaper-picker.sh & ;;
+        "Night Light")    submenu_night_light ;;
+        "Power Profile")  submenu_power_profile ;;
+        "Disk")           kitty --title "Disk Usage" -e duf & ;;
+        "Power")          ~/.local/bin/wlogout-launch.sh & ;;
+        "Lock")           ~/.local/bin/swaylock-launch.sh & ;;
+    esac
 }
 
-# ── Main ──────────────────────────────────────────────────────────────────────
-CHOICE=$(build_main_menu | rofi \
-    -dmenu \
-    -i \
-    -p "⚙" \
-    -theme "$ROFI_THEME" \
-    -show-icons \
-    -format "s" \
-    2>/dev/null)
-
-[ -z "$CHOICE" ] && exit 0
-
-case "$CHOICE" in
-    "Display")        wdisplays & ;;
-    "Appearance")     nwg-look & ;;
-    "Audio")          pavucontrol & ;;
-    "Network")        nm-connection-editor & ;;
-    "Bluetooth")      blueman-manager & ;;
-    "Wallpaper")      ~/.local/bin/wallpaper-picker.sh & ;;
-    "Night Light")    submenu_night_light ;;
-    "Power Profile")  submenu_power_profile ;;
-    "Disk")           kitty --title "Disk Usage" -e duf & ;;
-    "Power")          eval "$WLOGOUT_CMD" & ;;
-    "Lock")           swaylock & ;;
-esac
+# ── Entry point ───────────────────────────────────────────────────────────────
+show_main_menu
