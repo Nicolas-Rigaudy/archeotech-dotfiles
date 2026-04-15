@@ -14,6 +14,7 @@
         "clock"
     ],
     "modules-right": [
+        "custom/settings-hub",
         "custom/notifications",
         "pulseaudio",
         "pulseaudio#microphone",
@@ -145,6 +146,11 @@
     "tray": {
         "icon-size": 16,
         "spacing": 10
+    },
+    "custom/settings-hub": {
+        "format": "󰒓",
+        "tooltip": false,
+        "on-click": "~/.local/bin/settings-hub.sh"
     },
     "custom/notifications": {
         "format": "{icon}",

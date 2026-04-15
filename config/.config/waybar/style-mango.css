@@ -110,6 +110,7 @@ window#waybar > box {
 #battery,
 #tray,
 #custom-notifications,
+#custom-settings-hub,
 #custom-power {
     padding: 1px 8px;
     margin: 2px 1px;
@@ -173,6 +174,18 @@ window#waybar > box {
     -gtk-icon-effect: highlight;
     background-color: alpha(@red, 0.25);
     border-radius: 5px;
+}
+
+/* Settings hub gear */
+#custom-settings-hub {
+    color: @subtext1;
+    font-size: 14px;
+    border-radius: 7px;
+}
+#custom-settings-hub:hover {
+    background-color: alpha(@surface1, 0.6);
+    color: @mauve;
+    border-radius: 7px;
 }
 
 /* Notifications bell */
