@@ -32,6 +32,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + D` | Open file manager (thunar) | GUI file browser |
 | `Super + G` | Open Lazygit | Git TUI with Catppuccin theme |
 | `Super + Shift + N` | Open Navi | Interactive command cheatsheets |
+| `Super + ,` | Open settings hub (rofi) | Display, audio, network, power, wallpaper, bluetooth, disk |
 | `Super + W` | Open wallpaper picker (rofi grid) | Thumbnail grid — select wallpaper or toggle logo (arch / rebel / imperial) |
 | `Super + Shift + W` | Toggle logo overlay | Cycles last active logo on/off on current wallpaper |
 
@@ -188,7 +189,8 @@ Portrait monitors (e.g. DP-3) get their own correctly-sized composite automatica
 | Waybar power button | Power menu | wlogout — Catppuccin themed, icon-only buttons, full overlay |
 | `Super + K` | Show keybinds | Display this keybind reference |
 | `Super + ;` | Toggle notification panel | Open/close swaync notification center |
-| `Super + Shift + R` | Reload config | Reload MangoWC configuration |
+| `Super + ,` | Open settings hub | Rofi menu — display, audio, network, power, etc. |
+| `Super + Shift + R` | Reload config | Runs `mango-reload.sh` — reloads config then re-applies monitor layout via wlr-randr |
 | `Alt + Shift` | Toggle keyboard layout | US ↔ FR (QWERTY ↔ AZERTY) |
 
 ### Audio Controls
@@ -235,9 +237,14 @@ All keybindings are configured in:
 
 To reload configuration after changes:
 ```bash
-# MangoWC automatically reloads on config changes, or use:
+# Use the keybind (safe — re-applies monitor layout automatically):
 Super + Shift + R
+
+# Or run the script directly:
+~/.local/bin/mango-reload.sh
 ```
+
+> **Note:** Plain `reload_config` resets monitor positions/rotation. `mango-reload.sh` runs the reload then immediately re-applies the correct layout via `wlr-randr`.
 
 ---
 
@@ -302,5 +309,5 @@ Certain windows automatically float:
 
 ---
 
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-04-15
 **For:** archeotech-dotfiles (MangoWC configuration)

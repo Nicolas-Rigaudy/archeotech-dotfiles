@@ -2,7 +2,7 @@
 
 Everything worth building, customizing, or investigating — from deep workflow automation to visual flair. This is a living document.
 
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-15
 
 ---
 
@@ -48,10 +48,10 @@ Key lessons (also in TROUBLESHOOTING.md):
 - Icons via Papirus-Dark; no text-only entries
 - No fake toggles — open the real tool, don't try to reflect state in rofi
 
-- [~] **Rofi Settings Hub** (`Super+,`) — script + rasi theme written (`scripts/settings-hub.sh`, `scripts/assets/settings-hub.rasi`); keybind and waybar gear icon still TODO
+- [x] **Rofi Settings Hub** (`Super+,`) — script + rasi theme + keybind + waybar gear icon (󰒓, left of bell) all done
 - [x] **wlogout theme** — Catppuccin Macchiato glass pill buttons, icon-only, full-span overlay, adaptive portrait layout; launched via `scripts/wlogout-launch.sh` (computes per-monitor margins via xrandr)
   - **Known limitation**: button shapes inconsistent across monitors (GTK/wlogout limitation, no clean fix)
-- [ ] **Waybar gear icon** — opens settings hub, sits right of notification bell
+- [x] **Waybar gear icon** — `custom/settings-hub` module, 󰒓 icon, `@subtext1` color, mauve hover, sits left of notification bell
 
 ### Phase 3 — Display Profiles (kanshi)
 
@@ -84,7 +84,7 @@ Key lessons (also in TROUBLESHOOTING.md):
 | Keybind | Action | Status |
 |---------|--------|--------|
 | `Super+;` | Toggle swaync notification panel | ✅ Done |
-| `Super+,` | Open settings hub (rofi) | TODO |
+| `Super+,` | Open settings hub (rofi) | ✅ Done |
 | `Super+F1` | Display profile: desk (3 monitors) | TODO |
 | `Super+F2` | Display profile: present (laptop + external) | TODO |
 | `Super+F3` | Display profile: solo (laptop only) | TODO |

@@ -70,6 +70,7 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `wayland-protocols` | Protocol extensions | Additional protocols |
 | `wl-clipboard` | Clipboard utilities | wl-copy, wl-paste |
 | `cliphist` | Clipboard manager | History with rofi integration |
+| `wlr-randr` | Monitor layout tool | Re-apply output positions/rotation via CLI — used by `mango-reload.sh` |
 
 ---
 

@@ -358,6 +358,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │   ├── settings-hub.sh         # Rofi settings launcher (Super+,) — display/audio/network/power/etc
 │   ├── wlogout-launch.sh       # wlogout with adaptive per-monitor margins (via xrandr + mmsg)
 │   ├── swaylock-launch.sh      # swaylock wrapper — reads ~/.cache/wallpaper/last-wallpaper for dynamic bg
+│   ├── mango-reload.sh         # Safe MangoWC reload — reloads config then re-applies monitor layout via wlr-randr
 │   └── assets/
 │       ├── arch-logo.svg       # Arch crystal logo (LOGO_COLOR/LOGO_OPACITY placeholders)
 │       ├── rebel-logo.svg      # Rebel Alliance logo (LOGO_COLOR/LOGO_OPACITY placeholders)
@@ -395,6 +396,8 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 ~/.local/bin/wallpaper-picker.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-picker.sh
 ~/.local/bin/battery-alert.sh -> ~/Projects/archeotech-dotfiles/scripts/battery-alert.sh
 ~/.local/bin/swaylock-launch.sh -> ~/Projects/archeotech-dotfiles/scripts/swaylock-launch.sh
+~/.local/bin/settings-hub.sh -> ~/Projects/archeotech-dotfiles/scripts/settings-hub.sh
+~/.local/bin/mango-reload.sh -> ~/Projects/archeotech-dotfiles/scripts/mango-reload.sh
 
 # Systemd service (manual symlink — stow can't merge into existing systemd dir):
 ~/.config/systemd/user/battery-alert.service -> ~/Projects/archeotech-dotfiles/config/.config/systemd/user/battery-alert.service
