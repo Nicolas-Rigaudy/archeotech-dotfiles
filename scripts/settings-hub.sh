@@ -150,11 +150,35 @@ submenu_power_profile() {
     esac
 }
 
+# ── Focus mode (unfocused monitor dimming) ────────────────────────────────────
+# Toggles unfocused_opacity in mango.conf between 0.5 (dim) and 1.0 (full).
+# State is read directly from the config file — no separate state file needed.
+MANGO_CONF="$HOME/.config/mango/config.conf"
+
+focus_mode_is_on() {
+    # "on" means dimming is active (unfocused_opacity < 1.0)
+    local val
+    val=$(grep -m1 "^unfocused_opacity=" "$MANGO_CONF" | cut -d= -f2)
+    [ "$(echo "$val < 1.0" | bc -l)" = "1" ]
+}
+
+toggle_focus_mode() {
+    if focus_mode_is_on; then
+        sed -i 's/^unfocused_opacity=.*/unfocused_opacity=1.0/' "$MANGO_CONF"
+    else
+        sed -i 's/^unfocused_opacity=.*/unfocused_opacity=0.5/' "$MANGO_CONF"
+    fi
+    ~/.local/bin/mango-reload.sh
+}
+
 # ── Main menu ─────────────────────────────────────────────────────────────────
 # Format: "Label\0icon\x1fICON_NAME\n"
 # Icons are looked up from the active icon theme (Papirus-Dark)
 
 show_main_menu() {
+    local focus_label
+    focus_mode_is_on && focus_label="On" || focus_label="Off"
+
     local choice
     choice=$(printf \
 'Display\0icon\x1fpreferences-desktop-display\n'\
@@ -164,6 +188,7 @@ show_main_menu() {
 'Wallpaper\0icon\x1fpreferences-desktop-wallpaper\n'\
 'Night Light\0icon\x1fstock_weather-night-clear\n'\
 'Power Profile\0icon\x1fbattery-100-profile-balanced\n'\
+"Focus Mode  (${focus_label})\0icon\x1fview-focus\n"\
 'Disk\0icon\x1fdrive-harddisk\n'\
 'Power\0icon\x1fsystem-shutdown\n'\
 'Lock\0icon\x1fsystem-lock-screen\n' \
@@ -186,6 +211,7 @@ show_main_menu() {
         "Wallpaper")      ~/.local/bin/wallpaper-picker.sh & ;;
         "Night Light")    submenu_night_light ;;
         "Power Profile")  submenu_power_profile ;;
+        "Focus Mode  (On)"|"Focus Mode  (Off)") toggle_focus_mode ;;
         "Disk")           kitty --title "Disk Usage" -e duf & ;;
         "Power")          ~/.local/bin/wlogout-launch.sh & ;;
         "Lock")           ~/.local/bin/swaylock-launch.sh & ;;
