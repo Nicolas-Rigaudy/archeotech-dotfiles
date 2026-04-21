@@ -2,7 +2,142 @@
 
 Everything worth building, customizing, or investigating — from deep workflow automation to visual flair. This is a living document.
 
-**Last Updated:** 2026-04-15
+**Last Updated:** 2026-04-21
+
+---
+
+## Quickshell Migration — Full Desktop Shell
+
+The long-term vision: replace the current patchwork of waybar + rofi settings hub + swaync with a single unified Quickshell shell that looks and feels like one person designed it. Everything shares the same QML codebase, the same animation system, the same theme variables. This is how caelestia-dots and end-4/dots-hyprland achieve their coherence.
+
+**Why Quickshell over AGS/eww:**
+- QML is its own thing regardless of prior experience — no JS/TS knowledge wasted
+- Higher ceiling than AGS: animations, live window previews, blur, full compositor integration
+- Single process for everything (bar + panels + notifications + control center) = consistent rendering
+- Caelestia (the main reference) is built on Quickshell — its source is readable and well-structured
+
+**MangoWC caveat:** Most Quickshell examples target Hyprland's IPC. MangoWC uses `mmsg`. Quickshell can shell out to any command and watch stdout, so this is workable — but we can't copy-paste from caelestia directly. We build our own IPC bridge layer.
+
+---
+
+### Phase 1 — Learn QML, Build the Control Center (replaces settings hub)
+
+**Goal:** One contained widget that proves out the QML workflow. Learn the tool on something bounded before touching the bar.
+
+**What it replaces:** `scripts/settings-hub.sh` (rofi dmenu — can't do real toggles, can't reflect state)
+
+**What it will do:**
+- Real toggle switches (on/off with animated thumb)
+- Real sliders (night light temperature, maybe brightness)
+- Live state reflection (focus mode actually shows current state)
+- Submenu navigation with animated transitions
+- Glass morphism panel matching the existing aesthetic
+- Keybind: `Super+,` (same as now — transparent replacement)
+
+**Learning resources:**
+- [Quickshell docs](https://quickshell.outfoxxed.me)
+- [caelestia-dots/shell source](https://github.com/caelestia-dots/shell) — read the QML, don't copy it
+- [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) — see how they structure panels
+
+**Steps:**
+- [ ] Install `quickshell-git` (AUR)
+- [ ] Read QML basics: properties, bindings, anchors, signals — 2-3 hours
+- [ ] Build a minimal "hello world" panel that appears on a keybind
+- [ ] Implement the control center panel with real toggles for: Focus Mode, Night Light, Power Profile, Bluetooth, Do Not Disturb
+- [ ] Add sliders for Night Light temperature
+- [ ] Wire each toggle to the same shell commands as the current settings hub
+- [ ] Style with Catppuccin Macchiato glass aesthetic
+- [ ] Replace `Super+,` binding in mango.conf
+
+---
+
+### Phase 2 — Replace Waybar with Quickshell Bar
+
+**Goal:** A status bar that's part of the same Quickshell process as the control center. Consistent rendering, shared theme variables, no inter-process seams.
+
+**What it replaces:** `~/.config/waybar/` (both mango and hyprland variants)
+
+**Design vision (inspired by current waybar + inspiration repos):**
+- Floating pill/island style — same as current waybar aesthetic
+- Left: tag/workspace indicators with live client count (via `mmsg -w` watch mode)
+- Center: clock with date, styled
+- Right: system tray area — volume, network, battery, brightness
+- Right edge: notification bell (swaync integration or replace), settings gear, power
+- All modules clickable, consistent hover animations
+- Battery shows percentage + charging animation
+- Volume shows level, scroll to change
+
+**MangoWC integration:**
+- `mmsg -w` (watch mode) streams tag/client/layout events — Quickshell `Process` component reads this as a live data source
+- No Hyprland IPC needed — we build a thin QML wrapper around `mmsg`
+
+**Steps:**
+- [ ] Complete Phase 1 first — understand QML anchors and layouts properly
+- [ ] Build a minimal bar (clock only) that replaces waybar
+- [ ] Add tag indicators with `mmsg -w` watch mode
+- [ ] Port all current waybar modules one by one
+- [ ] Match current floating pill aesthetic
+- [ ] Add custom modules: keyboard layout, AWS profile indicator
+- [ ] Remove waybar autostart from mango.conf, add quickshell
+
+---
+
+### Phase 3 — Replace swaync with Quickshell Notification Center
+
+**Goal:** Notifications and the notification panel as Quickshell components, consistent with bar and control center.
+
+**What it replaces:** swaync (separate process, separate styling, CSS has to be maintained separately)
+
+**What it will do:**
+- Popup notifications: styled cards with Catppuccin Macchiato, matching blur
+- Notification history panel: slides in from right (or top-right), animated
+- DND toggle inside the panel (real toggle, not a fake swaync button)
+- Action buttons on notifications (dismiss, action buttons from apps)
+
+**Note:** swaync is a separate Wayland layer-shell surface — Quickshell can render layer-shell surfaces natively (it's a first-class feature). This is how caelestia does it.
+
+**Steps:**
+- [ ] Complete Phase 2 first
+- [ ] Research Wayland notification protocol (org.freedesktop.Notifications DBus)
+- [ ] Build notification popup component in QML
+- [ ] Build notification history panel
+- [ ] Wire DND toggle
+- [ ] Test with all apps that currently use swaync (Teams, system alerts, battery script)
+- [ ] Remove swaync autostart
+
+---
+
+### Phase 4 — Dashboard / Overview Widget
+
+**Goal:** A rich on-demand overlay (like end-4's overview) — not a permanent bar element but a keybind-summoned panel.
+
+**Inspiration:** end-4/dots-hyprland overview, caelestia dashboard
+
+**What it could contain:**
+- Live workspace/tag overview with window thumbnails
+- System stats (CPU, RAM, disk, battery) — pretty, not btop-level detail
+- Current track (playerctl integration)
+- Quick launcher shortcuts
+- Date/calendar widget
+
+**Keybind:** `Super+Tab` or `Super+D` (currently unused)
+
+**Steps:**
+- [ ] Complete Phase 3 first
+- [ ] Design the layout on paper before coding
+- [ ] Implement workspace overview using MangoWC geometry (`mmsg -g -x`)
+- [ ] Add system stats via shell polling
+- [ ] Add playerctl integration
+
+---
+
+### Focus Mode — DROPPED
+
+**Status:** Removed from settings hub.
+
+**Reason:** MangoWC copies `unfocused_opacity` per-client at window creation time. There is no IPC command, no `reapply_opacity` function, no mechanism to update existing clients. `reload_config` updates globals but never retroactively applies to open windows. The feature works only for newly opened windows after toggle, making it effectively useless as a live toggle.
+
+**Potential future revisit:** If MangoWC adds a `reapply_window_rules` or `set_opacity` IPC dispatch in a future version, this becomes trivial to implement.
 
 ---
 
@@ -169,6 +304,231 @@ A rich startup dashboard shown on login or on demand — combines multiple info 
 - [Screensaver & Lock Screen](#screensaver--lock-screen)
 - [Tools to Evaluate](#tools-to-evaluate)
 - [Completed / Shipped](#completed--shipped)
+
+---
+
+## Feature Vision — The Desired End State
+
+These are the high-level features that define what this setup should feel like when complete. Each maps to one or more roadmap sections below.
+
+### Full Coherent Theme Switcher
+**Inspired by:** HyDE (prasanthrangan), caelestia dynamic color, the Corvus style guide
+
+The single most impactful cohesion feature. One action switches the entire visual identity of the desktop — not just colors, but **personality**. Each theme is a complete coordinated set covering everything from compositor shadows to VSCode color theme to Starship prompt symbols.
+
+Dynamic/wallpaper-extracted themes are **not a priority** — the switcher works with curated hand-crafted themes only. Color extraction already exists for logo overlays and stays there.
+
+**Planned themes:**
+| Theme | Base palette | Wallpaper family | Compositor feel | VSCode theme |
+|-------|-------------|-----------------|-----------------|-------------|
+| **Archeotech Macchiato** | Catppuccin Macchiato + Mauve | Current collection | Soft pills, 12px radius, purple glow shadow | Catppuccin Macchiato |
+| **Archeotech Mocha** | Catppuccin Mocha + Mauve | Deeper/richer variants | Same as above, deeper bg | Catppuccin Mocha |
+| **Shadow Spear** | Near-black + blood violet + deep red | Raven Guard / WH40K art, dark gothic cityscapes | 4px radius (sharp), wide borderpx, black void shadow + colored glow, Quickshell gothic corner ornaments (Phase 3+) | One Dark Pro or custom |
+| **Gundam HUD** | Navy/steel + cyan + orange accent | Mecha blueprints, cockpit schematics | 0px radius (square), hairline 1px border, cyan shadow, blueprint-grid bar geometry | Tokyo Night |
+| **Neon Liturgy** | Near-black + neon pink/teal | Cyberpunk rainy city, neon reflections | 6px radius, thick neon border, diffuse pink/teal glow shadow | Night Owl or Dracula |
+
+**What a theme switch touches — full scope:**
+
+| Layer | What changes | Mechanism |
+|-------|-------------|-----------|
+| MangoWC compositor | Border color, border width, border radius, shadow color/size/spread, focused/unfocused opacity | Config patch + `mango-reload.sh` |
+| Quickshell shell | All colors, geometry (pill vs rectangular), bar layout style | Live `theme.json` reload — no restart |
+| Kitty terminal | Full color palette | Include file swap + `kill -USR1 $(pgrep kitty)` |
+| Starship prompt | Colors, symbols (raven `󱉧` for Shadow Spear, crosshair for Gundam) | Config symlink swap |
+| Rofi menus | Colors, border radius | rasi variable swap |
+| GTK apps (Thunar etc) | GTK theme, icon theme | `gsettings set` |
+| Cursor | Cursor theme | `gsettings set` + mango.conf patch |
+| VSCode | Color theme | `jq` patch on `settings.json` |
+| Obsidian | UI theme | `jq` patch on `obsidian.json` |
+| Zen Browser | Accent color (userChrome.css) | CSS file swap (best effort) |
+| Wallpaper | Auto-transitions to theme wallpaper family | `awww` transition |
+| swaylock | Lock screen bg tint | Config patch |
+| GRUB | Boot theme | Config patch (applies next boot only) |
+
+**Border embellishments — what MangoWC supports vs what needs Quickshell:**
+
+MangoWC (via SceneFX) can do:
+- Border color, width (`borderpx`), corner radius
+- Shadow color, size, blur, position — **this is the neon glow mechanism** (see below)
+- SceneFX has `fx_gradient` internally but MangoWC hasn't exposed it as a config key — no gradient borders without patching the compositor
+
+**Neon glow is already possible in MangoWC.** taylor85345/hyprland-dotfiles achieves the neon halo effect purely via colored drop shadows (`shadow_range=30`, bright `col.shadow`). MangoWC has the same capability — just change `shadowscolor` to a bright saturated color and increase `shadows_size`. Currently set to black at low opacity — per theme this becomes:
+- Macchiato: `shadowscolor=0xc6a0f666` (purple, 40% opacity), size 20
+- Shadow Spear: `shadowscolor=0x8b000088` (blood red), size 25, large blur
+- Gundam: `shadowscolor=0x00ffffaa` (cyan), size 15, tight blur
+- Neon Liturgy: `shadowscolor=0xff79c666` (hot pink), size 30, very diffuse
+
+Hyprland limitation MangoWC shares: only **one global shadow color** — can't do focused=red, unfocused=cyan like taylor85345. Per-theme works fine.
+
+Quickshell (Phase 3+) can add on top:
+- Gradient borders as a layer-shell overlay positioned over each window
+- SVG corner ornaments (gothic arches, targeting reticles, circuit traces)
+- Animated border glow pulse on focus (the shadow itself can't animate, but a Quickshell overlay can)
+- These require `mmsg -g -x` polling to track window geometry
+
+**Immediate per-theme differentiation (achievable right now, pre-Quickshell):** shadow color + radius + borderpx combination reads as completely different personalities. This is high-impact and zero new tech.
+
+**Implementation approach:**
+Each theme is a directory under `~/.config/themes/<theme-name>/` containing variable files for each component. The switcher patches/symlinks them and triggers reloads. Quickshell reads a single `theme.json` at runtime — changing the file live-reloads all QML bindings without restart (hot-reload is a first-class Quickshell feature).
+
+```
+themes/
+├── archeotech-macchiato/
+│   ├── theme.json          # Quickshell reads this — all color + geometry vars
+│   ├── mango-colors.conf   # border/shadow/opacity values for config patch
+│   ├── kitty-colors.conf   # include swap
+│   ├── starship.toml       # prompt style
+│   ├── rofi-vars.rasi      # color overrides
+│   ├── wallpaper           # symlink or path to wallpaper set dir
+│   └── vscode-theme.txt    # "Catppuccin Macchiato" (theme name string)
+├── shadow-spear/
+│   └── ...
+```
+
+**Keybind:** `Super+Shift+T` → Quickshell theme picker overlay (shows theme name + preview swatch + wallpaper thumbnail, keyboard navigable)
+
+---
+
+### Unified Shell Feel (Quickshell)
+Everything bar, panel, notification, overview — one process, one design language, zero visual seams. See Quickshell Migration section above.
+
+---
+
+### Workspace Overview / Mission Control
+
+MangoWC's built-in `toggleoverview` is already a full working panel — all tags tiled at once, functional, complete. Already bound to 4-finger swipe up. **No Quickshell replacement planned** — live window thumbnails would require xdg-screencopy protocol which adds significant complexity for marginal gain over the working built-in.
+
+**Status:** Done, use the built-in.
+
+---
+
+### Per-Workspace Wallpapers
+Different wallpaper per tag, transitions when switching. Tag 1 = Arch/purple default, Tag 2 = blueprint/schematic for code work, etc. Already partially possible with `awww` + a hook on tag switch via `mmsg -w`.
+
+---
+
+### Developer Workflow Integration
+Quickshell bar shows contextual dev info — always visible but collapses/grays out gracefully when not relevant (so bar layout stays stable, no elements jumping in and out).
+
+**Planned modules:**
+- Git branch + dirty indicator — shows branch name, grayed icon when no git context in focused window
+- AWS profile — always visible (you switch profiles frequently), shows `$AWS_PROFILE` env
+- Terraform workspace — shows `terraform workspace show` output, only meaningful in a tf repo
+- Active Docker containers count — small badge, click to open btop or lazydocker
+
+**Implementation:** Always show, dim when irrelevant. Width animates on content change. Reassess after living with it — conditional display (only when terminal/VSCode focused) can be added later if the bar feels cluttered.
+
+---
+
+### Terminal Session Persistence & Project Workspaces
+**Inspired by:** tmux session management, kitty sessions
+
+Two related but distinct features:
+
+**1. Kitty session presets (priority)**
+Named session files that open a full multi-tab/split terminal layout for a specific project or context:
+```
+sessions/
+├── dev.conf        # Editor tab + terminal tab + lazygit tab
+├── aws.conf        # AWS CLI tab + terraform tab + logs tab
+├── default.conf    # Single clean terminal
+```
+Launched via: `kitty --session ~/.config/kitty/sessions/dev.conf`
+Could be triggered from the project jump menu — select project → opens VSCode + kitty dev session for that project simultaneously.
+
+**2. Session restore on unlock/reboot**
+Save current kitty window/tab layout before lock, restore after. `kitty @ ls` dumps current session state as JSON, a script converts it to a session file, `swayidle` calls save on lock trigger. Lower priority than presets.
+
+**Note on tmux/zellij:** The roadmap lists these for evaluation. With kitty's native tabs + sessions, tmux is probably unnecessary unless you need SSH session persistence (detach/reattach on remote). Evaluate when you have a specific pain point.
+
+---
+
+### Quick Project Jump
+**Keybind:** `Super+Ctrl+P` (or integrate into rofi app launcher as a mode)
+
+Opens a rofi menu (or Quickshell launcher) of all git repos in `~/Projects/`. Selecting one:
+1. Opens VSCode with that project
+2. Opens a kitty terminal in that directory (optionally using a project session preset if one exists)
+
+```bash
+# scripts/project-jump.sh
+find ~/Projects -maxdepth 2 -name ".git" -type d \
+  | sed 's|/.git||' \
+  | rofi -dmenu -p "󰊢 Project" -theme "$ROFI_THEME" -show-icons \
+  | xargs -I{} sh -c 'code "{}" & kitty --directory "{}" &'
+```
+
+High daily value, low implementation effort. Do this before Quickshell migration.
+
+---
+
+### Named Scratchpad Utility Layer
+A set of persistent floating overlay tools, each on a dedicated keybind — always accessible regardless of current tag, like a utility layer on top of the workspace.
+
+**Planned scratchpads:**
+| Tool | What | Note |
+|------|------|------|
+| Terminal | Already done (`Super+\``) | ✅ |
+| Music player | ncspot (TUI Spotify) | Need to pick a free keybind |
+| Calculator | `rofi-calc` or `qalculate-gtk` | Need to pick a free keybind |
+| System monitor | btop in kitty | Need to pick a free keybind |
+
+Current `Super+grave` taken by terminal. Good candidates for others: `Super+F1–F4`, or a scratchpad layer mode where a keymode activates and numbers pick tools.
+
+---
+
+### Welcome / Mission Dashboard
+**Keybind:** `Super+Home` — or auto-shown for ~5s after login then auto-dismissed
+
+A full Quickshell overlay panel (not a bar widget), styled as a cyber-monastic mission briefing. Shown on demand during the day.
+
+**Layout concept:**
+```
+┌──────────────────────────────────────────────────────────────┐
+│  ARCHEOTECH-OS ── corvus@archeotech ───────────── 2026-04-21 │
+│  ─────────────────────────────────────────────────────────── │
+│                                                              │
+│  ┌── SYSTEM STATUS ──────┐  ┌── ACTIVE PROJECTS ─────────┐  │
+│  │ CPU  ████░░░  42%     │  │ ● archeotech-dotfiles  main │  │
+│  │ RAM  ██████░  68%     │  │ ● work-project-alpha   dev  │  │
+│  │ Disk ███░░░░  51%     │  │ ○ terraform-infra    clean  │  │
+│  │ Bat  ████░░░  72% ↑   │  └─────────────────────────────┘  │
+│  └───────────────────────┘                                   │
+│                            ┌── QUICK LAUNCH ──────────────┐  │
+│  ┌── SYSTEM NOTES ───────┐ │  terminal  browser  code     │  │
+│  │ Last snapshot: 2d ago │ │  obsidian  lazygit  yazi     │  │
+│  │ Pending updates: 3    │ └─────────────────────────────┘   │
+│  │ VPN: inactive         │                                   │
+│  │ AWS: prod-account     │ ┌── TIP OF THE SESSION ────────┐  │
+│  └───────────────────────┘ │ zoxide: `z proj` jumps to    │  │
+│                             │ most-visited matching dir    │  │
+│                             └─────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Data sources (all no extra deps):**
+- System stats: `/proc/meminfo`, `/proc/stat`, `df`, `upower`
+- Projects: scan `~/Projects/` for git repos, `git -C <path> branch --show-current` + `git status --short`
+- Snapshots: `snapper list` last entry
+- Pending updates: `checkupdates | wc -l`
+- VPN: `nmcli con show --active | grep vpn`
+- AWS: `$AWS_PROFILE` env
+- Tips: curated rotating list in a flat text file — one tip per line, shuffled
+
+**Implementation:** Quickshell QML grid layout, shell commands polled via `Process` component. Build this in Phase 4 after the bar is stable.
+
+---
+
+### Intuitive Daily Driver UX
+The "easy like a Mac" goal — power user capabilities with zero friction:
+- App launcher (`Super+R`) feels instant and beautiful
+- Every module in the bar is clickable and does the obvious thing
+- Dock/undock automatically reconfigures monitors (kanshi or script)
+- Battery, VPN, and audio always visible and always one-click to change
+- Lock screen is beautiful (clock + blurred wallpaper)
+- Screenshots go to clipboard instantly, saved to disk
+
+Most of this is already done. Remaining gaps: kanshi for hotplug, clickable bar modules.
 
 ---
 
@@ -945,15 +1305,43 @@ From the project principles — worth writing down explicitly so it doesn't get 
 
 ## Inspiration Sources
 
-Reference these when planning new features — steal ideas, not configs:
+Reference these when planning new features — steal ideas, not configs.
 
-| Source | What's interesting | Link |
-|--------|-------------------|------|
-| **Caelestia-dots** | Dynamic color extraction, Material 3 palettes, widget concepts | [caelestia-dots/shell](https://github.com/caelestia-dots/shell) |
-| **Hyde (hyprdots)** | Theme switching system, multiple layout presets, visual selector UI | [prasanthrangan/hyprdots](https://github.com/prasanthrangan/hyprdots) |
-| **end-4/dots-hyprland** | Clean animations, modern aesthetic, AGS/Quickshell widget ideas | [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) |
-| **Adnan's dotfiles** | Minimalist Catppuccin implementation, clean structure | [Adnan-Malik-26/dotfiles](https://github.com/Adnan-Malik-26/dotfiles) |
-| **Omarchy** | Opinionated Arch setup by DHH, curated tool choices | [omarchy.org](https://omarchy.org) |
+### Shell / Widget Systems
+
+| Tool | Language | What it can do | Link |
+|------|----------|---------------|------|
+| **Quickshell** | QML (Qt declarative) | Full desktop shells, animations, sliders, toggles, live previews, blur — unlimited ceiling | [quickshell.outfoxxed.me](https://quickshell.outfoxxed.me) |
+| **Astal/AGS v2** | TypeScript + GTK4 | Real widgets, toggles, sliders, dynamic theming — good if you know JS/TS | [aylur.github.io/astal](https://aylur.github.io/astal) |
+| **eww** | Yuck (Lisp DSL) | Lightweight widgets, events, basic animations — minimal deps | [elkowar.github.io/eww](https://elkowar.github.io/eww) |
+| **nwg-shell** | Python + GTK3 | Complete pre-built shell, graphical config — zero coding required | [nwg-piotr.github.io/nwg-shell](https://nwg-piotr.github.io/nwg-shell) |
+
+**Decision:** Quickshell. QML is its own learning investment regardless of prior language knowledge — no point going through AGS as a stepping stone. Quickshell has the highest ceiling and is what caelestia (the primary visual reference) is built on.
+
+---
+
+### Dotfile Repos
+
+| Source | Stack | What makes it special | Link |
+|--------|-------|----------------------|------|
+| **caelestia-dots** | Quickshell (QML) + matugen | The primary visual reference. Material Design 3, dynamic palette from wallpaper, smooth spring animations throughout, everything one QML process. Full source is readable. | [caelestia-dots/shell](https://github.com/caelestia-dots/shell) |
+| **end-4/dots-hyprland** ★8k | Quickshell (migrating from AGS) | Usability-first. Workspace overview with live previews, sidebar panels, best documentation of any dotfiles project. Official Hyprland wiki example. | [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) · [wiki](https://end-4.github.io/dots-hyprland-wiki/en/) |
+| **HyDE (prasanthrangan)** ★8.6k | Waybar + Rofi | Theme switching as the core feature — multiple complete visual presets with screenshots. Reference implementation for the theme switcher. | [prasanthrangan/hyprdots](https://github.com/prasanthrangan/hyprdots) |
+| **JaKooLit/Hyprland-Dots** ★3.3k | Waybar + Rofi + Wallust + QML | Multi-distro installer, 2K-optimized, Wallust for auto-coordinated colors from wallpaper. Good reference for "polished waybar." | [JaKooLit/Hyprland-Dots](https://github.com/JaKooLit/Hyprland-Dots) |
+| **linuxmobile/hyprland-dots** | Waybar + Rofi + Catppuccin | Catppuccin Macchiato/Mocha — same palette as this setup. Closest to current state, good reference for "maximally polished rofi+waybar." | [linuxmobile/hyprland-dots](https://github.com/linuxmobile/hyprland-dots) |
+| **ML4W (mylinuxforwork)** | Waybar + installer | Professional/production focus. Graphical installer, multi-distro (Arch/Fedora/openSUSE). Shows how to make setup reproducible and approachable. | [ml4w.com](https://www.ml4w.com) · [GitHub](https://github.com/mylinuxforwork/dotfiles) |
+| **taylor85345/hyprland-dotfiles** | Hyprland + eww | Neon glow border effect achieved entirely via large colored drop shadows (`shadow_range=30`, bright `col.shadow`) — no plugin needed. eww bar. Technique directly transferable to MangoWC via `shadowscolor` + `shadows_size`. | [taylor85345/hyprland-dotfiles](https://github.com/taylor85345/hyprland-dotfiles) |
+| **saimoomedits/dotfiles** | AwesomeWM (X11) | Expandable sidebar control center concept — not usable directly (X11) but the UI pattern is worth stealing for Quickshell control panel design. | [saimoomedits/dotfiles](https://github.com/saimoomedits/dotfiles) |
+| **Adnan's dotfiles** | Waybar + Rofi | Minimalist Catppuccin implementation, clean structure. Good for "less is more" reference. | [Adnan-Malik-26/dotfiles](https://github.com/Adnan-Malik-26/dotfiles) |
+| **Omarchy** | Curated Arch setup by DHH | Opinionated tool choices, clean config philosophy — worth reading even if not using directly. | [omarchy.org](https://omarchy.org) |
+
+### Color / Theme Tools
+
+| Tool | What it does | Link |
+|------|-------------|------|
+| **matugen** | Material 3 palette generator from wallpaper — used by caelestia | [GitHub](https://github.com/InioX/matugen) |
+| **Wallust** | pywal successor — generates coordinated colorscheme from wallpaper, exports to app templates | [GitHub](https://github.com/0xb-8/wallust) |
+| **pywal** | Classic wallpaper→colorscheme tool, 30+ app templates | [GitHub](https://github.com/dylanaraps/pywal) |
 
 ---
 

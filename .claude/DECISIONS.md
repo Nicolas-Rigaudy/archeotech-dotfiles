@@ -181,6 +181,39 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
+### [2026-04-21] Desktop Shell: Quickshell (full migration planned)
+
+**Context:** Settings hub (rofi dmenu) can't reflect real toggle state or do sliders. The broader goal of a "coherent designed ecosystem" (one visual language for bar + panels + notifications) is unachievable with the current rofi+waybar+swaync patchwork.
+
+**Options Considered:**
+1. **AGS/Astal v2** (TypeScript + GTK4)
+   - Pros: Moderate learning curve, good if you know JS/TS
+   - Cons: No JS/TS knowledge to leverage; would need to learn TS then QML anyway if migrating to Quickshell later
+2. **eww** (Yuck DSL)
+   - Pros: Lightweight, Rust-backed
+   - Cons: Limited UI capabilities, Lisp-like syntax, lower ceiling
+3. **Quickshell** (QML)
+   - Pros: Highest ceiling, single process for everything, what caelestia is built on, hot-reload, Qt animations
+   - Cons: QML learning curve, MangoWC IPC needs custom bridge (not Hyprland-native)
+
+**Decision:** Quickshell — full migration in phases (control center → bar → notifications → overview)
+
+**Rationale:**
+- AGS's main advantage is JS/TS familiarity — not applicable here
+- No reason to learn AGS as a stepping stone if Quickshell is the destination
+- Caelestia (primary visual reference) is Quickshell — its source code is directly useful
+- Single QML process = one theme system, one animation engine, zero inter-process visual seams
+- MangoWC IPC limitation is workable: `mmsg -w` watch mode streams events, Quickshell `Process` component reads stdout
+
+**Trade-offs Accepted:**
+- QML learning investment upfront
+- MangoWC requires custom IPC bridge instead of Quickshell's built-in Hyprland support
+- Migration is multi-month — waybar stays until each phase is complete
+
+**Review:** Waybar stays until Phase 2 (bar replacement) is complete. swaync stays until Phase 3.
+
+---
+
 ### [2025-11-28] App Launcher: rofi vs wofi vs fuzzel
 
 **Context:** Need application launcher.
@@ -520,11 +553,23 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
+### [2026-04-21] Focus Mode — Dropped
+
+**Context:** Focus mode toggle (dim unfocused windows to 0.5 opacity) was implemented in settings-hub.sh but doesn't apply to already-open windows.
+
+**Root cause:** MangoWC copies `focused_opacity`/`unfocused_opacity` per-client at window creation time (`c->unfocused_opacity = unfocused_opacity` in `createclient()`). `reload_config` updates the global values but never iterates existing clients. There is no `reapply_opacity` IPC dispatch, no mechanism to update open windows.
+
+**Decision:** Remove focus mode from the settings hub entirely. `unfocused_opacity` stays at `0.85` permanently (matches `focused_opacity` — all windows have transparency, no dimming distinction).
+
+**Future revisit:** If MangoWC adds a `set_opacity` or `reapply_window_rules` IPC command, this becomes trivial.
+
+---
+
 ## Decision Review Schedule
 
 Some decisions should be periodically reviewed:
 
-- **Waybar vs Quickshell:** Review after 3 months once comfortable
+- **Quickshell migration:** Review progress after Phase 1 (control center) — if QML is too painful, reconsider scope
 - **Theme choice:** Can add alternate themes anytime
 - **File managers:** Working well, no review needed
 - **Keybind philosophy:** Review if causing issues (none so far)

@@ -46,11 +46,13 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 
 **Monitor fallback rules (MangoWC):** Named rules for work setup; wildcard `HDMI.*` and `DP-.*` rules catch any other display (landscape, preferred native res, positioned at x:1920,y:60)
 
-### Dual-Boot Configuration
+### Storage Configuration
 - **Primary OS:** Arch Linux (232GB partition on nvme0n1p4)
-- **Secondary OS:** Fedora 42 KDE (265GB partition on nvme0n1p7, resized from 443GB)
+- **Games storage:** nvme0n1p7 (265GB — previously Fedora 42 KDE, wiped 2026-04-20, now dedicated game storage)
+  - Diablo 4 installed
+  - System is no longer dual-boot — Arch Linux only
 - **Shared:** EFI partition (nvme0n1p1, 360M)
-- **Bootloader:** GRUB with Catppuccin theme
+- **Bootloader:** GRUB with Catppuccin theme (Fedora entry auto-removed on next GRUB update)
 - **Boot time:** ~5 seconds from GRUB to SDDM
 
 ---
@@ -808,7 +810,8 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-21
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
+**Next major work:** Quickshell migration — Phase 1 (control center). See `.claude/ROADMAP.md`.
 **Roadmap:** See `.claude/ROADMAP.md` for all planned work and ideas
