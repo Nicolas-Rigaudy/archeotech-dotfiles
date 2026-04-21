@@ -284,6 +284,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Cursor theme — catppuccin-macchiato-mauve-cursors set in mango.conf + environment.d/cursor.conf
 - [x] power-profiles-daemon — balanced/performance/power-saver switchable from settings hub
 - [x] wlsunset night light — off/4500K/3500K/2700K switchable from settings hub
+- [x] logiops (AUR) — MX Master 3S For Business: DPI 1000, SmartShift threshold 13, gesture button (0xc3) with tap=rofi launcher / swipe gestures for workspace+monitor management, forward button (0xc4) with tap=toggle SmartShift; config at system/etc/logid.cfg → /etc/logid.cfg; wiggle mouse on service start (Bolt dongle quirk)
 
 
 ---

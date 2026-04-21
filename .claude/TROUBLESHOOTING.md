@@ -281,6 +281,37 @@ workspace=1,monitor:eDP-1,default:true  # Use correct monitor name
 
 ## Keyboard & Input Issues
 
+### logiops Not Detecting MX Master 3S on Boot (Bolt Dongle)
+
+**Symptoms:**
+- `journalctl -u logid` shows "Config file does not exist" or device times out
+- Gestures and button remaps don't work after reboot
+
+**Cause:**
+- The MX Master 3S Bolt dongle requires mouse movement to initialize HID++ communication
+- logiops starts before the mouse sends its first event, causing a timeout
+
+**Solution:**
+After restarting the service, wiggle the mouse immediately:
+```bash
+sudo systemctl restart logid
+# wiggle mouse right after
+```
+
+For suspend/wake issues, a systemd-sleep hook can auto-restart logid:
+```bash
+sudo nano /lib/systemd/system-sleep/logid
+# paste: #!/bin/sh / case "$1" in / post) systemctl restart logid ;; / esac
+sudo chmod +x /lib/systemd/system-sleep/logid
+```
+
+**Other gotchas:**
+- Config file must be `/etc/logid.cfg` (not `.conf`)
+- Device name must be exactly `"MX Master 3S For Business"` (not `"MX Master 3S"`)
+- `pointer_speed` is not a valid MangoWC config key — use logiops `dpi` instead
+
+---
+
 ### Keybindings Don't Follow Keyboard Layout
 
 **Symptoms:**

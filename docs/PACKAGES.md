@@ -296,6 +296,12 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `bluez-utils` | Bluetooth utilities | bluetoothctl command |
 | `blueman` | Bluetooth manager | GUI bluetooth manager |
 
+### Mouse
+
+| Package | Purpose | Notes |
+|---------|---------|-------|
+| `logiops` (AUR) | Logitech mouse daemon | HID++ daemon for MX Master 3S — DPI, SmartShift, gestures, button remapping; config at `/etc/logid.cfg` (repo: `system/etc/logid.cfg`); device name must be `"MX Master 3S For Business"`; requires mouse to be moving on service start (Bolt dongle detection quirk) |
+
 ### System Tools
 
 | Package | Purpose | Notes |
