@@ -52,7 +52,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
   - Diablo 4 installed
   - System is no longer dual-boot — Arch Linux only
 - **Shared:** EFI partition (nvme0n1p1, 360M)
-- **Bootloader:** GRUB with Catppuccin theme (Fedora entry auto-removed on next GRUB update)
+- **Bootloader:** GRUB with Catppuccin theme (fully clean — Fedora EFI entries and kernels removed 2026-04-22)
 - **Boot time:** ~5 seconds from GRUB to SDDM
 
 ---
