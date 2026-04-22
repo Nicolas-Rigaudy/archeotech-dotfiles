@@ -443,22 +443,11 @@ Save current kitty window/tab layout before lock, restore after. `kitty @ ls` du
 
 ---
 
-### Quick Project Jump
-**Keybind:** `Super+Ctrl+P` (or integrate into rofi app launcher as a mode)
+### Quick Project Jump ✅ DONE
 
-Opens a rofi menu (or Quickshell launcher) of all git repos in `~/Projects/`. Selecting one:
-1. Opens VSCode with that project
-2. Opens a kitty terminal in that directory (optionally using a project session preset if one exists)
+**Keybind:** `Super+Ctrl+P`
 
-```bash
-# scripts/project-jump.sh
-find ~/Projects -maxdepth 2 -name ".git" -type d \
-  | sed 's|/.git||' \
-  | rofi -dmenu -p "󰊢 Project" -theme "$ROFI_THEME" -show-icons \
-  | xargs -I{} sh -c 'code "{}" & kitty --directory "{}" &'
-```
-
-High daily value, low implementation effort. Do this before Quickshell migration.
+Scans `~/Projects` (personal, 󱍽 icon) and `~/Documents/repos` (work, 󰃖 icon). Selecting a repo opens VSCode + a kitty terminal in that directory. Implemented as `scripts/project-jump.sh`, reuses the settings-hub rofi theme.
 
 ---
 

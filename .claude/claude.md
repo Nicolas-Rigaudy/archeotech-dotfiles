@@ -284,6 +284,8 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Cursor theme — catppuccin-macchiato-mauve-cursors set in mango.conf + environment.d/cursor.conf
 - [x] power-profiles-daemon — balanced/performance/power-saver switchable from settings hub
 - [x] wlsunset night light — off/4500K/3500K/2700K switchable from settings hub
+- [x] Project jump (`Super+Ctrl+P`) — rofi launcher scanning ~/Projects (personal 󱍽) and ~/Documents/repos (work 󰃖); opens VSCode + kitty terminal in selected repo
+- [x] Monitor window rules — VSCode → HDMI-A-1, kitty → DP-3 on open (scratchpad excluded); rules ignored when monitors absent
 - [x] logiops (AUR) — MX Master 3S For Business: DPI 1000, SmartShift threshold 13, gesture button (0xc3) with tap=rofi launcher / swipe gestures for workspace+monitor management, forward button (0xc4) with tap=toggle SmartShift; config at system/etc/logid.cfg → /etc/logid.cfg; wiggle mouse on service start (Bolt dongle quirk)
 
 
@@ -367,6 +369,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │   ├── wlogout-launch.sh       # wlogout with adaptive per-monitor margins (via xrandr + mmsg)
 │   ├── swaylock-launch.sh      # swaylock wrapper — reads ~/.cache/wallpaper/last-wallpaper for dynamic bg
 │   ├── mango-reload.sh         # Safe MangoWC reload — reloads config then re-applies monitor layout via wlr-randr
+│   ├── project-jump.sh         # Rofi project launcher — scans ~/Projects + ~/Documents/repos, opens VSCode + kitty
 │   └── assets/
 │       ├── arch-logo.svg       # Arch crystal logo (LOGO_COLOR/LOGO_OPACITY placeholders)
 │       ├── rebel-logo.svg      # Rebel Alliance logo (LOGO_COLOR/LOGO_OPACITY placeholders)
@@ -811,7 +814,7 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-04-22
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
 **Next major work:** Quickshell migration — Phase 1 (control center). See `.claude/ROADMAP.md`.

@@ -33,6 +33,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + G` | Open Lazygit | Git TUI with Catppuccin theme |
 | `Super + Shift + N` | Open Navi | Interactive command cheatsheets |
 | `Super + ,` | Open settings hub (rofi) | Display, audio, network, power, wallpaper, bluetooth, disk |
+| `Super + Ctrl + P` | Open project jump (rofi) | Lists git repos in ~/Projects (personal) and ~/Documents/repos (work), opens VSCode + kitty |
 | `Super + W` | Open wallpaper picker (rofi grid) | Thumbnail grid — select wallpaper or toggle logo (arch / rebel / imperial) |
 | `Super + Shift + W` | Toggle logo overlay | Cycles last active logo on/off on current wallpaper |
 
@@ -305,6 +306,10 @@ Certain windows automatically float:
 - Browser extension sub-windows (popup panels) — `ignore_maximize:1`
 - Picture-in-Picture windows
 
+Monitor assignments (work setup — rules silently ignored when monitors absent):
+- `code` (VSCode) → HDMI-A-1 (middle landscape monitor)
+- `kitty` → DP-3 (portrait monitor), scratchpad terminal excluded
+
 ---
 
 ## Key Differences from Hyprland
@@ -317,5 +322,5 @@ Certain windows automatically float:
 
 ---
 
-**Last Updated:** 2026-04-15
+**Last Updated:** 2026-04-22
 **For:** archeotech-dotfiles (MangoWC configuration)
