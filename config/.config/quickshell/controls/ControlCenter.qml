@@ -502,7 +502,7 @@ Item {
                         active: root.nightLightMode === "4500"
                         onClicked: {
                             root.nightLightMode = "4500"
-                            run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 4500 -t 4500 & echo $! > $HOME/.cache/wlsunset.pid")
+                            run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 6500 -t 4500 & echo $! > $HOME/.cache/wlsunset.pid")
                         }
                     }
                     PillButton {
@@ -510,7 +510,7 @@ Item {
                         active: root.nightLightMode === "3500"
                         onClicked: {
                             root.nightLightMode = "3500"
-                            run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 3500 -t 3500 & echo $! > $HOME/.cache/wlsunset.pid")
+                            run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 6500 -t 3500 & echo $! > $HOME/.cache/wlsunset.pid")
                         }
                     }
                     PillButton {
@@ -518,7 +518,7 @@ Item {
                         active: root.nightLightMode === "2700"
                         onClicked: {
                             root.nightLightMode = "2700"
-                            run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 2700 -t 2700 & echo $! > $HOME/.cache/wlsunset.pid")
+                            run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 6500 -t 2700 & echo $! > $HOME/.cache/wlsunset.pid")
                         }
                     }
                 }
