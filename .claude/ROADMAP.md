@@ -40,14 +40,14 @@ The long-term vision: replace the current patchwork of waybar + rofi settings hu
 - [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) — see how they structure panels
 
 **Steps:**
-- [ ] Install `quickshell-git` (AUR)
-- [ ] Read QML basics: properties, bindings, anchors, signals — 2-3 hours
-- [ ] Build a minimal "hello world" panel that appears on a keybind
-- [ ] Implement the control center panel with real toggles for: Focus Mode, Night Light, Power Profile, Bluetooth, Do Not Disturb
-- [ ] Add sliders for Night Light temperature
-- [ ] Wire each toggle to the same shell commands as the current settings hub
-- [ ] Style with Catppuccin Macchiato glass aesthetic
-- [ ] Replace `Super+,` binding in mango.conf
+- [x] Install `quickshell-git` (AUR)
+- [x] Read QML basics: properties, bindings, anchors, signals
+- [x] Build a minimal "hello world" panel that appears on a keybind
+- [x] Implement the control center panel with real toggles for: Focus Mode, Night Light, Power Profile, Bluetooth, Do Not Disturb
+- [x] Wire each toggle to the same shell commands as the current settings hub
+- [x] Style with Catppuccin Macchiato glass aesthetic
+- [x] Replace `Super+,` binding in mango.conf
+- [ ] Add sliders for Night Light temperature (deferred to later)
 
 ---
 

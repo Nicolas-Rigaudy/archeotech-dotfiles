@@ -32,7 +32,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + D` | Open file manager (thunar) | GUI file browser |
 | `Super + G` | Open Lazygit | Git TUI with Catppuccin theme |
 | `Super + Shift + N` | Open Navi | Interactive command cheatsheets |
-| `Super + ,` | Open settings hub (rofi) | Display, audio, network, power, wallpaper, bluetooth, disk |
+| `Super + ,` | Open control center (Quickshell) | Display, audio, network, power, wallpaper, bluetooth, disk |
 | `Super + Ctrl + P` | Open project jump (rofi) | Lists git repos in ~/Projects (personal) and ~/Documents/repos (work), opens VSCode + kitty |
 | `Super + W` | Open wallpaper picker (rofi grid) | Thumbnail grid — select wallpaper or toggle logo (arch / rebel / imperial) |
 | `Super + Shift + W` | Toggle logo overlay | Cycles last active logo on/off on current wallpaper |
@@ -198,7 +198,7 @@ Portrait monitors (e.g. DP-3) get their own correctly-sized composite automatica
 | Waybar power button | Power menu | wlogout — Catppuccin themed, icon-only buttons, full overlay |
 | `Super + K` | Show keybinds | Display this keybind reference |
 | `Super + ;` | Toggle notification panel | Open/close swaync notification center |
-| `Super + ,` | Open settings hub | Rofi menu — display, audio, network, power, etc. |
+| `Super + ,` | Open control center | Quickshell panel — display, audio, network, power, etc. |
 | `Super + Shift + R` | Reload config | Runs `mango-reload.sh` — reloads config then re-applies monitor layout via wlr-randr |
 | `Alt + Shift` | Toggle keyboard layout | US ↔ FR (QWERTY ↔ AZERTY) |
 

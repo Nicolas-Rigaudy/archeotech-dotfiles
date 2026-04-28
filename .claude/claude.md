@@ -343,6 +343,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │       ├── fish/               # Fish shell configs (MASTER COPY)
 │       ├── mango/              # MangoWC configs (MASTER COPY)
 │       ├── systemd/user/       # Systemd user services (battery-alert.service)
+│       ├── quickshell/         # Quickshell control center (shell.qml + controls/)
 │       ├── swaync/             # Notification center (config.json + style.css)
 │       ├── wlogout/            # Power menu config (layout, style.css, icons/)
 │       ├── waypaper/           # Waypaper config (backend=custom, points to wallpaper-set.sh)
@@ -365,7 +366,6 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │   ├── wallpaper-set.sh        # Wallpaper setter with Arch logo overlay system
 │   ├── wallpaper-picker.sh     # Rofi thumbnail grid wallpaper picker
 │   ├── battery-alert.sh        # Battery monitor daemon (alerts at 20/10/5%, suspend at 3%)
-│   ├── settings-hub.sh         # Rofi settings launcher (Super+,) — display submenu (extend/mirror/laptop-only/external-only), audio, network, bluetooth, wallpaper, night light, power profile, disk, power, lock
 │   ├── wlogout-launch.sh       # wlogout with adaptive per-monitor margins (via xrandr + mmsg)
 │   ├── swaylock-launch.sh      # swaylock wrapper — reads ~/.cache/wallpaper/last-wallpaper for dynamic bg
 │   ├── mango-reload.sh         # Safe MangoWC reload — reloads config then re-applies monitor layout via wlr-randr
@@ -375,7 +375,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │       ├── rebel-logo.svg      # Rebel Alliance logo (LOGO_COLOR/LOGO_OPACITY placeholders)
 │       ├── imperial-logo.svg   # Imperial Aquila logo (LOGO_COLOR/LOGO_OPACITY placeholders)
 │       ├── wallpaper-picker.rasi  # Rofi theme for wallpaper picker (Catppuccin glass, 3-col grid)
-│       └── settings-hub.rasi   # Rofi theme for settings hub (matches wallpaper-picker glass style)
+│       └── panel.rasi          # Rofi theme for project-jump (Catppuccin glass, vertical list)
 ├── wallpapers/                 # Wallpaper collection (tracked in git)
 ├── docs/
 │   ├── INSTALLATION.md         # Step-by-step install guide
@@ -407,7 +407,6 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 ~/.local/bin/wallpaper-picker.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-picker.sh
 ~/.local/bin/battery-alert.sh -> ~/Projects/archeotech-dotfiles/scripts/battery-alert.sh
 ~/.local/bin/swaylock-launch.sh -> ~/Projects/archeotech-dotfiles/scripts/swaylock-launch.sh
-~/.local/bin/settings-hub.sh -> ~/Projects/archeotech-dotfiles/scripts/settings-hub.sh
 ~/.local/bin/mango-reload.sh -> ~/Projects/archeotech-dotfiles/scripts/mango-reload.sh
 
 # Systemd service (manual symlink — stow can't merge into existing systemd dir):
