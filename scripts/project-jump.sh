@@ -6,7 +6,7 @@
 # Dependencies: rofi, code, kitty
 
 SCRIPT_DIR="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)"
-ROFI_THEME="$SCRIPT_DIR/assets/settings-hub.rasi"
+ROFI_THEME="$SCRIPT_DIR/assets/panel.rasi"
 
 PERSONAL_DIR="$HOME/Projects"
 WORK_DIR="$HOME/Documents/repos"

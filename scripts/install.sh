@@ -147,7 +147,6 @@ install_local_scripts() {
         "wallpaper-picker.sh"
         "battery-alert.sh"
         "swaylock-launch.sh"
-        "settings-hub.sh"
         "mango-reload.sh"
         "project-jump.sh"
     )
