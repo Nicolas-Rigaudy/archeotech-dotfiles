@@ -733,6 +733,7 @@ type[SCOPE]: brief description (50 chars max)
 - `[FISH]` - Fish shell configuration
 - `[ROFI]` - Rofi launcher configuration
 - `[BASH]` - Shell scripts
+- `[QML]` - Quickshell / QML components
 - `[MD]` - Documentation (Markdown)
 - `[REPO]` - Repository structure changes
 
