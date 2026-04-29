@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import "../../" as Root
 
 Button {
     property string iconName: ""
@@ -9,13 +10,13 @@ Button {
     implicitHeight: 56
 
     background: Rectangle {
-        radius: 10
-        color: parent.hovered ? "#363a4f" : "#2a2d3e"  // surface0 hover : surface0 dark
-        border.color: parent.hovered ? "#c6a0f6" : "transparent"
+        radius: Root.Appearance.radius.md
+        color: parent.hovered ? Root.Appearance.colors.surface0 : Root.Appearance.colors.surface0Alpha
+        border.color: parent.hovered ? Root.Appearance.colors.accent : "transparent"
         border.width: 1
 
-        Behavior on color { ColorAnimation { duration: 120 } }
-        Behavior on border.color { ColorAnimation { duration: 120 } }
+        Behavior on color        { ColorAnimation { duration: Root.Appearance.anim.fast } }
+        Behavior on border.color { ColorAnimation { duration: Root.Appearance.anim.fast } }
     }
 
     contentItem: Column {
@@ -25,17 +26,17 @@ Button {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: parent.parent.iconName
-            color: "#cad3f5"  // text
+            color: Root.Appearance.colors.text
             font.pixelSize: 18
-            font.family: "FiraCode Nerd Font"
+            font.family: Root.Appearance.font.family
         }
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: parent.parent.label
-            color: "#a5adcb"  // subtext1
+            color: Root.Appearance.colors.subtext0
             font.pixelSize: 10
-            font.family: "FiraCode Nerd Font"
+            font.family: Root.Appearance.font.family
         }
     }
 }

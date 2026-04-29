@@ -20,65 +20,72 @@ The long-term vision: replace the current patchwork of waybar + rofi settings hu
 
 ---
 
-### Phase 1 — Learn QML, Build the Control Center (replaces settings hub)
+### Phase 1 — Learn QML, Build the Control Center ✅ DONE + ongoing improvements
 
-**Goal:** One contained widget that proves out the QML workflow. Learn the tool on something bounded before touching the bar.
+**Goal:** One contained widget that proves out the QML workflow. Replaces `settings-hub.sh` (rofi dmenu).
 
-**What it replaces:** `scripts/settings-hub.sh` (rofi dmenu — can't do real toggles, can't reflect state)
+**Architecture:** Right-anchored glass panel, opened via gear icon in bar or `Super+,`. Shared service singletons (Audio, Battery, Network, Bluetooth) feed all state live.
 
-**What it will do:**
-- Real toggle switches (on/off with animated thumb)
-- Real sliders (night light temperature, maybe brightness)
-- Live state reflection (focus mode actually shows current state)
-- Submenu navigation with animated transitions
-- Glass morphism panel matching the existing aesthetic
-- Keybind: `Super+,` (same as now — transparent replacement)
-
-**Learning resources:**
-- [Quickshell docs](https://quickshell.outfoxxed.me)
-- [caelestia-dots/shell source](https://github.com/caelestia-dots/shell) — read the QML, don't copy it
-- [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) — see how they structure panels
-
-**Steps:**
+**Completed:**
 - [x] Install `quickshell-git` (AUR)
-- [x] Read QML basics: properties, bindings, anchors, signals
-- [x] Build a minimal "hello world" panel that appears on a keybind
-- [x] Implement the control center panel with real toggles for: Focus Mode, Night Light, Power Profile, Bluetooth, Do Not Disturb
-- [x] Wire each toggle to the same shell commands as the current settings hub
-- [x] Style with Catppuccin Macchiato glass aesthetic
-- [x] Replace `Super+,` binding in mango.conf
-- [ ] Add sliders for Night Light temperature (deferred to later)
+- [x] QML basics: properties, bindings, anchors, signals, singletons
+- [x] Toggle switches (animated thumb) for Night Light, Power Profile, Bluetooth, Do Not Disturb
+- [x] Sliders for volume + night light temperature
+- [x] Live state reflection from service singletons
+- [x] Glass morphism panel — Catppuccin Macchiato
+- [x] `Super+,` keybind (via IpcHandler) + gear icon in bar
+- [x] Click-outside and Escape to close
+- [x] Focus Mode dropped (MangoWC can't retroactively apply opacity to open windows)
+
+**Planned additions to Control Center:**
+- [ ] **Brightness slider** — paired with volume, needs `brightnessctl` integration
+- [ ] **MPRIS media card** — album art, track/artist, progress bar, prev/play/next (playerctl)
+- [ ] **System stats** — CPU % + RAM % mini display (polled from /proc)
+- [ ] **Calendar widget** — month grid, today highlighted
+- [ ] **Screenshot shortcuts** — region / fullscreen / window buttons
 
 ---
 
-### Phase 2 — Replace Waybar with Quickshell Bar
+### Phase 2 — Replace Waybar with Quickshell Bar ✅ MOSTLY DONE
 
 **Goal:** A status bar that's part of the same Quickshell process as the control center. Consistent rendering, shared theme variables, no inter-process seams.
 
 **What it replaces:** `~/.config/waybar/` (both mango and hyprland variants)
 
-**Design vision (inspired by current waybar + inspiration repos):**
-- Floating pill/island style — same as current waybar aesthetic
-- Left: tag/workspace indicators with live client count (via `mmsg -w` watch mode)
-- Center: clock with date, styled
-- Right: system tray area — volume, network, battery, brightness
-- Right edge: notification bell (swaync integration or replace), settings gear, power
-- All modules clickable, consistent hover animations
-- Battery shows percentage + charging animation
-- Volume shows level, scroll to change
+**Design:** Floating glass pill, left/center/right layout. All icons have hover popup cards + smooth color transitions. Single Quickshell process hosting bar + control center + popup.
+
+**Architecture:**
+- `shell.qml` — ShellRoot: instantiates all singletons, spawns Bar per screen, hosts ControlCenter overlay
+- `Appearance.qml` — singleton: all colors, fonts, geometry, animation durations
+- `services/` — singletons: Audio, Battery, Network, Bluetooth, MangoWC
+- `bar/Bar.qml` — per-screen PanelWindow, owns its own BarPopup
+- `bar/BarPopup.qml` — PopupWindow (from Quickshell._Window), positioned relative to bar
+- `controls/ControlCenter.qml` — full-screen overlay panel (right-anchored)
+
+**Completed bar modules:**
+- [x] Workspace/tag dots (MangoWC IPC via `mmsg -w -O -t -l -c`) — sel=mauve/wide, occ=surface1, empty=surface0
+- [x] Window title with app rewrites (VSCode / Zen Browser / kitty / fish)
+- [x] Clock `HH:mm · ddd d MMM` (center, bold time + date)
+- [x] Microphone — red when muted, click to toggle, hover popup
+- [x] Volume icon + % — scroll to adjust, click to mute, hover popup (signal + band)
+- [x] Network — connected/disconnected icon + SSID, hover popup shows signal % + band
+- [x] Bluetooth — connected/enabled/off states, hover popup shows device name
+- [x] Battery icon + % — red at ≤20%, hover popup
+- [x] Notification bell → swaync toggle
+- [x] Settings gear → control center toggle
+- [x] Power button (󰐥) → wlogout, extended hit area
+- [x] Hover popup cards (PopupWindow, glass style, label/primary/secondary/hint)
+- [x] Removed waybar autostart, quickshell running as bar
+
+**Remaining bar items:**
+- [ ] **Brightness** — bar icon + %, scroll to adjust (needs `brightnessctl`)
+- [ ] **MPRIS now-playing** — scrolling track + artist in bar when music plays, click to play/pause
+- [ ] **OSD overlay** — temporary centered popup on volume/brightness keyboard change (auto-hides ~1.5s)
+- [ ] Developer modules: git branch, AWS profile indicator (low priority)
 
 **MangoWC integration:**
-- `mmsg -w` (watch mode) streams tag/client/layout events — Quickshell `Process` component reads this as a live data source
-- No Hyprland IPC needed — we build a thin QML wrapper around `mmsg`
-
-**Steps:**
-- [ ] Complete Phase 1 first — understand QML anchors and layouts properly
-- [ ] Build a minimal bar (clock only) that replaces waybar
-- [ ] Add tag indicators with `mmsg -w` watch mode
-- [ ] Port all current waybar modules one by one
-- [ ] Match current floating pill aesthetic
-- [ ] Add custom modules: keyboard layout, AWS profile indicator
-- [ ] Remove waybar autostart from mango.conf, add quickshell
+- `mmsg -w -O -t -l -c` streams tag/title/layout events — parsed in MangoWC.qml singleton
+- `mmsg -s tag <output> <num>` for tag switching
 
 ---
 

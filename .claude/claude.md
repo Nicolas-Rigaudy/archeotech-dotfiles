@@ -76,7 +76,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 | **Window Manager (Primary)** | MangoWC (latest) | Scrolling layout feature, modern Wayland compositor |
 | **Window Manager (Backup)** | Hyprland 0.52.1 | Fallback option, well-established compositor |
 | **Display Manager** | SDDM | Best for Wayland compositors, Catppuccin themes available |
-| **Status Bar** | Waybar 0.14.0 | CSS+JSON config, huge community, themeable |
+| **Status Bar** | Quickshell (QML) | Replaces Waybar — unified process with control center, shared theme singleton |
 | **App Launcher** | rofi-wayland | Most features, extensible |
 | **Notifications** | dunst | Lightweight, themeable, simple config |
 | **Wallpaper** | awww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay (note: package was renamed from swww → awww) |
@@ -207,7 +207,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Multi-monitor configuration (3 screens, one portrait)
 - [x] Workspace per monitor assignments (1-3 laptop, 4-6 ext1, 7-9 ext2)
 - [x] Animations, blur, shadows, rounded corners configured
-- [x] Waybar with clickable modules (works on both compositors) - macOS-style floating glass pill bar
+- [x] Quickshell bar (replaces Waybar) — floating glass pill, per-screen, tags+title+clock+mic+volume+network+bt+battery+bell+gear+power, hover popups, MangoWC IPC
 - [x] Rofi launcher styled
 - [x] SwayNC notifications — replaces dunst, Catppuccin glass panel, DND toggle, notification history, waybar bell icon
 - [x] Swww wallpaper daemon with wallpaper collection in wallpapers/
@@ -814,8 +814,8 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-04-22
+**Last Updated:** 2026-04-29
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Next major work:** Quickshell migration — Phase 1 (control center). See `.claude/ROADMAP.md`.
+**Next major work:** Quickshell bar improvements — OSD, brightness, MPRIS, system stats. See `.claude/ROADMAP.md`.
 **Roadmap:** See `.claude/ROADMAP.md` for all planned work and ideas

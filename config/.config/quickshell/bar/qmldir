@@ -1,0 +1,3 @@
+module bar
+Bar      1.0 Bar.qml
+BarPopup 1.0 BarPopup.qml

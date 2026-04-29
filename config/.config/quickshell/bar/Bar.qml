@@ -1,0 +1,348 @@
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Wayland
+import Quickshell.Io
+import ".." as Root
+import "../services" as Services
+
+PanelWindow {
+    id: barWindow
+
+    required property var modelData
+    screen: modelData
+
+    exclusiveZone: Root.Appearance.bar.height + Root.Appearance.bar.marginTop
+    WlrLayershell.layer: WlrLayer.Top
+    WlrLayershell.namespace: "quickshell:bar"
+
+    anchors { top: true; left: true; right: true }
+    implicitHeight: Root.Appearance.bar.height + Root.Appearance.bar.marginTop
+    color: "transparent"
+
+    function showPopup(item, label, primary, secondary, hint) {
+        barPopup.anchorItem  = item
+        barPopup.label       = label
+        barPopup.primary     = primary
+        barPopup.secondary   = secondary || ""
+        barPopup.hint        = hint || ""
+        barPopup.visible     = true
+    }
+
+    function hidePopup() { barPopup.visible = false }
+
+    BarPopup { id: barPopup }
+
+    // ── Pill ──────────────────────────────────────────────────────────────────
+    Rectangle {
+        id: pill
+        anchors {
+            top: parent.top; left: parent.left; right: parent.right
+            topMargin:   Root.Appearance.bar.marginTop
+            leftMargin:  Root.Appearance.bar.marginSide
+            rightMargin: Root.Appearance.bar.marginSide
+        }
+        height: Root.Appearance.bar.height
+        radius: Root.Appearance.radius.xl
+        color: Qt.rgba(0x1e/255, 0x20/255, 0x30/255, 0.72)
+        border.color: Qt.rgba(0x36/255, 0x3a/255, 0x4f/255, 0.6)
+        border.width: 1
+
+        Rectangle {
+            anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 1; leftMargin: 2; rightMargin: 2 }
+            height: 1; radius: parent.radius
+            color: Qt.rgba(1, 1, 1, 0.07)
+        }
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin:  Root.Appearance.bar.innerPadding
+            anchors.rightMargin: Root.Appearance.bar.innerPadding
+            spacing: 0
+
+            // ── LEFT: Tags + window title ──────────────────────────────────────
+            RowLayout {
+                Layout.alignment: Qt.AlignVCenter
+                spacing: 0
+
+                Row {
+                    spacing: 4
+                    Layout.alignment: Qt.AlignVCenter
+
+                    Repeater {
+                        model: Services.MangoWC.tagsFor(barWindow.screen ? barWindow.screen.name : "")
+                        delegate: Rectangle {
+                            required property var modelData
+                            property bool sel: modelData.selected
+                            property bool occ: modelData.occupied
+                            property bool urg: modelData.urgent
+                            width: sel ? 22 : (occ ? 8 : 6)
+                            height: 8; radius: Root.Appearance.radius.pill
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: urg ? Root.Appearance.colors.red
+                                 : sel ? Root.Appearance.colors.accent
+                                 : occ ? Root.Appearance.colors.surface1
+                                 :       Root.Appearance.colors.surface0
+                            Behavior on width { NumberAnimation { duration: Root.Appearance.anim.base; easing.type: Easing.OutCubic } }
+                            Behavior on color { ColorAnimation  { duration: Root.Appearance.anim.fast } }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: Services.MangoWC.switchTag(
+                                    barWindow.screen ? barWindow.screen.name : "", modelData.num)
+                            }
+                        }
+                    }
+                }
+
+                Item { width: 14 }
+
+                Text {
+                    property string raw: Services.MangoWC.titleFor(barWindow.screen ? barWindow.screen.name : "")
+                    text: {
+                        if (raw.includes("Visual Studio Code")) return "󰨞  " + raw.replace(/ - Visual Studio Code$/, "").replace(/^.*\//, "").trim()
+                        if (raw.includes("Zen Browser"))        return "󰈹  " + raw.replace(/ — Zen Browser$/, "").replace(/^\(\d+\) /, "")
+                        if (raw.includes("kitty"))              return "  " + raw.replace(/ - kitty$/, "")
+                        if (raw.includes("fish"))               return "  " + raw.replace(/ - fish$/, "")
+                        return raw
+                    }
+                    visible: raw.length > 0
+                    color: Root.Appearance.colors.subtext0
+                    font.pixelSize: Root.Appearance.font.sizeSm
+                    font.family: Root.Appearance.font.family
+                    elide: Text.ElideRight
+                    Layout.maximumWidth: 240
+                    Layout.alignment: Qt.AlignVCenter
+                }
+            }
+
+            // ── CENTER: Clock ──────────────────────────────────────────────────
+            Item {
+                Layout.fillWidth: true
+                Text {
+                    id: centerClock
+                    anchors.centerIn: parent
+                    textFormat: Text.RichText
+                    text: "<span style='color:" + Root.Appearance.colors.text + ";font-weight:600'>"
+                        + Qt.formatDateTime(new Date(), "HH:mm")
+                        + "</span>"
+                        + "<span style='color:" + Root.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
+                        + "<span style='color:" + Root.Appearance.colors.subtext0 + "'>"
+                        + Qt.formatDateTime(new Date(), "ddd d MMM")
+                        + "</span>"
+                    font.pixelSize: Root.Appearance.font.sizeMd
+                    font.family: Root.Appearance.font.family
+                    Timer {
+                        interval: 10000; running: true; repeat: true
+                        onTriggered: centerClock.text =
+                            "<span style='color:" + Root.Appearance.colors.text + ";font-weight:600'>"
+                            + Qt.formatDateTime(new Date(), "HH:mm")
+                            + "</span>"
+                            + "<span style='color:" + Root.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
+                            + "<span style='color:" + Root.Appearance.colors.subtext0 + "'>"
+                            + Qt.formatDateTime(new Date(), "ddd d MMM")
+                            + "</span>"
+                    }
+                }
+            }
+
+            // ── RIGHT: System tray ─────────────────────────────────────────────
+            Row {
+                spacing: 10
+                Layout.alignment: Qt.AlignVCenter
+
+                // Mic
+                Text {
+                    id: micIcon
+                    text: Services.Audio.micMuted ? "󰍭" : "󰍬"
+                    color: Services.Audio.micMuted ? Root.Appearance.colors.red : Root.Appearance.colors.overlay1
+                    font.pixelSize: 18; font.family: Root.Appearance.font.family
+                    anchors.verticalCenter: parent.verticalCenter
+                    Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                    MouseArea {
+                        anchors.fill: parent; hoverEnabled: true
+                        onClicked: Services.Audio.toggleMicMute()
+                        onEntered: {
+                            parent.color = Root.Appearance.colors.accent
+                            showPopup(parent, "MICROPHONE",
+                                Services.Audio.micMuted ? "󰍭  Muted" : "󰍬  Active",
+                                "", "Click to toggle")
+                        }
+                        onExited: {
+                            parent.color = Services.Audio.micMuted ? Root.Appearance.colors.red : Root.Appearance.colors.overlay1
+                            hidePopup()
+                        }
+                    }
+                }
+
+                // Volume
+                Row {
+                    spacing: 4; anchors.verticalCenter: parent.verticalCenter
+
+                    Text {
+                        id: volIcon
+                        text: Services.Audio.muted ? "󰖁" : Services.Audio.volume > 66 ? "󰕾" : Services.Audio.volume > 33 ? "󰖀" : "󰕿"
+                        color: Services.Audio.muted ? Root.Appearance.colors.overlay0 : Root.Appearance.colors.subtext1
+                        font.pixelSize: 18; font.family: Root.Appearance.font.family
+                        anchors.verticalCenter: parent.verticalCenter
+                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true
+                            onClicked: Services.Audio.toggleMute()
+                            onEntered: {
+                                parent.color = Root.Appearance.colors.accent
+                                showPopup(parent, "VOLUME",
+                                    Services.Audio.muted ? "󰖁  Muted" : "󰕾  " + Services.Audio.volume + "%",
+                                    "",
+                                    "Scroll to adjust · Click to mute")
+                            }
+                            onExited: {
+                                parent.color = Services.Audio.muted ? Root.Appearance.colors.overlay0 : Root.Appearance.colors.subtext1
+                                hidePopup()
+                            }
+                            onWheel: wheel => {
+                                var delta = wheel.angleDelta.y > 0 ? 5 : -5
+                                Services.Audio.setVolume(Math.max(0, Math.min(100, Services.Audio.volume + delta)))
+                            }
+                        }
+                    }
+                    Text {
+                        text: Services.Audio.volume + "%"
+                        color: Root.Appearance.colors.overlay1
+                        font.pixelSize: Root.Appearance.font.sizeSm; font.family: Root.Appearance.font.family
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                // Network
+                Text {
+                    id: netIcon
+                    text: Services.Network.icon()
+                    color: Services.Network.connected ? Root.Appearance.colors.blue : Root.Appearance.colors.overlay0
+                    font.pixelSize: 18; font.family: Root.Appearance.font.family
+                    anchors.verticalCenter: parent.verticalCenter
+                    Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                    MouseArea {
+                        anchors.fill: parent; hoverEnabled: true
+                        onClicked: controlCenterVisible = true
+                        onEntered: {
+                            parent.color = Root.Appearance.colors.accent
+                            showPopup(parent, "NETWORK",
+                                Services.Network.connected ? "󰖩  " + Services.Network.ssid : "󰖪  Disconnected",
+                                Services.Network.connected ? "  " + Services.Network.signal + "%  ·  " + Services.Network.band : "",
+                                "Click to manage")
+                        }
+                        onExited: {
+                            parent.color = Services.Network.connected ? Root.Appearance.colors.blue : Root.Appearance.colors.overlay0
+                            hidePopup()
+                        }
+                    }
+                }
+
+                // Bluetooth
+                Text {
+                    id: btIcon
+                    text: Services.Bluetooth.icon()
+                    color: Services.Bluetooth.connected ? Root.Appearance.colors.mauve
+                         : Services.Bluetooth.enabled   ? Root.Appearance.colors.subtext1
+                         :                                Root.Appearance.colors.overlay0
+                    font.pixelSize: 18; font.family: Root.Appearance.font.family
+                    anchors.verticalCenter: parent.verticalCenter
+                    Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                    MouseArea {
+                        anchors.fill: parent; hoverEnabled: true
+                        onClicked: controlCenterVisible = true
+                        onEntered: {
+                            parent.color = Root.Appearance.colors.accent
+                            showPopup(parent, "BLUETOOTH",
+                                Services.Bluetooth.connected ? "󰂱  " + Services.Bluetooth.device
+                                    : Services.Bluetooth.enabled ? "󰂯  On — no device" : "󰂲  Off",
+                                "", "Click to manage")
+                        }
+                        onExited: {
+                            parent.color = Services.Bluetooth.connected ? Root.Appearance.colors.mauve
+                                : Services.Bluetooth.enabled ? Root.Appearance.colors.subtext1 : Root.Appearance.colors.overlay0
+                            hidePopup()
+                        }
+                    }
+                }
+
+                // Battery
+                Row {
+                    visible: Services.Battery.present
+                    spacing: 4; anchors.verticalCenter: parent.verticalCenter
+
+                    Text {
+                        id: batIcon
+                        text: Services.Battery.icon()
+                        color: Services.Battery.percent <= 20 ? Root.Appearance.colors.red : Root.Appearance.colors.green
+                        font.pixelSize: 18; font.family: Root.Appearance.font.family
+                        anchors.verticalCenter: parent.verticalCenter
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true
+                            onEntered: showPopup(parent, "BATTERY",
+                                Services.Battery.icon() + "  " + Services.Battery.percent + "%",
+                                Services.Battery.charging ? "󰂄  Charging" : "󱉞  On battery",
+                                "")
+                            onExited: hidePopup()
+                        }
+                    }
+                    Text {
+                        text: Services.Battery.percent + "%"
+                        color: Services.Battery.percent <= 20 ? Root.Appearance.colors.red : Root.Appearance.colors.overlay1
+                        font.pixelSize: Root.Appearance.font.sizeSm; font.family: Root.Appearance.font.family
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                // Notification bell
+                Text {
+                    text: "󰂜"
+                    color: Root.Appearance.colors.subtext1
+                    font.pixelSize: 18; font.family: Root.Appearance.font.family
+                    anchors.verticalCenter: parent.verticalCenter
+                    Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                    MouseArea {
+                        anchors.fill: parent; hoverEnabled: true
+                        onClicked: notifCmd.running = true
+                        onEntered: parent.color = Root.Appearance.colors.accent
+                        onExited:  parent.color = Root.Appearance.colors.subtext1
+                    }
+                }
+
+                // Settings gear
+                Text {
+                    text: "󰒓"
+                    color: Root.Appearance.colors.subtext1
+                    font.pixelSize: 18; font.family: Root.Appearance.font.family
+                    anchors.verticalCenter: parent.verticalCenter
+                    Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                    MouseArea {
+                        anchors.fill: parent; hoverEnabled: true
+                        onClicked: controlCenterVisible = !controlCenterVisible
+                        onEntered: parent.color = Root.Appearance.colors.accent
+                        onExited:  parent.color = Root.Appearance.colors.subtext1
+                    }
+                }
+
+                // Power
+                Text {
+                    text: "󰐥"
+                    color: Root.Appearance.colors.subtext1
+                    font.pixelSize: 18; font.family: Root.Appearance.font.family
+                    anchors.verticalCenter: parent.verticalCenter
+                    Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                    MouseArea {
+                        anchors { fill: parent; margins: -6 }
+                        hoverEnabled: true
+                        onClicked: powerCmd.running = true
+                        onEntered: parent.color = Root.Appearance.colors.red
+                        onExited:  parent.color = Root.Appearance.colors.subtext1
+                    }
+                }
+            }
+        }
+    }
+
+    Process { id: notifCmd; command: ["swaync-client", "--toggle-panel"]; running: false }
+    Process { id: powerCmd; command: ["bash", "-c", "wlogout-launch.sh &"]; running: false }
+}

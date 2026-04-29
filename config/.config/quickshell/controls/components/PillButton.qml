@@ -1,32 +1,33 @@
 import QtQuick
 import QtQuick.Controls
+import "../../" as Root
 
-// Mutually exclusive option button — used for Display layout, Power Profile, Night Light
 Button {
-    property bool active: false
+    property bool   active: false
     property string label: ""
 
     implicitHeight: 28
     implicitWidth: labelText.implicitWidth + 24
 
     background: Rectangle {
-        radius: 8
-        color: parent.active ? "#c6a0f6" : (parent.hovered ? "#363a4f" : "#2a2d3e")
-        border.color: parent.active ? "#c6a0f6" : "transparent"
+        radius: Root.Appearance.radius.base
+        color: parent.active ? Root.Appearance.colors.accent
+                             : (parent.hovered ? Root.Appearance.colors.surface0 : Root.Appearance.colors.surface0Alpha)
+        border.color: parent.active ? Root.Appearance.colors.accent : "transparent"
         border.width: 1
 
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
     }
 
     contentItem: Text {
         id: labelText
         text: parent.label
-        color: parent.active ? "#24273a" : "#cad3f5"
-        font.pixelSize: 11
-        font.family: "FiraCode Nerd Font"
+        color: parent.active ? Root.Appearance.colors.base : Root.Appearance.colors.text
+        font.pixelSize: Root.Appearance.font.sizeSm
+        font.family: Root.Appearance.font.family
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
 
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
     }
 }

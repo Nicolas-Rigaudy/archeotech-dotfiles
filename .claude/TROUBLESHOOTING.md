@@ -991,6 +991,49 @@ When documenting new issues, use this format:
 
 ---
 
-**Last Updated:** 2026-04-13
-- Added MangoWC-specific section (XF86 keys, touchpad, spawn_shell, mmsg reload, screen sharing, swaync blur)
-- Added Fedora partial boot issue with workaround
+---
+
+## Quickshell Issues
+
+### BarPopup not appearing / "Cannot assign to non-existent property leftMargin"
+
+**Symptom:** Bar loads but no hover popups appear. Console shows `Cannot assign to non-existent property "leftMargin"`.
+
+**Cause:** `WlrLayershell` does not have `leftMargin`/`topMargin` properties. Only `namespace`, `layer`, `keyboardFocus` exist on `WlrLayershell`.
+
+**Fix:** Use `PopupWindow` from `Quickshell._Window` instead of `PanelWindow` for floating popups. Set `anchor.item` to the hovered QML item, `anchor.edges: Edges.Bottom`, `anchor.gravity: Edges.Bottom`. The popup positions itself automatically relative to the item.
+
+---
+
+### PopupWindow deprecation warnings (parentWindow / relativeX / relativeY)
+
+**Symptom:** Console shows `PopupWindow.parentWindow is deprecated. Use PopupWindow.anchor.window.`
+
+**Cause:** The old `parentWindow`/`relativeX`/`relativeY` API was replaced by the `anchor` group object (`PopupAnchor`) in a newer Quickshell version.
+
+**Fix:** Use `anchor.item` (anchors to a QML Item directly), `anchor.window` (anchors to a window), `anchor.rect` (Box with x/y/w/h), `anchor.edges`, `anchor.gravity`. The `anchor` property is read-only (non-creatable `PopupAnchor` type) — set its sub-properties directly.
+
+---
+
+### Quickshell bar disappears / stale QML cache after file changes
+
+**Symptom:** Changes to QML files don't take effect, or old warnings persist after fixing them.
+
+**Cause:** Quickshell caches compiled `.qmlc` files. Hot-reload may serve the cached version.
+
+**Fix:** `find ~/.cache -name "*.qmlc" -delete && pkill -f qs` then restart. Also check `/run/user/1000/quickshell/by-id/<latest>/log.log` for actual errors — the log file is always fresh.
+
+---
+
+### Network.qml "Cannot assign to non-existent property" after refactor
+
+**Symptom:** `@services/Network.qml: Error: Cannot assign to non-existent property "ipAddress"` in logs.
+
+**Cause:** Property was renamed/removed from the singleton but the running instance had it cached. The stdout parser was assigning to the old property name.
+
+**Fix:** Clear QML cache (see above) and do a full restart. Hot-reload doesn't always pick up singleton property removals.
+
+---
+
+**Last Updated:** 2026-04-29
+- Added Quickshell section (PopupWindow, BarPopup positioning, QML cache, singleton property changes)

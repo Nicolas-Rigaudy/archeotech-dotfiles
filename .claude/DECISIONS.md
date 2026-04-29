@@ -597,5 +597,43 @@ Some decisions should be periodically reviewed:
 
 ---
 
-**Last Updated:** 2026-04-13
-**Total Decisions:** 21
+---
+
+## [2026-04-29] Quickshell Bar: Popup via PopupWindow, not PanelWindow
+
+**Context:** Bar hover popups needed to appear outside the 42px-tall bar window. Initial attempt used a child Rectangle inside the bar (clipped). Second attempt used a separate `PanelWindow` with `WlrLayershell.leftMargin`/`topMargin` (don't exist). Third attempt used `PopupWindow` from `Quickshell._Window`.
+
+**Decision:** `PopupWindow` with `anchor.item` pointing to the hovered icon item.
+
+**Rationale:** `PopupWindow` is the purpose-built type for floating positioned popups in Quickshell. `anchor.item` lets Quickshell handle all coordinate math — no `mapToGlobal` or manual offset calculation needed. Each `Bar` instance owns its own `BarPopup`, keeping state local and avoiding cross-screen contamination.
+
+**Trade-offs Accepted:** `PopupWindow` API changed between versions (old: `parentWindow`/`relativeX`/`relativeY`; new: `anchor.*`). Must check qmltypes when upgrading Quickshell.
+
+---
+
+## [2026-04-29] Quickshell Bar: Service singletons for all system state
+
+**Context:** Bar and ControlCenter both need access to audio volume, battery, network, bluetooth state. Could poll in each component, or share state via singletons.
+
+**Decision:** `pragma Singleton` QML files in `services/` directory, declared in `services/qmldir`. All components import `"../services" as Services` and read `Services.Audio.volume` etc.
+
+**Rationale:** Single source of truth — bar and control center always show the same value. One `pactl subscribe` process total, not one per component. State changes propagate to all consumers instantly via QML property bindings.
+
+**Trade-offs Accepted:** Singletons are process-global — can't have per-screen audio state (not needed). Hot-reload of singletons sometimes requires full restart to pick up property additions/removals.
+
+---
+
+## [2026-04-29] Quickshell Bar: MangoWC IPC via mmsg, not Hyprland IPC
+
+**Context:** MangoWC uses its own IPC daemon (`mmsg`), not Hyprland's socket. Most Quickshell examples target Hyprland IPC directly.
+
+**Decision:** Shell out to `mmsg -w -O -t -l -c` as a persistent `Process` with `SplitParser`, parse the output in `MangoWC.qml` singleton.
+
+**Rationale:** MangoWC has no QML bindings. `mmsg -w` streams events on stdout — one line per tag/title/layout change. `SplitParser` handles line buffering. Output format is stable and documented enough from source inspection.
+
+**Trade-offs Accepted:** Can't copy-paste from caelestia or end-4 dotfiles (Hyprland-specific). If mmsg output format changes, parser breaks. Currently hardcoded to specific output format (`<output> tag <num> <sel> <occ> <urg>` etc).
+
+---
+
+**Last Updated:** 2026-04-29
+**Total Decisions:** 24
