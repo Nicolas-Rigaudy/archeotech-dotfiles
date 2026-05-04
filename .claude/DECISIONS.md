@@ -565,14 +565,57 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
+### [2026-05-04] Shell Architecture: Fork vs Build Own
+
+**Context:** After Phase 2 (bar mostly done), the shell still feels clunky compared to Noctalia/DankMaterialShell/end-4. Considered switching to an established project.
+
+**Options Considered:**
+1. **Fork Noctalia Shell** — has MangoWC support, polished, plugin-based
+   - Pros: Immediate polish, active development, MangoWC IPC solved
+   - Cons: Material You aesthetic incompatible with Archeotech's cyber-monastic identity; plugin marketplace design conflicts with curated theme personalities; upstream conflicts when MangoWC adds features
+2. **Fork AMBXST** — feature-rich, active Discord community
+   - Pros: Breadth of features (OCR, QR, AI, recording)
+   - Cons: Hyprland-only IPC — all `mmsg` integration would need to be rewritten
+3. **Build own, steal patterns from reference projects** ← chosen
+   - Pros: Full ownership of aesthetic; MangoWC IPC layer we built is good; Appearance singleton is right foundation; Archeotech themes (Shadow Spear, Gundam HUD, etc.) can't be achieved by skinning another shell
+   - Cons: More work; slower polish ramp
+
+**Decision:** Build our own. The current shell's foundation is sound. The gaps are specific and fixable (animations, state sync, MPRIS, notifications). The aesthetic identity is the whole point.
+
+**What to steal (patterns, not code):**
+- end-4: JsonAdapter, FileView hot-reload, component lazy loading
+- Noctalia: MangoWC IPC patterns (check their source for MangoWC-specific solutions)
+- HyDE: theme switching multi-target approach
+- Qylock: lock screen QML implementation (PAM auth, blur)
+
+**Rule added:** Before implementing any workaround for a QML/compositor problem, check how the reference projects solve it. Especially Noctalia for MangoWC-specific issues. See `ANALYSIS.md §2`.
+
+---
+
+### [2026-05-04] Source-Checking Rule for QML Problems
+
+**Context:** We've re-solved problems (blur artifacts, OSD placement, state sync) that established projects have already solved better.
+
+**Decision:** When encountering a QML or compositor problem, check reference sources **before** implementing a solution.
+
+**Lookup order:**
+1. **MangoWC-specific problems** → [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) (explicit MangoWC support)
+2. **QML animation/state patterns** → [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland)
+3. **Component architecture** → [caelestia-dots/shell](https://github.com/caelestia-dots/shell)
+4. **Lock screen** → [Qylock](https://github.com/Darkkal44/qylock)
+5. **Installation/distribution** → [HyDE](https://github.com/HyDE-Project/HyDE), [JaKooLit](https://github.com/JaKooLit/Hyprland-Dots)
+6. **Full catalog** → `.claude/ANALYSIS.md §2`
+
+**Rationale:** These projects have more QML hours than we do. Their solutions are tested at scale. Our blur artifact issue (the SceneFX halo on glass panels) was solved with a specific alpha value — Noctalia may have a cleaner approach.
+
+---
+
 ## Decision Review Schedule
 
-Some decisions should be periodically reviewed:
-
-- **Quickshell migration:** Review progress after Phase 1 (control center) — if QML is too painful, reconsider scope
-- **Theme choice:** Can add alternate themes anytime
-- **File managers:** Working well, no review needed
-- **Keybind philosophy:** Review if causing issues (none so far)
+- **Shell architecture:** Review after Sprint 2 — if polish gap still large, reconsider Noctalia fork
+- **Theme system:** Review after first theme switcher proof-of-concept (Sprint 3)
+- **Notification daemon:** swaync → Quickshell Phase 3 — review timeline after bar is fully polished
+- **Keybind philosophy:** Review if AZERTY/QWERTY conflicts emerge
 
 ---
 

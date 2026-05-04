@@ -10,6 +10,8 @@ This document contains all known issues, their symptoms, causes, and solutions. 
 - [Audio Problems](#audio-problems)
 - [Display & Monitor Issues](#display--monitor-issues)
 - [Keyboard & Input Issues](#keyboard--input-issues)
+- [MangoWC Issues](#mangowc-issues)
+- [Quickshell / QML Issues](#quickshell--qml-issues)
 - [Hyprland Issues](#hyprland-issues)
 - [Waybar Issues](#waybar-issues)
 - [wlogout Issues](#wlogout-issues)
@@ -514,6 +516,122 @@ Disable globally in mango config:
 blur_layer=0
 layer_shadows=0
 ```
+
+---
+
+## Quickshell / QML Issues
+
+> **Before solving a Quickshell problem:** Check the reference projects first — they've solved most common issues.
+> - MangoWC-specific: https://github.com/noctalia-dev/noctalia-shell
+> - Animations/state: https://github.com/end-4/dots-hyprland
+> - Component patterns: https://github.com/caelestia-dots/shell
+> See `DECISIONS.md` source-checking rule and `ANALYSIS.md §2` for the full reference catalog.
+
+---
+
+### Glass Panel Shows Halo / White Glow Artifact (SceneFX)
+
+**Symptoms:**
+- Glass panel (ControlCenter, bar popup) has a white or colored halo around it
+- Artifact appears only when MangoWC blur (`blur_layer=1`) is enabled
+
+**Cause:**
+- SceneFX blur interacts with translucent QML panels — the compositor samples pixels behind the panel's edges, creating a bleed effect
+
+**Confirmed solution (current):**
+- Set `blur_layer=0` in `mango/config.conf` — disables blur on layer-shell surfaces
+- Raise panel opacity slightly to compensate (glass color alpha ~0.96 in `Appearance.qml`)
+
+**Potential better solution (check Noctalia):**
+- Noctalia Shell has MangoWC support and glass panels without this issue
+- Their approach may use a specific `WlrLayershell.exclusionZone` or compositor hint
+- Check: https://github.com/noctalia-dev/noctalia-shell — look at how they set up glass panels under MangoWC
+
+---
+
+### Quickshell Bar Popup Shows as Grey Block
+
+**Symptoms:**
+- Hover popup from bar icon appears as a solid grey rectangle instead of a glass card
+
+**Cause:**
+- Using a standard `Item` or `Rectangle` in the same `PanelWindow` as the bar — it gets compositor-composited wrong
+
+**Solution:**
+- Popup must be a **separate Wayland surface** — use `Quickshell.Wayland.PopupWindow` as a child of the bar's `PanelWindow`
+- The popup `parentWindow` must reference the bar's window, not the root
+- This is why we use a `Loader`-created `PopupWindow` — avoids the artifact entirely
+
+---
+
+### ControlCenter State Desyncs With External Changes
+
+**Symptoms:**
+- User changes power profile in terminal (`powerprofilesctl set performance`) — ControlCenter still shows "Balanced"
+- DND state in ControlCenter doesn't match actual swaync state
+
+**Cause:**
+- ControlCenter reads state once in `Component.onCompleted` and never again
+
+**Workaround (current):**
+- State re-reads on `onVisibleChanged` for power profile, night light, DND
+
+**Proper fix (Sprint 2):**
+- Add a 2s poll timer that runs only while ControlCenter is visible
+- Or replace swaync DND with native QML toggle (Phase 3)
+
+---
+
+### Quickshell Process Dies Silently
+
+**Symptoms:**
+- Bar disappears
+- No visible error
+
+**Diagnosis:**
+```bash
+journalctl --user -u quickshell -n 50
+# or run directly to see stderr:
+quickshell 2>&1 | head -50
+```
+
+**Common causes:**
+- QML syntax error after editing (check the file you last touched)
+- Service singleton crash (Audio/Network most common — check if pactl/nmcli is available)
+- Wrong property binding (undefined reference to a singleton property)
+
+---
+
+### mmsg Watch Mode Stops Updating Bar Tags
+
+**Symptoms:**
+- Bar tag dots stop responding to workspace switches
+- Happened after system suspend/resume or compositor reload
+
+**Cause:**
+- The `mmsg -w` process in `MangoWC.qml` exited and wasn't restarted
+
+**Solution:**
+- `MangoWC.qml` should have an `onExited` handler that restarts the process
+- Check that `Process { onExited: start() }` is present in the mmsg `Process` component
+- Workaround: `pkill quickshell && quickshell &`
+
+---
+
+### QML Component Not Updating When Property Changes
+
+**Symptoms:**
+- A binding should update but doesn't
+- Property change in a service singleton isn't reflected in the UI
+
+**Cause:**
+- QML reactivity requires properties to be declared as `property type name` — plain JS assignments don't trigger bindings
+- Or: value is assigned to a plain object property (not a QML property), so Qt's signal system doesn't fire
+
+**Solution:**
+- Ensure all reactive state uses `property` declaration, not `var`
+- For objects (like the `outputs` map in MangoWC.qml): force reactivity by reassigning the whole object (`outputs = Object.assign({}, outputs)`) — expensive but works
+- Better pattern (from end-4): use a `ListModel` for collections instead of plain JS objects
 
 ---
 

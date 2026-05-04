@@ -76,9 +76,9 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 | **Window Manager (Primary)** | MangoWC (latest) | Scrolling layout feature, modern Wayland compositor |
 | **Window Manager (Backup)** | Hyprland 0.52.1 | Fallback option, well-established compositor |
 | **Display Manager** | SDDM | Best for Wayland compositors, Catppuccin themes available |
-| **Status Bar** | Quickshell (QML) | Replaces Waybar — unified process with control center, shared theme singleton |
+| **Status Bar** | Quickshell (QML) | Primary — unified process: bar + control center + OSD. Waybar kept for Hyprland fallback only. |
 | **App Launcher** | rofi-wayland | Most features, extensible |
-| **Notifications** | dunst | Lightweight, themeable, simple config |
+| **Notifications** | swaync | GTK4 notification center with panel — replaces dunst. Phase 3 will replace with native Quickshell component. |
 | **Wallpaper** | awww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay (note: package was renamed from swww → awww) |
 | **Wallpaper Picker** | rofi (thumbnail grid) | scripts/wallpaper-picker.sh — 3-col grid, logos row 1, wallpapers below, vertical scroll |
 | **Lock Screen** | swaylock (MangoWC) / hyprlock (Hyprland) | Compositor-specific lock screens |
@@ -209,8 +209,8 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 - [x] Animations, blur, shadows, rounded corners configured
 - [x] Quickshell bar (replaces Waybar) — floating glass pill, per-screen, tags+title+clock+mic+volume+network+bt+battery+bell+gear+power, hover popups, MangoWC IPC
 - [x] Rofi launcher styled
-- [x] SwayNC notifications — replaces dunst, Catppuccin glass panel, DND toggle, notification history, waybar bell icon
-- [x] Swww wallpaper daemon with wallpaper collection in wallpapers/
+- [x] SwayNC notifications — replaces dunst (dunst config deleted), Catppuccin glass panel, DND toggle, notification history, bar bell icon
+- [x] awww wallpaper daemon with wallpaper collection in wallpapers/ (note: package was swww, renamed to awww)
 - [x] Rofi wallpaper picker with thumbnail grid (Super+W) - 3-col glass grid, logos on row 1, vertical scroll, Catppuccin Macchiato themed
 - [x] Waypaper installed as backup picker (configured with custom_command = wallpaper-set.sh)
 - [x] Multi-logo overlay system (wallpaper-set.sh) - Arch Linux, Rebel Alliance, Imperial Aquila logos; adaptive color from wallpaper, toggle Super+Shift+W, remembers last active logo; portrait screen support (DP-3), area-normalized sizing, shape-hugging drop shadow, SVG cropping for imperial
@@ -352,7 +352,9 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │       ├── yazi/               # File manager config
 │       ├── gtk-3.0/            # GTK3 theme
 │       ├── gtk-4.0/            # GTK4 theme
-│       └── dunst/              # Notifications config
+│       ├── navi/               # CLI cheatsheets
+│       ├── lazygit/            # TUI git client
+│       └── atuin/              # Shell history
 ├── system/                     # System-level configs (requires root)
 │   ├── etc/
 │   │   └── snapper/
@@ -435,7 +437,8 @@ This project maintains comprehensive documentation across multiple files:
 
 ### Claude context (`.claude/`)
 - **[claude.md](claude.md)** - This file — system state, architecture, how things work
-- **[ROADMAP.md](ROADMAP.md)** - Everything planned, in-progress, and ideas
+- **[ANALYSIS.md](ANALYSIS.md)** - Full ecosystem research: reference projects, current audit, gap analysis, sprint roadmap, distribution plan
+- **[ROADMAP.md](ROADMAP.md)** - Living feature backlog and planned work
 - **[DECISIONS.md](DECISIONS.md)** - Technical decisions with rationale
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Known issues and solutions
 - **[STYLE_GUIDE.md](STYLE_GUIDE.md)** - Creative direction and aesthetic intent (Corvus persona)
@@ -464,17 +467,23 @@ nmcli connection show
 # Auto-connect is enabled by default for known networks
 ```
 
-### Managing Themes
+### Managing the Shell
+
 ```bash
-# Restart waybar after config changes
-pkill waybar
-waybar &
+# Restart Quickshell (bar + control center + OSD)
+pkill quickshell && quickshell &
+
+# Restart swaync (notification daemon)
+pkill swaync && swaync &
+
+# Reload MangoWC config safely (re-applies monitor rules)
+~/.local/bin/mango-reload.sh
 
 # Reload Hyprland config
 hyprctl reload
 
-# Check Hyprland config for errors
-hyprctl reload 2>&1 | grep -i error
+# Restart Waybar (Hyprland fallback only)
+pkill waybar && waybar &
 ```
 
 ### Managing Wallpapers
@@ -779,8 +788,9 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 2. **Test incrementally:** Make small changes, test, then continue
 3. **Check syntax:** Use appropriate validators (shellcheck for bash, etc.)
 4. **Verify permissions:** Some files need specific permissions (e.g., 755 for scripts)
-5. **Reload services:** Many changes require reloading (hyprctl reload, pkill waybar, etc.)
+5. **Reload services:** Many changes require reloading (`mango-reload.sh`, `pkill quickshell && quickshell &`, etc.)
 6. **Use official Catppuccin themes:** Always fetch official themes from https://github.com/catppuccin/ repositories, never create custom color schemes
+7. **Check reference sources before solving QML/compositor problems:** Before implementing a workaround, look at how Noctalia (MangoWC support), caelestia, or end-4 solve the same problem. Their solutions are often cleaner. Key repos: https://github.com/noctalia-dev/noctalia-shell (MangoWC IPC), https://github.com/caelestia-dots/shell (QML patterns), https://github.com/end-4/dots-hyprland (animations/state). See `.claude/ANALYSIS.md` §2 for full reference catalog.
 
 ### When Installing Packages
 1. **Check if already installed:** `pacman -Q package-name`
@@ -817,5 +827,6 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 **Last Updated:** 2026-05-04
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Next major work:** MPRIS media controls in bar, OSD on focused screen only. See `.claude/ROADMAP.md`.
-**Roadmap:** See `.claude/ROADMAP.md` for all planned work and ideas
+**Shell:** Quickshell Phase 2 (bar + control center + OSD active). Phase 3 = native notifications. Phase 4 = dashboard.
+**Next Sprint:** Sprint 2 — polish bar animations, MPRIS, 1s clock, state sync. See `.claude/ANALYSIS.md` §7.
+**Reference sources:** Before solving any QML/compositor problem, check `.claude/ANALYSIS.md` §2 for the right repo to look at.

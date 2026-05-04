@@ -82,25 +82,45 @@ backup_existing_configs() {
 
     # List of directories/files to backup
     CONFIGS=(
+        # Compositor configs
         "hypr"
+        "mango"
+        # Shell (bar + control center + OSD — single quickshell process)
+        "quickshell"
+        # Bar fallback (kept for Hyprland compatibility)
         "waybar"
+        # Notifications (swaync — Phase 3 will replace with Quickshell)
+        "swaync"
+        # Power menu
+        "wlogout"
+        # Terminal
         "kitty"
+        # Launcher + pickers
         "rofi"
+        "waypaper"
+        # Shell + prompt
         "fish"
         "starship.toml"
-        "btop"
-        "yazi"
-        "gtk-3.0"
-        "gtk-4.0"
-        "dunst"
-        "mango"
+        # Lock + idle
         "swaylock"
         "swayidle"
+        # Dev tools
+        "lazygit"
+        "navi"
+        "atuin"
+        # System utils
+        "btop"
+        "yazi"
+        "zathura"
         "bat"
         "cava"
-        "zathura"
+        # Theme
+        "gtk-3.0"
+        "gtk-4.0"
+        # System integration
         "xdg-desktop-portal"
         "environment.d"
+        "systemd"
     )
 
     BACKED_UP=0
@@ -179,18 +199,20 @@ verify_deployment() {
     # Check some critical symlinks
     CRITICAL_CONFIGS=(
         "hypr"
+        "mango"
+        "quickshell"
         "waybar"
+        "swaync"
         "kitty"
         "fish"
-        "mango"
+        "rofi"
         "swaylock"
         "swayidle"
+        "wlogout"
         "bat"
         "btop"
         "yazi"
         "zathura"
-        "cava"
-        "dunst"
         "xdg-desktop-portal"
         "environment.d"
     )

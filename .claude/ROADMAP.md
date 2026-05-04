@@ -1,148 +1,184 @@
 # Roadmap & Ideas
 
-Everything worth building, customizing, or investigating — from deep workflow automation to visual flair. This is a living document.
+Everything worth building, customizing, or investigating. This is a living document.
 
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-05-04
 
----
-
-## Quickshell Migration — Full Desktop Shell
-
-The long-term vision: replace the current patchwork of waybar + rofi settings hub + swaync with a single unified Quickshell shell that looks and feels like one person designed it. Everything shares the same QML codebase, the same animation system, the same theme variables. This is how caelestia-dots and end-4/dots-hyprland achieve their coherence.
-
-**Why Quickshell over AGS/eww:**
-- QML is its own thing regardless of prior experience — no JS/TS knowledge wasted
-- Higher ceiling than AGS: animations, live window previews, blur, full compositor integration
-- Single process for everything (bar + panels + notifications + control center) = consistent rendering
-- Caelestia (the main reference) is built on Quickshell — its source is readable and well-structured
-
-**MangoWC caveat:** Most Quickshell examples target Hyprland's IPC. MangoWC uses `mmsg`. Quickshell can shell out to any command and watch stdout, so this is workable — but we can't copy-paste from caelestia directly. We build our own IPC bridge layer.
+> **See `.claude/ANALYSIS.md` for:** full ecosystem research, reference project catalog, current system audit, gap analysis, and the sprint-based implementation plan (§7). That document is the detailed "how to build it" reference. This document is the "what to build" backlog.
 
 ---
 
-### Phase 1 — Learn QML, Build the Control Center ✅ DONE + ongoing improvements
+## Quickshell Shell — Current State & Sprint Plan
 
-**Goal:** One contained widget that proves out the QML workflow. Replaces `settings-hub.sh` (rofi dmenu).
+**Architecture decision:** Build our own shell, stealing patterns from reference projects (not forking). Our MangoWC IPC layer, Appearance singleton, and service singletons are good foundations. The gap is animations, state sync, and missing features. See `ANALYSIS.md §6`.
 
-**Architecture:** Right-anchored glass panel, opened via gear icon in bar or `Super+,`. Shared service singletons (Audio, Battery, Network, Bluetooth) feed all state live.
+**Reference sources for QML problems:**
+- MangoWC IPC patterns → [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) (has MangoWC support)
+- Animation/state patterns → [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) (14k stars)
+- Component/module structure → [caelestia-dots/shell](https://github.com/caelestia-dots/shell) (primary visual ref)
+- Lock screen in QML → [Qylock](https://github.com/Darkkal44/qylock)
+- Async patterns → [NibrasShell](https://github.com/AhmedSaadi0/NibrasShell)
 
-**Completed:**
-- [x] Install `quickshell-git` (AUR)
-- [x] QML basics: properties, bindings, anchors, signals, singletons
-- [x] Toggle switches (animated thumb) for Night Light, Power Profile, Bluetooth, Do Not Disturb
-- [x] Sliders for volume + night light temperature
-- [x] Live state reflection from service singletons
-- [x] Glass morphism panel — Catppuccin Macchiato
-- [x] `Super+,` keybind (via IpcHandler) + gear icon in bar
-- [x] Click-outside and Escape to close
-- [x] Focus Mode dropped (MangoWC can't retroactively apply opacity to open windows)
-
-**Planned additions to Control Center:**
-- [ ] **Brightness slider** — paired with volume, needs `brightnessctl` integration
-- [ ] **MPRIS media card** — album art, track/artist, progress bar, prev/play/next (playerctl)
-- [ ] **System stats** — CPU % + RAM % mini display (polled from /proc)
-- [ ] **Calendar widget** — month grid, today highlighted
-- [ ] **Screenshot shortcuts** — region / fullscreen / window buttons
+**Current file structure:**
+```
+quickshell/
+├── shell.qml              # ShellRoot: singletons, Bar per screen, ControlCenter overlay, IPC
+├── Appearance.qml         # Theme singleton: colors, fonts, spacing, radii, animation speeds
+├── Osd.qml                # Volume/brightness OSD pill, per-screen, 1.5s auto-hide ✅
+├── bar/Bar.qml            # Per-screen pill bar, all tray modules, hover popups ✅
+├── controls/
+│   ├── ControlCenter.qml  # 320px right panel, audio/display/system/idle/tools ✅
+│   └── components/        # ActionButton, PillButton, SectionHeader, ToggleSwitch ✅
+└── services/
+    ├── Audio.qml          # pactl subscribe, auto-restart ✅
+    ├── Battery.qml        # /sys/class/power_supply/BAT0, 30s poll ✅
+    ├── Brightness.qml     # brightnessctl ✅
+    ├── Bluetooth.qml      # busctl → org.bluez, 5s poll ⚠️ should use D-Bus signals
+    ├── Network.qml        # nmcli monitor subscription ✅
+    └── MangoWC.qml        # mmsg -w stream, per-output tags/title/layout ✅
+```
 
 ---
 
-### Phase 2 — Replace Waybar with Quickshell Bar ✅ MOSTLY DONE
+### Phase 1 — Control Center ✅ COMPLETE
 
-**Goal:** A status bar that's part of the same Quickshell process as the control center. Consistent rendering, shared theme variables, no inter-process seams.
+Control Center replaces rofi settings hub. Glass panel, service singletons, live state. Done.
 
-**What it replaces:** `~/.config/waybar/` (both mango and hyprland variants)
+---
 
-**Design:** Floating glass pill, left/center/right layout. All icons have hover popup cards + smooth color transitions. Single Quickshell process hosting bar + control center + popup.
+### Phase 2 — Bar ✅ MOSTLY DONE / 🔧 Polish Sprint Next
 
-**Architecture:**
-- `shell.qml` — ShellRoot: instantiates all singletons, spawns Bar per screen, hosts ControlCenter overlay
-- `Appearance.qml` — singleton: all colors, fonts, geometry, animation durations
-- `services/` — singletons: Audio, Battery, Network, Bluetooth, MangoWC
-- `bar/Bar.qml` — per-screen PanelWindow, owns its own BarPopup
-- `bar/BarPopup.qml` — PopupWindow (from Quickshell._Window), positioned relative to bar
-- `controls/ControlCenter.qml` — full-screen overlay panel (right-anchored)
+Bar replaces waybar for MangoWC. Waybar kept for Hyprland fallback.
 
-**Completed bar modules:**
-- [x] Workspace/tag dots (MangoWC IPC via `mmsg -w -O -t -l -c`) — sel=mauve/wide, occ=surface1, empty=surface0
-- [x] Window title with app rewrites (VSCode / Zen Browser / kitty / fish)
-- [x] Clock `HH:mm · ddd d MMM` (center, bold time + date)
-- [x] Microphone — red when muted, click to toggle, hover popup
-- [x] Volume icon + % — scroll to adjust, click to mute, hover popup (signal + band)
-- [x] Network — connected/disconnected icon + SSID, hover popup shows signal % + band
-- [x] Bluetooth — connected/enabled/off states, hover popup shows device name
-- [x] Battery icon + % — red at ≤20%, hover popup
-- [x] Notification bell → swaync toggle
-- [x] Settings gear → control center toggle
-- [x] Power button (󰐥) → wlogout, extended hit area
-- [x] Hover popup cards (PopupWindow, glass style, label/primary/secondary/hint)
-- [x] Removed waybar autostart, quickshell running as bar
+**Done:**
+- [x] Workspace/tag dots with MangoWC IPC (`mmsg -w`)
+- [x] Window title with app rewrites
+- [x] Clock center (needs 1s tick fix — currently 10s)
+- [x] Microphone, volume, network, bluetooth, battery tray icons
+- [x] Hover popup cards (separate Wayland surface — avoids grey-block artifacts)
+- [x] Notification bell → swaync, settings gear → control center, power button → wlogout
+- [x] OSD for volume/brightness keys ✅
 
-**Remaining bar items:**
-- [ ] **Brightness** — bar icon + %, scroll to adjust (needs `brightnessctl`)
-- [ ] **MPRIS now-playing** — scrolling track + artist in bar when music plays, click to play/pause
-- [ ] **OSD overlay** — temporary centered popup on volume/brightness keyboard change (auto-hides ~1.5s)
-- [ ] Developer modules: git branch, AWS profile indicator (low priority)
+**Sprint 2 polish items (do these next):**
+- [ ] **Fix clock tick** — change Timer interval from 10000 to 1000ms (3 chars)
+- [ ] **ControlCenter enter/exit animation** — 200ms slide + opacity, OutQuart easing
+- [ ] **Spring easing** on tag width/color transitions in bar
+- [ ] **MPRIS service** — new `services/Mpris.qml` singleton using playerctl
+- [ ] **MPRIS bar module** — scrolling track+artist, click to play/pause, only visible when playing
+- [ ] **MPRIS media card** in ControlCenter — album art, prev/play/next, progress bar
+- [ ] **Brightness tray icon** — matches Volume pattern, scroll to adjust
+- [ ] **ControlCenter state sync** — 2s poll on `onVisible` for powerprofilesctl, wlsunset, DND
 
-**MangoWC integration:**
-- `mmsg -w -O -t -l -c` streams tag/title/layout events — parsed in MangoWC.qml singleton
+**MangoWC IPC (current):**
+- `mmsg -w -O -t -l -c` streams events → parsed in `MangoWC.qml`
 - `mmsg -s tag <output> <num>` for tag switching
+- For problems with MangoWC IPC: check Noctalia's MangoWC integration first
 
 ---
 
-### Phase 3 — Replace swaync with Quickshell Notification Center
+### Phase 3 — Native Notifications (replaces swaync)
 
-**Goal:** Notifications and the notification panel as Quickshell components, consistent with bar and control center.
+**What:** `org.freedesktop.Notifications` D-Bus server in QML. Popup cards + history panel + DND toggle. All Quickshell components, same glass aesthetic as bar.
 
-**What it replaces:** swaync (separate process, separate styling, CSS has to be maintained separately)
-
-**What it will do:**
-- Popup notifications: styled cards with Catppuccin Macchiato, matching blur
-- Notification history panel: slides in from right (or top-right), animated
-- DND toggle inside the panel (real toggle, not a fake swaync button)
-- Action buttons on notifications (dismiss, action buttons from apps)
-
-**Note:** swaync is a separate Wayland layer-shell surface — Quickshell can render layer-shell surfaces natively (it's a first-class feature). This is how caelestia does it.
+**Reference:** end-4's notification implementation. NibrasShell for async D-Bus patterns.
 
 **Steps:**
-- [ ] Complete Phase 2 first
-- [ ] Research Wayland notification protocol (org.freedesktop.Notifications DBus)
-- [ ] Build notification popup component in QML
-- [ ] Build notification history panel
-- [ ] Wire DND toggle
-- [ ] Test with all apps that currently use swaync (Teams, system alerts, battery script)
-- [ ] Remove swaync autostart
+- [ ] Complete Sprint 2 polish first
+- [ ] Read Noctalia's notification implementation (they support MangoWC — likely solved D-Bus edge cases)
+- [ ] Implement `org.freedesktop.Notifications` D-Bus server
+- [ ] Build notification popup card (glass pill, icon + title + body + actions)
+- [ ] Build notification history panel (slides from right, same glass style)
+- [ ] Real DND toggle (not swaync-client relay)
+- [ ] Test: Teams, battery-alert.service, playerctl, system alerts
+- [ ] Remove swaync from autostart
 
 ---
 
-### Phase 4 — Dashboard / Overview Widget
+### Phase 4 — Theme Switcher (high impact)
 
-**Goal:** A rich on-demand overlay (like end-4's overview) — not a permanent bar element but a keybind-summoned panel.
+**What:** `Super+Shift+T` → Quickshell theme picker. Switches entire visual identity: compositor borders/shadows, QML colors, kitty palette, starship prompt, rofi vars, wallpaper. Hot-reload via `theme.json` FileView — no restart.
 
-**Inspiration:** end-4/dots-hyprland overview, caelestia dashboard
+**Named theme personalities** (from Style Guide):
+| Theme | Palette | Compositor feel | Personality |
+|-------|---------|-----------------|-------------|
+| **Archeotech Macchiato** | Catppuccin Macchiato + Mauve | Soft pills, 12px radius, purple glow shadow | Default — cyber-monastic |
+| **Archeotech Mocha** | Catppuccin Mocha + Mauve | Same, deeper bg | Darker variant |
+| **Shadow Spear** | Near-black + blood violet | 4px radius (sharp), black void shadow + red glow | WH40K Raven Guard |
+| **Gundam HUD** | Navy/steel + cyan + orange | 0px radius (square), cyan shadow, 1px borders | Mecha cockpit |
+| **Neon Liturgy** | Near-black + neon pink/teal | 6px radius, thick neon border, diffuse glow | Cyberpunk ritual |
 
-**What it could contain:**
-- Live workspace/tag overview with window thumbnails
-- System stats (CPU, RAM, disk, battery) — pretty, not btop-level detail
-- Current track (playerctl integration)
-- Quick launcher shortcuts
-- Date/calendar widget
+**Architecture:**
+```
+themes/
+├── archeotech-macchiato/
+│   ├── theme.json          # Quickshell reads live via FileView
+│   ├── mango-overrides.conf
+│   ├── kitty-colors.conf
+│   ├── starship.toml
+│   └── rofi-vars.rasi
+├── archeotech-mocha/ ...
+└── shadow-spear/ ...
+```
 
-**Keybind:** `Super+Tab` or `Super+D` (currently unused)
+**Steps:**
+- [ ] Move Appearance.qml hardcoded colors → `themes/archeotech-macchiato/theme.json`
+- [ ] Make Appearance.qml read from `~/.config/quickshell/theme.json` via FileView (hot-reload)
+- [ ] Create `themes/archeotech-mocha/` (proof of concept — second theme)
+- [ ] Write `scripts/theme-switch.sh` (patches mango, kitty, rofi, calls mango-reload + wallpaper-set)
+- [ ] Build theme picker overlay in Quickshell (color swatches + wallpaper thumbnail)
+- [ ] Create kitty/rofi/mango variants for each theme
+
+**Neon glow is already possible in MangoWC today** via large colored drop shadows (`shadowscolor` + `shadows_size`). No extra plugins. See ANALYSIS.md §4.
+
+---
+
+### Phase 5 — Native Lock Screen (replaces swaylock)
+
+**What:** Quickshell PanelWindow as lock screen. Blur current session, clock+date overlay, password field, wallpaper bg.
+
+**Reference:** [Qylock](https://github.com/Darkkal44/qylock) — specialized in this, 1.5k stars, multiple theme styles including video backgrounds. Read their PAM auth implementation.
 
 **Steps:**
 - [ ] Complete Phase 3 first
-- [ ] Design the layout on paper before coding
-- [ ] Implement workspace overview using MangoWC geometry (`mmsg -g -x`)
-- [ ] Add system stats via shell polling
-- [ ] Add playerctl integration
+- [ ] Study Qylock's lock screen QML implementation
+- [ ] Build blur+wallpaper background layer
+- [ ] Build clock + date overlay
+- [ ] Build password input with PAM authentication
+- [ ] Replace swaylock in swayidle config
+
+---
+
+### Phase 6 — Mission Dashboard (keybind-summoned overlay)
+
+**What:** `Super+Home` → full overlay panel. System status, active git projects, quick launch, tip of the session. Corvus persona — "ARCHEOTECH-OS :: mission briefing".
+
+**Reference:** end-4's overview widget, caelestia dashboard layout.
+
+**Layout concept:**
+```
+┌── SYSTEM STATUS ──────┐  ┌── ACTIVE PROJECTS ────────┐
+│ CPU  ████░░░  42%     │  │ ● archeotech-dotfiles main │
+│ RAM  ██████░  68%     │  │ ● work-project-alpha   dev  │
+│ Bat  ████░░░  72% ↑   │  └────────────────────────────┘
+└───────────────────────┘
+┌── SYSTEM NOTES ───────┐  ┌── TIP OF THE SESSION ──────┐
+│ Last snapshot: 2d ago │  │ zoxide: `z proj` jumps to  │
+│ Pending updates: 3    │  │ most-visited matching dir  │
+│ AWS: prod-account     │  └────────────────────────────┘
+└───────────────────────┘
+```
+
+**Steps:**
+- [ ] Complete Phase 4 (theme switcher) first
+- [ ] Design data sources (git repos, /proc stats, snapper, checkupdates, $AWS_PROFILE)
+- [ ] Build QML grid layout
+- [ ] Build rotating tips file
 
 ---
 
 ### Focus Mode — DROPPED
 
-**Status:** Removed from settings hub.
-
-**Reason:** MangoWC copies `unfocused_opacity` per-client at window creation time. There is no IPC command, no `reapply_opacity` function, no mechanism to update existing clients. `reload_config` updates globals but never retroactively applies to open windows. The feature works only for newly opened windows after toggle, making it effectively useless as a live toggle.
+MangoWC copies `unfocused_opacity` per-client at window creation time. No IPC to retroactively update open windows. Revisit if MangoWC adds `set_opacity` dispatch.
 
 **Potential future revisit:** If MangoWC adds a `reapply_window_rules` or `set_opacity` IPC dispatch in a future version, this becomes trivial to implement.
 

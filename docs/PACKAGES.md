@@ -83,11 +83,12 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `sddm` | Login screen | Qt-based, Wayland support |
 | `sddm-catppuccin-git` (AUR) | SDDM theme | Catppuccin Macchiato theme |
 
-### Status Bar
+### Shell (Bar + Control Center + OSD)
 
 | Package | Purpose | Notes |
 |---------|---------|-------|
-| `waybar` | Status bar | v0.14.0 - CSS/JSON configured |
+| `quickshell-git` (AUR) | Desktop shell | QML-based — bar, control center, OSD, all in one process. **Primary.** |
+| `waybar` | Status bar fallback | v0.14.0 - Kept for Hyprland backup compositor only |
 
 ### Application Launcher
 
@@ -99,8 +100,7 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 
 | Package | Purpose | Notes |
 |---------|---------|-------|
-| `dunst` | Notification daemon | Lightweight, themeable — used in Hyprland only |
-| `swaync` | Notification center | GTK4 notification center with panel — **active for MangoWC**, replaces dunst |
+| `swaync` | Notification center | GTK4 notification center with panel — **active (both compositors)**. Will be replaced by native Quickshell component in Phase 3. |
 
 ### Wallpaper
 
