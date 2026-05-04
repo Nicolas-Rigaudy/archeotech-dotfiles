@@ -2,24 +2,31 @@
 
 Everything worth building, customizing, or investigating. This is a living document.
 
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-04 (deep-research update — all reference projects source-inspected)
 
-> **See `.claude/ANALYSIS.md` for:** full ecosystem research, reference project catalog, current system audit, gap analysis, and the sprint-based implementation plan (§7). That document is the detailed "how to build it" reference. This document is the "what to build" backlog.
+> **See `.claude/ANALYSIS.md` for:** full ecosystem research, reference project catalog (with confirmed source-inspected findings), current system audit, gap analysis, and the full 10-sprint implementation plan (§7). That document is the detailed "how to build it" reference. This document is the "what to build" backlog.
 
 ---
 
 ## Quickshell Shell — Current State & Sprint Plan
 
-**Architecture decision:** Build our own shell, stealing patterns from reference projects (not forking). Our MangoWC IPC layer, Appearance singleton, and service singletons are good foundations. The gap is animations, state sync, and missing features. See `ANALYSIS.md §6`.
+**Architecture decision:** Build our own shell, stealing patterns from reference projects (not forking). Foundation is sound. Gap is structure, animations, state sync, and missing features. See `ANALYSIS.md §6`.
 
-**Reference sources for QML problems:**
-- MangoWC IPC patterns → [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) (has MangoWC support)
-- Animation/state patterns → [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) (14k stars)
-- Component/module structure → [caelestia-dots/shell](https://github.com/caelestia-dots/shell) (primary visual ref)
-- Lock screen in QML → [Qylock](https://github.com/Darkkal44/qylock)
-- Async patterns → [NibrasShell](https://github.com/AhmedSaadi0/NibrasShell)
+**All reference projects source-inspected 2026-05-04. Confirmed APIs:**
+- **MPRIS** → `Quickshell.Services.Mpris` (native D-Bus, no playerctl, confirmed from end-4 source)
+- **Notifications** → `Quickshell.Services.Notifications.NotificationServer` (confirmed from end-4 source)
+- **Lock screen** → `WlSessionLock` + `Quickshell.Services.Pam.PamContext` (confirmed from Qylock source, ~50 lines)
+- **MangoWC IPC** → `Quickshell.DWL` (`DwlIpc` + `DwlIpcOutput`) — confirmed from Noctalia source, NOT mmsg -w
+- **qmldir files** → delete all — Quickshell resolves from directory layout (confirmed Noctalia has none)
 
-**Current file structure:**
+**Reference sources (always check before implementing):**
+- MangoWC IPC / multi-compositor → [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) (source-inspected)
+- JsonAdapter / FileView / MPRIS / notifications → [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) (source-inspected)
+- Unified panel / DrawerVisibilities / lock screen / C++ plugin → [caelestia-dots/shell](https://github.com/caelestia-dots/shell) (source-inspected)
+- Lock screen PAM + WlSessionLock → [Qylock](https://github.com/Darkkal44/qylock) (source-inspected)
+- Go backend IPC pattern → [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell) (source-inspected)
+
+**Current file structure (pre-restructure):**
 ```
 quickshell/
 ├── shell.qml              # ShellRoot: singletons, Bar per screen, ControlCenter overlay, IPC
@@ -30,67 +37,124 @@ quickshell/
 │   ├── ControlCenter.qml  # 320px right panel, audio/display/system/idle/tools ✅
 │   └── components/        # ActionButton, PillButton, SectionHeader, ToggleSwitch ✅
 └── services/
-    ├── Audio.qml          # pactl subscribe, auto-restart ✅
-    ├── Battery.qml        # /sys/class/power_supply/BAT0, 30s poll ✅
+    ├── Audio.qml          # pactl subprocess ⚠️ replace with Quickshell.Services.Pipewire
+    ├── Battery.qml        # /sys/class/power_supply/BAT0, 30s poll ⚠️ replace with UPower D-Bus
     ├── Brightness.qml     # brightnessctl ✅
-    ├── Bluetooth.qml      # busctl → org.bluez, 5s poll ⚠️ should use D-Bus signals
+    ├── Bluetooth.qml      # busctl → org.bluez, 5s poll ⚠️ replace with D-Bus signals
     ├── Network.qml        # nmcli monitor subscription ✅
-    └── MangoWC.qml        # mmsg -w stream, per-output tags/title/layout ✅
+    └── MangoWC.qml        # mmsg -w stream ⚠️ replace with Quickshell.DWL
+```
+
+**Target structure (post Sprint 1):**
+```
+quickshell/
+├── shell.qml
+├── Commons/               Appearance.qml, State.qml, Paths.qml
+├── Services/
+│   ├── Compositor/        CompositorService.qml, MangoService.qml, HyprlandService.qml
+│   ├── Hardware/          Battery.qml, Brightness.qml
+│   ├── Media/             Audio.qml, Mpris.qml
+│   ├── Networking/        Network.qml, Bluetooth.qml
+│   ├── System/            Notifications.qml
+│   └── Theming/           ThemeLoader.qml
+├── Modules/
+│   ├── Bar/               Bar.qml
+│   ├── OSD/               Osd.qml
+│   ├── ControlCenter/     ControlCenter.qml
+│   ├── Notifications/     NotifPopup.qml, NotifHistory.qml
+│   └── LockScreen/        LockScreen.qml
+└── Widgets/               ActionButton, PillButton, SectionHeader, ToggleSwitch, PopupCard
 ```
 
 ---
 
-### Phase 1 — Control Center ✅ COMPLETE
+### Sprint 0 — Dead file cleanup + immediate fixes ⬅ DO FIRST
 
-Control Center replaces rofi settings hub. Glass panel, service singletons, live state. Done.
+- [ ] Delete `scripts/show-keybinds.sh.bak` and `config/.config/dunst/dunstrc`
+- [ ] Fix `Bar.qml` clock: `interval: 10000` → `interval: 1000`
+- [ ] Fix `install.sh` CONFIGS array (add 8 missing dirs)
+- [ ] Update `docs/PACKAGES.md` (add quickshell-git, fix awww)
 
----
+### Sprint 1 — Directory restructure (pure refactor, zero behavior change)
 
-### Phase 2 — Bar ✅ MOSTLY DONE / 🔧 Polish Sprint Next
+- [ ] Move files to Commons/Services/Modules/Widgets layout
+- [ ] Delete all qmldir files
+- [ ] Add `Commons/State.qml` (global boolean bus)
+- [ ] Add `Commons/Paths.qml` (no hardcoded paths)
+- [ ] Fix CC click-outside using State.ccVisible
 
-Bar replaces waybar for MangoWC. Waybar kept for Hyprland fallback.
+### Sprint 2 — MangoWC DWL upgrade + compositor abstraction
 
-**Done:**
-- [x] Workspace/tag dots with MangoWC IPC (`mmsg -w`)
-- [x] Window title with app rewrites
-- [x] Clock center (needs 1s tick fix — currently 10s)
-- [x] Microphone, volume, network, bluetooth, battery tray icons
-- [x] Hover popup cards (separate Wayland surface — avoids grey-block artifacts)
-- [x] Notification bell → swaync, settings gear → control center, power button → wlogout
-- [x] OSD for volume/brightness keys ✅
+- [ ] `Services/Compositor/MangoService.qml` — `DwlIpc` + `DwlIpcOutput` (replaces mmsg -w)
+- [ ] `Services/Compositor/HyprlandService.qml` — Quickshell Hyprland IPC
+- [ ] `Services/Compositor/CompositorService.qml` — runtime facade
+- [ ] Update Bar + ControlCenter to use CompositorService
 
-**Sprint 2 polish items (do these next):**
-- [ ] **Fix clock tick** — change Timer interval from 10000 to 1000ms (3 chars)
-- [ ] **ControlCenter enter/exit animation** — 200ms slide + opacity, OutQuart easing
-- [ ] **Spring easing** on tag width/color transitions in bar
-- [ ] **MPRIS service** — new `services/Mpris.qml` singleton using playerctl
-- [ ] **MPRIS bar module** — scrolling track+artist, click to play/pause, only visible when playing
-- [ ] **MPRIS media card** in ControlCenter — album art, prev/play/next, progress bar
-- [ ] **Brightness tray icon** — matches Volume pattern, scroll to adjust
-- [ ] **ControlCenter state sync** — 2s poll on `onVisible` for powerprofilesctl, wlsunset, DND
+### Sprint 3 — Service quality (signal-driven, no polling)
 
-**MangoWC IPC (current):**
-- `mmsg -w -O -t -l -c` streams events → parsed in `MangoWC.qml`
-- `mmsg -s tag <output> <num>` for tag switching
-- For problems with MangoWC IPC: check Noctalia's MangoWC integration first
+- [ ] Audio → `Quickshell.Services.Pipewire`
+- [ ] Battery → UPower D-Bus
+- [ ] Bluetooth → D-Bus signal subscription
+- [ ] Add error logging to all Process wrappers
+- [ ] Fix ControlCenter state sync on `onVisible`
+- [ ] `Commons/Paths.qml` — eliminate hardcoded refs
 
----
+### Sprint 4 — Bar polish + MPRIS
 
-### Phase 3 — Native Notifications (replaces swaync)
+- [ ] `Services/Media/Mpris.qml` — `Quickshell.Services.Mpris`, auto-track player
+- [ ] MPRIS bar module (scrolling text, only visible when playing)
+- [ ] MPRIS card in ControlCenter (album art, controls, progress)
+- [ ] ControlCenter slide animation (200ms OutQuart)
+- [ ] Spring easing on tag dots
 
-**What:** `org.freedesktop.Notifications` D-Bus server in QML. Popup cards + history panel + DND toggle. All Quickshell components, same glass aesthetic as bar.
+### Sprint 5 — Theme switcher + theme.json hot-reload
 
-**Reference:** end-4's notification implementation. NibrasShell for async D-Bus patterns.
+- [ ] `Services/Theming/ThemeLoader.qml` — `FileView { watchChanges: true }` on `theme.json`
+- [ ] `Appearance.qml` reads from ThemeLoader
+- [ ] `themes/archeotech-macchiato/theme.json`
+- [ ] `themes/archeotech-mocha/theme.json`
+- [ ] `scripts/theme-switch.sh`
+- [ ] Theme picker overlay in Quickshell
 
-**Steps:**
-- [ ] Complete Sprint 2 polish first
-- [ ] Read Noctalia's notification implementation (they support MangoWC — likely solved D-Bus edge cases)
-- [ ] Implement `org.freedesktop.Notifications` D-Bus server
-- [ ] Build notification popup card (glass pill, icon + title + body + actions)
-- [ ] Build notification history panel (slides from right, same glass style)
-- [ ] Real DND toggle (not swaync-client relay)
-- [ ] Test: Teams, battery-alert.service, playerctl, system alerts
+### Sprint 6 — Native notifications (replaces swaync)
+
+- [ ] `Services/System/Notifications.qml` — `NotificationServer`, persistence via FileView
+- [ ] `Modules/Notifications/NotifPopup.qml` — glass pill, actions, 5s auto-dismiss
+- [ ] `Modules/Notifications/NotifHistory.qml` — slide-in panel
+- [ ] Real DND toggle in ControlCenter
 - [ ] Remove swaync from autostart
+
+### Sprint 7 — Native lock screen (replaces swaylock)
+
+Reference: Qylock (source-inspected — WlSessionLock + PamContext, ~50 lines of logic).
+
+- [ ] `Modules/LockScreen/LockScreen.qml` — `WlSessionLock`, one surface per screen
+- [ ] PAM auth via `PamContext`
+- [ ] Blurred wallpaper bg, clock, password input
+- [ ] Wire swayidle to `qs ipc call lock lock`
+
+### Sprint 8 — Distribution polish
+
+- [ ] `scripts/install-packages.sh` — full paru -S list
+- [ ] Rewrite `scripts/install.sh` (prereq check, phased backup, verification)
+- [ ] `docs/INSTALL.md` for fresh Arch
+- [ ] Screenshots for README
+- [ ] Hardcoded path audit
+
+### Sprint 9 — Go daemon (additive, scoped to raw Wayland protocols only)
+
+Handles: `wlr-output-management` (display), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot).
+Does NOT handle: MPRIS, notifications, audio, battery, network, BT, lock (all native QML).
+
+- [ ] `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
+- [ ] `Services/ArcheotechDaemon.qml` — Quickshell Socket type, reconnect
+- [ ] Replace wlr-randr and wlsunset shell calls
+
+### Sprint 10 — Shadow Spear theme + dev modules
+
+- [ ] `themes/shadow-spear/` full theme personality
+- [ ] Git branch module in bar
+- [ ] AWS profile module in bar
 
 ---
 

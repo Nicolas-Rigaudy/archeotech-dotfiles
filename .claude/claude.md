@@ -76,7 +76,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 | **Window Manager (Primary)** | MangoWC (latest) | Scrolling layout feature, modern Wayland compositor |
 | **Window Manager (Backup)** | Hyprland 0.52.1 | Fallback option, well-established compositor |
 | **Display Manager** | SDDM | Best for Wayland compositors, Catppuccin themes available |
-| **Status Bar** | Quickshell (QML) | Primary — unified process: bar + control center + OSD. Waybar kept for Hyprland fallback only. |
+| **Status Bar** | Quickshell (QML) | Primary — unified process: bar + control center + OSD. Waybar kept for Hyprland fallback only. Target structure: Commons/ + Services/<Domain>/ + Modules/ + Widgets/ (Noctalia-style, no qmldir files). |
 | **App Launcher** | rofi-wayland | Most features, extensible |
 | **Notifications** | swaync | GTK4 notification center with panel — replaces dunst. Phase 3 will replace with native Quickshell component. |
 | **Wallpaper** | awww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay (note: package was renamed from swww → awww) |
@@ -343,7 +343,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 │       ├── fish/               # Fish shell configs (MASTER COPY)
 │       ├── mango/              # MangoWC configs (MASTER COPY)
 │       ├── systemd/user/       # Systemd user services (battery-alert.service)
-│       ├── quickshell/         # Quickshell control center (shell.qml + controls/)
+│       ├── quickshell/         # Quickshell shell — target: Commons/+Services/<Domain>/+Modules/+Widgets/ (Sprint 1)
 │       ├── swaync/             # Notification center (config.json + style.css)
 │       ├── wlogout/            # Power menu config (layout, style.css, icons/)
 │       ├── waypaper/           # Waypaper config (backend=custom, points to wallpaper-set.sh)
@@ -790,7 +790,12 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 4. **Verify permissions:** Some files need specific permissions (e.g., 755 for scripts)
 5. **Reload services:** Many changes require reloading (`mango-reload.sh`, `pkill quickshell && quickshell &`, etc.)
 6. **Use official Catppuccin themes:** Always fetch official themes from https://github.com/catppuccin/ repositories, never create custom color schemes
-7. **Check reference sources before solving QML/compositor problems:** Before implementing a workaround, look at how Noctalia (MangoWC support), caelestia, or end-4 solve the same problem. Their solutions are often cleaner. Key repos: https://github.com/noctalia-dev/noctalia-shell (MangoWC IPC), https://github.com/caelestia-dots/shell (QML patterns), https://github.com/end-4/dots-hyprland (animations/state). See `.claude/ANALYSIS.md` §2 for full reference catalog.
+7. **Check reference sources before solving QML/compositor problems:** All reference projects were source-inspected 2026-05-04. Key confirmed findings: MangoWC IPC use `Quickshell.DWL` (DwlIpc/DwlIpcOutput) NOT mmsg -w. MPRIS use `Quickshell.Services.Mpris`. Notifications use `Quickshell.Services.Notifications.NotificationServer`. Lock screen use `WlSessionLock` + `PamContext`. No qmldir files needed — Quickshell resolves from directory layout. See `.claude/ANALYSIS.md` §2 for full per-project findings.
+   - MangoWC IPC / compositor abstraction → Noctalia Shell (CompositorService facade + MangoService using DwlIpc)
+   - JsonAdapter / FileView / MPRIS / Notifications → end-4/dots-hyprland
+   - Unified panels / DrawerVisibilities / lock screen / C++ plugin → caelestia-dots/shell
+   - Lock screen PAM + WlSessionLock implementation → Qylock
+   - Go backend IPC pattern (Unix socket + newline-JSON) → DankMaterialShell
 
 ### When Installing Packages
 1. **Check if already installed:** `pacman -Q package-name`
@@ -824,9 +829,9 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-04 (deep-research pass — all reference projects source-inspected)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell Phase 2 (bar + control center + OSD active). Phase 3 = native notifications. Phase 4 = dashboard.
-**Next Sprint:** Sprint 2 — polish bar animations, MPRIS, 1s clock, state sync. See `.claude/ANALYSIS.md` §7.
-**Reference sources:** Before solving any QML/compositor problem, check `.claude/ANALYSIS.md` §2 for the right repo to look at.
+**Shell:** Quickshell Phase 2 (bar + control center + OSD active). Full 10-sprint rebuild plan in progress.
+**Next Sprint:** Sprint 0 (dead file cleanup + clock fix) → Sprint 1 (directory restructure to Commons/Services/Modules/Widgets). See `.claude/ANALYSIS.md` §7.
+**Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = `Quickshell.DWL` (NOT mmsg -w). See `.claude/ANALYSIS.md` §2 for full findings.

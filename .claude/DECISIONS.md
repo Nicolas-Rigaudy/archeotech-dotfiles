@@ -706,4 +706,69 @@ This document tracks all technical decisions made during the project, with ratio
 ---
 
 **Last Updated:** 2026-05-04
-**Total Decisions:** 26
+**Total Decisions:** 29
+
+---
+
+### [2026-05-04] MangoWC IPC: DWL native protocol vs mmsg subprocess stream
+
+**Context:** Current `MangoWC.qml` runs `mmsg -w -O -t -l -c` as a persistent `Process` with `SplitParser`, parsing text output line-by-line. After source-inspecting Noctalia Shell (which has MangoWC support), a better approach was found.
+
+**Options Considered:**
+1. **Keep mmsg -w stream** (current)
+   - Pros: Already working, familiar
+   - Cons: Subprocess overhead, fragile text parsing, reconnect on crash, mmsg output format could change
+2. **Quickshell.DWL native protocol** (`DwlIpc` + `DwlIpcOutput`)
+   - Pros: Native Wayland DWL protocol, signal-driven, no text parsing, Quickshell handles reconnect
+   - Cons: Migration work; `mmsg` still needed for 2 edge cases (display scale queries, some switching fallbacks)
+
+**Decision:** Migrate to `Quickshell.DWL` (`DwlIpc` + `DwlIpcOutput`) in Sprint 2. Keep `mmsg` only for operations the DWL protocol can't provide.
+
+**Rationale:** Noctalia source (the only other multi-compositor Quickshell shell with MangoWC support) confirmed this is the right approach — they use DWL protocol as primary, mmsg only as fallback. Native protocol is more reliable and avoids subprocess management.
+
+**Trade-offs Accepted:** Migration effort. Requires testing DWL protocol actually surfaces all needed state (tags, title, appId, layout, selmon). If any field is missing, mmsg fallback is still available.
+
+---
+
+### [2026-05-04] MPRIS and Notifications: native Quickshell APIs, not external processes
+
+**Context:** Sprint 4 (MPRIS) and Sprint 6 (notifications) were planned. Before implementing, checked all reference projects for how they solve these.
+
+**Options Considered:**
+1. **MPRIS via playerctl subprocess** — `playerctl -F status` + `playerctl metadata` polling
+   - Pros: Simple, familiar
+   - Cons: Subprocess overhead, polling latency, process management
+2. **Notifications via swaync** — external daemon (current approach)
+   - Pros: Already working
+   - Cons: Separate process, separate CSS, never visually unified with shell
+3. **Native Quickshell.Services APIs** — `Quickshell.Services.Mpris` and `Quickshell.Services.Notifications.NotificationServer`
+   - Pros: Native D-Bus, signal-driven, zero subprocess overhead, fully integrated into QML, single process
+
+**Decision:** Use `Quickshell.Services.Mpris` for MPRIS (Sprint 4). Use `Quickshell.Services.Notifications.NotificationServer` for notifications (Sprint 6). Both confirmed working from end-4/dots-hyprland source inspection.
+
+**Rationale:** Both APIs are first-class Quickshell services, not workarounds. end-4 runs 46 service singletons with zero external polling processes for MPRIS and notifications. The entire rationale for Quickshell was one coherent process — using external daemons for these undermines that.
+
+**Trade-offs Accepted:** Learning the Quickshell.Services.Notifications API (D-Bus server registration). Must handle notification action callbacks, persistence, and grouping in QML/JS.
+
+---
+
+### [2026-05-04] Go daemon: scoped to raw Wayland protocols only, Sprint 9+
+
+**Context:** Go was considered as a backend for various services. After source-inspecting DankMaterialShell (the reference for Go+QML architecture), the correct scope was determined.
+
+**Options Considered:**
+1. **Go daemon for everything** — MPRIS, notifications, audio, battery, network, BT, display, night light
+   - Pros: Consistent backend layer
+   - Cons: Massive over-engineering; Quickshell already has native APIs for MPRIS, notifications, PipeWire audio, UPower battery — rewriting these in Go provides zero benefit
+2. **No Go daemon** — pure QML for everything, use shell commands for display/gamma
+   - Pros: Simpler
+   - Cons: `wlr-randr` and `wlsunset` shell calls are fragile; no access to wlr-screencopy for integrated screenshots
+3. **Go daemon scoped to raw Wayland protocols only** ← chosen
+   - Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
+   - Does NOT handle: MPRIS (Quickshell native), notifications (Quickshell native), audio (Quickshell PipeWire), battery (UPower D-Bus), network (nmcli), BT (org.bluez D-Bus)
+
+**Decision:** `archeotech-daemon` Go binary, Sprint 9+. Unix socket at `$XDG_RUNTIME_DIR/archeotech.sock`, newline-JSON RPC. Namespaced methods: `display.extend`, `display.mirror`, `display.laptop-only`, `gamma.set`, `screenshot.region`. QML side: `Services/ArcheotechDaemon.qml` singleton using Quickshell `Socket` type.
+
+**Rationale:** Go earns its place only where Quickshell genuinely can't reach: raw Wayland protocol socket clients (wlr-output-management, wlr-gamma-control, wlr-screencopy). Everything else is native QML APIs. DankMaterialShell confirmed this boundary — their Go daemon handles evdev, udev, wlr protocols, persistent clipboard; their QML handles workspace/window state, MPRIS, notifications.
+
+**Trade-offs Accepted:** One additional binary to build and install. Go dependency in the project. Sprint 9 is non-trivial — display/gamma management without the daemon continues to work (via wlr-randr/wlsunset shell calls), so the daemon is additive not blocking.
