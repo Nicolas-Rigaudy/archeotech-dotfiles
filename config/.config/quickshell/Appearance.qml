@@ -50,10 +50,10 @@ QtObject {
         readonly property color accentAlpha:   Qt.rgba(0xc6/255, 0xa0/255, 0xf6/255, 0.15)
         readonly property color accentBorder:  Qt.rgba(0xc6/255, 0xa0/255, 0xf6/255, 0.40)
 
-        // Glass panel backgrounds — consistent across bar, OSD, popups, control center
-        readonly property color glassBg:      Qt.rgba(0x1e/255, 0x20/255, 0x30/255, 0.65)
-        readonly property color glassBgLight: Qt.rgba(0x1e/255, 0x20/255, 0x30/255, 0.55)
-        readonly property color glassBorder:  Qt.rgba(0x36/255, 0x3a/255, 0x4f/255, 0.60)
+        // Glass panel backgrounds — high opacity avoids SceneFX blur halo on layer surfaces
+        readonly property color glassBg:      Qt.rgba(0x1e/255, 0x20/255, 0x30/255, 0.96)
+        readonly property color glassBgLight: Qt.rgba(0x1e/255, 0x20/255, 0x30/255, 0.93)
+        readonly property color glassBorder:  Qt.rgba(0x36/255, 0x3a/255, 0x4f/255, 0.90)
     }
 
     // ── Typography ─────────────────────────────────────────────────────────────

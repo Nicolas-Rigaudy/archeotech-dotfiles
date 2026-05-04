@@ -420,7 +420,7 @@ Item {
                 height: cardCol.implicitHeight + 20
                 radius: Root.Appearance.radius.md
                 antialiasing: true
-                color: Root.Appearance.colors.mantle
+                color: Root.Appearance.colors.glassBgLight
 
                 Column {
                     id: cardCol

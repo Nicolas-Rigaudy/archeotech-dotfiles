@@ -65,7 +65,7 @@ PanelWindow {
             anchors.fill: parent
             radius: Root.Appearance.radius.xl
             antialiasing: true
-            color: Root.Appearance.colors.mantle
+            color: Root.Appearance.colors.glassBg
             opacity: osdWindow.shown ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
 
