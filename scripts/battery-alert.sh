@@ -1,6 +1,6 @@
 #!/bin/bash
 # battery-alert.sh - Monitor battery and send swaync notifications
-# Thresholds: 20% warning, 10% urgent, 5% critical (repeating), 3% auto-suspend
+# Thresholds: 20% warning, 10% urgent, 5% critical (repeating)
 
 BATTERY="/sys/class/power_supply/BAT0"
 CAPACITY_FILE="$BATTERY/capacity"
@@ -48,11 +48,7 @@ while true; do
 
     # Only alert when discharging
     if [[ "$STATUS" == "Discharging" ]]; then
-        if [[ "$CAPACITY" -le 3 ]]; then
-            send_notification "critical" "Battery Dead: ${CAPACITY}%" "Suspending now to protect your work." "battery-caution"
-            sleep 5
-            systemctl suspend
-        elif [[ "$CAPACITY" -le 5 && "$NOTIFIED_5" == false ]]; then
+        if [[ "$CAPACITY" -le 5 && "$NOTIFIED_5" == false ]]; then
             NOTIFIED_5=true
             send_notification "critical" "Battery Critical: ${CAPACITY}%" "Plug in NOW — system will suspend in minutes." "battery-caution"
         elif [[ "$CAPACITY" -le 10 && "$NOTIFIED_10" == false ]]; then

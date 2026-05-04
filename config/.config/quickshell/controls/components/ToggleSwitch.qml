@@ -13,12 +13,14 @@ Item {
         id: track
         anchors.fill: parent
         radius: height / 2
+        antialiasing: true
         color: parent.checked ? Root.Appearance.colors.accent : Root.Appearance.colors.surface0
 
         Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
 
         Rectangle {
             width: 16; height: 16; radius: 8
+            antialiasing: true
             anchors.verticalCenter: parent.verticalCenter
             x: parent.parent.checked ? parent.width - width - 3 : 3
             color: parent.parent.checked ? Root.Appearance.colors.base : Root.Appearance.colors.subtext0

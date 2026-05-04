@@ -31,7 +31,7 @@ add_repos() {
     done < <(find "$dir" -maxdepth 2 -mindepth 2 -type d -name ".git" -printf "%h\n" 2>/dev/null \
         | sort --ignore-case)
 }
-
+t
 add_repos "$PERSONAL_DIR" ""  # nf-md-home personal
 add_repos "$WORK_DIR"     "󰃖"  # nf-md-briefcase work
 

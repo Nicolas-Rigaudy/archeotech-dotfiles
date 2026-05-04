@@ -10,6 +10,9 @@
 
 set -e
 
+# Kill quickshell before reload so exec-once doesn't spawn a second instance
+pkill -x quickshell || true
+
 # Reload MangoWC config
 mmsg -s -d reload_config
 

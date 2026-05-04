@@ -11,6 +11,7 @@ Button {
 
     background: Rectangle {
         radius: Root.Appearance.radius.base
+        antialiasing: true
         color: parent.active ? Root.Appearance.colors.accent
                              : (parent.hovered ? Root.Appearance.colors.surface0 : Root.Appearance.colors.surface0Alpha)
         border.color: parent.active ? Root.Appearance.colors.accent : "transparent"

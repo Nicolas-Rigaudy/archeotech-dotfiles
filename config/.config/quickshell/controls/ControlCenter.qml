@@ -25,9 +25,10 @@ Item {
     property string displayLayout:  "extend"
 
     Component.onCompleted: {
-        profileReader.running   = true
+        profileReader.running    = true
         nightLightReader.running = true
-        dndReader.running       = true
+        dndReader.running        = true
+        idleConfigReader.running = true
     }
 
     // ── One-time readers for state not tracked by services ─────────────────────
@@ -68,6 +69,47 @@ Item {
         stdout: SplitParser { onRead: data => root.dndEnabled = data.trim() === "true" }
     }
 
+    // ── Idle config state ──────────────────────────────────────────────────────
+    property bool   dimEnabled:   true
+    property int    dimTimeout:   600
+    property bool   lockEnabled:  true
+    property int    lockTimeout:  1200
+    property bool   sleepEnabled: true
+    property int    sleepTimeout: 1800
+
+    Process {
+        id: idleConfigReader
+        command: ["bash", "-c",
+            "f=$HOME/.cache/swayidle.conf; " +
+            "[ -f \"$f\" ] && cat \"$f\" || " +
+            "echo 'DIM_ENABLED=true\nDIM_TIMEOUT=600\nLOCK_ENABLED=true\nLOCK_TIMEOUT=1200\nSLEEP_ENABLED=true\nSLEEP_TIMEOUT=1800'"]
+        running: false
+        stdout: SplitParser {
+            onRead: data => {
+                var m
+                if ((m = data.match(/^DIM_ENABLED=(true|false)/)))   root.dimEnabled   = m[1] === "true"
+                if ((m = data.match(/^DIM_TIMEOUT=(\d+)/)))           root.dimTimeout   = parseInt(m[1])
+                if ((m = data.match(/^LOCK_ENABLED=(true|false)/)))  root.lockEnabled  = m[1] === "true"
+                if ((m = data.match(/^LOCK_TIMEOUT=(\d+)/)))          root.lockTimeout  = parseInt(m[1])
+                if ((m = data.match(/^SLEEP_ENABLED=(true|false)/))) root.sleepEnabled = m[1] === "true"
+                if ((m = data.match(/^SLEEP_TIMEOUT=(\d+)/)))         root.sleepTimeout = parseInt(m[1])
+            }
+        }
+    }
+
+    function applyIdleConfig() {
+        var lines = [
+            "DIM_ENABLED="   + root.dimEnabled,
+            "DIM_TIMEOUT="   + root.dimTimeout,
+            "LOCK_ENABLED="  + root.lockEnabled,
+            "LOCK_TIMEOUT="  + root.lockTimeout,
+            "SLEEP_ENABLED=" + root.sleepEnabled,
+            "SLEEP_TIMEOUT=" + root.sleepTimeout,
+        ]
+        run("printf '%s\\n' " + lines.map(l => "'" + l + "'").join(" ") +
+            " > $HOME/.cache/swayidle.conf && ~/.config/swayidle/config.sh &")
+    }
+
     // ── Fire-and-forget command runner ─────────────────────────────────────────
 
     Process {
@@ -89,20 +131,33 @@ Item {
         anchors.topMargin:  50
         anchors.rightMargin: Root.Appearance.spacing.base
 
-        height: contentColumn.implicitHeight + 24
+        // Clamp height so panel never overflows the screen
+        property real maxHeight: parent.height - 60
+        height: Math.min(contentColumn.implicitHeight + 24, maxHeight)
         radius: Root.Appearance.radius.lg
-        color:  Root.Appearance.colors.mantle
-        border.color: Root.Appearance.colors.surface0
+        color:  Root.Appearance.colors.glassBg
+        border.color: Root.Appearance.colors.accentBorder
         border.width: 1
+        clip: true
 
-        ColumnLayout {
-            id: contentColumn
-            anchors {
-                top: parent.top; left: parent.left; right: parent.right
-                margins: Root.Appearance.spacing.xl
-                topMargin: 14
-            }
-            spacing: Root.Appearance.spacing.lg
+        Flickable {
+            id: flick
+            anchors.fill: parent
+            anchors.margins: 0
+            contentWidth: width
+            contentHeight: contentColumn.implicitHeight + 24
+            clip: true
+            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+            ColumnLayout {
+                id: contentColumn
+                anchors {
+                    top: parent.top; left: parent.left; right: parent.right
+                    margins: Root.Appearance.spacing.xl
+                    topMargin: 14
+                }
+                width: flick.width - Root.Appearance.spacing.xl * 2
+                spacing: Root.Appearance.spacing.lg
 
             // ── Header ────────────────────────────────────────────────────────
             RowLayout {
@@ -270,6 +325,59 @@ Item {
                 }
             }
 
+            // Brightness slider
+            Item {
+                Layout.fillWidth: true; height: 24
+
+                Text {
+                    id: brightIcon
+                    anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
+                    text: Services.Brightness.percent >= 75 ? "󰃠"
+                        : Services.Brightness.percent >= 40 ? "󰃟"
+                        :                                      "󰃞"
+                    color: Root.Appearance.colors.yellow
+                    font.pixelSize: Root.Appearance.font.sizeXl
+                    font.family: Root.Appearance.font.family
+                }
+
+                Text {
+                    id: brightPct
+                    anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                    text: Services.Brightness.percent + "%"
+                    color: Root.Appearance.colors.overlay0
+                    font.pixelSize: Root.Appearance.font.sizeSm
+                    font.family: Root.Appearance.font.family
+                    width: 32; horizontalAlignment: Text.AlignRight
+                }
+
+                Slider {
+                    anchors.left: brightIcon.right; anchors.right: brightPct.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: 8; anchors.rightMargin: 6
+                    from: 1; to: 100
+                    value: Services.Brightness.percent
+                    onMoved: Services.Brightness.setBrightness(Math.round(value))
+
+                    background: Rectangle {
+                        x: parent.leftPadding
+                        y: parent.topPadding + parent.availableHeight / 2 - height / 2
+                        width: parent.availableWidth; height: 4; radius: 2
+                        color: Root.Appearance.colors.surface0
+                        Rectangle {
+                            width: parent.parent.visualPosition * parent.width
+                            height: parent.height; radius: 2
+                            color: Root.Appearance.colors.yellow
+                        }
+                    }
+                    handle: Rectangle {
+                        x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
+                        y: parent.topPadding + parent.availableHeight / 2 - height / 2
+                        width: 14; height: 14; radius: 7
+                        color: Root.Appearance.colors.yellow
+                    }
+                }
+            }
+
             // Microphone toggle
             RowLayout {
                 Layout.fillWidth: true; spacing: 8
@@ -420,6 +528,86 @@ Item {
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Root.Appearance.colors.surface0 }
 
+            // ── IDLE ──────────────────────────────────────────────────────────
+            SectionHeader { label: "IDLE" }
+
+            // Dim
+            Column {
+                Layout.fillWidth: true; spacing: 6
+                RowLayout {
+                    width: parent.width
+                    Text {
+                        text: "󰃞  Dim screen"; color: Root.Appearance.colors.text
+                        font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                        Layout.fillWidth: true
+                    }
+                    ToggleSwitch {
+                        checked: root.dimEnabled
+                        onToggled: state => { root.dimEnabled = state; root.applyIdleConfig() }
+                    }
+                }
+                Flow {
+                    width: parent.width; spacing: 4
+                    visible: root.dimEnabled
+                    PillButton { label: "5 min";  active: root.dimTimeout === 300;  onClicked: { root.dimTimeout = 300;  root.applyIdleConfig() } }
+                    PillButton { label: "10 min"; active: root.dimTimeout === 600;  onClicked: { root.dimTimeout = 600;  root.applyIdleConfig() } }
+                    PillButton { label: "15 min"; active: root.dimTimeout === 900;  onClicked: { root.dimTimeout = 900;  root.applyIdleConfig() } }
+                    PillButton { label: "30 min"; active: root.dimTimeout === 1800; onClicked: { root.dimTimeout = 1800; root.applyIdleConfig() } }
+                }
+            }
+
+            // Lock
+            Column {
+                Layout.fillWidth: true; spacing: 6
+                RowLayout {
+                    width: parent.width
+                    Text {
+                        text: "󰌾  Lock screen"; color: Root.Appearance.colors.text
+                        font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                        Layout.fillWidth: true
+                    }
+                    ToggleSwitch {
+                        checked: root.lockEnabled
+                        onToggled: state => { root.lockEnabled = state; root.applyIdleConfig() }
+                    }
+                }
+                Flow {
+                    width: parent.width; spacing: 4
+                    visible: root.lockEnabled
+                    PillButton { label: "10 min"; active: root.lockTimeout === 600;  onClicked: { root.lockTimeout = 600;  root.applyIdleConfig() } }
+                    PillButton { label: "20 min"; active: root.lockTimeout === 1200; onClicked: { root.lockTimeout = 1200; root.applyIdleConfig() } }
+                    PillButton { label: "30 min"; active: root.lockTimeout === 1800; onClicked: { root.lockTimeout = 1800; root.applyIdleConfig() } }
+                    PillButton { label: "1 hr";   active: root.lockTimeout === 3600; onClicked: { root.lockTimeout = 3600; root.applyIdleConfig() } }
+                }
+            }
+
+            // Sleep
+            Column {
+                Layout.fillWidth: true; spacing: 6
+                RowLayout {
+                    width: parent.width
+                    Text {
+                        text: "󰒲  Sleep displays"; color: Root.Appearance.colors.text
+                        font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                        Layout.fillWidth: true
+                    }
+                    ToggleSwitch {
+                        checked: root.sleepEnabled
+                        onToggled: state => { root.sleepEnabled = state; root.applyIdleConfig() }
+                    }
+                }
+                Flow {
+                    width: parent.width; spacing: 4
+                    visible: root.sleepEnabled
+                    PillButton { label: "20 min"; active: root.sleepTimeout === 1200; onClicked: { root.sleepTimeout = 1200; root.applyIdleConfig() } }
+                    PillButton { label: "30 min"; active: root.sleepTimeout === 1800; onClicked: { root.sleepTimeout = 1800; root.applyIdleConfig() } }
+                    PillButton { label: "1 hr";   active: root.sleepTimeout === 3600; onClicked: { root.sleepTimeout = 3600; root.applyIdleConfig() } }
+                    PillButton { label: "2 hr";   active: root.sleepTimeout === 7200; onClicked: { root.sleepTimeout = 7200; root.applyIdleConfig() } }
+                }
+            }
+
+            Rectangle { Layout.fillWidth: true; height: 1; color: Root.Appearance.colors.surface0 }
+
             // ── TOOLS ─────────────────────────────────────────────────────────
             SectionHeader { label: "TOOLS" }
 
@@ -435,6 +623,7 @@ Item {
             }
 
             Item { height: 2 }
-        }
+        }  // end ColumnLayout
+        }  // end Flickable
     }
 }

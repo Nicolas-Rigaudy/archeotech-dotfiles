@@ -31,8 +31,8 @@ PopupWindow {
         implicitHeight: col.implicitHeight + 20
         anchors.fill: parent
         radius: Root.Appearance.radius.md
-        color: Qt.rgba(0x1e/255, 0x20/255, 0x30/255, 0.96)
-        border.color: Root.Appearance.colors.surface0
+        color: Root.Appearance.colors.glassBgLight
+        border.color: Root.Appearance.colors.glassBorder
         border.width: 1
 
         Rectangle {
