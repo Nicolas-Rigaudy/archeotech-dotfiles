@@ -637,3 +637,30 @@ Some decisions should be periodically reviewed:
 
 **Last Updated:** 2026-04-29
 **Total Decisions:** 24
+
+## [2026-05-04] Idle management: configurable via control center
+
+**Context:** swayidle was hardcoded with fixed timers. Screen locking felt random (was actually `before-sleep` on lid-close resume). Needed per-action toggles and timer presets without editing config files.
+
+**Decision:** `swayidle/config.sh` sources `~/.cache/swayidle.conf` for DIM/LOCK/SLEEP enable+timeout, builds swayidle args conditionally, kills and restarts itself. ControlCenter IDLE section writes the config file and calls the script on any change.
+
+**Rationale:** No new daemon needed — the script is already the launcher. State persists across reboots via the cache file. `before-sleep` always locks regardless of LOCK_ENABLED (intentional — lock on resume is always correct behavior).
+
+**Trade-offs Accepted:** swayidle restart is ~200ms — brief gap in idle tracking on every settings change.
+
+---
+
+## [2026-05-04] Quickshell layer blur disabled (blur_layer=0)
+
+**Context:** SceneFX `blur_layer=1` caused white halo artifacts around rounded-corner rectangles on layer surfaces (bar, popups, OSD) on Intel Xe — specifically on landscape/laptop outputs, not portrait. Layerrule `noblur` per-surface did not reliably suppress it.
+
+**Decision:** `blur_layer=0` globally. Glass appearance achieved via high-opacity semi-transparent colors (`glassBg` at 0.96, `glassBgLight` at 0.93) instead of blur-behind.
+
+**Rationale:** The halo is a SceneFX/Intel compositing artifact at alpha-boundary edges of layer surfaces. No per-surface workaround was reliable. High opacity gives a readable dark panel that still hints at the content behind on dark wallpapers.
+
+**Trade-offs Accepted:** No true blur-behind on panels. Window content blur (`blur=1`) is unaffected.
+
+---
+
+**Last Updated:** 2026-05-04
+**Total Decisions:** 26

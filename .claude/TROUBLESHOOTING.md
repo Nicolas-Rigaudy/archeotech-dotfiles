@@ -1037,3 +1037,41 @@ When documenting new issues, use this format:
 
 **Last Updated:** 2026-04-29
 - Added Quickshell section (PopupWindow, BarPopup positioning, QML cache, singleton property changes)
+
+---
+
+## Quickshell Issues
+
+### OSD appears on wrong screen / all screens
+
+**Symptom:** Volume/brightness OSD shows on laptop screen instead of the focused monitor, or on all screens.
+
+**Cause 1:** `MangoWC.qml` selmon parser was broken — set `entry.focused = (parts[2] !== undefined)` which is always true, so every output overwrote `focusedOutput`.
+**Fix 1:** Parse correctly: `entry.focused = parts[2] === "1"`.
+
+**Cause 2:** `osdVariants.instances` iteration to find focused screen didn't work reliably.
+**Fix 2:** Put the filter in `Osd.qml` itself: `visible: shown && screen.name === Services.MangoWC.focusedOutput`. Call `show()` on all instances — only the one matching focused output becomes visible.
+
+---
+
+### White halo / pixelated border around bar, popups, OSD
+
+**Symptom:** Bright white fringe around rounded-corner panels on landscape/laptop monitors. Portrait monitor unaffected.
+
+**Cause:** SceneFX `blur_layer=1` blurs the full rectangular surface bounding box. Rounded-corner rectangles clip their content but the blurred pixels outside the corners remain visible as a white fringe. Layerrule `noblur` per-surface is unreliable.
+
+**Fix:** Set `blur_layer=0` in mango.conf. Compensate by raising `glassBg` opacity (0.96) and `glassBgLight` (0.93) so panels are readable without blur-behind.
+
+---
+
+### Bar disappears after mango-reload.sh
+
+**Symptom:** Running `mango-reload.sh` (Super+Shift+R) kills the bar and it never comes back.
+
+**Cause:** `mango-reload.sh` kills quickshell before reloading MangoWC (to avoid duplicate instances on exec-once). But `exec-once` doesn't re-run on config reload, so quickshell was never relaunched.
+
+**Fix:** Added relaunch at end of `mango-reload.sh`: `sleep 0.3 && env QT_WAYLAND_DECORATION=none quickshell -p ~/.config/quickshell &`
+
+---
+
+**Last Updated:** 2026-05-04

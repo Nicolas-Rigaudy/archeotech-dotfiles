@@ -814,8 +814,8 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-04
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Next major work:** Quickshell bar improvements — OSD, brightness, MPRIS, system stats. See `.claude/ROADMAP.md`.
+**Next major work:** MPRIS media controls in bar, OSD on focused screen only. See `.claude/ROADMAP.md`.
 **Roadmap:** See `.claude/ROADMAP.md` for all planned work and ideas
