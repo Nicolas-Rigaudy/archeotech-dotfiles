@@ -75,11 +75,7 @@ QtObject {
         } else if (field === "layout") {
             entry.layout = parts[2] || ""
         } else if (field === "selmon") {
-            var isFocused = parts[2] === "1" || parts[2] === "0"
-            // selmon value is 0 = not selected monitor in watch, but in -g mode the selected monitor
-            // is indicated by "selmon 0". Track which output line has selmon.
-            // In watch mode, selmon is emitted when focus changes.
-            entry.focused = (parts[2] !== undefined)
+            entry.focused = parts[2] === "1"
             if (entry.focused) root.focusedOutput = output
         }
 

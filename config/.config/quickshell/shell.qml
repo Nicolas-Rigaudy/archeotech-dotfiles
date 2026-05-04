@@ -28,14 +28,27 @@ ShellRoot {
         function close()  { controlCenterVisible = false }
     }
 
-    IpcHandler {
-        target: "osd"
-        function volume()     { osd.show("volume") }
-        function brightness() { osd.show("brightness") }
+    // ── OSD — one per screen, IPC triggers on primary screen ─────────────────
+    Variants {
+        id: osdVariants
+        model: Quickshell.screens
+        delegate: Osd {
+            required property var modelData
+            screen: modelData
+        }
     }
 
-    // ── OSD ────────────────────────────────────────────────────────────────────
-    Osd { id: osd }
+    function _osdShow(type) {
+        var items = osdVariants.instances
+        for (var i = 0; i < items.length; i++)
+            items[i].show(type)
+    }
+
+    IpcHandler {
+        target: "osd"
+        function volume()     { shell._osdShow("volume") }
+        function brightness() { shell._osdShow("brightness") }
+    }
 
     // ── Bar — one instance per screen ──────────────────────────────────────────
     Variants {

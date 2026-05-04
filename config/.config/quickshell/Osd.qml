@@ -8,6 +8,7 @@ import "services" as Services
 PanelWindow {
     id: osdWindow
 
+    visible: shown && (Services.MangoWC.focusedOutput === "" || screen.name === Services.MangoWC.focusedOutput)
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:osd"
@@ -17,7 +18,7 @@ PanelWindow {
     implicitHeight: 80
     color: "transparent"
 
-    // ── Public API — use `shown`, never shadow PanelWindow.visible ─────────────
+    // ── Public API ─────────────────────────────────────────────────────────────
     property bool   shown:   false
     property string osdType: "volume"
 
@@ -63,7 +64,8 @@ PanelWindow {
             id: pill
             anchors.fill: parent
             radius: Root.Appearance.radius.xl
-            color: Root.Appearance.colors.glassBg
+            antialiasing: true
+            color: Root.Appearance.colors.mantle
             opacity: osdWindow.shown ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
 

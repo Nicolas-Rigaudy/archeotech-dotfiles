@@ -16,6 +16,10 @@ pkill -x quickshell || true
 # Reload MangoWC config
 mmsg -s -d reload_config
 
+# Re-launch quickshell after reload (exec-once doesn't re-run on reload)
+sleep 0.3
+env QT_WAYLAND_DECORATION=none quickshell -p ~/.config/quickshell &
+
 # Give MangoWC a moment to re-initialize outputs after reload
 sleep 0.5
 

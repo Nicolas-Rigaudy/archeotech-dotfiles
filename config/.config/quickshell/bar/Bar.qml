@@ -401,7 +401,7 @@ Item {
             screen: barGroup.modelData
 
             exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.layer: WlrLayer.Top
             WlrLayershell.namespace: "quickshell:bar-popup"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             WlrLayershell.exclusiveZone: 0
@@ -419,7 +419,8 @@ Item {
                 width:  cardCol.implicitWidth  + 24
                 height: cardCol.implicitHeight + 20
                 radius: Root.Appearance.radius.md
-                color:  Root.Appearance.colors.glassBgLight
+                antialiasing: true
+                color: Root.Appearance.colors.mantle
 
                 Column {
                     id: cardCol
