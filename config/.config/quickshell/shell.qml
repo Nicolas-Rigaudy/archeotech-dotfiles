@@ -21,6 +21,7 @@ ShellRoot {
     property var _bt:         NetworkServices.Bluetooth
     property var _mango:      CompositorServices.MangoWC
     property var _brightness: HardwareServices.Brightness
+    property var _mpris:      MediaServices.MprisService
 
     IpcHandler {
         target: "main"
@@ -80,10 +81,11 @@ ShellRoot {
             Keys.priority: Keys.BeforeItem
         }
 
-        // Click-outside-to-close using State.controlCenterVisible
+        // Click-outside-to-close — only active when CC is open
         Item {
             anchors.fill: parent
             z: 0
+            enabled: Commons.State.controlCenterVisible
 
             TapHandler {
                 onTapped: point => {
