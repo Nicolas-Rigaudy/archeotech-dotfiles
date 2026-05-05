@@ -829,10 +829,10 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-05 (Sprint 2 complete — MangoWC service hardening)
+**Last Updated:** 2026-05-05 (Sprint 4 complete + design session — full sprint 5-10 plan in docs/DESIGN_DECISIONS.md)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. MangoWC service: proper QtObject per output, floating/fullscreen/keyboardLayout state, dispatch(), exponential backoff restart.
-**Next Sprint:** Sprint 3 (service quality — requires Quickshell 0.3.0, not yet in Arch extra as of 2026-05-05). See `.claude/ANALYSIS.md` §7.
+**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprint 4: MPRIS service, scrolling marquee in bar, album art card in CC, CC slide-in animation, bar HUD callouts, OutBack tag dots. Design session: full UX audit, animation token system, sprint 5-10 roadmap defined. See `docs/DESIGN_DECISIONS.md`.
+**Next Sprint:** Sprint 5 — polish pass (mauve active tag, popups anchored to bar icon, animation token pass, CC collapsibles). See `docs/DESIGN_DECISIONS.md` §4.
 **Quickshell version:** 0.2.1-6 (0.3.0 released 2026-05-04, pending Arch packaging). `Quickshell.DWL` is not upstream — stays on mmsg -w.
 **Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = `Quickshell.DWL` (NOT mmsg -w). See `.claude/ANALYSIS.md` §2 for full findings.

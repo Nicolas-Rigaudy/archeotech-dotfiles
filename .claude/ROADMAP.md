@@ -108,34 +108,68 @@ Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet pac
 - [ ] Battery → `Quickshell.Services.UPower` (replaces /sys 30s poll)
 - [ ] Idle inhibitor → `Quickshell.Wayland.IdleInhibitor` (wire to CC idle toggles)
 
-### Sprint 4 — Bar polish + MPRIS
+### Sprint 4 — Bar polish + MPRIS ✅ COMPLETE
 
-- [ ] `Services/Media/Mpris.qml` — `Quickshell.Services.Mpris`, auto-track player
-- [ ] MPRIS bar module (scrolling text, only visible when playing)
-- [ ] MPRIS card in ControlCenter (album art, controls, progress)
-- [ ] ControlCenter slide animation (200ms OutQuart)
-- [ ] Spring easing on tag dots
+- [x] `Services/Media/Mpris.qml` — `Quickshell.Services.Mpris`, auto-tracks playing player, fallback to first available
+- [x] MPRIS bar module — left section after title, scrolling marquee (seamless loop), width-animates in/out, click icon to play/pause
+- [x] MPRIS card in ControlCenter — collapsed (launch Spotify) when no player; expanded (album art, title/artist, seekable progress, prev/play/next) when playing; height-animates between states
+- [x] ControlCenter slide animation — x + opacity, 200ms OutQuart, slides in from right edge
+- [x] Bar popups redesigned — flush below bar pill (HUD callout style), unfold downward with Scale+opacity 150ms OutQuart, accentBorder outline
+- [x] Tag dot easing upgraded — OutBack with overshoot 1.2 (mechanical snap feel)
 
-### Sprint 5 — Theme switcher + theme.json hot-reload
+### Sprint 5 — Polish pass (design system + UX coherence)
 
-- [ ] `Services/Theming/ThemeLoader.qml` — `FileView { watchChanges: true }` on `theme.json`
-- [ ] `Appearance.qml` reads from ThemeLoader
-- [ ] `themes/archeotech-macchiato/theme.json`
-- [ ] `themes/archeotech-mocha/theme.json`
-- [ ] `scripts/theme-switch.sh`
-- [ ] Theme picker overlay in Quickshell
+> Full design decisions documented in `docs/DESIGN_DECISIONS.md`
 
-### Sprint 6 — Native notifications (replaces swaync)
+- [ ] Active tag dot → mauve accent color (`#c6a0f6`), dot size change only
+- [ ] Bar popups → dropdown anchored below triggering icon (x-aligned), slide down from bar edge
+- [ ] Animation pass → apply `Anim.*` tokens everywhere, remove hardcoded durations
+- [ ] CC collapsibles → idle config + display layout + night light collapsed by default
+- [ ] CC scroll + sliders verified working (flickable fix already committed)
+- [ ] Bar bell icon → placeholder for notification center (sprint 6)
 
-- [ ] `Services/System/Notifications.qml` — `NotificationServer`, persistence via FileView
-- [ ] `Modules/Notifications/NotifPopup.qml` — glass pill, actions, 5s auto-dismiss
-- [ ] `Modules/Notifications/NotifHistory.qml` — slide-in panel
-- [ ] Real DND toggle in ControlCenter
-- [ ] Remove swaync from autostart
+### Sprint 6 — Notification system
 
-### Sprint 7 — Native lock screen (replaces swaylock)
+- [ ] `Services/System/Notifications.qml` — `NotificationServer` (Quickshell.Services.Notifications)
+- [ ] Toast component — stacked top-right, entrance/exit animations, click to dismiss
+- [ ] Notification center panel — full-height right panel, bell icon in bar triggers it
+- [ ] Per-notification: app icon, name, title, body, timestamp, dismiss
+- [ ] Clear-all, critical urgency never auto-dismisses
+- [ ] Remove swaync from autostart once done
+
+### Sprint 7 — Launcher
+
+- [ ] Parse `.desktop` files from XDG paths
+- [ ] Fuzzy match on name/generic name
+- [ ] Centered floating panel, keyboard navigation (arrows, Enter, Escape)
+- [ ] `Anim.entrance`/`Anim.exit` on open/close
+- [ ] Triggered from keybind + optional bar icon
+
+### Sprint 8 — Bluetooth native integration
+
+- [ ] `Services/Networking/Bluetooth.qml` extended — `org.bluez` DBus direct
+- [ ] CC BT section: toggle adapter, list paired devices, connect/disconnect
+- [ ] Bar BT icon reflects adapter + connection state
+- [ ] No external BT app needed
+
+### Sprint 9 — Lock screen
 
 Reference: Qylock (source-inspected — WlSessionLock + PamContext, ~50 lines of logic).
+
+- [ ] `WlSessionLock` surface covering all outputs
+- [ ] Clock + date while locked
+- [ ] Password input, PAM auth via `PamContext`
+- [ ] Shake animation on failed auth
+- [ ] Wallpaper or blurred background
+- [ ] Triggered from CC + keybind
+
+### Sprint 10 — Theme system
+
+- [ ] Extract all colors to `Theme.qml` singleton
+- [ ] Catppuccin Macchiato, Mocha, Latte, Frappe built-in
+- [ ] CC toggle to switch variant at runtime (no restart)
+- [ ] Persist selection across sessions
+- [ ] Document token map for custom themes (Warhammer, Gundam, Cyberpunk)
 
 - [ ] `Modules/LockScreen/LockScreen.qml` — `WlSessionLock`, one surface per screen
 - [ ] PAM auth via `PamContext`

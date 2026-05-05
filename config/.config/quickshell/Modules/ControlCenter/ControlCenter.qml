@@ -183,6 +183,8 @@ Item {
             contentWidth: width
             contentHeight: contentColumn.implicitHeight + 24
             clip: true
+            flickableDirection: Flickable.VerticalFlick
+            boundsBehavior: Flickable.StopAtBounds
             ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
             ColumnLayout {
