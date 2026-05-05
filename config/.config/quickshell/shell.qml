@@ -2,30 +2,31 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
-import "." as Root
-import "services" as Services
-import "controls"
-import "bar"
+import "Commons" as Commons
+import "Services/Media" as MediaServices
+import "Services/Hardware" as HardwareServices
+import "Services/Networking" as NetworkServices
+import "Services/Compositor" as CompositorServices
+import "Modules/Bar"
+import "Modules/OSD"
+import "Modules/ControlCenter"
 
 ShellRoot {
     id: shell
 
     // ── Singleton instantiation ────────────────────────────────────────────────
-    property var _audio:      Services.Audio
-    property var _battery:    Services.Battery
-    property var _network:    Services.Network
-    property var _bt:         Services.Bluetooth
-    property var _mango:      Services.MangoWC
-    property var _brightness: Services.Brightness
-
-    // ── Global state ───────────────────────────────────────────────────────────
-    property bool controlCenterVisible: false
+    property var _audio:      MediaServices.Audio
+    property var _battery:    HardwareServices.Battery
+    property var _network:    NetworkServices.Network
+    property var _bt:         NetworkServices.Bluetooth
+    property var _mango:      CompositorServices.MangoWC
+    property var _brightness: HardwareServices.Brightness
 
     IpcHandler {
         target: "main"
-        function toggle() { controlCenterVisible = !controlCenterVisible }
-        function open()   { controlCenterVisible = true  }
-        function close()  { controlCenterVisible = false }
+        function toggle() { Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible }
+        function open()   { Commons.State.controlCenterVisible = true  }
+        function close()  { Commons.State.controlCenterVisible = false }
     }
 
     // ── OSD — one per screen, IPC triggers on primary screen ─────────────────
@@ -59,28 +60,27 @@ ShellRoot {
     // ── Control Center window ──────────────────────────────────────────────────
     PanelWindow {
         id: ccWindow
-        visible: controlCenterVisible
+        visible: Commons.State.controlCenterVisible
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "quickshell:control-center"
-        WlrLayershell.keyboardFocus: controlCenterVisible
+        WlrLayershell.keyboardFocus: Commons.State.controlCenterVisible
             ? WlrKeyboardFocus.Exclusive
             : WlrKeyboardFocus.None
 
         anchors { top: true; bottom: true; left: true; right: true }
         color: "transparent"
 
-        // Keyboard dismiss — active focus always returns here after interactions
+        // Keyboard dismiss
         Item {
             id: escCatcher
             anchors.fill: parent
-            focus: controlCenterVisible
-            Keys.onEscapePressed: controlCenterVisible = false
+            focus: Commons.State.controlCenterVisible
+            Keys.onEscapePressed: Commons.State.controlCenterVisible = false
             Keys.priority: Keys.BeforeItem
         }
 
-        // Click-outside-to-close — TapHandler doesn't block pointer grabs,
-        // so Slider drag inside ControlCenter works correctly
+        // Click-outside-to-close using State.controlCenterVisible
         Item {
             anchors.fill: parent
             z: 0
@@ -94,7 +94,7 @@ ShellRoot {
                     var x = point.position.x
                     var y = point.position.y
                     if (x < panelLeft || x > panelRight || y < panelTop || y > panelBottom)
-                        controlCenterVisible = false
+                        Commons.State.controlCenterVisible = false
                 }
             }
         }

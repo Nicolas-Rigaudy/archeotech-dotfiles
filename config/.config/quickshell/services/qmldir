@@ -1,7 +1,0 @@
-module services
-singleton Audio     1.0 Audio.qml
-singleton Battery   1.0 Battery.qml
-singleton Network   1.0 Network.qml
-singleton Bluetooth 1.0 Bluetooth.qml
-singleton MangoWC   1.0 MangoWC.qml
-singleton Brightness 1.0 Brightness.qml

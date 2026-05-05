@@ -75,13 +75,13 @@ quickshell/
 - [x] Fix `install.sh` CONFIGS array (already in sync — all repo dirs present)
 - [x] Update `docs/PACKAGES.md` (quickshell-git and awww already documented)
 
-### Sprint 1 — Directory restructure (pure refactor, zero behavior change)
+### Sprint 1 — Directory restructure (pure refactor, zero behavior change) ✅ COMPLETE
 
-- [ ] Move files to Commons/Services/Modules/Widgets layout
-- [ ] Delete all qmldir files
-- [ ] Add `Commons/State.qml` (global boolean bus)
-- [ ] Add `Commons/Paths.qml` (no hardcoded paths)
-- [ ] Fix CC click-outside using State.ccVisible
+- [x] Move files to Commons/Services/Modules/Widgets layout (done 2026-05-05)
+- [x] Delete all qmldir files (done 2026-05-05)
+- [x] Add `Commons/State.qml` (global boolean bus)
+- [x] Add `Commons/Paths.qml` (no hardcoded paths)
+- [x] Fix CC click-outside using State.controlCenterVisible
 
 ### Sprint 2 — MangoWC DWL upgrade + compositor abstraction
 

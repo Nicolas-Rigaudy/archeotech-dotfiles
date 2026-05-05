@@ -3,9 +3,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import "../" as Root
-import "../services" as Services
-import "components"
+import "../../Commons" as Commons
+import "../../Services/Media" as MediaServices
+import "../../Services/Hardware" as HardwareServices
+import "../../Services/Networking" as NetworkServices
+import "../../Widgets"
 
 Item {
     id: root
@@ -14,10 +16,10 @@ Item {
     property real panelHeight: panel.height
 
     // Services — all data comes from singletons, no inline pollers
-    property var audio:   Services.Audio
-    property var battery: Services.Battery
-    property var network: Services.Network
-    property var bt:      Services.Bluetooth
+    property var audio:   MediaServices.Audio
+    property var battery: HardwareServices.Battery
+    property var network: NetworkServices.Network
+    property var bt:      NetworkServices.Bluetooth
 
     // Local state (not reflected by a service)
     property string nightLightMode: "off"
@@ -129,14 +131,14 @@ Item {
         anchors.top:        parent.top
         anchors.right:      parent.right
         anchors.topMargin:  50
-        anchors.rightMargin: Root.Appearance.spacing.base
+        anchors.rightMargin: Commons.Appearance.spacing.base
 
         // Clamp height so panel never overflows the screen
         property real maxHeight: parent.height - 60
         height: Math.min(contentColumn.implicitHeight + 24, maxHeight)
-        radius: Root.Appearance.radius.lg
-        color:  Root.Appearance.colors.glassBg
-        border.color: Root.Appearance.colors.accentBorder
+        radius: Commons.Appearance.radius.lg
+        color:  Commons.Appearance.colors.glassBg
+        border.color: Commons.Appearance.colors.accentBorder
         border.width: 1
         clip: true
 
@@ -153,11 +155,11 @@ Item {
                 id: contentColumn
                 anchors {
                     top: parent.top; left: parent.left; right: parent.right
-                    margins: Root.Appearance.spacing.xl
+                    margins: Commons.Appearance.spacing.xl
                     topMargin: 14
                 }
-                width: flick.width - Root.Appearance.spacing.xl * 2
-                spacing: Root.Appearance.spacing.lg
+                width: flick.width - Commons.Appearance.spacing.xl * 2
+                spacing: Commons.Appearance.spacing.lg
 
             // ── Header ────────────────────────────────────────────────────────
             RowLayout {
@@ -165,33 +167,33 @@ Item {
 
                 Text {
                     text: "󰒓  Settings"
-                    color: Root.Appearance.colors.text
-                    font.pixelSize: Root.Appearance.font.sizeLg
-                    font.family: Root.Appearance.font.family
+                    color: Commons.Appearance.colors.text
+                    font.pixelSize: Commons.Appearance.font.sizeLg
+                    font.family: Commons.Appearance.font.family
                     font.weight: Font.Medium
                     Layout.fillWidth: true
                 }
 
                 Rectangle {
                     width: 28; height: 28
-                    radius: Root.Appearance.radius.base
-                    color: closeArea.containsMouse ? Root.Appearance.colors.surface0 : "transparent"
-                    Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                    radius: Commons.Appearance.radius.base
+                    color: closeArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
+                    Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
 
                     Text {
                         anchors.centerIn: parent
                         text: "✕"
-                        color: closeArea.containsMouse ? Root.Appearance.colors.text : Root.Appearance.colors.overlay0
+                        color: closeArea.containsMouse ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
                         font.pixelSize: 14
-                        font.family: Root.Appearance.font.family
-                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        font.family: Commons.Appearance.font.family
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                     }
 
                     MouseArea {
                         id: closeArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        onClicked: controlCenterVisible = false
+                        onClicked: Commons.State.controlCenterVisible = false
                     }
                 }
             }
@@ -200,8 +202,8 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 height: 36
-                radius: Root.Appearance.radius.base
-                color: Root.Appearance.colors.base
+                radius: Commons.Appearance.radius.base
+                color: Commons.Appearance.colors.base
 
                 RowLayout {
                     anchors.fill: parent
@@ -213,15 +215,15 @@ Item {
                         spacing: 4; Layout.fillWidth: true
                         Text {
                             text: battery.icon()
-                            color: battery.percent <= 20 ? Root.Appearance.colors.red : Root.Appearance.colors.green
-                            font.pixelSize: Root.Appearance.font.sizeIcon
-                            font.family: Root.Appearance.font.family
+                            color: battery.percent <= 20 ? Commons.Appearance.colors.red : Commons.Appearance.colors.green
+                            font.pixelSize: Commons.Appearance.font.sizeIcon
+                            font.family: Commons.Appearance.font.family
                         }
                         Text {
                             text: battery.percent + "%"
-                            color: Root.Appearance.colors.text
-                            font.pixelSize: Root.Appearance.font.sizeSm
-                            font.family: Root.Appearance.font.family
+                            color: Commons.Appearance.colors.text
+                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.family: Commons.Appearance.font.family
                         }
                     }
 
@@ -230,15 +232,15 @@ Item {
                         spacing: 4; Layout.fillWidth: true
                         Text {
                             text: network.icon()
-                            color: network.connected ? Root.Appearance.colors.blue : Root.Appearance.colors.overlay0
-                            font.pixelSize: Root.Appearance.font.sizeIcon
-                            font.family: Root.Appearance.font.family
+                            color: network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeIcon
+                            font.family: Commons.Appearance.font.family
                         }
                         Text {
                             text: network.connected ? network.ssid : "No network"
-                            color: network.connected ? Root.Appearance.colors.text : Root.Appearance.colors.overlay0
-                            font.pixelSize: Root.Appearance.font.sizeSm
-                            font.family: Root.Appearance.font.family
+                            color: network.connected ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.family: Commons.Appearance.font.family
                             elide: Text.ElideRight
                             Layout.maximumWidth: 80
                         }
@@ -249,17 +251,17 @@ Item {
                         spacing: 4; Layout.fillWidth: true
                         Text {
                             text: bt.icon()
-                            color: bt.connected ? Root.Appearance.colors.mauve
-                                 : bt.enabled   ? Root.Appearance.colors.text
-                                 :                Root.Appearance.colors.overlay0
-                            font.pixelSize: Root.Appearance.font.sizeIcon
-                            font.family: Root.Appearance.font.family
+                            color: bt.connected ? Commons.Appearance.colors.mauve
+                                 : bt.enabled   ? Commons.Appearance.colors.text
+                                 :                Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeIcon
+                            font.family: Commons.Appearance.font.family
                         }
                         Text {
                             text: bt.connected ? bt.device : (bt.enabled ? "On" : "Off")
-                            color: bt.connected ? Root.Appearance.colors.text : Root.Appearance.colors.overlay0
-                            font.pixelSize: Root.Appearance.font.sizeSm
-                            font.family: Root.Appearance.font.family
+                            color: bt.connected ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.family: Commons.Appearance.font.family
                             elide: Text.ElideRight
                             Layout.maximumWidth: 60
                         }
@@ -267,7 +269,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: Root.Appearance.colors.surface0 }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
             // ── AUDIO ─────────────────────────────────────────────────────────
             SectionHeader { label: "AUDIO" }
@@ -280,9 +282,9 @@ Item {
                     id: volIcon
                     anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
                     text: audio.muted ? "󰖁" : (audio.volume > 66 ? "󰕾" : audio.volume > 33 ? "󰖀" : "󰕿")
-                    color: audio.muted ? Root.Appearance.colors.overlay0 : Root.Appearance.colors.text
-                    font.pixelSize: Root.Appearance.font.sizeXl
-                    font.family: Root.Appearance.font.family
+                    color: audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.text
+                    font.pixelSize: Commons.Appearance.font.sizeXl
+                    font.family: Commons.Appearance.font.family
                     MouseArea { anchors.fill: parent; onClicked: audio.toggleMute() }
                 }
 
@@ -290,9 +292,9 @@ Item {
                     id: volPct
                     anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
                     text: audio.volume + "%"
-                    color: Root.Appearance.colors.overlay0
-                    font.pixelSize: Root.Appearance.font.sizeSm
-                    font.family: Root.Appearance.font.family
+                    color: Commons.Appearance.colors.overlay0
+                    font.pixelSize: Commons.Appearance.font.sizeSm
+                    font.family: Commons.Appearance.font.family
                     width: 32; horizontalAlignment: Text.AlignRight
                 }
 
@@ -309,18 +311,18 @@ Item {
                         x: parent.leftPadding
                         y: parent.topPadding + parent.availableHeight / 2 - height / 2
                         width: parent.availableWidth; height: 4; radius: 2
-                        color: Root.Appearance.colors.surface0
+                        color: Commons.Appearance.colors.surface0
                         Rectangle {
                             width: parent.parent.visualPosition * parent.width
                             height: parent.height; radius: 2
-                            color: audio.muted ? Root.Appearance.colors.overlay0 : Root.Appearance.colors.accent
+                            color: audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.accent
                         }
                     }
                     handle: Rectangle {
                         x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
                         y: parent.topPadding + parent.availableHeight / 2 - height / 2
                         width: 14; height: 14; radius: 7
-                        color: audio.muted ? Root.Appearance.colors.overlay0 : Root.Appearance.colors.accent
+                        color: audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.accent
                     }
                 }
             }
@@ -332,21 +334,21 @@ Item {
                 Text {
                     id: brightIcon
                     anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-                    text: Services.Brightness.percent >= 75 ? "󰃠"
-                        : Services.Brightness.percent >= 40 ? "󰃟"
-                        :                                      "󰃞"
-                    color: Root.Appearance.colors.yellow
-                    font.pixelSize: Root.Appearance.font.sizeXl
-                    font.family: Root.Appearance.font.family
+                    text: HardwareServices.Brightness.percent >= 75 ? "󰃠"
+                        : HardwareServices.Brightness.percent >= 40 ? "󰃟"
+                        :                                              "󰃞"
+                    color: Commons.Appearance.colors.yellow
+                    font.pixelSize: Commons.Appearance.font.sizeXl
+                    font.family: Commons.Appearance.font.family
                 }
 
                 Text {
                     id: brightPct
                     anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                    text: Services.Brightness.percent + "%"
-                    color: Root.Appearance.colors.overlay0
-                    font.pixelSize: Root.Appearance.font.sizeSm
-                    font.family: Root.Appearance.font.family
+                    text: HardwareServices.Brightness.percent + "%"
+                    color: Commons.Appearance.colors.overlay0
+                    font.pixelSize: Commons.Appearance.font.sizeSm
+                    font.family: Commons.Appearance.font.family
                     width: 32; horizontalAlignment: Text.AlignRight
                 }
 
@@ -355,25 +357,25 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.leftMargin: 8; anchors.rightMargin: 6
                     from: 1; to: 100
-                    value: Services.Brightness.percent
-                    onMoved: Services.Brightness.setBrightness(Math.round(value))
+                    value: HardwareServices.Brightness.percent
+                    onMoved: HardwareServices.Brightness.setBrightness(Math.round(value))
 
                     background: Rectangle {
                         x: parent.leftPadding
                         y: parent.topPadding + parent.availableHeight / 2 - height / 2
                         width: parent.availableWidth; height: 4; radius: 2
-                        color: Root.Appearance.colors.surface0
+                        color: Commons.Appearance.colors.surface0
                         Rectangle {
                             width: parent.parent.visualPosition * parent.width
                             height: parent.height; radius: 2
-                            color: Root.Appearance.colors.yellow
+                            color: Commons.Appearance.colors.yellow
                         }
                     }
                     handle: Rectangle {
                         x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
                         y: parent.topPadding + parent.availableHeight / 2 - height / 2
                         width: 14; height: 14; radius: 7
-                        color: Root.Appearance.colors.yellow
+                        color: Commons.Appearance.colors.yellow
                     }
                 }
             }
@@ -383,14 +385,14 @@ Item {
                 Layout.fillWidth: true; spacing: 8
                 Text {
                     text: audio.micMuted ? "󰍭" : "󰍬"
-                    color: audio.micMuted ? Root.Appearance.colors.red : Root.Appearance.colors.text
-                    font.pixelSize: Root.Appearance.font.sizeXl
-                    font.family: Root.Appearance.font.family
+                    color: audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.text
+                    font.pixelSize: Commons.Appearance.font.sizeXl
+                    font.family: Commons.Appearance.font.family
                     MouseArea { anchors.fill: parent; onClicked: audio.toggleMicMute() }
                 }
                 Text {
-                    text: "Microphone"; color: Root.Appearance.colors.subtext0
-                    font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                    text: "Microphone"; color: Commons.Appearance.colors.subtext0
+                    font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family
                     Layout.fillWidth: true
                 }
                 ToggleSwitch {
@@ -399,7 +401,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: Root.Appearance.colors.surface0 }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
             // ── DISPLAY ───────────────────────────────────────────────────────
             SectionHeader { label: "DISPLAY" }
@@ -436,11 +438,11 @@ Item {
                 }
                 PillButton {
                     label: "Adjust…"; active: false
-                    onClicked: { run("wdisplays &"); controlCenterVisible = false }
+                    onClicked: { run("wdisplays &"); Commons.State.controlCenterVisible = false }
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: Root.Appearance.colors.surface0 }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
             // ── SYSTEM ────────────────────────────────────────────────────────
             SectionHeader { label: "SYSTEM" }
@@ -449,8 +451,8 @@ Item {
             Column {
                 Layout.fillWidth: true; spacing: 6
                 Text {
-                    text: "󰛨  Night Light"; color: Root.Appearance.colors.text
-                    font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                    text: "󰛨  Night Light"; color: Commons.Appearance.colors.text
+                    font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family
                 }
                 Flow {
                     width: parent.width; spacing: 4
@@ -489,8 +491,8 @@ Item {
             Column {
                 Layout.fillWidth: true; spacing: 6
                 Text {
-                    text: "󱐋  Power Profile"; color: Root.Appearance.colors.text
-                    font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                    text: "󱐋  Power Profile"; color: Commons.Appearance.colors.text
+                    font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family
                 }
                 Flow {
                     width: parent.width; spacing: 4
@@ -513,8 +515,8 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 Text {
-                    text: "󰂛  Do Not Disturb"; color: Root.Appearance.colors.text
-                    font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                    text: "󰂛  Do Not Disturb"; color: Commons.Appearance.colors.text
+                    font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family
                     Layout.fillWidth: true
                 }
                 ToggleSwitch {
@@ -526,7 +528,7 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: Root.Appearance.colors.surface0 }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
             // ── IDLE ──────────────────────────────────────────────────────────
             SectionHeader { label: "IDLE" }
@@ -537,8 +539,8 @@ Item {
                 RowLayout {
                     width: parent.width
                     Text {
-                        text: "󰃞  Dim screen"; color: Root.Appearance.colors.text
-                        font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                        text: "󰃞  Dim screen"; color: Commons.Appearance.colors.text
+                        font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family
                         Layout.fillWidth: true
                     }
                     ToggleSwitch {
@@ -562,8 +564,8 @@ Item {
                 RowLayout {
                     width: parent.width
                     Text {
-                        text: "󰌾  Lock screen"; color: Root.Appearance.colors.text
-                        font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                        text: "󰌾  Lock screen"; color: Commons.Appearance.colors.text
+                        font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family
                         Layout.fillWidth: true
                     }
                     ToggleSwitch {
@@ -587,8 +589,8 @@ Item {
                 RowLayout {
                     width: parent.width
                     Text {
-                        text: "󰒲  Sleep displays"; color: Root.Appearance.colors.text
-                        font.pixelSize: Root.Appearance.font.sizeBase; font.family: Root.Appearance.font.family
+                        text: "󰒲  Sleep displays"; color: Commons.Appearance.colors.text
+                        font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family
                         Layout.fillWidth: true
                     }
                     ToggleSwitch {
@@ -606,20 +608,20 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: Root.Appearance.colors.surface0 }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
             // ── TOOLS ─────────────────────────────────────────────────────────
             SectionHeader { label: "TOOLS" }
 
             Flow {
                 Layout.fillWidth: true; spacing: 8
-                ActionButton { iconName: "󰕾"; label: "Audio";     onClicked: { run("pavucontrol &");          controlCenterVisible = false } }
-                ActionButton { iconName: "󰤨"; label: "Network";   onClicked: { run("nm-connection-editor &"); controlCenterVisible = false } }
-                ActionButton { iconName: "󰂯"; label: "Bluetooth"; onClicked: { run("blueman-manager &");       controlCenterVisible = false } }
-                ActionButton { iconName: "󰸉"; label: "Wallpaper"; onClicked: { run("wallpaper-picker.sh &");   controlCenterVisible = false } }
-                ActionButton { iconName: "󱛟"; label: "Disk";      onClicked: { run("kitty --title 'Disk Usage' -e duf &"); controlCenterVisible = false } }
-                ActionButton { iconName: "󰐥"; label: "Power";     onClicked: { run("wlogout-launch.sh &");    controlCenterVisible = false } }
-                ActionButton { iconName: "󰌾"; label: "Lock";      onClicked: { run("swaylock-launch.sh &");   controlCenterVisible = false } }
+                ActionButton { iconName: "󰕾"; label: "Audio";     onClicked: { run("pavucontrol &");          Commons.State.controlCenterVisible = false } }
+                ActionButton { iconName: "󰤨"; label: "Network";   onClicked: { run("nm-connection-editor &"); Commons.State.controlCenterVisible = false } }
+                ActionButton { iconName: "󰂯"; label: "Bluetooth"; onClicked: { run("blueman-manager &");       Commons.State.controlCenterVisible = false } }
+                ActionButton { iconName: "󰸉"; label: "Wallpaper"; onClicked: { run("wallpaper-picker.sh &");   Commons.State.controlCenterVisible = false } }
+                ActionButton { iconName: "󱛟"; label: "Disk";      onClicked: { run("kitty --title 'Disk Usage' -e duf &"); Commons.State.controlCenterVisible = false } }
+                ActionButton { iconName: "󰐥"; label: "Power";     onClicked: { run("wlogout-launch.sh &");    Commons.State.controlCenterVisible = false } }
+                ActionButton { iconName: "󰌾"; label: "Lock";      onClicked: { run("swaylock-launch.sh &");   Commons.State.controlCenterVisible = false } }
             }
 
             Item { height: 2 }

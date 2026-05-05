@@ -3,8 +3,11 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
-import ".." as Root
-import "../services" as Services
+import "../../Commons" as Commons
+import "../../Services/Media" as MediaServices
+import "../../Services/Hardware" as HardwareServices
+import "../../Services/Networking" as NetworkServices
+import "../../Services/Compositor" as CompositorServices
 
 // Scope holds two PanelWindows per screen: the bar pill and the hover-popup overlay.
 // Using Item as root so both windows are siblings and the popup doesn't clip inside the bar.
@@ -38,12 +41,12 @@ Item {
         id: barWindow
         screen: barGroup.modelData
 
-        exclusiveZone: Root.Appearance.bar.height + Root.Appearance.bar.marginTop
+        exclusiveZone: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "quickshell:bar"
 
         anchors { top: true; left: true; right: true }
-        implicitHeight: Root.Appearance.bar.height + Root.Appearance.bar.marginTop
+        implicitHeight: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop
         color: "transparent"
 
         // ── Pill ──────────────────────────────────────────────────────────────
@@ -51,18 +54,18 @@ Item {
             id: pill
             anchors {
                 top: parent.top; left: parent.left; right: parent.right
-                topMargin:   Root.Appearance.bar.marginTop
-                leftMargin:  Root.Appearance.bar.marginSide
-                rightMargin: Root.Appearance.bar.marginSide
+                topMargin:   Commons.Appearance.bar.marginTop
+                leftMargin:  Commons.Appearance.bar.marginSide
+                rightMargin: Commons.Appearance.bar.marginSide
             }
-            height: Root.Appearance.bar.height
-            radius: Root.Appearance.radius.xl
-            color: Root.Appearance.colors.glassBgLight
+            height: Commons.Appearance.bar.height
+            radius: Commons.Appearance.radius.xl
+            color: Commons.Appearance.colors.glassBgLight
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin:  Root.Appearance.bar.innerPadding
-                anchors.rightMargin: Root.Appearance.bar.innerPadding
+                anchors.leftMargin:  Commons.Appearance.bar.innerPadding
+                anchors.rightMargin: Commons.Appearance.bar.innerPadding
                 spacing: 0
 
                 // ── LEFT: Tags + window title ──────────────────────────────────
@@ -75,24 +78,24 @@ Item {
                         Layout.alignment: Qt.AlignVCenter
 
                         Repeater {
-                            model: Services.MangoWC.tagsFor(barWindow.screen ? barWindow.screen.name : "")
+                            model: CompositorServices.MangoWC.tagsFor(barWindow.screen ? barWindow.screen.name : "")
                             delegate: Rectangle {
                                 required property var modelData
                                 property bool sel: modelData.selected
                                 property bool occ: modelData.occupied
                                 property bool urg: modelData.urgent
                                 width: sel ? 22 : (occ ? 8 : 6)
-                                height: 8; radius: Root.Appearance.radius.pill
+                                height: 8; radius: Commons.Appearance.radius.pill
                                 anchors.verticalCenter: parent.verticalCenter
-                                color: urg ? Root.Appearance.colors.red
-                                     : sel ? Root.Appearance.colors.accent
-                                     : occ ? Root.Appearance.colors.surface1
-                                     :       Root.Appearance.colors.surface0
-                                Behavior on width { NumberAnimation { duration: Root.Appearance.anim.base; easing.type: Easing.OutCubic } }
-                                Behavior on color { ColorAnimation  { duration: Root.Appearance.anim.fast } }
+                                color: urg ? Commons.Appearance.colors.red
+                                     : sel ? Commons.Appearance.colors.accent
+                                     : occ ? Commons.Appearance.colors.surface1
+                                     :       Commons.Appearance.colors.surface0
+                                Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
+                                Behavior on color { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
                                 MouseArea {
                                     anchors.fill: parent
-                                    onClicked: Services.MangoWC.switchTag(
+                                    onClicked: CompositorServices.MangoWC.switchTag(
                                         barWindow.screen ? barWindow.screen.name : "", modelData.num)
                                 }
                             }
@@ -102,7 +105,7 @@ Item {
                     Item { width: 14 }
 
                     Text {
-                        property string raw: Services.MangoWC.titleFor(barWindow.screen ? barWindow.screen.name : "")
+                        property string raw: CompositorServices.MangoWC.titleFor(barWindow.screen ? barWindow.screen.name : "")
                         text: {
                             if (raw.includes("Visual Studio Code")) return "󰨞  " + raw.replace(/ - Visual Studio Code$/, "").replace(/^.*\//, "").trim()
                             if (raw.includes("Zen Browser"))        return "󰈹  " + raw.replace(/ — Zen Browser$/, "").replace(/^\(\d+\) /, "")
@@ -111,9 +114,9 @@ Item {
                             return raw
                         }
                         visible: raw.length > 0
-                        color: Root.Appearance.colors.subtext0
-                        font.pixelSize: Root.Appearance.font.sizeSm
-                        font.family: Root.Appearance.font.family
+                        color: Commons.Appearance.colors.subtext0
+                        font.pixelSize: Commons.Appearance.font.sizeSm
+                        font.family: Commons.Appearance.font.family
                         elide: Text.ElideRight
                         Layout.maximumWidth: 240
                         Layout.alignment: Qt.AlignVCenter
@@ -127,23 +130,23 @@ Item {
                         id: centerClock
                         anchors.centerIn: parent
                         textFormat: Text.RichText
-                        text: "<span style='color:" + Root.Appearance.colors.text + ";font-weight:600'>"
+                        text: "<span style='color:" + Commons.Appearance.colors.text + ";font-weight:600'>"
                             + Qt.formatDateTime(new Date(), "HH:mm")
                             + "</span>"
-                            + "<span style='color:" + Root.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
-                            + "<span style='color:" + Root.Appearance.colors.subtext0 + "'>"
+                            + "<span style='color:" + Commons.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
+                            + "<span style='color:" + Commons.Appearance.colors.subtext0 + "'>"
                             + Qt.formatDateTime(new Date(), "ddd d MMM")
                             + "</span>"
-                        font.pixelSize: Root.Appearance.font.sizeMd
-                        font.family: Root.Appearance.font.family
+                        font.pixelSize: Commons.Appearance.font.sizeMd
+                        font.family: Commons.Appearance.font.family
                         Timer {
                             interval: 1000; running: true; repeat: true
                             onTriggered: centerClock.text =
-                                "<span style='color:" + Root.Appearance.colors.text + ";font-weight:600'>"
+                                "<span style='color:" + Commons.Appearance.colors.text + ";font-weight:600'>"
                                 + Qt.formatDateTime(new Date(), "HH:mm")
                                 + "</span>"
-                                + "<span style='color:" + Root.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
-                                + "<span style='color:" + Root.Appearance.colors.subtext0 + "'>"
+                                + "<span style='color:" + Commons.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
+                                + "<span style='color:" + Commons.Appearance.colors.subtext0 + "'>"
                                 + Qt.formatDateTime(new Date(), "ddd d MMM")
                                 + "</span>"
                         }
@@ -158,22 +161,22 @@ Item {
                     // Mic
                     Text {
                         id: micIcon
-                        text: Services.Audio.micMuted ? "󰍭" : "󰍬"
-                        color: Services.Audio.micMuted ? Root.Appearance.colors.red : Root.Appearance.colors.overlay1
-                        font.pixelSize: 18; font.family: Root.Appearance.font.family
+                        text: MediaServices.Audio.micMuted ? "󰍭" : "󰍬"
+                        color: MediaServices.Audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
+                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
-                            onClicked: Services.Audio.toggleMicMute()
+                            onClicked: MediaServices.Audio.toggleMicMute()
                             onEntered: {
-                                parent.color = Root.Appearance.colors.accent
+                                parent.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "MICROPHONE",
-                                    Services.Audio.micMuted ? "󰍭  Muted" : "󰍬  Active",
+                                    MediaServices.Audio.micMuted ? "󰍭  Muted" : "󰍬  Active",
                                     "", "Click to toggle")
                             }
                             onExited: {
-                                parent.color = Services.Audio.micMuted ? Root.Appearance.colors.red : Root.Appearance.colors.overlay1
+                                parent.color = MediaServices.Audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
                                 barGroup.hidePopup()
                             }
                         }
@@ -185,35 +188,35 @@ Item {
 
                         Text {
                             id: volIcon
-                            text: Services.Audio.muted ? "󰖁" : Services.Audio.volume > 66 ? "󰕾" : Services.Audio.volume > 33 ? "󰖀" : "󰕿"
-                            color: Services.Audio.muted ? Root.Appearance.colors.overlay0 : Root.Appearance.colors.subtext1
-                            font.pixelSize: 18; font.family: Root.Appearance.font.family
+                            text: MediaServices.Audio.muted ? "󰖁" : MediaServices.Audio.volume > 66 ? "󰕾" : MediaServices.Audio.volume > 33 ? "󰖀" : "󰕿"
+                            color: MediaServices.Audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.subtext1
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
                             anchors.verticalCenter: parent.verticalCenter
-                            Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                             MouseArea {
                                 anchors.fill: parent; hoverEnabled: true
-                                onClicked: Services.Audio.toggleMute()
+                                onClicked: MediaServices.Audio.toggleMute()
                                 onEntered: {
-                                    parent.color = Root.Appearance.colors.accent
+                                    parent.color = Commons.Appearance.colors.accent
                                     barGroup.showPopup(parent, "VOLUME",
-                                        Services.Audio.muted ? "󰖁  Muted" : "󰕾  " + Services.Audio.volume + "%",
+                                        MediaServices.Audio.muted ? "󰖁  Muted" : "󰕾  " + MediaServices.Audio.volume + "%",
                                         "",
                                         "Scroll to adjust · Click to mute")
                                 }
                                 onExited: {
-                                    parent.color = Services.Audio.muted ? Root.Appearance.colors.overlay0 : Root.Appearance.colors.subtext1
+                                    parent.color = MediaServices.Audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.subtext1
                                     barGroup.hidePopup()
                                 }
                                 onWheel: wheel => {
                                     var delta = wheel.angleDelta.y > 0 ? 5 : -5
-                                    Services.Audio.setVolume(Math.max(0, Math.min(100, Services.Audio.volume + delta)))
+                                    MediaServices.Audio.setVolume(Math.max(0, Math.min(100, MediaServices.Audio.volume + delta)))
                                 }
                             }
                         }
                         Text {
-                            text: Services.Audio.volume + "%"
-                            color: Root.Appearance.colors.overlay1
-                            font.pixelSize: Root.Appearance.font.sizeSm; font.family: Root.Appearance.font.family
+                            text: MediaServices.Audio.volume + "%"
+                            color: Commons.Appearance.colors.overlay1
+                            font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }
@@ -224,35 +227,35 @@ Item {
 
                         Text {
                             id: brightIcon
-                            text: Services.Brightness.percent >= 75 ? "󰃠"
-                                : Services.Brightness.percent >= 40 ? "󰃟"
-                                :                                      "󰃞"
-                            color: Root.Appearance.colors.yellow
-                            font.pixelSize: 18; font.family: Root.Appearance.font.family
+                            text: HardwareServices.Brightness.percent >= 75 ? "󰃠"
+                                : HardwareServices.Brightness.percent >= 40 ? "󰃟"
+                                :                                              "󰃞"
+                            color: Commons.Appearance.colors.yellow
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
                             anchors.verticalCenter: parent.verticalCenter
-                            Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                             MouseArea {
                                 anchors.fill: parent; hoverEnabled: true
                                 onEntered: {
-                                    parent.color = Root.Appearance.colors.accent
+                                    parent.color = Commons.Appearance.colors.accent
                                     barGroup.showPopup(parent, "BRIGHTNESS",
-                                        "󰃠  " + Services.Brightness.percent + "%",
+                                        "󰃠  " + HardwareServices.Brightness.percent + "%",
                                         "", "Scroll to adjust")
                                 }
                                 onExited: {
-                                    parent.color = Root.Appearance.colors.yellow
+                                    parent.color = Commons.Appearance.colors.yellow
                                     barGroup.hidePopup()
                                 }
                                 onWheel: wheel => {
                                     var delta = wheel.angleDelta.y > 0 ? 5 : -5
-                                    Services.Brightness.adjust(delta)
+                                    HardwareServices.Brightness.adjust(delta)
                                 }
                             }
                         }
                         Text {
-                            text: Services.Brightness.percent + "%"
-                            color: Root.Appearance.colors.overlay1
-                            font.pixelSize: Root.Appearance.font.sizeSm; font.family: Root.Appearance.font.family
+                            text: HardwareServices.Brightness.percent + "%"
+                            color: Commons.Appearance.colors.overlay1
+                            font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }
@@ -260,23 +263,23 @@ Item {
                     // Network
                     Text {
                         id: netIcon
-                        text: Services.Network.icon()
-                        color: Services.Network.connected ? Root.Appearance.colors.blue : Root.Appearance.colors.overlay0
-                        font.pixelSize: 18; font.family: Root.Appearance.font.family
+                        text: NetworkServices.Network.icon()
+                        color: NetworkServices.Network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
+                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: networkCmd.running = true
                             onEntered: {
-                                parent.color = Root.Appearance.colors.accent
+                                parent.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "NETWORK",
-                                    Services.Network.connected ? "󰖩  " + Services.Network.ssid : "󰖪  Disconnected",
-                                    Services.Network.connected ? "  " + Services.Network.signal + "%  ·  " + Services.Network.band : "",
+                                    NetworkServices.Network.connected ? "󰖩  " + NetworkServices.Network.ssid : "󰖪  Disconnected",
+                                    NetworkServices.Network.connected ? "  " + NetworkServices.Network.signal + "%  ·  " + NetworkServices.Network.band : "",
                                     "Click to open network settings")
                             }
                             onExited: {
-                                parent.color = Services.Network.connected ? Root.Appearance.colors.blue : Root.Appearance.colors.overlay0
+                                parent.color = NetworkServices.Network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
                                 barGroup.hidePopup()
                             }
                         }
@@ -285,26 +288,26 @@ Item {
                     // Bluetooth
                     Text {
                         id: btIcon
-                        text: Services.Bluetooth.icon()
-                        color: Services.Bluetooth.connected ? Root.Appearance.colors.mauve
-                             : Services.Bluetooth.enabled   ? Root.Appearance.colors.subtext1
-                             :                                Root.Appearance.colors.overlay0
-                        font.pixelSize: 18; font.family: Root.Appearance.font.family
+                        text: NetworkServices.Bluetooth.icon()
+                        color: NetworkServices.Bluetooth.connected ? Commons.Appearance.colors.mauve
+                             : NetworkServices.Bluetooth.enabled   ? Commons.Appearance.colors.subtext1
+                             :                                        Commons.Appearance.colors.overlay0
+                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: bluetoothCmd.running = true
                             onEntered: {
-                                parent.color = Root.Appearance.colors.accent
+                                parent.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "BLUETOOTH",
-                                    Services.Bluetooth.connected ? "󰂱  " + Services.Bluetooth.device
-                                        : Services.Bluetooth.enabled ? "󰂯  On — no device" : "󰂲  Off",
+                                    NetworkServices.Bluetooth.connected ? "󰂱  " + NetworkServices.Bluetooth.device
+                                        : NetworkServices.Bluetooth.enabled ? "󰂯  On — no device" : "󰂲  Off",
                                     "", "Click to open bluetooth settings")
                             }
                             onExited: {
-                                parent.color = Services.Bluetooth.connected ? Root.Appearance.colors.mauve
-                                    : Services.Bluetooth.enabled ? Root.Appearance.colors.subtext1 : Root.Appearance.colors.overlay0
+                                parent.color = NetworkServices.Bluetooth.connected ? Commons.Appearance.colors.mauve
+                                    : NetworkServices.Bluetooth.enabled ? Commons.Appearance.colors.subtext1 : Commons.Appearance.colors.overlay0
                                 barGroup.hidePopup()
                             }
                         }
@@ -312,28 +315,28 @@ Item {
 
                     // Battery
                     Row {
-                        visible: Services.Battery.present
+                        visible: HardwareServices.Battery.present
                         spacing: 4; anchors.verticalCenter: parent.verticalCenter
 
                         Text {
                             id: batIcon
-                            text: Services.Battery.icon()
-                            color: Services.Battery.percent <= 20 ? Root.Appearance.colors.red : Root.Appearance.colors.green
-                            font.pixelSize: 18; font.family: Root.Appearance.font.family
+                            text: HardwareServices.Battery.icon()
+                            color: HardwareServices.Battery.percent <= 20 ? Commons.Appearance.colors.red : Commons.Appearance.colors.green
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
                             anchors.verticalCenter: parent.verticalCenter
                             MouseArea {
                                 anchors.fill: parent; hoverEnabled: true
                                 onEntered: barGroup.showPopup(parent, "BATTERY",
-                                    Services.Battery.icon() + "  " + Services.Battery.percent + "%",
-                                    Services.Battery.charging ? "󰂄  Charging" : "󱉞  On battery",
+                                    HardwareServices.Battery.icon() + "  " + HardwareServices.Battery.percent + "%",
+                                    HardwareServices.Battery.charging ? "󰂄  Charging" : "󱉞  On battery",
                                     "")
                                 onExited: barGroup.hidePopup()
                             }
                         }
                         Text {
-                            text: Services.Battery.percent + "%"
-                            color: Services.Battery.percent <= 20 ? Root.Appearance.colors.red : Root.Appearance.colors.overlay1
-                            font.pixelSize: Root.Appearance.font.sizeSm; font.family: Root.Appearance.font.family
+                            text: HardwareServices.Battery.percent + "%"
+                            color: HardwareServices.Battery.percent <= 20 ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
+                            font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }
@@ -341,46 +344,46 @@ Item {
                     // Notification bell
                     Text {
                         text: "󰂜"
-                        color: Root.Appearance.colors.subtext1
-                        font.pixelSize: 18; font.family: Root.Appearance.font.family
+                        color: Commons.Appearance.colors.subtext1
+                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: notifCmd.running = true
-                            onEntered: parent.color = Root.Appearance.colors.accent
-                            onExited:  parent.color = Root.Appearance.colors.subtext1
+                            onEntered: parent.color = Commons.Appearance.colors.accent
+                            onExited:  parent.color = Commons.Appearance.colors.subtext1
                         }
                     }
 
                     // Settings gear
                     Text {
                         text: "󰒓"
-                        color: Root.Appearance.colors.subtext1
-                        font.pixelSize: 18; font.family: Root.Appearance.font.family
+                        color: Commons.Appearance.colors.subtext1
+                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
-                            onClicked: controlCenterVisible = !controlCenterVisible
-                            onEntered: parent.color = Root.Appearance.colors.accent
-                            onExited:  parent.color = Root.Appearance.colors.subtext1
+                            onClicked: Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible
+                            onEntered: parent.color = Commons.Appearance.colors.accent
+                            onExited:  parent.color = Commons.Appearance.colors.subtext1
                         }
                     }
 
                     // Power
                     Text {
                         text: "󰐥"
-                        color: Root.Appearance.colors.subtext1
-                        font.pixelSize: 18; font.family: Root.Appearance.font.family
+                        color: Commons.Appearance.colors.subtext1
+                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                         MouseArea {
                             anchors { fill: parent; margins: -6 }
                             hoverEnabled: true
                             onClicked: powerCmd.running = true
-                            onEntered: parent.color = Root.Appearance.colors.red
-                            onExited:  parent.color = Root.Appearance.colors.subtext1
+                            onEntered: parent.color = Commons.Appearance.colors.red
+                            onExited:  parent.color = Commons.Appearance.colors.subtext1
                         }
                     }
                 }
@@ -413,14 +416,14 @@ Item {
             Rectangle {
                 y: 6
                 x: Math.min(
-                       Math.max(barGroup._popupAnchorX - width / 2, Root.Appearance.bar.marginSide),
-                       parent.width - width - Root.Appearance.bar.marginSide
+                       Math.max(barGroup._popupAnchorX - width / 2, Commons.Appearance.bar.marginSide),
+                       parent.width - width - Commons.Appearance.bar.marginSide
                    )
                 width:  cardCol.implicitWidth  + 24
                 height: cardCol.implicitHeight + 20
-                radius: Root.Appearance.radius.md
+                radius: Commons.Appearance.radius.md
                 antialiasing: true
-                color: Root.Appearance.colors.glassBgLight
+                color: Commons.Appearance.colors.glassBgLight
 
                 Column {
                     id: cardCol
@@ -430,31 +433,31 @@ Item {
                     Text {
                         visible: barGroup._popupLabel.length > 0
                         text: barGroup._popupLabel
-                        color: Root.Appearance.colors.overlay0
-                        font.pixelSize: Root.Appearance.font.sizeSm - 1
-                        font.family: Root.Appearance.font.family
+                        color: Commons.Appearance.colors.overlay0
+                        font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                        font.family: Commons.Appearance.font.family
                         font.letterSpacing: 0.8
                     }
                     Text {
                         text: barGroup._popupPrimary
-                        color: Root.Appearance.colors.text
-                        font.pixelSize: Root.Appearance.font.sizeMd
-                        font.family: Root.Appearance.font.family
+                        color: Commons.Appearance.colors.text
+                        font.pixelSize: Commons.Appearance.font.sizeMd
+                        font.family: Commons.Appearance.font.family
                         font.weight: Font.Medium
                     }
                     Text {
                         visible: barGroup._popupSecondary.length > 0
                         text: barGroup._popupSecondary
-                        color: Root.Appearance.colors.subtext0
-                        font.pixelSize: Root.Appearance.font.sizeSm
-                        font.family: Root.Appearance.font.family
+                        color: Commons.Appearance.colors.subtext0
+                        font.pixelSize: Commons.Appearance.font.sizeSm
+                        font.family: Commons.Appearance.font.family
                     }
                     Text {
                         visible: barGroup._popupHint.length > 0
                         text: barGroup._popupHint
-                        color: Root.Appearance.colors.overlay0
-                        font.pixelSize: Root.Appearance.font.sizeSm - 1
-                        font.family: Root.Appearance.font.family
+                        color: Commons.Appearance.colors.overlay0
+                        font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                        font.family: Commons.Appearance.font.family
                     }
                 }
             }

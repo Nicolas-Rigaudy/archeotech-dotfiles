@@ -2,13 +2,15 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import "." as Root
-import "services" as Services
+import "../../Commons" as Commons
+import "../../Services/Media" as MediaServices
+import "../../Services/Hardware" as HardwareServices
+import "../../Services/Compositor" as CompositorServices
 
 PanelWindow {
     id: osdWindow
 
-    visible: shown && (Services.MangoWC.focusedOutput === "" || screen.name === Services.MangoWC.focusedOutput)
+    visible: shown && (CompositorServices.MangoWC.focusedOutput === "" || screen.name === CompositorServices.MangoWC.focusedOutput)
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "quickshell:osd"
@@ -29,8 +31,8 @@ PanelWindow {
     }
 
     // ── Derived values ─────────────────────────────────────────────────────────
-    property int  osdValue: osdType === "brightness" ? Services.Brightness.percent : Services.Audio.volume
-    property bool osdMuted: osdType === "volume" && Services.Audio.muted
+    property int  osdValue: osdType === "brightness" ? HardwareServices.Brightness.percent : MediaServices.Audio.volume
+    property bool osdMuted: osdType === "volume" && MediaServices.Audio.muted
 
     property string osdIcon: {
         if (osdType === "brightness")
@@ -42,8 +44,8 @@ PanelWindow {
     }
 
     property color osdColor: osdType === "brightness"
-        ? Root.Appearance.colors.yellow
-        : (osdMuted ? Root.Appearance.colors.overlay0 : Root.Appearance.colors.accent)
+        ? Commons.Appearance.colors.yellow
+        : (osdMuted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.accent)
 
     // ── Auto-hide ──────────────────────────────────────────────────────────────
     Timer {
@@ -63,9 +65,9 @@ PanelWindow {
         Rectangle {
             id: pill
             anchors.fill: parent
-            radius: Root.Appearance.radius.xl
+            radius: Commons.Appearance.radius.xl
             antialiasing: true
-            color: Root.Appearance.colors.glassBg
+            color: Commons.Appearance.colors.glassBg
             opacity: osdWindow.shown ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
 
@@ -78,31 +80,31 @@ PanelWindow {
                     text: osdWindow.osdIcon
                     color: osdWindow.osdColor
                     font.pixelSize: 20
-                    font.family: Root.Appearance.font.family
+                    font.family: Commons.Appearance.font.family
                     Layout.alignment: Qt.AlignVCenter
-                    Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                    Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                 }
 
                 Rectangle {
                     Layout.fillWidth: true
                     height: 4; radius: 2
-                    color: Root.Appearance.colors.surface0
+                    color: Commons.Appearance.colors.surface0
                     Layout.alignment: Qt.AlignVCenter
 
                     Rectangle {
                         width: parent.width * (osdWindow.osdMuted ? 0 : Math.min(osdWindow.osdValue / 100, 1))
                         height: parent.height; radius: 2
                         color: osdWindow.osdColor
-                        Behavior on width { NumberAnimation { duration: Root.Appearance.anim.fast; easing.type: Easing.OutCubic } }
-                        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+                        Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.fast; easing.type: Easing.OutCubic } }
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                     }
                 }
 
                 Text {
                     text: osdWindow.osdMuted ? "Muted" : osdWindow.osdValue + "%"
-                    color: Root.Appearance.colors.subtext0
-                    font.pixelSize: Root.Appearance.font.sizeSm
-                    font.family: Root.Appearance.font.family
+                    color: Commons.Appearance.colors.subtext0
+                    font.pixelSize: Commons.Appearance.font.sizeSm
+                    font.family: Commons.Appearance.font.family
                     font.weight: Font.Medium
                     Layout.alignment: Qt.AlignVCenter
                     Layout.minimumWidth: 38

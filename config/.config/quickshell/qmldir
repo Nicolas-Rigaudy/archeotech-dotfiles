@@ -1,3 +1,0 @@
-module root
-singleton Appearance 1.0 Appearance.qml
-Osd 1.0 Osd.qml

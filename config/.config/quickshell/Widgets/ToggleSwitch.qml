@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import "../../" as Root
+import "../Commons" as Commons
 
 Item {
     property bool checked: false
@@ -14,19 +14,19 @@ Item {
         anchors.fill: parent
         radius: height / 2
         antialiasing: true
-        color: parent.checked ? Root.Appearance.colors.accent : Root.Appearance.colors.surface0
+        color: parent.checked ? Commons.Appearance.colors.accent : Commons.Appearance.colors.surface0
 
-        Behavior on color { ColorAnimation { duration: Root.Appearance.anim.fast } }
+        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
 
         Rectangle {
             width: 16; height: 16; radius: 8
             antialiasing: true
             anchors.verticalCenter: parent.verticalCenter
             x: parent.parent.checked ? parent.width - width - 3 : 3
-            color: parent.parent.checked ? Root.Appearance.colors.base : Root.Appearance.colors.subtext0
+            color: parent.parent.checked ? Commons.Appearance.colors.base : Commons.Appearance.colors.subtext0
 
-            Behavior on x     { NumberAnimation { duration: Root.Appearance.anim.fast; easing.type: Easing.InOutQuad } }
-            Behavior on color { ColorAnimation   { duration: Root.Appearance.anim.fast } }
+            Behavior on x     { NumberAnimation { duration: Commons.Appearance.anim.fast; easing.type: Easing.InOutQuad } }
+            Behavior on color { ColorAnimation   { duration: Commons.Appearance.anim.fast } }
         }
     }
 
