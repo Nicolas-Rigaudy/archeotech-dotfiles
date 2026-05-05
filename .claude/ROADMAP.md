@@ -83,18 +83,26 @@ quickshell/
 - [x] Add `Commons/Paths.qml` (no hardcoded paths)
 - [x] Fix CC click-outside using State.controlCenterVisible
 
-### Sprint 2 — MangoWC DWL upgrade + compositor abstraction
+### Sprint 2 — MangoWC service hardening ✅ COMPLETE
 
-- [ ] `Services/Compositor/MangoService.qml` — `DwlIpc` + `DwlIpcOutput` (replaces mmsg -w)
-- [ ] `Services/Compositor/HyprlandService.qml` — Quickshell Hyprland IPC
-- [ ] `Services/Compositor/CompositorService.qml` — runtime facade
-- [ ] Update Bar + ControlCenter to use CompositorService
+**Decision 2026-05-05:** `Quickshell.DWL` is not upstream — it's in `noctalia-qs`, a custom Quickshell fork. Not worth tracking a fork for this. `mmsg -w` delivers the same data. Compositor abstraction (facade + HyprlandService) deferred until a second compositor is actually needed. Sprint reframed as MangoWC service hardening.
+
+- [x] Per-output state as proper `QtObject` instances (replaces `Object.assign` hack — real QML signals now)
+- [x] Add `floating` + `fullscreen` per-output state (`-f`, `-m` flags)
+- [x] Add `keyboardLayout` per-output state (`-k` flag)
+- [x] Add `dispatch()` + convenience helpers (`toggleFloating`, `toggleFullscreen`, `closeWindow`)
+- [x] Exponential backoff restart on mmsg crash (500ms → 1s → 2s → 4s → 8s cap)
 
 ### Sprint 3 — Service quality (signal-driven, no polling)
 
+**Requires Quickshell 0.3.0** (released 2026-05-04, not yet in Arch `extra` as of 2026-05-05 — will land via `pacman -Syu`).
+New in 0.3.0 relevant here: `Quickshell.Networking` (replaces nmcli subprocess), `Quickshell.Wayland.IdleInhibitor/IdleMonitor` (replaces swayidle subprocess calls from CC), Pipewire peak detection.
+
 - [ ] Audio → `Quickshell.Services.Pipewire`
-- [ ] Battery → UPower D-Bus
+- [ ] Network → `Quickshell.Networking` (replaces nmcli subprocess)
+- [ ] Battery → `Quickshell.Services.UPower`
 - [ ] Bluetooth → D-Bus signal subscription
+- [ ] Idle inhibitor → `Quickshell.Wayland.IdleInhibitor` (wire to CC toggle)
 - [ ] Add error logging to all Process wrappers
 - [ ] Fix ControlCenter state sync on `onVisible`
 - [ ] `Commons/Paths.qml` — eliminate hardcoded refs

@@ -2,33 +2,118 @@ pragma Singleton
 import QtQuick
 import Quickshell.Io
 
-// Parses mmsg -w output. Line format examples:
-//   eDP-1 tag 3 1 0 0        → output, "tag", tagNum, selected, occupied, urgent
-//   eDP-1 title some text     → focused window title
-//   eDP-1 appid kitty         → focused window app id
-//   eDP-1 layout S            → current layout symbol
-//   eDP-1 selmon 0/1          → whether this output is the focused monitor (watch-mode only)
+// MangoWC IPC service — streams compositor state via mmsg -w.
+//
+// mmsg watch-mode line format:
+//   <output> tag    <num> <selected> <occupied> <urgent>
+//   <output> title  <text...>
+//   <output> appid  <text...>
+//   <output> layout <symbol>
+//   <output> selmon <0|1>
+//   <output> float  <0|1>        (focused client floating state)
+//   <output> fullscreen <0|1>    (focused client fullscreen state)
+//   <output> kblayout <name>     (active keyboard layout)
 
 QtObject {
     id: root
 
-    // Per-output state — keyed by output name (e.g. "eDP-1")
-    // Each entry: { tags: [{num, selected, occupied, urgent}], title, appid, layout, focused }
-    property var outputs: ({})
+    // ── Output registry ────────────────────────────────────────────────────────
+    // Map of output name → OutputState QtObject. Use outputFor() to access.
+    property var _outputs: ({})
 
-    // Convenience: focused output name
+    // Convenience: name of the currently focused output
     property string focusedOutput: ""
 
-    Component.onCompleted: watch.running = true
+    // Component template for per-output state objects
+    property Component _outputComponent: Component {
+        QtObject {
+            property string name:          ""
+            property var    tags:          []   // [{num, selected, occupied, urgent}]
+            property string title:         ""
+            property string appid:         ""
+            property string layout:        ""
+            property bool   focused:       false
+            property bool   floating:      false
+            property bool   fullscreen:    false
+            property string keyboardLayout: ""
+        }
+    }
 
-    property var watch: Process {
-        command: ["mmsg", "-w", "-O", "-t", "-l", "-c"]
+    function _ensureOutput(name) {
+        if (!_outputs[name]) {
+            var obj = _outputComponent.createObject(root, { name: name })
+            _outputs[name] = obj
+            _outputs = Object.assign({}, _outputs) // notify registry change
+        }
+        return _outputs[name]
+    }
+
+    // ── Public accessors ───────────────────────────────────────────────────────
+
+    function outputFor(name) {
+        return _outputs[name] || null
+    }
+
+    function tagsFor(name) {
+        var o = _outputs[name]
+        return o ? o.tags : []
+    }
+
+    function titleFor(name) {
+        var o = _outputs[name]
+        return o ? o.title : ""
+    }
+
+    function layoutFor(name) {
+        var o = _outputs[name]
+        return o ? o.layout : ""
+    }
+
+    function isFloating(name) {
+        var o = _outputs[name]
+        return o ? o.floating : false
+    }
+
+    function isFullscreen(name) {
+        var o = _outputs[name]
+        return o ? o.fullscreen : false
+    }
+
+    function keyboardLayoutFor(name) {
+        var o = _outputs[name]
+        return o ? o.keyboardLayout : ""
+    }
+
+    // ── Watch stream ───────────────────────────────────────────────────────────
+
+    Component.onCompleted: _watch.running = true
+
+    property var _watch: Process {
+        // -O output name  -t tags  -l layout  -c title+appid
+        // -f floating      -m fullscreen       -k keyboard layout
+        // -w watch mode    (selmon included implicitly with -O in watch mode)
+        command: ["mmsg", "-w", "-O", "-t", "-l", "-c", "-f", "-m", "-k"]
         running: false
         stdout: SplitParser {
             onRead: line => root._parseLine(line.trim())
         }
-        onExited: (code, status) => { running = true }
+        onExited: (code, status) => {
+            // Exponential backoff: 500ms → 1s → 2s → 4s → cap 8s
+            _restartTimer.interval = Math.min(_restartTimer.interval * 2, 8000)
+            _restartTimer.start()
+        }
     }
+
+    property var _restartTimer: Timer {
+        interval: 500
+        repeat: false
+        onTriggered: {
+            root._watch.running = true
+            interval = 500 // reset after successful start
+        }
+    }
+
+    // ── Line parser ────────────────────────────────────────────────────────────
 
     function _parseLine(line) {
         if (!line || line.startsWith("+") || line.startsWith("-")) return
@@ -36,77 +121,89 @@ QtObject {
         var parts = line.split(" ")
         if (parts.length < 2) return
 
-        var output = parts[0]
-        var field  = parts[1]
-
-        // Ensure output entry exists
-        if (!outputs[output]) {
-            outputs[output] = {
-                tags:   [],
-                title:  "",
-                appid:  "",
-                layout: "",
-                focused: false
-            }
-        }
-
-        var entry = outputs[output]
+        var outputName = parts[0]
+        var field      = parts[1]
+        var entry      = _ensureOutput(outputName)
 
         if (field === "tag" && parts.length >= 6) {
             var num      = parseInt(parts[2])
             var selected = parts[3] === "1"
             var occupied = parts[4] === "1"
             var urgent   = parts[5] === "1"
-            // Update or insert
-            var existing = false
-            for (var i = 0; i < entry.tags.length; i++) {
-                if (entry.tags[i].num === num) {
-                    entry.tags[i] = { num, selected, occupied, urgent }
-                    existing = true
+            var tags = entry.tags.slice()
+            var found = false
+            for (var i = 0; i < tags.length; i++) {
+                if (tags[i].num === num) {
+                    tags[i] = { num: num, selected: selected, occupied: occupied, urgent: urgent }
+                    found = true
                     break
                 }
             }
-            if (!existing) entry.tags.push({ num, selected, occupied, urgent })
-            entry.tags.sort((a, b) => a.num - b.num)
+            if (!found) tags.push({ num: num, selected: selected, occupied: occupied, urgent: urgent })
+            tags.sort((a, b) => a.num - b.num)
+            entry.tags = tags
+
         } else if (field === "title") {
             entry.title = parts.slice(2).join(" ")
+
         } else if (field === "appid") {
             entry.appid = parts.slice(2).join(" ")
+
         } else if (field === "layout") {
             entry.layout = parts[2] || ""
+
         } else if (field === "selmon") {
             entry.focused = parts[2] === "1"
-            if (entry.focused) root.focusedOutput = output
+            if (entry.focused) root.focusedOutput = outputName
+
+        } else if (field === "float") {
+            entry.floating = parts[2] === "1"
+
+        } else if (field === "fullscreen") {
+            entry.fullscreen = parts[2] === "1"
+
+        } else if (field === "kblayout") {
+            entry.keyboardLayout = parts.slice(2).join(" ")
         }
-
-        // Force QML to notice the object changed
-        root.outputs = Object.assign({}, root.outputs)
     }
 
-    // Helper: get tags for a given output, sorted
-    function tagsFor(output) {
-        return outputs[output] ? outputs[output].tags : []
+    // ── Actions ────────────────────────────────────────────────────────────────
+
+    // Switch to tag N on a given output (1-based)
+    function switchTag(outputName, tagNum) {
+        _cmd("mmsg -o " + outputName + " -s -t " + tagNum)
     }
 
-    // Helper: get title for a given output
-    function titleFor(output) {
-        return outputs[output] ? outputs[output].title : ""
+    // Toggle tag N on a given output (adds/removes without deselecting others)
+    function toggleTag(outputName, tagNum) {
+        _cmd("mmsg -o " + outputName + " -s -t ^" + tagNum)
     }
 
-    // Helper: layout symbol for a given output
-    function layoutFor(output) {
-        return outputs[output] ? outputs[output].layout : ""
+    // Send a dispatch command to MangoWC (e.g. "togglefloating", "fullscreen 0")
+    // Up to 5 comma-separated args supported by mmsg -d protocol
+    function dispatch(command) {
+        var parts = command.split(" ")
+        var cmd   = parts[0]
+        var args  = parts.slice(1).join(",")
+        var mmsg  = args.length > 0
+            ? "mmsg -s -d " + cmd + "," + args
+            : "mmsg -s -d " + cmd
+        _cmd(mmsg)
     }
 
-    // Switch to tag N on a given output
-    property var _setTag: Process {
+    // Convenience dispatches
+    function toggleFloating()  { dispatch("togglefloating") }
+    function toggleFullscreen() { dispatch("fullscreen 0") }
+    function closeWindow()     { dispatch("killclient") }
+
+    property var _cmdRunner: Process {
         property string cmd: ""
         command: ["bash", "-c", cmd]
         running: false
     }
 
-    function switchTag(output, tagNum) {
-        _setTag.cmd = "mmsg -o " + output + " -s -t " + tagNum
-        _setTag.running = true
+    function _cmd(shellCmd) {
+        _cmdRunner.cmd = shellCmd
+        _cmdRunner.running = true
     }
 }

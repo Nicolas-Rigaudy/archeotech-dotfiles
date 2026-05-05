@@ -829,9 +829,10 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-05 (Sprint 1 complete — directory restructure)
+**Last Updated:** 2026-05-05 (Sprint 2 complete — MangoWC service hardening)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — restructured to Commons/Services/Modules/Widgets layout. No qmldir files. State singleton wired. Next: Sprint 2 (MangoWC DWL upgrade).
-**Next Sprint:** Sprint 2 (MangoWC DWL upgrade + compositor abstraction). See `.claude/ANALYSIS.md` §7.
+**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. MangoWC service: proper QtObject per output, floating/fullscreen/keyboardLayout state, dispatch(), exponential backoff restart.
+**Next Sprint:** Sprint 3 (service quality — requires Quickshell 0.3.0, not yet in Arch extra as of 2026-05-05). See `.claude/ANALYSIS.md` §7.
+**Quickshell version:** 0.2.1-6 (0.3.0 released 2026-05-04, pending Arch packaging). `Quickshell.DWL` is not upstream — stays on mmsg -w.
 **Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = `Quickshell.DWL` (NOT mmsg -w). See `.claude/ANALYSIS.md` §2 for full findings.
