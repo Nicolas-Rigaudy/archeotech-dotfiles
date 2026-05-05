@@ -137,7 +137,7 @@ Item {
                         font.pixelSize: Root.Appearance.font.sizeMd
                         font.family: Root.Appearance.font.family
                         Timer {
-                            interval: 10000; running: true; repeat: true
+                            interval: 1000; running: true; repeat: true
                             onTriggered: centerClock.text =
                                 "<span style='color:" + Root.Appearance.colors.text + ";font-weight:600'>"
                                 + Qt.formatDateTime(new Date(), "HH:mm")

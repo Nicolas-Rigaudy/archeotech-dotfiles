@@ -829,9 +829,9 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-04 (deep-research pass — all reference projects source-inspected)
+**Last Updated:** 2026-05-05 (Sprint 0 complete)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
 **Shell:** Quickshell Phase 2 (bar + control center + OSD active). Full 10-sprint rebuild plan in progress.
-**Next Sprint:** Sprint 0 (dead file cleanup + clock fix) → Sprint 1 (directory restructure to Commons/Services/Modules/Widgets). See `.claude/ANALYSIS.md` §7.
+**Next Sprint:** Sprint 1 (directory restructure to Commons/Services/Modules/Widgets). See `.claude/ANALYSIS.md` §7.
 **Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = `Quickshell.DWL` (NOT mmsg -w). See `.claude/ANALYSIS.md` §2 for full findings.

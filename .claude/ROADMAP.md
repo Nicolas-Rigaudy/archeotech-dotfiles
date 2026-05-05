@@ -68,12 +68,12 @@ quickshell/
 
 ---
 
-### Sprint 0 — Dead file cleanup + immediate fixes ⬅ DO FIRST
+### Sprint 0 — Dead file cleanup + immediate fixes ✅ COMPLETE
 
-- [ ] Delete `scripts/show-keybinds.sh.bak` and `config/.config/dunst/dunstrc`
-- [ ] Fix `Bar.qml` clock: `interval: 10000` → `interval: 1000`
-- [ ] Fix `install.sh` CONFIGS array (add 8 missing dirs)
-- [ ] Update `docs/PACKAGES.md` (add quickshell-git, fix awww)
+- [x] Delete `scripts/show-keybinds.sh.bak` and `config/.config/dunst/dunstrc` (already gone)
+- [x] Fix `Bar.qml` clock: `interval: 10000` → `interval: 1000` (done 2026-05-05)
+- [x] Fix `install.sh` CONFIGS array (already in sync — all repo dirs present)
+- [x] Update `docs/PACKAGES.md` (quickshell-git and awww already documented)
 
 ### Sprint 1 — Directory restructure (pure refactor, zero behavior change)
 
