@@ -42,6 +42,9 @@ QtObject {
                 root.band      = freq >= 5000 ? "5 GHz" : freq >= 2000 ? "2.4 GHz" : ""
             }
         }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Network: refresh exited with code " + code)
+        }
     }
 
     function icon() {

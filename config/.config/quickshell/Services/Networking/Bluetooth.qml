@@ -2,9 +2,6 @@ pragma Singleton
 import QtQuick
 import Quickshell.Io
 
-// Uses busctl to query org.bluez — bluetoothctl is not installed on this system.
-// Polls every 5s; busctl monitor would be ideal but adds complexity.
-
 QtObject {
     id: root
 
@@ -12,7 +9,28 @@ QtObject {
     property bool   connected: false
     property string device:    ""
 
-    Component.onCompleted: { pollEnabled.running = true; pollDevice.running = true }
+    Component.onCompleted: {
+        pollEnabled.running = true
+        pollDevice.running  = true
+        monitor.running     = true
+    }
+
+    // ── D-Bus signal monitor — fires on any org.bluez PropertiesChanged ────────
+    // Replaces 5s poll timer. Triggers a re-query on adapter or device changes.
+    property var monitor: Process {
+        command: ["busctl", "monitor", "--json=short", "org.bluez"]
+        running: false
+        stdout: SplitParser {
+            onRead: _line => {
+                pollEnabled.running = true
+                pollDevice.running  = true
+            }
+        }
+        onExited: (code, status) => {
+            console.warn("Bluetooth: busctl monitor exited (code=" + code + "), restarting")
+            running = true
+        }
+    }
 
     property var pollEnabled: Process {
         command: ["busctl", "get-property", "org.bluez", "/org/bluez/hci0",
@@ -21,9 +39,11 @@ QtObject {
         stdout: SplitParser {
             onRead: data => { root.enabled = data.trim().includes("true") }
         }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Bluetooth: pollEnabled exited with code " + code)
+        }
     }
 
-    // Check first known device path; fallback to no device
     property var pollDevice: Process {
         command: ["bash", "-c",
             "for dev in $(busctl tree org.bluez 2>/dev/null | grep 'dev_' | awk '{print $NF}'); do " +
@@ -41,17 +61,18 @@ QtObject {
                 root.connected = d.length > 0
             }
         }
-    }
-
-    property var _timer: Timer {
-        interval: 5000; running: true; repeat: true
-        onTriggered: { pollEnabled.running = true; pollDevice.running = true }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Bluetooth: pollDevice exited with code " + code)
+        }
     }
 
     property var _cmd: Process {
         property string cmd: ""
         command: ["bash", "-c", cmd]
         running: false
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Bluetooth: command exited with code " + code)
+        }
     }
 
     function toggle() {

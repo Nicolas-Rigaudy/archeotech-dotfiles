@@ -26,7 +26,18 @@ Item {
     property string powerProfile:   "balanced"
     property string displayLayout:  "extend"
 
-    Component.onCompleted: {
+    Component.onCompleted: _syncState()
+
+    // Re-sync transient state every time the CC becomes visible,
+    // so toggles reflect changes made outside the CC (terminal, keybind, etc.)
+    Connections {
+        target: Commons.State
+        function onControlCenterVisibleChanged() {
+            if (Commons.State.controlCenterVisible) root._syncState()
+        }
+    }
+
+    function _syncState() {
         profileReader.running    = true
         nightLightReader.running = true
         dndReader.running        = true

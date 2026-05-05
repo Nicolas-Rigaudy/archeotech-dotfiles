@@ -47,24 +47,36 @@ QtObject {
         command: ["bash", "-c", "pactl get-sink-volume @DEFAULT_SINK@ | grep -oP '\\d+(?=%)' | head -1"]
         running: false
         stdout: SplitParser { onRead: data => root.volume = parseInt(data.trim()) || 0 }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Audio: refreshSink exited with code " + code)
+        }
     }
 
     property var refreshMute: Process {
         command: ["bash", "-c", "pactl get-sink-mute @DEFAULT_SINK@ | grep -c 'yes' || echo 0"]
         running: false
         stdout: SplitParser { onRead: data => root.muted = data.trim() === "1" }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Audio: refreshMute exited with code " + code)
+        }
     }
 
     property var refreshMic: Process {
         command: ["bash", "-c", "pactl get-source-volume @DEFAULT_SOURCE@ | grep -oP '\\d+(?=%)' | head -1"]
         running: false
         stdout: SplitParser { onRead: data => root.micVolume = parseInt(data.trim()) || 0 }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Audio: refreshMic exited with code " + code)
+        }
     }
 
     property var refreshMicMute: Process {
         command: ["bash", "-c", "pactl get-source-mute @DEFAULT_SOURCE@ | grep -c 'yes' || echo 0"]
         running: false
         stdout: SplitParser { onRead: data => root.micMuted = data.trim() === "1" }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Audio: refreshMicMute exited with code " + code)
+        }
     }
 
     // ── Actions ────────────────────────────────────────────────────────────────
@@ -74,6 +86,9 @@ QtObject {
         property string cmd: ""
         command: ["bash", "-c", cmd]
         running: false
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Audio: command exited with code " + code)
+        }
     }
 
     function setVolume(pct) {

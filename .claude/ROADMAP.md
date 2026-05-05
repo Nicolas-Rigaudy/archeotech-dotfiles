@@ -93,19 +93,20 @@ quickshell/
 - [x] Add `dispatch()` + convenience helpers (`toggleFloating`, `toggleFullscreen`, `closeWindow`)
 - [x] Exponential backoff restart on mmsg crash (500ms → 1s → 2s → 4s → 8s cap)
 
-### Sprint 3 — Service quality (signal-driven, no polling)
+### Sprint 3 — Service quality (signal-driven, no polling) ⚠️ PARTIAL
 
-**Requires Quickshell 0.3.0** (released 2026-05-04, not yet in Arch `extra` as of 2026-05-05 — will land via `pacman -Syu`).
-New in 0.3.0 relevant here: `Quickshell.Networking` (replaces nmcli subprocess), `Quickshell.Wayland.IdleInhibitor/IdleMonitor` (replaces swayidle subprocess calls from CC), Pipewire peak detection.
+Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet packaged for Arch):
 
-- [ ] Audio → `Quickshell.Services.Pipewire`
+- [x] Bluetooth → `busctl monitor org.bluez` signal subscription (replaces 5s poll timer)
+- [x] Error logging — `onExited` guards added to all bare Process wrappers (Audio, Battery, Brightness, Network, Bluetooth, MangoWC)
+- [x] ControlCenter state sync — `Connections` on `State.controlCenterVisible` re-polls powerprofile/nightlight/DND/idle on every open
+- [x] `Commons/Paths.qml` — all hardcoded paths eliminated (done Sprint 1)
+
+**Blocked on Quickshell 0.3.0** (track via `paru -Qu quickshell`):
+- [ ] Audio → `Quickshell.Services.Pipewire` (native PipeWire, replaces pactl subprocess)
 - [ ] Network → `Quickshell.Networking` (replaces nmcli subprocess)
-- [ ] Battery → `Quickshell.Services.UPower`
-- [ ] Bluetooth → D-Bus signal subscription
-- [ ] Idle inhibitor → `Quickshell.Wayland.IdleInhibitor` (wire to CC toggle)
-- [ ] Add error logging to all Process wrappers
-- [ ] Fix ControlCenter state sync on `onVisible`
-- [ ] `Commons/Paths.qml` — eliminate hardcoded refs
+- [ ] Battery → `Quickshell.Services.UPower` (replaces /sys 30s poll)
+- [ ] Idle inhibitor → `Quickshell.Wayland.IdleInhibitor` (wire to CC idle toggles)
 
 ### Sprint 4 — Bar polish + MPRIS
 

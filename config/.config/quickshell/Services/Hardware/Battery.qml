@@ -21,6 +21,9 @@ QtObject {
                 root.present  = !isNaN(v)
             }
         }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Battery: readLevel exited with code " + code)
+        }
     }
 
     property var readStatus: Process {
@@ -31,6 +34,9 @@ QtObject {
                 var s = data.trim()
                 root.charging = (s === "Charging" || s === "Full")
             }
+        }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Battery: readStatus exited with code " + code)
         }
     }
 

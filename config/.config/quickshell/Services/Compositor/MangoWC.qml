@@ -200,6 +200,9 @@ QtObject {
         property string cmd: ""
         command: ["bash", "-c", cmd]
         running: false
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("MangoWC: command exited with code " + code)
+        }
     }
 
     function _cmd(shellCmd) {

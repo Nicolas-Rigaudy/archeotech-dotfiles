@@ -22,6 +22,9 @@ QtObject {
                 if (v > 0) root.maxBrightness = v
             }
         }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Brightness: maxReader exited with code " + code)
+        }
     }
 
     property var currReader: Process {
@@ -33,6 +36,9 @@ QtObject {
                 if (root.maxBrightness > 0)
                     root.percent = Math.round(v / root.maxBrightness * 100)
             }
+        }
+        onExited: (code, status) => {
+            if (code !== 0) console.warn("Brightness: currReader exited with code " + code)
         }
     }
 
