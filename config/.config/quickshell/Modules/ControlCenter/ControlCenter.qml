@@ -463,7 +463,7 @@ Item {
                 SectionHeader { label: "AUDIO" }
 
                 Item {
-                    Layout.fillWidth: true; height: 24
+                    Layout.fillWidth: true; height: 32
                     Text {
                         id: volIcon
                         anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
@@ -482,9 +482,11 @@ Item {
                     }
                     Slider {
                         anchors.left: volIcon.right; anchors.right: volPct.left
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: parent.top; anchors.bottom: parent.bottom
+                        topPadding: 0; bottomPadding: 0
                         anchors.leftMargin: 8; anchors.rightMargin: 6
                         from: 0; to: 100; value: audio.volume; enabled: !audio.muted
+                        onPressedChanged: flick.interactive = !pressed
                         onMoved: audio.setVolume(Math.round(value))
                         background: Rectangle {
                             x: parent.leftPadding; y: parent.topPadding + parent.availableHeight / 2 - height / 2
@@ -502,7 +504,7 @@ Item {
                 }
 
                 Item {
-                    Layout.fillWidth: true; height: 24
+                    Layout.fillWidth: true; height: 32
                     Text {
                         id: brightIcon
                         anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
@@ -520,9 +522,11 @@ Item {
                     }
                     Slider {
                         anchors.left: brightIcon.right; anchors.right: brightPct.left
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: parent.top; anchors.bottom: parent.bottom
+                        topPadding: 0; bottomPadding: 0
                         anchors.leftMargin: 8; anchors.rightMargin: 6
                         from: 1; to: 100; value: HardwareServices.Brightness.percent
+                        onPressedChanged: flick.interactive = !pressed
                         onMoved: HardwareServices.Brightness.setBrightness(Math.round(value))
                         background: Rectangle {
                             x: parent.leftPadding; y: parent.topPadding + parent.availableHeight / 2 - height / 2
