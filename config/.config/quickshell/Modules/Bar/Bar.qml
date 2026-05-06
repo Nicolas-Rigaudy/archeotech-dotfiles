@@ -86,7 +86,7 @@ Item {
                                 height: 8
                                 radius: Commons.Appearance.radius.pill
                                 anchors.verticalCenter: parent.verticalCenter
-                                color: urg ? Commons.Appearance.colors.red
+                                color: (urg && !sel) ? Commons.Appearance.colors.red
                                      : sel ? Commons.Appearance.colors.accent
                                      : occ ? Commons.Appearance.colors.surface1
                                      :       Commons.Appearance.colors.surface0
