@@ -130,12 +130,13 @@ Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet pac
 
 ### Sprint 6 — Notification system
 
-- [ ] `Services/System/Notifications.qml` — `NotificationServer` (Quickshell.Services.Notifications)
-- [ ] Toast component — stacked top-right, entrance/exit animations, click to dismiss
-- [ ] Notification center panel — full-height right panel, bell icon in bar triggers it
-- [ ] Per-notification: app icon, name, title, body, timestamp, dismiss
-- [ ] Clear-all, critical urgency never auto-dismisses
-- [ ] Remove swaync from autostart once done
+- [x] `Services/System/Notifications.qml` — `NotificationServer` (Quickshell.Services.Notifications)
+- [x] Notification center panel — bell icon triggers it, ESC/click-outside closes, mutual exclusion with CC
+- [x] Bell badge — unread count, clears on NC open
+- [x] Clear-all button, critical urgency never auto-dismisses
+- [x] Remove swaync from autostart, keybind wired to `qs ipc call notifications toggle`
+- [ ] **KNOWN BUG — Toast display**: toast appears but shows fallback "Notification" instead of actual appName/summary/body. The `NotificationIface` QObject passes through `_toastQueue` (JS array) → Repeater `modelData` → `notification: parent.modelData` on `NotifToast`, but property bindings see null at render time. Root cause unresolved after extended debugging. Fix later or replace with a different toast architecture (e.g. pass strings into the queue instead of the QObject).
+- [ ] Per-notification: app icon, timestamp
 
 ### Sprint 7 — Launcher
 

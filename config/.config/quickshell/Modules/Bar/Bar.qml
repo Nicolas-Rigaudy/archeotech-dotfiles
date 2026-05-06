@@ -8,6 +8,7 @@ import "../../Services/Media" as MediaServices
 import "../../Services/Hardware" as HardwareServices
 import "../../Services/Networking" as NetworkServices
 import "../../Services/Compositor" as CompositorServices
+import "../../Services/System" as SystemServices
 
 // One Bar instance per screen: bar pill + popup overlay as siblings.
 Item {
@@ -478,20 +479,49 @@ Item {
                         }
                     }
 
-                    // Notification bell — placeholder; Sprint 6 wires this to the native panel
-                    Text {
-                        text: "󰂚"
-                        color: Commons.State.notificationCenterVisible
-                            ? Commons.Appearance.colors.accent
-                            : Commons.Appearance.colors.subtext1
-                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                    // Notification bell + unread badge
+                    Item {
+                        width: bellIcon.implicitWidth + 4
+                        height: 24
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                        MouseArea {
-                            anchors.fill: parent; hoverEnabled: true
-                            onClicked: Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
-                            onEntered: if (!Commons.State.notificationCenterVisible) parent.color = Commons.Appearance.colors.accent
-                            onExited:  if (!Commons.State.notificationCenterVisible) parent.color = Commons.Appearance.colors.subtext1
+
+                        Text {
+                            id: bellIcon
+                            anchors.centerIn: parent
+                            text: "󰂚"
+                            color: Commons.State.notificationCenterVisible
+                                ? Commons.Appearance.colors.accent
+                                : SystemServices.Notifications.unreadCount > 0
+                                ? Commons.Appearance.colors.text
+                                : Commons.Appearance.colors.subtext1
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            MouseArea {
+                                anchors.fill: parent; anchors.margins: -4; hoverEnabled: true
+                                onClicked: Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
+                                onEntered: if (!Commons.State.notificationCenterVisible) bellIcon.color = Commons.Appearance.colors.accent
+                                onExited:  if (!Commons.State.notificationCenterVisible)
+                                    bellIcon.color = SystemServices.Notifications.unreadCount > 0
+                                        ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext1
+                            }
+                        }
+
+                        Rectangle {
+                            visible: SystemServices.Notifications.unreadCount > 0 && !Commons.State.notificationCenterVisible
+                            anchors.top:   parent.top
+                            anchors.right: parent.right
+                            width:  badgeText.implicitWidth + 4; height: 12
+                            radius: 6
+                            color:  Commons.Appearance.colors.red
+
+                            Text {
+                                id: badgeText
+                                anchors.centerIn: parent
+                                text: SystemServices.Notifications.unreadCount > 9 ? "9+" : SystemServices.Notifications.unreadCount
+                                color: Commons.Appearance.colors.crust
+                                font.pixelSize: 8; font.family: Commons.Appearance.font.family
+                                font.weight: Font.Bold
+                            }
                         }
                     }
 

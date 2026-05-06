@@ -8,6 +8,7 @@ import "../../Services/Media" as MediaServices
 import "../../Services/Hardware" as HardwareServices
 import "../../Services/Networking" as NetworkServices
 import "../../Widgets"
+import "../../Services/System" as SystemServices
 
 Item {
     id: root
@@ -40,7 +41,6 @@ Item {
     function _syncState() {
         profileReader.running    = true
         nightLightReader.running = true
-        dndReader.running        = true
         idleConfigReader.running = true
     }
 
@@ -74,13 +74,6 @@ Item {
         }
     }
 
-    property bool dndEnabled: false
-    Process {
-        id: dndReader
-        command: ["bash", "-c", "swaync-client --get-dnd 2>/dev/null || echo false"]
-        running: false
-        stdout: SplitParser { onRead: data => root.dndEnabled = data.trim() === "true" }
-    }
 
     property bool   dimEnabled:   true
     property int    dimTimeout:   600
@@ -650,8 +643,8 @@ Item {
                     Layout.fillWidth: true
                     Text { text: "󰂛  Do Not Disturb"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family; Layout.fillWidth: true }
                     ToggleSwitch {
-                        checked: root.dndEnabled
-                        onToggled: state => { root.dndEnabled = state; run(state ? "swaync-client --dnd-on" : "swaync-client --dnd-off") }
+                        checked: SystemServices.Notifications.dndEnabled
+                        onToggled: state => SystemServices.Notifications.dndEnabled = state
                     }
                 }
 
