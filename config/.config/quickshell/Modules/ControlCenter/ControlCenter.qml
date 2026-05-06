@@ -12,6 +12,7 @@ import "../../Widgets"
 Item {
     id: root
     anchors.fill: parent
+    Keys.onEscapePressed: Commons.State.controlCenterVisible = false
 
     property real panelHeight: panel.height
 
