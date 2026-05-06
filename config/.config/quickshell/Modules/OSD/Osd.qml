@@ -69,7 +69,7 @@ PanelWindow {
             antialiasing: true
             color: Commons.Appearance.colors.glassBg
             opacity: osdWindow.shown ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
 
             RowLayout {
                 anchors.fill: parent

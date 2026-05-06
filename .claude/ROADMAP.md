@@ -117,16 +117,16 @@ Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet pac
 - [x] Bar popups redesigned — flush below bar pill (HUD callout style), unfold downward with Scale+opacity 150ms OutQuart, accentBorder outline
 - [x] Tag dot easing upgraded — OutBack with overshoot 1.2 (mechanical snap feel)
 
-### Sprint 5 — Polish pass (design system + UX coherence)
+### Sprint 5 — Polish pass (design system + UX coherence) ✅ COMPLETE
 
 > Full design decisions documented in `docs/DESIGN_DECISIONS.md`
 
-- [ ] Active tag dot → mauve accent color (`#c6a0f6`), dot size change only
-- [ ] Bar popups → dropdown anchored below triggering icon (x-aligned), slide down from bar edge
-- [ ] Animation pass → apply `Anim.*` tokens everywhere, remove hardcoded durations
-- [ ] CC collapsibles → idle config + display layout + night light collapsed by default
-- [ ] CC scroll + sliders verified working (flickable fix already committed)
-- [ ] Bar bell icon → placeholder for notification center (sprint 6)
+- [x] Active tag dot → mauve accent color (`#c6a0f6`); guard `urg && !sel` so MangoWC's always-on urgent flag doesn't override selected color
+- [x] Bar popups → dropdown anchored below triggering icon (x-aligned), slide down from bar edge (was already implemented)
+- [x] Animation pass → all hardcoded durations replaced with `Anim.*` tokens; marquee/progress bar timings left as functional values
+- [x] CC collapsibles → Display Layout, Night Light, Idle & Sleep collapsed by default; `Layout.preferredHeight` (not `height`) for ColumnLayout children; unified hover header style
+- [x] CC scroll + sliders → panel height capped, flickable fix, 3-press fix (wait for root.width > 0)
+- [x] Bar bell icon → wired to `Commons.State.notificationCenterVisible`; swaync removed; Sprint 6 builds the panel
 
 ### Sprint 6 — Notification system
 

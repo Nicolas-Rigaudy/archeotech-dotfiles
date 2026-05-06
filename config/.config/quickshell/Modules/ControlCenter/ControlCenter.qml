@@ -183,7 +183,7 @@ Item {
         NumberAnimation {
             id: slideAnim
             target: panel; property: "x"
-            duration: 220; easing.type: Easing.OutQuart
+            duration: Commons.Appearance.anim.base; easing.type: Easing.OutQuart
         }
 
         Flickable {

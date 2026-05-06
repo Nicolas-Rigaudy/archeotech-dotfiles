@@ -478,18 +478,20 @@ Item {
                         }
                     }
 
-                    // Notification bell
+                    // Notification bell — placeholder; Sprint 6 wires this to the native panel
                     Text {
-                        text: "󰂜"
-                        color: Commons.Appearance.colors.subtext1
+                        text: "󰂚"
+                        color: Commons.State.notificationCenterVisible
+                            ? Commons.Appearance.colors.accent
+                            : Commons.Appearance.colors.subtext1
                         font.pixelSize: 18; font.family: Commons.Appearance.font.family
                         anchors.verticalCenter: parent.verticalCenter
                         Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
-                            onClicked: notifCmd.running = true
-                            onEntered: parent.color = Commons.Appearance.colors.accent
-                            onExited:  parent.color = Commons.Appearance.colors.subtext1
+                            onClicked: Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
+                            onEntered: if (!Commons.State.notificationCenterVisible) parent.color = Commons.Appearance.colors.accent
+                            onExited:  if (!Commons.State.notificationCenterVisible) parent.color = Commons.Appearance.colors.subtext1
                         }
                     }
 
@@ -527,7 +529,6 @@ Item {
             }
         }
 
-        Process { id: notifCmd;     command: ["swaync-client", "--toggle-panel"]; running: false }
         Process { id: powerCmd;     command: ["bash", "-c", "wlogout-launch.sh &"]; running: false }
         Process { id: networkCmd;   command: ["bash", "-c", "nm-connection-editor &"]; running: false }
         Process { id: bluetoothCmd; command: ["bash", "-c", "blueman-manager &"]; running: false }
@@ -578,7 +579,7 @@ Item {
 
                 // Slide-down unfold: clip height 0 → full, opacity 0 → 1
                 property real revealHeight: 0
-                Behavior on revealHeight { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
+                Behavior on revealHeight { NumberAnimation { duration: Commons.Appearance.anim.fast; easing.type: Easing.OutQuart } }
                 Component.onCompleted: revealHeight = 1
 
                 layer.enabled: true
@@ -589,7 +590,7 @@ Item {
                     yScale: popupCard.revealHeight
                 }
                 opacity: popupCard.revealHeight
-                Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
+                Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast; easing.type: Easing.OutQuart } }
 
                 Column {
                     id: cardCol
