@@ -829,10 +829,10 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-05 (Sprint 4 complete + design session — full sprint 5-10 plan in docs/DESIGN_DECISIONS.md)
+**Last Updated:** 2026-05-11 (sprint 6+7 bar polish — hover popups, calendar, toast fix)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprint 4: MPRIS service, scrolling marquee in bar, album art card in CC, CC slide-in animation, bar HUD callouts, OutBack tag dots. Design session: full UX audit, animation token system, sprint 5-10 roadmap defined. See `docs/DESIGN_DECISIONS.md`.
-**Next Sprint:** Sprint 5 — polish pass (mauve active tag, popups anchored to bar icon, animation token pass, CC collapsibles). See `docs/DESIGN_DECISIONS.md` §4.
+**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 1–7: full restructure, MPRIS service, notification system, bar polish. Bar now has hover popups on every element + calendar popup on clock hover. Notification toast fixed (plain-object queue). See `docs/DESIGN_DECISIONS.md` and `.claude/ROADMAP.md`.
+**Next Sprint:** Sprint 7 — launcher (parse .desktop files, fuzzy match, keyboard nav, centered panel).
 **Quickshell version:** 0.2.1-6 (0.3.0 released 2026-05-04, pending Arch packaging). `Quickshell.DWL` is not upstream — stays on mmsg -w.
 **Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = `Quickshell.DWL` (NOT mmsg -w). See `.claude/ANALYSIS.md` §2 for full findings.

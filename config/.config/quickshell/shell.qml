@@ -61,8 +61,17 @@ ShellRoot {
     Connections {
         target: SystemServices.Notifications
         function onArrived(notification) {
-            if (!SystemServices.Notifications.dndEnabled)
-                shell._toastQueue = shell._toastQueue.concat([notification])
+            if (!SystemServices.Notifications.dndEnabled) {
+                // Snapshot to plain object — the QObject's bindings resolve as null
+                // when read later from a JS array inside a Repeater delegate.
+                shell._toastQueue = shell._toastQueue.concat([{
+                    appName:       notification.appName       || "",
+                    summary:       notification.summary       || "",
+                    body:          notification.body          || "",
+                    urgency:       notification.urgency       || 0,
+                    expireTimeout: notification.expireTimeout || -1
+                }])
+            }
         }
     }
 

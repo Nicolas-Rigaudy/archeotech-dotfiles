@@ -135,8 +135,14 @@ Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet pac
 - [x] Bell badge — unread count, clears on NC open
 - [x] Clear-all button, critical urgency never auto-dismisses
 - [x] Remove swaync from autostart, keybind wired to `qs ipc call notifications toggle`
-- [ ] **KNOWN BUG — Toast display**: toast appears but shows fallback "Notification" instead of actual appName/summary/body. The `NotificationIface` QObject passes through `_toastQueue` (JS array) → Repeater `modelData` → `notification: parent.modelData` on `NotifToast`, but property bindings see null at render time. Root cause unresolved after extended debugging. Fix later or replace with a different toast architecture (e.g. pass strings into the queue instead of the QObject).
+- [x] **Toast display fixed** (2026-05-11): snapshot notification QObject to plain JS object on arrival (`{appName, summary, body, urgency, expireTimeout}`) — QObject bindings resolve as null when read later from a JS array inside a Repeater delegate; plain object has no such timing dependency. Fix in `shell.qml` `onArrived`.
 - [ ] Per-notification: app icon, timestamp
+
+### Sprint 6+7 bar polish ✅ COMPLETE (2026-05-11)
+
+- [x] **MPRIS stale state fix** — bar marquee now uses `playing` instead of `available`; switching browser tabs (YouTube etc.) collapses the marquee immediately instead of showing the stale track
+- [x] **Hover popups on all bar elements** — bell (unread count + DND state), settings gear, power button, MPRIS marquee (track title + artist) all have the HUD callout popup on hover; `acceptedButtons: Qt.NoButton` used for hover-only MAs so click handlers on child elements are unaffected
+- [x] **Calendar popup on clock hover** — Shape with ear+arc top (matches pill geometry), flat top flush-mounts to bar, rounded bottom corners, Monday-first day grid, today highlighted in accent, `‹`/`›` month navigation; 250ms grace timer keeps it alive when moving cursor onto it
 
 ### Sprint 7 — Launcher
 

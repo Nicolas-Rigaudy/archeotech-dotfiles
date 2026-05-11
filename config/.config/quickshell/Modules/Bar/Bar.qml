@@ -27,8 +27,27 @@ Item {
     property real    _lastShowTime:   0
     property var     _popupOwner:     null
 
+    property bool _calendarVisible: false
+    property int  _calendarYear:    new Date().getFullYear()
+    property int  _calendarMonth:   new Date().getMonth() + 1
+
+    function calendarDays(year, month) {
+        var days = []
+        var first = (new Date(year, month - 1, 1).getDay() + 6) % 7
+        var total = new Date(year, month, 0).getDate()
+        for (var i = 0; i < first; i++) days.push(0)
+        for (var j = 1; j <= total; j++) days.push(j)
+        return days
+    }
+    function monthName(m) {
+        return ["January","February","March","April","May","June",
+                "July","August","September","October","November","December"][m - 1]
+    }
+
     function showPopup(item, label, primary, secondary, hint) {
         _hideTimer.stop()
+        _calHideTimer.stop()
+        _calendarVisible = false
         _lastShowTime = Date.now()
         _popupOwner   = item
         var pt = item.mapToItem(null, item.width / 2, 0)
@@ -51,6 +70,11 @@ Item {
         id: _hideTimer
         interval: 250
         onTriggered: barGroup._popupVisible = false
+    }
+    Timer {
+        id: _calHideTimer
+        interval: 250
+        onTriggered: barGroup._calendarVisible = false
     }
 
     // ── Bar window ─────────────────────────────────────────────────────────────
@@ -157,7 +181,7 @@ Item {
                         id: mprisBarItem
                         Layout.alignment: Qt.AlignVCenter
 
-                        property bool active: MediaServices.MprisService.available === true
+                        property bool active: MediaServices.MprisService.playing === true
                         property string displayText: {
                             if (!MediaServices.MprisService) return ""
                             var t = MediaServices.MprisService.title  || ""
@@ -289,6 +313,18 @@ Item {
                                 font.pixelSize: Commons.Appearance.font.sizeSm
                                 font.family: Commons.Appearance.font.family
                             }
+                        }
+
+                        // Hover-only MA — no buttons consumed, so mprisIcon click still works
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            acceptedButtons: Qt.NoButton
+                            onEntered: barGroup.showPopup(parent, "NOW PLAYING",
+                                MediaServices.MprisService.title  || "—",
+                                MediaServices.MprisService.artist || "",
+                                "Click icon to play / pause")
+                            onExited: barGroup.hidePopup(parent)
                         }
                     }
                 }
@@ -572,10 +608,21 @@ Item {
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
-                            onEntered: if (!Commons.State.notificationCenterVisible) bellIcon.color = Commons.Appearance.colors.accent
-                            onExited:  if (!Commons.State.notificationCenterVisible)
-                                bellIcon.color = SystemServices.Notifications.unreadCount > 0
-                                    ? Commons.Appearance.colors.red : Commons.Appearance.colors.subtext1
+                            onEntered: {
+                                if (!Commons.State.notificationCenterVisible) bellIcon.color = Commons.Appearance.colors.accent
+                                barGroup.showPopup(parent, "NOTIFICATIONS",
+                                    SystemServices.Notifications.unreadCount > 0
+                                        ? "󰂚  " + SystemServices.Notifications.unreadCount + " unread"
+                                        : "󰂜  All caught up",
+                                    SystemServices.Notifications.dndEnabled ? "󰂛  Do not disturb on" : "",
+                                    "Click to toggle")
+                            }
+                            onExited: {
+                                if (!Commons.State.notificationCenterVisible)
+                                    bellIcon.color = SystemServices.Notifications.unreadCount > 0
+                                        ? Commons.Appearance.colors.red : Commons.Appearance.colors.subtext1
+                                barGroup.hidePopup(parent)
+                            }
                         }
                     }
 
@@ -595,8 +642,14 @@ Item {
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible
-                            onEntered: settingsIcon.color = Commons.Appearance.colors.accent
-                            onExited:  settingsIcon.color = Commons.Appearance.colors.subtext1
+                            onEntered: {
+                                settingsIcon.color = Commons.Appearance.colors.accent
+                                barGroup.showPopup(parent, "SETTINGS", "󰒓  Control Center", "", "Click to toggle")
+                            }
+                            onExited: {
+                                settingsIcon.color = Commons.Appearance.colors.subtext1
+                                barGroup.hidePopup(parent)
+                            }
                         }
                     }
 
@@ -616,8 +669,14 @@ Item {
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: powerCmd.running = true
-                            onEntered: powerIcon.color = Commons.Appearance.colors.red
-                            onExited:  powerIcon.color = Commons.Appearance.colors.subtext1
+                            onEntered: {
+                                powerIcon.color = Commons.Appearance.colors.red
+                                barGroup.showPopup(parent, "POWER", "󰐥  Power menu", "", "Click to open")
+                            }
+                            onExited: {
+                                powerIcon.color = Commons.Appearance.colors.subtext1
+                                barGroup.hidePopup(parent)
+                            }
                         }
                     }
                 }
@@ -646,6 +705,25 @@ Item {
                     onTriggered: centerClock.text = centerClock.clockText()
                 }
             }
+
+            // Transparent hover region over the clock — opens calendar popup
+            MouseArea {
+                anchors.centerIn: parent
+                width: centerClock.implicitWidth + 24
+                height: parent.height
+                hoverEnabled: true
+                acceptedButtons: Qt.NoButton
+                z: 2
+                onEntered: {
+                    barGroup._calendarYear  = new Date().getFullYear()
+                    barGroup._calendarMonth = new Date().getMonth() + 1
+                    _calHideTimer.stop()
+                    _hideTimer.stop()
+                    barGroup._popupVisible  = false
+                    barGroup._calendarVisible = true
+                }
+                onExited: _calHideTimer.restart()
+            }
         }
 
         // ── Input mask ─────────────────────────────────────────────────────────
@@ -654,7 +732,7 @@ Item {
             x: 0; y: 0
             width: barWindow.width
             height: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
-                  + (_popupCard.visible ? 220 : 0)
+                  + (_popupCard.visible || barGroup._calendarVisible ? 220 : 0)
         }
 
         // ── Popup card — persistent, never destroyed ────────────────────────
@@ -753,6 +831,177 @@ Item {
                     color: Commons.Appearance.colors.overlay0
                     font.pixelSize: Commons.Appearance.font.sizeSm - 1
                     font.family: Commons.Appearance.font.family
+                }
+            }
+        }
+
+        // Calendar popup — same ear+arc shape as _popupCard so it merges with the bar
+        Shape {
+            id: _calendarCard
+
+            property real cellW: 28
+            property real cellH: 22
+            property real _r:    Commons.Appearance.radius.xl   // ear radius (matches pill)
+            property real _rb:   Commons.Appearance.radius.md   // bottom corner radius
+            property real _bw:   cellW * 7 + 24                 // body width (content + padding)
+
+            x: Math.max(
+                   Commons.Appearance.bar.marginSide + 4,
+                   Math.min(barWindow.width / 2 - (_bw + _r * 2) / 2,
+                            barWindow.width - (_bw + _r * 2) - Commons.Appearance.bar.marginSide - 4))
+            y: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
+            width:  _bw + _r * 2
+            height: _calCol.implicitHeight + 20
+
+            layer.enabled: true
+            layer.samples: 8
+
+            transformOrigin: Item.Top
+            scale:   barGroup._calendarVisible ? 1.0 : 0.85
+            opacity: barGroup._calendarVisible ? 1.0 : 0.0
+            visible: opacity > 0.01
+
+            Behavior on scale   { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            ShapePath {
+                fillColor:   Commons.Appearance.colors.glassBgLight
+                strokeWidth: 0
+                strokeColor: "transparent"
+
+                // Flat top ear-to-ear, CCW arcs curve inward to body width (same as _popupCard)
+                startX: 0; startY: 0
+                PathLine { x: _calendarCard._bw + _calendarCard._r * 2; y: 0 }
+                PathArc  { x: _calendarCard._bw + _calendarCard._r;     y: _calendarCard._r
+                           radiusX: _calendarCard._r; radiusY: _calendarCard._r
+                           direction: PathArc.Counterclockwise }
+                PathLine { x: _calendarCard._bw + _calendarCard._r;     y: _calendarCard.height - _calendarCard._rb }
+                PathArc  { x: _calendarCard._bw + _calendarCard._r - _calendarCard._rb; y: _calendarCard.height
+                           radiusX: _calendarCard._rb; radiusY: _calendarCard._rb
+                           direction: PathArc.Clockwise }
+                PathLine { x: _calendarCard._r + _calendarCard._rb;     y: _calendarCard.height }
+                PathArc  { x: _calendarCard._r;                         y: _calendarCard.height - _calendarCard._rb
+                           radiusX: _calendarCard._rb; radiusY: _calendarCard._rb
+                           direction: PathArc.Clockwise }
+                PathLine { x: _calendarCard._r;                         y: _calendarCard._r }
+                PathArc  { x: 0;                                        y: 0
+                           radiusX: _calendarCard._r; radiusY: _calendarCard._r
+                           direction: PathArc.Counterclockwise }
+                PathLine { x: 0;                                        y: 0 }
+            }
+
+            MouseArea {
+                anchors.fill: parent; hoverEnabled: true
+                onEntered: { _calHideTimer.stop(); _hideTimer.stop(); barGroup._popupVisible = false }
+                onExited:  _calHideTimer.restart()
+            }
+
+            Column {
+                id: _calCol
+                x: _calendarCard._r + 12; y: 10
+                width: _calendarCard._bw - 24
+                spacing: 4
+
+                // Month navigation
+                Row {
+                    width: parent.width
+
+                    Text {
+                        text: "‹"
+                        color: Commons.Appearance.colors.subtext1
+                        font.pixelSize: Commons.Appearance.font.sizeMd
+                        font.family: Commons.Appearance.font.family
+                        width: 20; horizontalAlignment: Text.AlignHCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                if (barGroup._calendarMonth === 1) { barGroup._calendarMonth = 12; barGroup._calendarYear-- }
+                                else barGroup._calendarMonth--
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: barGroup.monthName(barGroup._calendarMonth) + " " + barGroup._calendarYear
+                        color: Commons.Appearance.colors.text
+                        font.pixelSize: Commons.Appearance.font.sizeMd
+                        font.family: Commons.Appearance.font.family
+                        font.weight: Font.Medium
+                        width: parent.width - 40
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Text {
+                        text: "›"
+                        color: Commons.Appearance.colors.subtext1
+                        font.pixelSize: Commons.Appearance.font.sizeMd
+                        font.family: Commons.Appearance.font.family
+                        width: 20; horizontalAlignment: Text.AlignHCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                if (barGroup._calendarMonth === 12) { barGroup._calendarMonth = 1; barGroup._calendarYear++ }
+                                else barGroup._calendarMonth++
+                            }
+                        }
+                    }
+                }
+
+                // Day-of-week headers
+                Row {
+                    spacing: 0
+                    Repeater {
+                        model: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+                        delegate: Text {
+                            required property string modelData
+                            text: modelData
+                            width: _calendarCard.cellW
+                            horizontalAlignment: Text.AlignHCenter
+                            color: Commons.Appearance.colors.overlay1
+                            font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                            font.family: Commons.Appearance.font.family
+                        }
+                    }
+                }
+
+                // Day grid
+                Grid {
+                    columns: 7
+                    rowSpacing: 0
+                    columnSpacing: 0
+
+                    Repeater {
+                        model: barGroup.calendarDays(barGroup._calendarYear, barGroup._calendarMonth)
+                        delegate: Item {
+                            required property int modelData
+                            property bool isToday: {
+                                var now = new Date()
+                                return modelData > 0
+                                    && modelData === now.getDate()
+                                    && barGroup._calendarMonth === (now.getMonth() + 1)
+                                    && barGroup._calendarYear  === now.getFullYear()
+                            }
+                            width: _calendarCard.cellW
+                            height: _calendarCard.cellH
+
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 20; height: 20
+                                radius: Commons.Appearance.radius.pill
+                                color: parent.isToday ? Commons.Appearance.colors.accent : "transparent"
+                                visible: parent.modelData > 0
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: parent.modelData > 0 ? parent.modelData : ""
+                                color: parent.isToday ? Commons.Appearance.colors.base : Commons.Appearance.colors.text
+                                font.pixelSize: Commons.Appearance.font.sizeSm
+                                font.family: Commons.Appearance.font.family
+                                font.weight: parent.isToday ? Font.Medium : Font.Normal
+                            }
+                        }
+                    }
                 }
             }
         }
