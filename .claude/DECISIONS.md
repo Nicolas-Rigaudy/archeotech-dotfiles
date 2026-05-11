@@ -772,3 +772,96 @@ This document tracks all technical decisions made during the project, with ratio
 **Rationale:** Go earns its place only where Quickshell genuinely can't reach: raw Wayland protocol socket clients (wlr-output-management, wlr-gamma-control, wlr-screencopy). Everything else is native QML APIs. DankMaterialShell confirmed this boundary — their Go daemon handles evdev, udev, wlr protocols, persistent clipboard; their QML handles workspace/window state, MPRIS, notifications.
 
 **Trade-offs Accepted:** One additional binary to build and install. Go dependency in the project. Sprint 9 is non-trivial — display/gamma management without the daemon continues to work (via wlr-randr/wlsunset shell calls), so the daemon is additive not blocking.
+
+---
+
+### [2026-05-11] Bar: Popup rendered inside PanelWindow, not as separate surface
+
+**Context:** Initial popup implementation (pre-sprint 6) used a `Loader` + `PanelWindow` as a separate layer-shell surface. This caused: grey-block rendering artifact when the Loader destroyed the surface, no smooth slide animation between icons (surface was recreated on every hover), and extra compositor round-trips for each popup show/hide.
+
+**Decision:** Popup card lives as a persistent `Shape` child of the bar's own `PanelWindow`. The bar window is extended to 220px tall; a `Region`-based input mask limits pointer events to the bar strip + popup footprint. The card is never destroyed — opacity/scale animate between visible and hidden.
+
+**Rationale:**
+- Persistent card means switching between icons slides x with no destroy/recreate; animation is smooth
+- Single surface avoids the grey-block artifact (Quickshell bug: layer surface destruction leaves a 1-frame grey fill)
+- Input mask on the PanelWindow restricts events correctly without needing a separate surface for hit-testing
+- `pill` stays at `z: 1` so it renders on top of the popup card's top edge, keeping visual layering clean
+
+**Trade-offs Accepted:** Bar PanelWindow is now 220px tall (taller than the visible bar). The `exclusiveZone` is still set to bar height only — the extra height is transparent and below the bar. If a future popup content exceeds 220px the card will clip; adjust the constant if needed.
+
+---
+
+### [2026-05-11] Bar: Popup card shape — concave funnel top via QtQuick.Shapes
+
+**Context:** Original popup card was a `Rectangle` with `radius` and a 1px accent border. Needed a shape that visually connects the popup to the bar — wider at the top (aligned to bar bottom), narrowing to a body width via concave arcs.
+
+**Decision:** `QtQuick.Shapes.Shape` with a hand-drawn `ShapePath`: flat wide top edge → CCW concave arcs narrowing to body width → straight sides → CW rounded bottom corners. Fill is `glassBgLight`; no stroke. Shape item width is `bodyWidth + 2*_r` so the funnel ears (which extend `_r` past the body on each side) are within the item's bounding box. `layer.enabled: true; layer.samples: 8` for 8× MSAA on all edges.
+
+**Rationale:**
+- The funnel visually anchors the popup to the triggering icon — "this popup came from here"
+- `Shape` is the only way to draw non-rectangular filled paths in QML without C++ plugins
+- `layer.samples: 8` is the standard fix for pixelated Shape edges in Qt Quick (software antialiasing on Shape is unreliable; MSAA via layer is the correct approach)
+- Shape item must be wide enough to contain all path coordinates: funnel ears extend `_r` on each side, so `width = bodyWidth + 2*_r`. Without this, `layer.enabled` clips the ears (layer texture = item bounding box)
+
+**Trade-offs Accepted:** Shape rendering is slightly more expensive than a Rectangle. The persistent card (never destroyed) means this cost is always paid — acceptable given it's one card per screen.
+
+---
+
+### [2026-05-11] Bar: Popup hide — timer grace period + owner tracking
+
+**Context:** Original `hidePopup()` set `_popupVisible = false` immediately. Two bugs resulted:
+1. Moving directly between icons caused a flicker (hide + show in quick succession, animation briefly reversed)
+2. A QML race where `onEntered(B)` fires before `onExited(A)` (observed in Quickshell/Wayland event delivery) caused the second popup to disappear 250ms after appearing: `onEntered(B)` stopped a timer that wasn't running; then `onExited(A)` started it with nothing to cancel it
+
+**Decision:** `hidePopup()` starts a 250ms `Timer` instead of hiding immediately. `showPopup()` stops the timer, stamps `_lastShowTime`, and records `_popupOwner = item`. `hidePopup(caller)` ignores the call if `caller !== _popupOwner` — stale `onExited` from the previous icon is silently dropped. Popup card's `onExited` has its own `Date.now() - _lastShowTime > 200` guard (prevents hide when popup repositions under the cursor on icon switch).
+
+**Rationale:**
+- 250ms grace lets the cursor cross gaps between icons without the popup flashing off
+- `_popupOwner` check is timing-independent — works regardless of how many milliseconds separate `onEntered(B)` and `onExited(A)`, which varies with compositor event batching
+- Time-based guards (tried: 50ms, then `> 0`) were too coarse: 50ms blocked legitimate quick exits (popup stayed open); `> 0` failed when events fired 1ms apart
+
+**Trade-offs Accepted:** A stale `onExited` from a non-owner icon is silently ignored even if legitimately fired. In practice this is correct behaviour — if `_popupOwner` has already changed, we don't want the old icon to hide the new popup.
+
+---
+
+### [2026-05-11] Bar: Clock absolutely centered, not in RowLayout
+
+**Context:** Clock was a child of the RowLayout's center fill `Item`. If the left section (tags + title + MPRIS) grew wider than the right section (tray icons), the "center" item shifted and the clock was visually off-center in the pill.
+
+**Decision:** Clock (`centerClock`) is a direct child of the `pill` Rectangle with `anchors.centerIn: parent` and `z: 1`. The RowLayout center slot is now a plain `Layout.fillWidth` spacer.
+
+**Rationale:** True visual center of the pill, independent of left/right section widths. `z: 1` ensures the clock renders above the popup card's top edge if they ever overlap.
+
+**Trade-offs Accepted:** Clock can overlap long window titles or MPRIS marquee if both are maximally wide simultaneously. Acceptable — clock is always readable on a dark pill background.
+
+---
+
+### [2026-05-11] Bar: Tray icon hit areas — Item wrappers with fixed bar height
+
+**Context:** Tray icons were bare `Text` elements with `MouseArea` children. The hit area was exactly the glyph bounding box — too small for comfortable clicking, and `parent.color` on the MouseArea targeted the Text's parent Item rather than the icon Text itself, causing color changes to fail silently.
+
+**Decision:** Each icon is wrapped in an `Item` with `height: bar.height; width: icon.implicitWidth + 10`. The `MouseArea` fills the Item. Color changes target the named icon Text id directly (`volIcon.color`, `btIcon.color`, etc.). Live-updating icons (mic, volume, brightness) additionally have `Connections` blocks to update popup content while hovering.
+
+**Rationale:**
+- Full bar height hit area is consistent with standard bar UX (the whole strip height is clickable)
+- Named icon targets eliminate the `parent.color` ambiguity
+- Connections blocks let the popup reflect real-time state changes (e.g. scrolling volume while popup is open) without re-calling `showPopup`
+
+**Trade-offs Accepted:** More verbose per-icon code. Accepted — clarity is worth it.
+
+---
+
+### [2026-05-11] Bar: Notification bell — icon color instead of badge pill
+
+**Context:** Unread notifications were indicated by a small red pill badge (count or "9+") overlaid on the bell icon. The pill style was visually inconsistent with the rest of the bar (the only element with a child overlay shape) and added noise to an already dense tray.
+
+**Decision:** Remove badge pill entirely. Bell icon color encodes state: `subtext1` (no notifications) → `red` (unread notifications) → `accent` (notification center open / hover). The count is available in the notification center panel itself.
+
+**Rationale:** Icon color is the existing pattern for state in the tray (mic red when muted, BT mauve when connected). A count badge is useful when glanceable count matters — for notifications the actionable signal is "there are some" not "there are exactly N". Color conveys that with less visual weight.
+
+**Trade-offs Accepted:** Exact unread count not visible from the bar. Acceptable — count is one click away in the notification center.
+
+---
+
+**Last Updated:** 2026-05-11
+**Total Decisions:** 36

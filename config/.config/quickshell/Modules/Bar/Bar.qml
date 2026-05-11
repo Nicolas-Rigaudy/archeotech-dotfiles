@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
@@ -23,8 +24,13 @@ Item {
     property string  _popupSecondary: ""
     property string  _popupHint:      ""
     property bool    _popupVisible:   false
+    property real    _lastShowTime:   0
+    property var     _popupOwner:     null
 
     function showPopup(item, label, primary, secondary, hint) {
+        _hideTimer.stop()
+        _lastShowTime = Date.now()
+        _popupOwner   = item
         var pt = item.mapToItem(null, item.width / 2, 0)
         _popupAnchorX   = pt.x
         _popupLabel     = label
@@ -33,7 +39,19 @@ Item {
         _popupHint      = hint || ""
         _popupVisible   = true
     }
-    function hidePopup() { _popupVisible = false }
+    // caller === undefined means the popup card itself is hiding (always allowed).
+    // caller !== _popupOwner means a stale onExited from the previous icon — ignore it.
+    function hidePopup(caller) {
+        if (caller === undefined || caller === _popupOwner) _hideTimer.restart()
+    }
+
+    // Grace period matching the hide animation so crossing a gap between two
+    // icons keeps the popup alive and lets x slide rather than destroy+recreate.
+    Timer {
+        id: _hideTimer
+        interval: 250
+        onTriggered: barGroup._popupVisible = false
+    }
 
     // ── Bar window ─────────────────────────────────────────────────────────────
     PanelWindow {
@@ -45,11 +63,15 @@ Item {
         WlrLayershell.namespace: "quickshell:bar"
 
         anchors { top: true; left: true; right: true }
-        implicitHeight: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop
+        // Taller than the bar so popup can render below — mask controls input area
+        implicitHeight: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop + 220
         color: "transparent"
+        // Input mask: only bar strip (+ popup footprint when open) receives events
+        mask: Region { item: _inputMask }
 
         Rectangle {
             id: pill
+            z: 1  // renders on top of popup so pill covers the popup's flat top edge
             anchors {
                 top: parent.top; left: parent.left; right: parent.right
                 topMargin:   Commons.Appearance.bar.marginTop
@@ -271,219 +293,268 @@ Item {
                     }
                 }
 
-                // ── CENTER: Clock ──────────────────────────────────────────────
-                Item {
-                    Layout.fillWidth: true
-                    Text {
-                        id: centerClock
-                        anchors.centerIn: parent
-                        textFormat: Text.RichText
-                        text: clockText()
-                        font.pixelSize: Commons.Appearance.font.sizeMd
-                        font.family: Commons.Appearance.font.family
-                        function clockText() {
-                            return "<span style='color:" + Commons.Appearance.colors.text + ";font-weight:600'>"
-                                + Qt.formatDateTime(new Date(), "HH:mm")
-                                + "</span>"
-                                + "<span style='color:" + Commons.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
-                                + "<span style='color:" + Commons.Appearance.colors.subtext0 + "'>"
-                                + Qt.formatDateTime(new Date(), "ddd d MMM")
-                                + "</span>"
-                        }
-                        Timer {
-                            interval: 1000; running: true; repeat: true
-                            onTriggered: centerClock.text = centerClock.clockText()
-                        }
-                    }
-                }
+                Item { Layout.fillWidth: true }
 
                 // ── RIGHT: System tray ─────────────────────────────────────────
                 Row {
-                    spacing: 10
+                    spacing: 0
                     Layout.alignment: Qt.AlignVCenter
 
                     // Mic
-                    Text {
-                        id: micIcon
-                        text: MediaServices.Audio.micMuted ? "󰍭" : "󰍬"
-                        color: MediaServices.Audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
-                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
-                        anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                    Item {
+                        id: micItem
+                        height: Commons.Appearance.bar.height
+                        width: micIcon.implicitWidth + 10
+                        property bool _hovered: false
+
+                        Text {
+                            id: micIcon
+                            anchors.centerIn: parent
+                            text: MediaServices.Audio.micMuted ? "󰍭" : "󰍬"
+                            color: MediaServices.Audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: MediaServices.Audio.toggleMicMute()
                             onEntered: {
-                                parent.color = Commons.Appearance.colors.accent
+                                micItem._hovered = true
+                                micIcon.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "MICROPHONE",
                                     MediaServices.Audio.micMuted ? "󰍭  Muted" : "󰍬  Active",
                                     "", "Click to toggle")
                             }
                             onExited: {
-                                parent.color = MediaServices.Audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
-                                barGroup.hidePopup()
+                                micItem._hovered = false
+                                micIcon.color = MediaServices.Audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
+                                barGroup.hidePopup(parent)
+                            }
+                        }
+                        Connections {
+                            target: MediaServices.Audio
+                            function onMicMutedChanged() {
+                                if (micItem._hovered && barGroup._popupVisible)
+                                    barGroup._popupPrimary = MediaServices.Audio.micMuted ? "󰍭  Muted" : "󰍬  Active"
                             }
                         }
                     }
 
                     // Volume
-                    Row {
-                        spacing: 4; anchors.verticalCenter: parent.verticalCenter
-                        Text {
-                            id: volIcon
-                            text: MediaServices.Audio.muted ? "󰖁" : MediaServices.Audio.volume > 66 ? "󰕾" : MediaServices.Audio.volume > 33 ? "󰖀" : "󰕿"
-                            color: MediaServices.Audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.subtext1
-                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
-                            anchors.verticalCenter: parent.verticalCenter
-                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                            MouseArea {
-                                anchors.fill: parent; hoverEnabled: true
-                                onClicked: MediaServices.Audio.toggleMute()
-                                onEntered: {
-                                    parent.color = Commons.Appearance.colors.accent
-                                    barGroup.showPopup(parent, "VOLUME",
-                                        MediaServices.Audio.muted ? "󰖁  Muted" : "󰕾  " + MediaServices.Audio.volume + "%",
-                                        "", "Scroll to adjust · Click to mute")
-                                }
-                                onExited: {
-                                    parent.color = MediaServices.Audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.subtext1
-                                    barGroup.hidePopup()
-                                }
-                                onWheel: wheel => {
-                                    var delta = wheel.angleDelta.y > 0 ? 5 : -5
-                                    MediaServices.Audio.setVolume(Math.max(0, Math.min(100, MediaServices.Audio.volume + delta)))
-                                }
+                    Item {
+                        id: volItem
+                        height: Commons.Appearance.bar.height
+                        width: volRow.implicitWidth + 10
+                        property bool _hovered: false
+
+                        Row {
+                            id: volRow
+                            spacing: 4
+                            anchors.centerIn: parent
+                            Text {
+                                id: volIcon
+                                text: MediaServices.Audio.muted ? "󰖁" : MediaServices.Audio.volume > 66 ? "󰕾" : MediaServices.Audio.volume > 33 ? "󰖀" : "󰕿"
+                                color: MediaServices.Audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.subtext1
+                                font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                                anchors.verticalCenter: parent.verticalCenter
+                                Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            }
+                            Text {
+                                text: MediaServices.Audio.volume + "%"
+                                color: Commons.Appearance.colors.overlay1
+                                font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                         }
-                        Text {
-                            text: MediaServices.Audio.volume + "%"
-                            color: Commons.Appearance.colors.overlay1
-                            font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
-                            anchors.verticalCenter: parent.verticalCenter
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true
+                            onClicked: MediaServices.Audio.toggleMute()
+                            onEntered: {
+                                volItem._hovered = true
+                                volIcon.color = Commons.Appearance.colors.accent
+                                barGroup.showPopup(parent, "VOLUME",
+                                    MediaServices.Audio.muted ? "󰖁  Muted" : "󰕾  " + MediaServices.Audio.volume + "%",
+                                    "", "Scroll to adjust · Click to mute")
+                            }
+                            onExited: {
+                                volItem._hovered = false
+                                volIcon.color = MediaServices.Audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.subtext1
+                                barGroup.hidePopup(parent)
+                            }
+                            onWheel: wheel => {
+                                var delta = wheel.angleDelta.y > 0 ? 5 : -5
+                                MediaServices.Audio.setVolume(Math.max(0, Math.min(100, MediaServices.Audio.volume + delta)))
+                            }
+                        }
+                        Connections {
+                            target: MediaServices.Audio
+                            function onVolumeChanged() {
+                                if (volItem._hovered && barGroup._popupVisible)
+                                    barGroup._popupPrimary = MediaServices.Audio.muted ? "󰖁  Muted" : "󰕾  " + MediaServices.Audio.volume + "%"
+                            }
+                            function onMutedChanged() {
+                                if (volItem._hovered && barGroup._popupVisible)
+                                    barGroup._popupPrimary = MediaServices.Audio.muted ? "󰖁  Muted" : "󰕾  " + MediaServices.Audio.volume + "%"
+                            }
                         }
                     }
 
                     // Brightness
-                    Row {
-                        spacing: 4; anchors.verticalCenter: parent.verticalCenter
-                        Text {
-                            id: brightIcon
-                            text: HardwareServices.Brightness.percent >= 75 ? "󰃠"
-                                : HardwareServices.Brightness.percent >= 40 ? "󰃟"
-                                :                                              "󰃞"
-                            color: Commons.Appearance.colors.yellow
-                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
-                            anchors.verticalCenter: parent.verticalCenter
-                            MouseArea {
-                                anchors.fill: parent; hoverEnabled: true
-                                onEntered: {
-                                    parent.color = Commons.Appearance.colors.accent
-                                    barGroup.showPopup(parent, "BRIGHTNESS",
-                                        "󰃠  " + HardwareServices.Brightness.percent + "%",
-                                        "", "Scroll to adjust")
-                                }
-                                onExited: {
-                                    parent.color = Commons.Appearance.colors.yellow
-                                    barGroup.hidePopup()
-                                }
-                                onWheel: wheel => {
-                                    var delta = wheel.angleDelta.y > 0 ? 5 : -5
-                                    HardwareServices.Brightness.adjust(delta)
-                                }
+                    Item {
+                        id: brightItem
+                        height: Commons.Appearance.bar.height
+                        width: brightRow.implicitWidth + 10
+                        property bool _hovered: false
+
+                        Row {
+                            id: brightRow
+                            spacing: 4
+                            anchors.centerIn: parent
+                            Text {
+                                id: brightIcon
+                                text: HardwareServices.Brightness.percent >= 75 ? "󰃠"
+                                    : HardwareServices.Brightness.percent >= 40 ? "󰃟"
+                                    :                                              "󰃞"
+                                color: Commons.Appearance.colors.yellow
+                                font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            Text {
+                                text: HardwareServices.Brightness.percent + "%"
+                                color: Commons.Appearance.colors.overlay1
+                                font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                         }
-                        Text {
-                            text: HardwareServices.Brightness.percent + "%"
-                            color: Commons.Appearance.colors.overlay1
-                            font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
-                            anchors.verticalCenter: parent.verticalCenter
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true
+                            onEntered: {
+                                brightItem._hovered = true
+                                brightIcon.color = Commons.Appearance.colors.accent
+                                barGroup.showPopup(parent, "BRIGHTNESS",
+                                    "󰃠  " + HardwareServices.Brightness.percent + "%",
+                                    "", "Scroll to adjust")
+                            }
+                            onExited: {
+                                brightItem._hovered = false
+                                brightIcon.color = Commons.Appearance.colors.yellow
+                                barGroup.hidePopup(parent)
+                            }
+                            onWheel: wheel => {
+                                var delta = wheel.angleDelta.y > 0 ? 5 : -5
+                                HardwareServices.Brightness.adjust(delta)
+                            }
+                        }
+                        Connections {
+                            target: HardwareServices.Brightness
+                            function onPercentChanged() {
+                                if (brightItem._hovered && barGroup._popupVisible)
+                                    barGroup._popupPrimary = "󰃠  " + HardwareServices.Brightness.percent + "%"
+                            }
                         }
                     }
 
                     // Network
-                    Text {
-                        id: netIcon
-                        text: NetworkServices.Network.icon()
-                        color: NetworkServices.Network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
-                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
-                        anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                    Item {
+                        height: Commons.Appearance.bar.height
+                        width: netIcon.implicitWidth + 10
+
+                        Text {
+                            id: netIcon
+                            anchors.centerIn: parent
+                            text: NetworkServices.Network.icon()
+                            color: NetworkServices.Network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: networkCmd.running = true
                             onEntered: {
-                                parent.color = Commons.Appearance.colors.accent
+                                netIcon.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "NETWORK",
-                                    NetworkServices.Network.connected ? "󰖩  " + NetworkServices.Network.ssid : "󰖪  Disconnected",
-                                    NetworkServices.Network.connected ? "  " + NetworkServices.Network.signal + "%  ·  " + NetworkServices.Network.band : "",
-                                    "Click to open network settings")
+                                    NetworkServices.Network.connected
+                                        ? "󰖩  " + NetworkServices.Network.ssid + "   ·   " + NetworkServices.Network.signal + "%  ·  " + NetworkServices.Network.band
+                                        : "󰖪  Disconnected",
+                                    "", "Click to open network settings")
                             }
                             onExited: {
-                                parent.color = NetworkServices.Network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
-                                barGroup.hidePopup()
+                                netIcon.color = NetworkServices.Network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
+                                barGroup.hidePopup(parent)
                             }
                         }
                     }
 
                     // Bluetooth
-                    Text {
-                        id: btIcon
-                        text: NetworkServices.Bluetooth.icon()
-                        color: NetworkServices.Bluetooth.connected ? Commons.Appearance.colors.mauve
-                             : NetworkServices.Bluetooth.enabled   ? Commons.Appearance.colors.subtext1
-                             :                                        Commons.Appearance.colors.overlay0
-                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
-                        anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                    Item {
+                        height: Commons.Appearance.bar.height
+                        width: btIcon.implicitWidth + 10
+
+                        Text {
+                            id: btIcon
+                            anchors.centerIn: parent
+                            text: NetworkServices.Bluetooth.icon()
+                            color: NetworkServices.Bluetooth.connected ? Commons.Appearance.colors.mauve
+                                 : NetworkServices.Bluetooth.enabled   ? Commons.Appearance.colors.subtext1
+                                 :                                        Commons.Appearance.colors.overlay0
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: bluetoothCmd.running = true
                             onEntered: {
-                                parent.color = Commons.Appearance.colors.accent
+                                btIcon.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "BLUETOOTH",
                                     NetworkServices.Bluetooth.connected ? "󰂱  " + NetworkServices.Bluetooth.device
                                         : NetworkServices.Bluetooth.enabled ? "󰂯  On — no device" : "󰂲  Off",
                                     "", "Click to open bluetooth settings")
                             }
                             onExited: {
-                                parent.color = NetworkServices.Bluetooth.connected ? Commons.Appearance.colors.mauve
+                                btIcon.color = NetworkServices.Bluetooth.connected ? Commons.Appearance.colors.mauve
                                     : NetworkServices.Bluetooth.enabled ? Commons.Appearance.colors.subtext1 : Commons.Appearance.colors.overlay0
-                                barGroup.hidePopup()
+                                barGroup.hidePopup(parent)
                             }
                         }
                     }
 
                     // Battery
-                    Row {
+                    Item {
                         visible: HardwareServices.Battery.present
-                        spacing: 4; anchors.verticalCenter: parent.verticalCenter
-                        Text {
-                            id: batIcon
-                            text: HardwareServices.Battery.icon()
-                            color: HardwareServices.Battery.percent <= 20 ? Commons.Appearance.colors.red : Commons.Appearance.colors.green
-                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
-                            anchors.verticalCenter: parent.verticalCenter
-                            MouseArea {
-                                anchors.fill: parent; hoverEnabled: true
-                                onEntered: barGroup.showPopup(parent, "BATTERY",
-                                    HardwareServices.Battery.icon() + "  " + HardwareServices.Battery.percent + "%",
-                                    HardwareServices.Battery.charging ? "󰂄  Charging" : "󱉞  On battery", "")
-                                onExited: barGroup.hidePopup()
+                        height: Commons.Appearance.bar.height
+                        width: batRow.implicitWidth + 10
+
+                        Row {
+                            id: batRow
+                            spacing: 4
+                            anchors.centerIn: parent
+                            Text {
+                                id: batIcon
+                                text: HardwareServices.Battery.icon()
+                                color: HardwareServices.Battery.percent <= 20 ? Commons.Appearance.colors.red : Commons.Appearance.colors.green
+                                font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            Text {
+                                text: HardwareServices.Battery.percent + "%"
+                                color: HardwareServices.Battery.percent <= 20 ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
+                                font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                         }
-                        Text {
-                            text: HardwareServices.Battery.percent + "%"
-                            color: HardwareServices.Battery.percent <= 20 ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
-                            font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
-                            anchors.verticalCenter: parent.verticalCenter
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true
+                            onEntered: barGroup.showPopup(parent, "BATTERY",
+                                HardwareServices.Battery.icon() + "  " + HardwareServices.Battery.percent + "%",
+                                HardwareServices.Battery.charging ? "󰂄  Charging" : "󱉞  On battery", "")
+                            onExited: barGroup.hidePopup(parent)
                         }
                     }
 
                     // Notification bell + unread badge
                     Item {
-                        width: bellIcon.implicitWidth + 4
-                        height: 24
-                        anchors.verticalCenter: parent.verticalCenter
+                        height: Commons.Appearance.bar.height
+                        width: bellIcon.implicitWidth + 10
 
                         Text {
                             id: bellIcon
@@ -492,69 +563,196 @@ Item {
                             color: Commons.State.notificationCenterVisible
                                 ? Commons.Appearance.colors.accent
                                 : SystemServices.Notifications.unreadCount > 0
-                                ? Commons.Appearance.colors.text
+                                ? Commons.Appearance.colors.red
                                 : Commons.Appearance.colors.subtext1
                             font.pixelSize: 18; font.family: Commons.Appearance.font.family
                             Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                            MouseArea {
-                                anchors.fill: parent; anchors.margins: -4; hoverEnabled: true
-                                onClicked: Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
-                                onEntered: if (!Commons.State.notificationCenterVisible) bellIcon.color = Commons.Appearance.colors.accent
-                                onExited:  if (!Commons.State.notificationCenterVisible)
-                                    bellIcon.color = SystemServices.Notifications.unreadCount > 0
-                                        ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext1
-                            }
                         }
 
-                        Rectangle {
-                            visible: SystemServices.Notifications.unreadCount > 0 && !Commons.State.notificationCenterVisible
-                            anchors.top:   parent.top
-                            anchors.right: parent.right
-                            width:  badgeText.implicitWidth + 4; height: 12
-                            radius: 6
-                            color:  Commons.Appearance.colors.red
-
-                            Text {
-                                id: badgeText
-                                anchors.centerIn: parent
-                                text: SystemServices.Notifications.unreadCount > 9 ? "9+" : SystemServices.Notifications.unreadCount
-                                color: Commons.Appearance.colors.crust
-                                font.pixelSize: 8; font.family: Commons.Appearance.font.family
-                                font.weight: Font.Bold
-                            }
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true
+                            onClicked: Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
+                            onEntered: if (!Commons.State.notificationCenterVisible) bellIcon.color = Commons.Appearance.colors.accent
+                            onExited:  if (!Commons.State.notificationCenterVisible)
+                                bellIcon.color = SystemServices.Notifications.unreadCount > 0
+                                    ? Commons.Appearance.colors.red : Commons.Appearance.colors.subtext1
                         }
                     }
 
                     // Settings gear
-                    Text {
-                        text: "󰒓"
-                        color: Commons.Appearance.colors.subtext1
-                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
-                        anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                    Item {
+                        height: Commons.Appearance.bar.height
+                        width: settingsIcon.implicitWidth + 10
+
+                        Text {
+                            id: settingsIcon
+                            anchors.centerIn: parent
+                            text: "󰒓"
+                            color: Commons.Appearance.colors.subtext1
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
                             onClicked: Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible
-                            onEntered: parent.color = Commons.Appearance.colors.accent
-                            onExited:  parent.color = Commons.Appearance.colors.subtext1
+                            onEntered: settingsIcon.color = Commons.Appearance.colors.accent
+                            onExited:  settingsIcon.color = Commons.Appearance.colors.subtext1
                         }
                     }
 
                     // Power
-                    Text {
-                        text: "󰐥"
-                        color: Commons.Appearance.colors.subtext1
-                        font.pixelSize: 18; font.family: Commons.Appearance.font.family
-                        anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                    Item {
+                        height: Commons.Appearance.bar.height
+                        width: powerIcon.implicitWidth + 10
+
+                        Text {
+                            id: powerIcon
+                            anchors.centerIn: parent
+                            text: "󰐥"
+                            color: Commons.Appearance.colors.subtext1
+                            font.pixelSize: 18; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        }
                         MouseArea {
-                            anchors { fill: parent; margins: -6 }
-                            hoverEnabled: true
+                            anchors.fill: parent; hoverEnabled: true
                             onClicked: powerCmd.running = true
-                            onEntered: parent.color = Commons.Appearance.colors.red
-                            onExited:  parent.color = Commons.Appearance.colors.subtext1
+                            onEntered: powerIcon.color = Commons.Appearance.colors.red
+                            onExited:  powerIcon.color = Commons.Appearance.colors.subtext1
                         }
                     }
+                }
+            }
+
+            // Clock absolutely centered in the pill — unaffected by left/right section widths
+            Text {
+                id: centerClock
+                anchors.centerIn: parent
+                z: 1
+                textFormat: Text.RichText
+                text: clockText()
+                font.pixelSize: Commons.Appearance.font.sizeMd
+                font.family: Commons.Appearance.font.family
+                function clockText() {
+                    return "<span style='color:" + Commons.Appearance.colors.text + ";font-weight:600'>"
+                        + Qt.formatDateTime(new Date(), "HH:mm")
+                        + "</span>"
+                        + "<span style='color:" + Commons.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
+                        + "<span style='color:" + Commons.Appearance.colors.subtext0 + "'>"
+                        + Qt.formatDateTime(new Date(), "ddd d MMM")
+                        + "</span>"
+                }
+                Timer {
+                    interval: 1000; running: true; repeat: true
+                    onTriggered: centerClock.text = centerClock.clockText()
+                }
+            }
+        }
+
+        // ── Input mask ─────────────────────────────────────────────────────────
+        Item {
+            id: _inputMask
+            x: 0; y: 0
+            width: barWindow.width
+            height: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
+                  + (_popupCard.visible ? 220 : 0)
+        }
+
+        // ── Popup card — persistent, never destroyed ────────────────────────
+        // Top edge wider than body; CCW arcs curve inward to body width; rounded bottom corners.
+        Shape {
+            id: _popupCard
+
+            property real _r:  Commons.Appearance.radius.xl
+            property real _rb: Commons.Appearance.radius.md
+            property real _bw: _popupCol.implicitWidth + 28  // body width, ears add _r on each side
+
+            x: Math.min(
+                   Math.max(barGroup._popupAnchorX - width / 2,
+                            Commons.Appearance.bar.marginSide + 4),
+                   barWindow.width - width - Commons.Appearance.bar.marginSide - 4
+               )
+            y: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
+            width:  _bw + _r * 2
+            height: _popupCol.implicitHeight + Commons.Appearance.spacing.md * 2
+
+            layer.enabled: true
+            layer.samples: 8
+
+            transformOrigin: Item.Top
+            scale:   barGroup._popupVisible ? 1.0 : 0.85
+            opacity: barGroup._popupVisible ? 1.0 : 0.0
+            visible: opacity > 0.01
+
+            Behavior on scale   { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic }}
+
+            ShapePath {
+                fillColor:   Commons.Appearance.colors.glassBgLight
+                strokeWidth: 0
+                strokeColor: "transparent"
+
+                startX: 0; startY: 0
+                PathLine { x: _popupCard._bw + _popupCard._r * 2; y: 0 }
+                PathArc  { x: _popupCard._bw + _popupCard._r; y: _popupCard._r
+                           radiusX: _popupCard._r; radiusY: _popupCard._r
+                           direction: PathArc.Counterclockwise }
+                PathLine { x: _popupCard._bw + _popupCard._r; y: _popupCard.height - _popupCard._rb }
+                PathArc  { x: _popupCard._bw + _popupCard._r - _popupCard._rb; y: _popupCard.height
+                           radiusX: _popupCard._rb; radiusY: _popupCard._rb
+                           direction: PathArc.Clockwise }
+                PathLine { x: _popupCard._r + _popupCard._rb; y: _popupCard.height }
+                PathArc  { x: _popupCard._r; y: _popupCard.height - _popupCard._rb
+                           radiusX: _popupCard._rb; radiusY: _popupCard._rb
+                           direction: PathArc.Clockwise }
+                PathLine { x: _popupCard._r; y: _popupCard._r }
+                PathArc  { x: 0; y: 0
+                           radiusX: _popupCard._r; radiusY: _popupCard._r
+                           direction: PathArc.Counterclockwise }
+                PathLine { x: 0; y: 0 }
+            }
+
+            // Keep popup alive when cursor drifts onto it
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: _hideTimer.stop()
+                onExited:  if (Date.now() - barGroup._lastShowTime > 200) barGroup.hidePopup()
+            }
+
+            Column {
+                id: _popupCol
+                x: _popupCard._r + 14; y: Commons.Appearance.spacing.md
+                spacing: 3
+
+                Text {
+                    visible: barGroup._popupLabel.length > 0
+                    text: barGroup._popupLabel
+                    color: Commons.Appearance.colors.accent
+                    font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                    font.family: Commons.Appearance.font.family
+                    font.letterSpacing: 1.2
+                    font.weight: Font.DemiBold
+                }
+                Text {
+                    text: barGroup._popupPrimary
+                    color: Commons.Appearance.colors.text
+                    font.pixelSize: Commons.Appearance.font.sizeLg
+                    font.family: Commons.Appearance.font.family
+                    font.weight: Font.Medium
+                }
+                Text {
+                    visible: barGroup._popupSecondary.length > 0
+                    text: barGroup._popupSecondary
+                    color: Commons.Appearance.colors.subtext0
+                    font.pixelSize: Commons.Appearance.font.sizeSm
+                    font.family: Commons.Appearance.font.family
+                }
+                Text {
+                    visible: barGroup._popupHint.length > 0
+                    text: barGroup._popupHint
+                    color: Commons.Appearance.colors.overlay0
+                    font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                    font.family: Commons.Appearance.font.family
                 }
             }
         }
@@ -562,102 +760,5 @@ Item {
         Process { id: powerCmd;     command: ["bash", "-c", "wlogout-launch.sh &"]; running: false }
         Process { id: networkCmd;   command: ["bash", "-c", "nm-connection-editor &"]; running: false }
         Process { id: bluetoothCmd; command: ["bash", "-c", "blueman-manager &"]; running: false }
-    }
-
-    // ── Popup overlay ──────────────────────────────────────────────────────────
-    // Loader destroys the surface when hidden (prevents grey-block artifact).
-    // Popup appears BELOW the bar pill, top edge flush — cockpit HUD callout style.
-    Loader {
-        active: barGroup._popupVisible
-        sourceComponent: PanelWindow {
-            id: popupWindow
-            screen: barGroup.modelData
-
-            exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Top
-            WlrLayershell.namespace: "quickshell:bar-popup"
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-            WlrLayershell.exclusiveZone: 0
-
-            anchors { top: true; left: true; right: true }
-            // tall enough to hold max popup content + bar height offset
-            implicitHeight: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop + 100
-            color: "transparent"
-
-            // Card unfolds downward from bar bottom edge
-            Rectangle {
-                id: popupCard
-
-                // Horizontal: centred on trigger icon, clamped to screen edges
-                x: Math.min(
-                       Math.max(barGroup._popupAnchorX - width / 2, Commons.Appearance.bar.marginSide + 4),
-                       popupWindow.width - width - Commons.Appearance.bar.marginSide - 4
-                   )
-
-                // Flush against bar bottom edge
-                y: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height + 3
-
-                width:  cardCol.implicitWidth  + 24
-                // Animate height from 0 (unfold downward)
-                height: cardCol.implicitHeight + 20
-                clip: true
-                radius: Commons.Appearance.radius.md
-                antialiasing: true
-                color: Commons.Appearance.colors.glassBg
-                border.color: Commons.Appearance.colors.accentBorder
-                border.width: 1
-
-                // Slide-down unfold: clip height 0 → full, opacity 0 → 1
-                property real revealHeight: 0
-                Behavior on revealHeight { NumberAnimation { duration: Commons.Appearance.anim.fast; easing.type: Easing.OutQuart } }
-                Component.onCompleted: revealHeight = 1
-
-                layer.enabled: true
-                // Use revealHeight as a clip multiplier via transform
-                transform: Scale {
-                    origin.x: popupCard.width / 2
-                    origin.y: 0
-                    yScale: popupCard.revealHeight
-                }
-                opacity: popupCard.revealHeight
-                Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast; easing.type: Easing.OutQuart } }
-
-                Column {
-                    id: cardCol
-                    anchors { left: parent.left; top: parent.top; margins: 12 }
-                    spacing: 5
-
-                    Text {
-                        visible: barGroup._popupLabel.length > 0
-                        text: barGroup._popupLabel
-                        color: Commons.Appearance.colors.overlay0
-                        font.pixelSize: Commons.Appearance.font.sizeSm - 1
-                        font.family: Commons.Appearance.font.family
-                        font.letterSpacing: 0.8
-                    }
-                    Text {
-                        text: barGroup._popupPrimary
-                        color: Commons.Appearance.colors.text
-                        font.pixelSize: Commons.Appearance.font.sizeMd
-                        font.family: Commons.Appearance.font.family
-                        font.weight: Font.Medium
-                    }
-                    Text {
-                        visible: barGroup._popupSecondary.length > 0
-                        text: barGroup._popupSecondary
-                        color: Commons.Appearance.colors.subtext0
-                        font.pixelSize: Commons.Appearance.font.sizeSm
-                        font.family: Commons.Appearance.font.family
-                    }
-                    Text {
-                        visible: barGroup._popupHint.length > 0
-                        text: barGroup._popupHint
-                        color: Commons.Appearance.colors.overlay0
-                        font.pixelSize: Commons.Appearance.font.sizeSm - 1
-                        font.family: Commons.Appearance.font.family
-                    }
-                }
-            }
-        }
     }
 }
