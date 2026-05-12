@@ -695,3 +695,213 @@ Search and replace `corvus` / `/home/corvus` in all configs before distributing:
 | Theme palette | Catppuccin Macchiato + named personalities | Curated > dynamic extraction |
 | Install approach | stow + install.sh | Simple, auditable, no magic |
 | Distribution target | Arch Linux | Primary OS, paru for AUR |
+
+---
+
+## 9. Settings Ecosystem Research — Cross-Repo Findings
+
+**Research date:** 2026-05-12  
+**Repos inspected:** caelestia-dots/shell, end-4/dots-hyprland, DankMaterialShell, Noctalia, HyDE (hyprdots), linuxmobile/hyprland-dots
+
+---
+
+### 9.1 The Gap: Nobody Has a Native WiFi Panel
+
+HyDE and linuxmobile both confirmed: no existing Quickshell/waybar rice has a native WiFi management panel. Both fall back to nm-applet tray or nm-connection-editor. Building a native nmcli-backed WiFi section is genuinely novel in this ecosystem.
+
+---
+
+### 9.2 WiFi — Confirmed Patterns
+
+#### Radio toggle
+**Noctalia (confirmed):** `Quickshell.Networking.wifiEnabled` is a readable+writable boolean property. Writing it toggles the adapter — no nmcli subprocess needed for the toggle itself.
+
+#### Network list command
+All repos using nmcli use this field set:
+```
+nmcli -g SSID,SECURITY,SIGNAL,ACTIVE,BSSID dev wifi list
+```
+With `-g` (get-values), fields are `:` separated. **Problem:** SSIDs can contain `:`.
+
+**Caelestia's colon-escape trick (the correct solution):**
+```js
+const PLACEHOLDER = "STRINGWHICHHOPEFULLYWONTBEUSED"
+const line = rawLine.replace(/\\:/g, PLACEHOLDER)
+const parts = line.split(":")
+const ssid = parts[N].replace(new RegExp(PLACEHOLDER, "g"), ":")
+```
+nmcli escapes literal colons in values as `\:`. Replace `\:` with a placeholder before splitting, then replace placeholder back after.
+
+#### Deduplication (caelestia)
+Keep one entry per SSID: prefer the active network; among duplicates, keep the stronger signal. Key: `"${frequency}:${ssid}:${bssid}"`.
+
+#### Network list structure (Noctalia — clearest UX)
+Split into three sections rendered in order:
+1. **Connected** — active network, disconnect button
+2. **Saved** — known profiles, connect button
+3. **Available** — new networks, connect → inline password
+
+#### Connecting
+- Saved/open networks: `nmcli connection up id <ssid>` or `nmcli dev wifi connect <ssid>`
+- New secured network: `nmcli dev wifi connect <ssid> password <pw>`
+- On any auth failure: call `nmcli connection delete <ssid>` before retry (forget-on-failure pattern — both caelestia and DMS). NM writes a partial profile on failed connect; leaving it causes subsequent attempts to fail.
+
+#### Password UI
+**Both end-4 and Noctalia confirm: inline expansion inside the network row, not a modal.** The card grows to reveal a `TextInput { echoMode: TextInput.Password }`. Cancel shrinks it back. No dialog, no layer-shell popup.
+
+**Enterprise (802-1x) support (Noctalia):** same inline expansion but adds EAP method ComboBox, phase2 auth, CA cert path, anonymous identity, identity fields — all conditionally visible.
+
+#### Loading state (DMS + Noctalia)
+While `connectingTo === ssid`: replace the Connect button with a spinning `sync` icon. `RotationAnimator { running: busy; loops: Infinite; from: 0; to: 360; duration: 1000 }`. The button is `visible: !busy`.
+
+#### List freeze during interaction (DMS + Noctalia)
+When a password field is open or a context menu is showing, freeze the model to a snapshot:
+```js
+property var frozenNetworks: []
+property bool menuOpen: false
+onMenuOpenChanged: if (menuOpen) frozenNetworks = sortedNetworks
+// model: menuOpen ? frozenNetworks : sortedNetworks
+```
+Prevents the list from reordering under the user's pointer.
+
+#### Card state coloring (Noctalia — most elegant)
+Three states:
+- **Neutral:** `surface` bg / `on-surface` text
+- **Connecting or connected:** `primary` bg / `on-primary` text (accent color fills the card)
+- **Error / disconnecting:** `error` bg / `on-error` text
+
+Active border variant (DMS): 2px `primary` border when connected, 1px `surface` border otherwise — less dramatic but works for list rows.
+
+#### Signal-strength icons (caelestia — most complete)
+5 tiers × 2 variants (open vs locked) = 10 icons:
+```js
+function getNetworkIcon(strength, isSecure) {
+    const icons = isSecure
+        ? ["signal_wifi_0_bar", "network_wifi_1_bar_locked", "network_wifi_2_bar_locked",
+           "network_wifi_3_bar_locked", "network_wifi_locked"]
+        : ["signal_wifi_0_bar", "network_wifi_1_bar", "network_wifi_2_bar",
+           "network_wifi_3_bar", "network_wifi"]
+    if (strength >= 80) return icons[4]
+    if (strength >= 60) return icons[3]
+    if (strength >= 40) return icons[2]
+    if (strength >= 20) return icons[1]
+    return icons[0]
+}
+```
+(Uses Material Symbols names — adapt to Nerd Font equivalents for our shell.)
+
+---
+
+### 9.3 Audio Sinks — Confirmed Patterns
+
+All three Quickshell repos (caelestia, end-4, Noctalia) use `Quickshell.Services.Pipewire` — not pactl subprocess.
+
+**`PwObjectTracker` is mandatory.** Without it, `sink.audio.volume` won't update reactively. Every repo that uses PipeWire wraps the active sink and source in a tracker:
+```qml
+PwObjectTracker { objects: sink ? [sink] : [] }
+```
+
+**`PwNodeLinkTracker`** exposes `linkGroups` — used to find which application streams are connected to the default sink (needed for per-app volume panel).
+
+**Sink/source lists:**
+```qml
+readonly property list<PwNode> sinks: Pipewire.nodes.values.filter(n => !n.isStream && n.isSink)
+readonly property list<PwNode> sources: Pipewire.nodes.values.filter(n => !n.isStream && n.audio && !n.isSink)
+```
+
+**Setting default:**
+```qml
+function setDefaultSink(node) { Pipewire.preferredDefaultAudioSink = node }
+function setDefaultSource(node) { Pipewire.preferredDefaultAudioSource = node }
+```
+
+**Device name heuristics (DMS, most complete):**
+Priority order: custom user alias → `node.properties["node.description"]` → `node.description` → `node.properties["device.description"]` → pattern-based fallback ("Bluetooth Audio", "Built-in Audio", etc.).
+
+**Device icon heuristics (DMS):**
+```js
+function sinkIcon(node) {
+    const ff = node.properties["device.form-factor"]
+    const bus = node.properties["device.bus"]
+    if (ff === "headphone" || ff === "headset") return "headset"
+    if (bus === "bluetooth") return "headset"
+    if (ff === "hifi") return "tv"  // HDMI
+    return "speaker"
+}
+```
+
+**Volume debounce pattern (Noctalia):**
+Local `localVolume` property + 100ms Timer before calling `setVolume()`. Guard: `outputVolumeGuard = sliderActive || localVolumeChanging` prevents feedback loop when device changes mid-drag.
+
+---
+
+### 9.4 CC Widget Pattern — CompoundPill (DMS, best for WiFi/BT)
+
+Split a row into two independent hit areas:
+- **Left tile** (fixed width, ~48px): icon, toggles the service on/off
+- **Right body** (fills remaining): status text, chevron, tapping opens the expansion
+
+```qml
+RowLayout {
+    // Left tile — toggle
+    Rectangle {
+        width: 48; height: 48; radius: Appearance.radius.md
+        color: service.enabled ? Appearance.colors.accent : Appearance.colors.surface0
+        Behavior on color { ColorAnimation { duration: Appearance.anim.fast } }
+        Text { anchors.centerIn: parent; text: service.icon() }
+        MouseArea { anchors.fill: parent; onClicked: service.toggle() }
+    }
+    // Right body — expand
+    Rectangle {
+        Layout.fillWidth: true; height: 48; radius: Appearance.radius.md
+        color: expanded ? Appearance.colors.surface1 : Appearance.colors.surface0
+        RowLayout {
+            anchors { fill: parent; leftMargin: 12; rightMargin: 8 }
+            Text { text: service.statusText; Layout.fillWidth: true }
+            Text { text: expanded ? "󰅃" : "󰅀" }  // chevron
+        }
+        MouseArea { anchors.fill: parent; onClicked: expanded = !expanded }
+    }
+}
+```
+
+This pattern gives users a fast toggle (one click on the left) and a details view (one click on the right) without nesting or ambiguity.
+
+---
+
+### 9.5 Collapsible Section Pattern (caelestia — cleanest)
+
+```qml
+Item {
+    Layout.fillWidth: true
+    Layout.preferredHeight: expanded
+        ? (contentColumn.implicitHeight + spacing * 2)
+        : 0
+    clip: true
+    Behavior on Layout.preferredHeight { NumberAnimation { duration: Appearance.anim.base; easing.type: Easing.OutCubic } }
+
+    ColumnLayout {
+        id: contentColumn
+        opacity: expanded ? 1.0 : 0.0
+        Behavior on opacity { NumberAnimation { duration: Appearance.anim.fast } }
+    }
+}
+```
+
+Key: use `Layout.preferredHeight` (not `height`) for ColumnLayout children — avoids fighting with the layout engine. `clip: true` prevents content from overflowing during animation. Dual animation: height + opacity together feels smoother than height alone.
+
+---
+
+### 9.6 Patterns We Are NOT Adopting (and why)
+
+| Pattern | Source | Reason not adopted |
+|---|---|---|
+| Multi-pane NavRail CC | Caelestia | Our CC is a single-panel overlay, not a full settings app. NavRail adds complexity we don't need until Sprint 12+ |
+| Go daemon IPC | DMS | DMS uses it for network/BT because they target NM via daemon. We talk to nmcli/busctl directly — no daemon needed for our use case |
+| Credential token push | DMS | DMS's daemon pushes NM agent credential requests. We initiate connect from QML directly — simpler, no token flow needed |
+| Device aliasing + WirePlumber patching | DMS | Power feature, complex restart required. Deferred to post-Sprint 10 |
+| Per-app volume panel | end-4 / Noctalia | Deferred — needs PwNodeLinkTracker + stream tracking. Post-Sprint 10 |
+| Enterprise WiFi (802-1x) | Noctalia | Full implementation deferred. We ship WPA2-PSK password first |
+| Captive portal detection | end-4 | Deferred — needs connectivity level check + browser open. Post-Sprint 9 |
+| Drag-to-reorder widget grid | DMS | Post-Sprint 12 — requires full layout engine |
+| Adjacent pane preloading | Caelestia | Not applicable until we have a multi-pane CC |

@@ -159,14 +159,69 @@ Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet pac
 - [x] Mutual exclusion with CC and NC in `shell.qml`
 - [x] `Commons/State.launcherVisible` added to global state bus
 
-### Sprint 8 — Bluetooth native integration
+### Sprint 8 — Bluetooth native integration ✅ COMPLETE (2026-05-12)
 
-- [ ] `Services/Networking/Bluetooth.qml` extended — `org.bluez` DBus direct
-- [ ] CC BT section: toggle adapter, list paired devices, connect/disconnect
-- [ ] Bar BT icon reflects adapter + connection state
-- [ ] No external BT app needed
+- [x] `Services/Networking/Bluetooth.qml` — `devices[]` list (name/address/connected) scanned from `org.bluez` D-Bus; `connectDevice(addr)` / `disconnectDevice(addr)` via busctl; monitor trigger re-scans on any PropertiesChanged
+- [x] CC BT section — adapter toggle + animated device list (collapses when off); connect/disconnect per device; no blueman needed
+- [x] Bar BT icon reflects adapter + connection state (unchanged wiring, now driven by accurate device scan)
+- [x] blueman ActionButton removed from TOOLS
 
-### Sprint 9 — Lock screen
+### Sprint 9 — Native settings ecosystem: WiFi
+
+> **Research complete 2026-05-12** — cross-inspected caelestia, end-4, DankMaterialShell, Noctalia, HyDE, linuxmobile. Full findings in `ANALYSIS.md §9`. Decisions in `DECISIONS.md`.
+
+**Architecture:** CC becomes a full settings surface. CONNECTIVITY section groups WiFi + BT + VPN using the CompoundPill pattern (left tile = quick toggle, right body = expand for details). External app launches (nm-connection-editor, pavucontrol) replaced with native panels. "Advanced…" escape hatch links kept at section bottom.
+
+**CC target structure:**
+```
+CONNECTIVITY
+  [󰖩][WiFi]    [MySSID / Off]  [›]   ← CompoundPill; left toggles adapter, right expands
+    └ [Connected]  MySSID ████ ●● [Disconnect]
+      [Saved]      HomeWifi ███    [Connect   ]
+      [Available]  CoffeeNet ██ 🔒 [Connect   ]
+                     └ inline password field when clicked (card grows)
+      [Rescan]
+  [󰂯][BT]      [AirPods / Off] [›]   ← refactor Sprint 8 to CompoundPill
+    └ device list (existing)
+  [󰌾][VPN]     [Off]           ← simple toggle row, Sprint 10
+
+AUDIO ← unchanged sliders; sink selector pills added Sprint 10
+DISPLAY / SYSTEM / IDLE / TOOLS ← unchanged
+```
+
+**Key implementation decisions (all source-confirmed):**
+- WiFi toggle: `Quickshell.Networking.wifiEnabled` (read/write, no nmcli)
+- nmcli parse: `nmcli -g SSID,SECURITY,SIGNAL,ACTIVE,BSSID dev wifi list` + colon-escape trick
+- Network sections: connected → saved → available (Noctalia pattern)
+- Deduplication: by SSID, prefer active, then stronger signal (caelestia)
+- Password UI: inline expansion within network card row (end-4 + Noctalia)
+- Forget-on-failure: `nmcli connection delete <ssid>` on any auth failure (caelestia + DMS)
+- Loading state: spinning icon replaces Connect button while `connectingTo === ssid`
+- List freeze: snapshot model while password field open (prevent reorder under pointer)
+- Card state colors: neutral / primary (connecting+connected) / error (disconnecting)
+- Signal icons: 5-tier × open/locked variants
+
+- [ ] `Services/Networking/Network.qml` extended — `wifiEnabled` (Quickshell.Networking), `networks[]` ({ssid, signal, security, active, saved, bssid}), `scanning`, `connectingTo`, `disconnectingFrom`; `scan()`, `connect(ssid)`, `connectWithPassword(ssid, pw)`, `disconnect()`, `forget(ssid)`
+- [ ] CC WiFi CompoundPill row — left tile toggles adapter, right body expands animated list
+- [ ] CC WiFi network list — three sections (connected/saved/available), signal icons, inline password field, rescan button, freeze-during-input, spinner while connecting
+- [ ] Refactor Sprint 8 BT section to CompoundPill pattern
+- [ ] CC CONNECTIVITY `SectionHeader` grouping WiFi + BT
+
+### Sprint 10 — Native settings ecosystem: Audio sinks + VPN
+
+**Key implementation decisions (all source-confirmed):**
+- Audio sinks: `Quickshell.Services.Pipewire` + `PwObjectTracker` (mandatory for reactivity)
+- Sink list: `Pipewire.nodes.values` filtered to `!isStream && isSink`
+- Set default: `Pipewire.preferredDefaultAudioSink = node`
+- Sink display: pill buttons (our style), show only when >1 sink available
+- VPN: `nmcli -t -f NAME,TYPE,STATE connection show` filtered to VPN type
+
+- [ ] `Services/Media/Audio.qml` extended — `sinks[]`, `sources[]` (Pipewire.nodes filtered); `setDefaultSink(node)`, `setDefaultSource(node)`; `PwObjectTracker` on active sink/source
+- [ ] CC Audio section — Output sink pill selector below mic toggle (hidden if single sink)
+- [ ] `Services/Networking/VPN.qml` (new) — `connections[]` ({name, active}) via nmcli; `toggle(name)`
+- [ ] CC VPN CompoundPill row — icon + active profile name + toggle
+
+### Sprint 11 — Lock screen
 
 Reference: Qylock (source-inspected — WlSessionLock + PamContext, ~50 lines of logic).
 
@@ -177,7 +232,7 @@ Reference: Qylock (source-inspected — WlSessionLock + PamContext, ~50 lines of
 - [ ] Wallpaper or blurred background
 - [ ] Triggered from CC + keybind
 
-### Sprint 10 — Theme system
+### Sprint 12 — Theme system
 
 - [ ] Extract all colors to `Theme.qml` singleton
 - [ ] Catppuccin Macchiato, Mocha, Latte, Frappe built-in

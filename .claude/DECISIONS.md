@@ -863,5 +863,104 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
-**Last Updated:** 2026-05-11
-**Total Decisions:** 36
+### [2026-05-12] WiFi Radio Toggle: Quickshell.Networking vs nmcli
+
+**Context:** Sprint 9 WiFi native — need to toggle the WiFi adapter on/off.
+
+**Options Considered:**
+1. `nmcli radio wifi on/off` subprocess
+2. `Quickshell.Networking.wifiEnabled = true/false` (native property)
+
+**Decision:** `Quickshell.Networking.wifiEnabled`
+
+**Rationale:** Noctalia source-confirmed. Readable+writable boolean property — no subprocess needed. Consistent with our policy of using native Quickshell APIs wherever available (same reason we use Quickshell.Services.Mpris over playerctl, etc.).
+
+**Trade-offs Accepted:** Requires Quickshell 0.2+ (we're on 0.2.1-6, fine).
+
+---
+
+### [2026-05-12] WiFi Network Parsing: Colon-Escape Trick
+
+**Context:** nmcli uses `:` as field separator in `-g` mode, but SSIDs can contain literal `:`. Naive `split(":")` corrupts SSID values.
+
+**Options Considered:**
+1. Use `nmcli -t` terse mode — same separator problem
+2. Parse via Python3 subprocess — adds dependency
+3. Use placeholder replacement: `\:` → placeholder before split, placeholder → `:` after
+
+**Decision:** Placeholder replacement (caelestia's approach)
+
+**Rationale:** Source-confirmed to work. No extra dependencies. The escape sequence `\:` is stable nmcli behavior. Caelestia uses `"STRINGWHICHHOPEFULLYWONTBEUSED"` as the placeholder; we'll use something shorter like `"\x00"` (null char, can't appear in SSID).
+
+**Trade-offs Accepted:** Slightly odd-looking parsing code, but it's isolated to one function.
+
+---
+
+### [2026-05-12] WiFi Password UI: Inline Expansion vs Modal
+
+**Context:** User taps "Connect" on a secured unsaved network — need to collect a password.
+
+**Options Considered:**
+1. Modal dialog (separate window / overlay)
+2. Dedicated password row at bottom of network list
+3. Inline expansion inside the network row itself
+
+**Decision:** Inline expansion inside the network row
+
+**Rationale:** Both end-4 and Noctalia independently arrived at this pattern. Keeps the user's eye on the network they're connecting to. Consistent with the CC's design language (no popups, everything in-panel). The card grows to reveal `TextInput { echoMode: Password }`, shrinks on cancel.
+
+**Trade-offs Accepted:** Card height animation must not fight with list scroll position. List model must be frozen while password field is open (prevent reorder under user's finger). Enterprise (802-1x) deferred to post-Sprint 9.
+
+---
+
+### [2026-05-12] WiFi Forget-on-Failure Pattern
+
+**Context:** When a connect attempt fails (wrong password, timeout), NetworkManager writes a partial connection profile. Leaving it causes all subsequent connect attempts to also fail because NM tries to use the stale profile.
+
+**Options Considered:**
+1. Let NM manage profile cleanup
+2. Explicitly call `nmcli connection delete <ssid>` on any auth failure before retry
+
+**Decision:** Always forget on failure (option 2)
+
+**Rationale:** Caelestia and DMS both independently implement this. NM does not clean up partial profiles automatically. The delete is safe — the user will re-enter the password on the next attempt.
+
+**Trade-offs Accepted:** User must re-enter password on every failed attempt (not automatically retried with different credentials).
+
+---
+
+### [2026-05-12] Audio Backend: Quickshell.Services.Pipewire vs pactl subprocess
+
+**Context:** Sprint 10 audio sink selection — need to list and switch audio output/input devices.
+
+**Options Considered:**
+1. `pactl list sinks` subprocess + `pactl set-default-sink` (current approach for volume)
+2. `Quickshell.Services.Pipewire` native bindings
+
+**Decision:** `Quickshell.Services.Pipewire` for device listing and switching; keep pactl for volume (existing, working)
+
+**Rationale:** All three Quickshell repos (caelestia, end-4, Noctalia) use native PipeWire bindings for device management. `PwObjectTracker` is required for reactive volume bindings — without it, `sink.audio.volume` doesn't update. `Pipewire.preferredDefaultAudioSink` is the correct API for setting default device.
+
+**Trade-offs Accepted:** Requires `PwObjectTracker` on the active sink/source — extra boilerplate but mandatory. Volume control can stay on pactl until a full migration is warranted.
+
+---
+
+### [2026-05-12] CC WiFi/BT Row Pattern: CompoundPill (Split Toggle + Expand)
+
+**Context:** WiFi and BT rows in the CC need both a quick toggle (common action) and a details expansion (less common). Combining them in one click area is ambiguous UX.
+
+**Options Considered:**
+1. Full-row click = expand, toggle is a separate switch widget on the right
+2. Full-row click = toggle, expand via a separate chevron button
+3. CompoundPill: left tile = toggle, right body = expand (DMS pattern)
+
+**Decision:** CompoundPill — left ~48px tile toggles, right body expands
+
+**Rationale:** DMS independently derived this pattern. It resolves the ambiguity cleanly: left = power, right = details. Both actions are large touch targets. The visual split (tile vs. body background) communicates the dual nature without labels.
+
+**Trade-offs Accepted:** Slightly more complex layout than a single RowLayout. BT section (Sprint 8) needs to be refactored to this pattern for consistency.
+
+---
+
+**Last Updated:** 2026-05-12
+**Total Decisions:** 42
