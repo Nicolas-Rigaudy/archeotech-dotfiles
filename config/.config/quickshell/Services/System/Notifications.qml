@@ -7,7 +7,8 @@ Item {
 
     property bool dndEnabled:  false
     property int  unreadCount: 0
-    property int  count:       0
+    readonly property int count: history.length
+    property var  history: []
 
     signal arrived(var notification)
 
@@ -17,26 +18,32 @@ Item {
         actionsSupported: false
 
         onNotification: notif => {
-            root.count++
+            root.history = root.history.concat([{
+                appIcon:   notif.appIcon   || "",
+                appName:   notif.appName   || "",
+                summary:   notif.summary   || "",
+                body:      notif.body      || "",
+                urgency:   notif.urgency   || 0,
+                timestamp: Qt.formatTime(new Date(), "HH:mm"),
+                _notif:    notif
+            }])
             root.unreadCount++
             root.arrived(notif)
         }
     }
 
-    // C++ QAbstractListModel — Repeater connects to its row signals directly,
-    // no JS-array full-reset on every addition.
-    readonly property var liveModel: server.notifications
-
     function clearAll() {
-        var list = server.notifications
-        for (var i = list.length - 1; i >= 0; i--) list[i].dismiss()
-        count = 0
-        unreadCount = 0
+        for (var i = root.history.length - 1; i >= 0; i--)
+            root.history[i]._notif.dismiss()
+        root.history = []
+        root.unreadCount = 0
     }
 
-    function dismiss(notif) {
-        notif.dismiss()
-        count = Math.max(0, count - 1)
-        if (unreadCount > 0) unreadCount--
+    function dismiss(index) {
+        root.history[index]._notif.dismiss()
+        var h = root.history.slice()
+        h.splice(index, 1)
+        root.history = h
+        if (root.unreadCount > 0) root.unreadCount--
     }
 }

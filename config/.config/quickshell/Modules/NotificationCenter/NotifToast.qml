@@ -59,6 +59,32 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 6
+
+                // App icon
+                Item {
+                    width: 14; height: 14
+                    Image {
+                        id: _toastIcon
+                        anchors.fill: parent
+                        source: (root.notification && root.notification.appIcon)
+                            ? (root.notification.appIcon.startsWith("/")
+                                ? root.notification.appIcon
+                                : "image://icon/" + root.notification.appIcon)
+                            : ""
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                        visible: source !== "" && status === Image.Ready
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        visible: !_toastIcon.visible
+                        text: "󰂚"
+                        color: Commons.Appearance.colors.overlay1
+                        font.pixelSize: 11
+                        font.family: Commons.Appearance.font.family
+                    }
+                }
+
                 Text {
                     text: (root.notification && root.notification.appName) ? root.notification.appName : "Notification"
                     color: Commons.Appearance.colors.overlay1

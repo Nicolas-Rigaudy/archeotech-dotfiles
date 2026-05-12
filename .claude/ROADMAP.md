@@ -136,7 +136,7 @@ Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet pac
 - [x] Clear-all button, critical urgency never auto-dismisses
 - [x] Remove swaync from autostart, keybind wired to `qs ipc call notifications toggle`
 - [x] **Toast display fixed** (2026-05-11): snapshot notification QObject to plain JS object on arrival (`{appName, summary, body, urgency, expireTimeout}`) — QObject bindings resolve as null when read later from a JS array inside a Repeater delegate; plain object has no such timing dependency. Fix in `shell.qml` `onArrived`.
-- [ ] Per-notification: app icon, timestamp
+- [x] Per-notification: app icon (`image://icon/` + glyph fallback), timestamp (HH:mm); history-based model fixes stale-count bug and dismiss-by-index fixes no-op dismiss
 
 ### Sprint 6+7 bar polish ✅ COMPLETE (2026-05-11)
 

@@ -167,9 +167,10 @@ Item {
                     visible: SystemServices.Notifications.count > 0
 
                     Repeater {
-                        model: SystemServices.Notifications.liveModel
+                        model: SystemServices.Notifications.history
                         delegate: Rectangle {
                             required property var modelData
+                            required property int index
                             width: parent.width
                             height: _itemContent.implicitHeight + 20
                             radius: Commons.Appearance.radius.md
@@ -187,12 +188,44 @@ Item {
                                 RowLayout {
                                     Layout.fillWidth: true
                                     spacing: 6
+
+                                    // App icon
+                                    Item {
+                                        width: 14; height: 14
+                                        Image {
+                                            id: _ncIcon
+                                            anchors.fill: parent
+                                            source: modelData.appIcon
+                                                ? (modelData.appIcon.startsWith("/")
+                                                    ? modelData.appIcon
+                                                    : "image://icon/" + modelData.appIcon)
+                                                : ""
+                                            fillMode: Image.PreserveAspectFit
+                                            smooth: true
+                                            visible: source !== "" && status === Image.Ready
+                                        }
+                                        Text {
+                                            anchors.centerIn: parent
+                                            visible: !_ncIcon.visible
+                                            text: "󰂚"
+                                            color: Commons.Appearance.colors.overlay1
+                                            font.pixelSize: 11
+                                            font.family: Commons.Appearance.font.family
+                                        }
+                                    }
+
                                     Text {
                                         text: modelData.appName || "Notification"
                                         color: Commons.Appearance.colors.overlay1
                                         font.pixelSize: Commons.Appearance.font.sizeSm
                                         font.family: Commons.Appearance.font.family
                                         Layout.fillWidth: true; elide: Text.ElideRight
+                                    }
+                                    Text {
+                                        text: modelData.timestamp || ""
+                                        color: Commons.Appearance.colors.overlay0
+                                        font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                                        font.family: Commons.Appearance.font.family
                                     }
                                     Text {
                                         text: "󰅖"
@@ -203,7 +236,7 @@ Item {
                                             id: _dismissArea
                                             anchors.fill: parent; anchors.margins: -4
                                             hoverEnabled: true
-                                            onClicked: SystemServices.Notifications.dismiss(modelData)
+                                            onClicked: SystemServices.Notifications.dismiss(index)
                                         }
                                     }
                                 }

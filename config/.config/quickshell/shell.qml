@@ -82,6 +82,7 @@ ShellRoot {
                 // Snapshot to plain object — the QObject's bindings resolve as null
                 // when read later from a JS array inside a Repeater delegate.
                 shell._toastQueue = shell._toastQueue.concat([{
+                    appIcon:       notification.appIcon       || "",
                     appName:       notification.appName       || "",
                     summary:       notification.summary       || "",
                     body:          notification.body          || "",
