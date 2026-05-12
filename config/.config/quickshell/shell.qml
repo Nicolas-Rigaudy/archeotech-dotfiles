@@ -12,6 +12,7 @@ import "Modules/Bar"
 import "Modules/OSD"
 import "Modules/ControlCenter"
 import "Modules/NotificationCenter"
+import "Modules/Launcher"
 
 ShellRoot {
     id: shell
@@ -40,18 +41,34 @@ ShellRoot {
         function close()  { Commons.State.notificationCenterVisible = false }
     }
 
-    // ── Mutual exclusion: CC and NC close each other; NC resets unread ─────────
+    IpcHandler {
+        target: "launcher"
+        function toggle() { Commons.State.launcherVisible = !Commons.State.launcherVisible }
+        function open()   { Commons.State.launcherVisible = true  }
+        function close()  { Commons.State.launcherVisible = false }
+    }
+
+    // ── Mutual exclusion: CC, NC, launcher close each other ───────────────────
     Connections {
         target: Commons.State
         function onNotificationCenterVisibleChanged() {
             if (Commons.State.notificationCenterVisible) {
                 Commons.State.controlCenterVisible = false
+                Commons.State.launcherVisible      = false
                 SystemServices.Notifications.unreadCount = 0
             }
         }
         function onControlCenterVisibleChanged() {
-            if (Commons.State.controlCenterVisible)
+            if (Commons.State.controlCenterVisible) {
                 Commons.State.notificationCenterVisible = false
+                Commons.State.launcherVisible           = false
+            }
+        }
+        function onLauncherVisibleChanged() {
+            if (Commons.State.launcherVisible) {
+                Commons.State.controlCenterVisible      = false
+                Commons.State.notificationCenterVisible = false
+            }
         }
     }
 
@@ -201,6 +218,25 @@ ShellRoot {
             id: notifCenter
             anchors.fill: parent
             z: 1
+        }
+    }
+
+    // ── Launcher window ───────────────────────────────────────────────────────
+    PanelWindow {
+        id: launcherWindow
+        visible: Commons.State.launcherVisible
+        exclusionMode: ExclusionMode.Ignore
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.namespace: "quickshell:launcher"
+        WlrLayershell.keyboardFocus: Commons.State.launcherVisible
+            ? WlrKeyboardFocus.Exclusive
+            : WlrKeyboardFocus.None
+
+        anchors { top: true; bottom: true; left: true; right: true }
+        color: "transparent"
+
+        Launcher {
+            anchors.fill: parent
         }
     }
 

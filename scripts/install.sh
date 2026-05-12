@@ -169,6 +169,7 @@ install_local_scripts() {
         "swaylock-launch.sh"
         "mango-reload.sh"
         "project-jump.sh"
+        "list-desktop-apps.sh"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do

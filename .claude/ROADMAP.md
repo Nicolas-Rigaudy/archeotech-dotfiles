@@ -144,13 +144,20 @@ Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet pac
 - [x] **Hover popups on all bar elements** — bell (unread count + DND state), settings gear, power button, MPRIS marquee (track title + artist) all have the HUD callout popup on hover; `acceptedButtons: Qt.NoButton` used for hover-only MAs so click handlers on child elements are unaffected
 - [x] **Calendar popup on clock hover** — Shape with ear+arc top (matches pill geometry), flat top flush-mounts to bar, rounded bottom corners, Monday-first day grid, today highlighted in accent, `‹`/`›` month navigation; 250ms grace timer keeps it alive when moving cursor onto it
 
-### Sprint 7 — Launcher
+### Sprint 7 — Launcher ✅ COMPLETE (2026-05-12)
 
-- [ ] Parse `.desktop` files from XDG paths
-- [ ] Fuzzy match on name/generic name
-- [ ] Centered floating panel, keyboard navigation (arrows, Enter, Escape)
-- [ ] `Anim.entrance`/`Anim.exit` on open/close
-- [ ] Triggered from keybind + optional bar icon
+- [x] `Modules/Launcher/Launcher.qml` — `DesktopEntries.applications` native API (no bash parsing); auto-reindexes on `applicationsChanged`
+- [x] Dependency-installed app filtering — `pacman -Qdq | xargs pacman -Ql` builds a dep-ID set at startup; only explicitly-installed apps appear
+- [x] Weighted fuzzy search — name 70%, genericName 15%, keywords 10%, comment 5%; exact → prefix → substring → scatter with word-boundary bonus
+- [x] Usage-count frecency — launch counts persisted to `~/.cache/qs-launcher-usage`; sorts to top when no query
+- [x] Animated sliding highlight bar — `ListView.highlight` with 120ms slide, replaces per-row color binding
+- [x] Icon fallback chain — `entry.icon` → lowercase → `entry.id` → glyph
+- [x] Scrollable `ListView`, 8 rows visible, keyboard `↑↓ Enter Esc`, `positionViewAtIndex` keeps selection in view
+- [x] Centered glass panel, scale+opacity entrance animation, click-outside-to-close
+- [x] `Super+R` keybind in MangoWC config → `qs ipc call launcher toggle`
+- [x] `IpcHandler` target `launcher` with `toggle`/`open`/`close`
+- [x] Mutual exclusion with CC and NC in `shell.qml`
+- [x] `Commons/State.launcherVisible` added to global state bus
 
 ### Sprint 8 — Bluetooth native integration
 

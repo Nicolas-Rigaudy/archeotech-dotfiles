@@ -10,4 +10,5 @@ QtObject {
     readonly property string wallpaperPicker: localBin + "/wallpaper-picker.sh"
     readonly property string swaylockLaunch: localBin + "/swaylock-launch.sh"
     readonly property string wlogoutLaunch:  localBin + "/wlogout-launch.sh"
+    readonly property string listDesktopApps: home + "/Projects/archeotech-dotfiles/scripts/list-desktop-apps.sh"
 }
