@@ -232,39 +232,75 @@ Reference: Qylock (source-inspected — WlSessionLock + PamContext, ~50 lines of
 - [ ] Wallpaper or blurred background
 - [ ] Triggered from CC + keybind
 
-### Sprint 12 — Theme system
+### Sprint 12 — Settings Foundation
 
-- [ ] Extract all colors to `Theme.qml` singleton
-- [ ] Catppuccin Macchiato, Mocha, Latte, Frappe built-in
-- [ ] CC toggle to switch variant at runtime (no restart)
-- [ ] Persist selection across sessions
-- [ ] Document token map for custom themes (Warhammer, Gundam, Cyberpunk)
+*Research-confirmed plan (Wave 2, 2026-05-12). Architecture: separate FloatingWindow + NavRail + Config singleton.*
 
-- [ ] `Modules/LockScreen/LockScreen.qml` — `WlSessionLock`, one surface per screen
-- [ ] PAM auth via `PamContext`
-- [ ] Blurred wallpaper bg, clock, password input
-- [ ] Wire swayidle to `qs ipc call lock lock`
+**Config persistence layer:**
+- [ ] `Services/Persistence/Config.qml` (singleton) — reads/writes `~/.config/archeotech/config.json` via `JsonAdapter`; `setNestedValue(dotted.key, val)` with 50ms debounce; `property bool ready`
+- [ ] `Services/Persistence/Persistent.qml` (singleton) — UI state only (last-open tab, collapsed sections) → `~/.local/share/archeotech/state.json`
 
-### Sprint 8 — Distribution polish
+**Settings window:**
+- [ ] `Modules/Settings/Settings.qml` — `FloatingWindow`, min 800×700, default 900×800; opens via IPC from CC gear button
+- [ ] `Modules/Settings/SettingsSidebar.qml` — vertical NavRail, icon + label, wheel-scroll navigation; collapsible category groups
+- [ ] `Modules/Settings/PaneRegistry.qml` (singleton) — declarative list of pane descriptors `{id, label, icon, component}`
+- [ ] `Modules/Settings/SettingsContent.qml` — `Loader` per pane, only active pane loads, carousel via `y: -activeIndex * height`
+- [ ] `Modules/Settings/Widgets/` — `ToggleRow.qml`, `SliderRow.qml`, `DropdownRow.qml`, `ButtonGroupRow.qml`, `ColorPickerRow.qml`, `SectionDivider.qml`
 
+**Initial panes (6):**
+- [ ] Appearance pane — theme variant (Macchiato/Mocha/Latte/Frappe), accent color, padding/rounding/spacing scales, font size scale; CollapsibleSection per group; all backed by Config singleton
+- [ ] Bar pane — height, clock format, which modules are visible
+- [ ] Notifications pane — timeout, max visible, show on fullscreen toggle
+- [ ] Connections pane — placeholder linking to CC WiFi/BT sections (Sprint 13 fills this out)
+- [ ] Audio pane — sink list, source list (Sprint 13 fills this out)
+- [ ] About pane — version, links
+
+**CC integration:**
+- [ ] CC gear button → `SettingsIpc.openSettings()` (IPC or shared singleton)
+- [ ] CC section "More" buttons → `SettingsIpc.openPane("connections")` deep link
+
+### Sprint 13 — Settings Depth (Connections + Audio + Color)
+
+*Fills out the settings panes introduced in Sprint 12 with full native implementations.*
+
+- [ ] Connections pane — WiFi sub-tab (mirrors CC WiFi but with known networks list, forget, priority) + BT sub-tab (three-category: connected / paired / available, battery level, signal strength, scan toggle per Noctalia model)
+- [ ] Audio pane — output device list (PipeWire sinks), input device list (PipeWire sources), device rename (alias), per-device volume limit
+- [ ] ColorScheme pane — dark mode toggle + schedule (off/manual/location), wallpaper color extraction toggle (Sprint 15 backend), accent color picker
+- [ ] Settings `SettingsSearchService.qml` — fuzzy search index per registered pane, max 15 results, sidebar search input (Noctalia: subTabName boost 1.5×)
+
+### Sprint 14 — Settings Polish + Distribution
+
+- [ ] Settings panel modes: window (default) / attached-to-bar / centered (Noctalia SmartPanel model)
+- [ ] Keyboard navigation in settings (Ctrl+1…N to jump sections, / to focus search)
+- [ ] Export/import settings as JSON
 - [ ] `scripts/install-packages.sh` — full paru -S list
 - [ ] Rewrite `scripts/install.sh` (prereq check, phased backup, verification)
 - [ ] `docs/INSTALL.md` for fresh Arch
 - [ ] Screenshots for README
 - [ ] Hardcoded path audit
 
-### Sprint 9 — Go daemon (additive, scoped to raw Wayland protocols only)
+### Sprint 15 — Theme System (QML-Native Tokens + Wallpaper Color)
 
-Handles: `wlr-output-management` (display), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot).
-Does NOT handle: MPRIS, notifications, audio, battery, network, BT, lock (all native QML).
+*Based on HyDE wallbash analysis + caelestia Tokens/Colours pattern.*
+
+- [ ] `Services/Theme.qml` singleton — exports color tokens (pry, surface, text, accent + 4 shades each); Catppuccin Macchiato/Mocha/Latte/Frappe built-in; CC toggle switches at runtime with no restart
+- [ ] Wallpaper color extraction — ImageMagick subprocess → `.dcol` cache file → override token values
+- [ ] External app template propagation — write kitty theme.conf, dunst, hyprland border colors on theme change
+- [ ] Document token map for custom themes (Warhammer, Gundam, Cyberpunk)
+- [ ] Persist selection via `Config.qml`
+
+### Sprint 16 — Go daemon (display, night light, screenshot)
+
+*Deferred from prior plan. Handles only raw Wayland protocols not available in QML.*
 
 - [ ] `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
 - [ ] `Services/ArcheotechDaemon.qml` — Quickshell Socket type, reconnect
-- [ ] Replace wlr-randr and wlsunset shell calls
+- [ ] Handles: `wlr-output-management` (display config), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
+- [ ] Does NOT handle: audio, network, BT, notifications, lock (all native QML)
 
-### Sprint 10 — Shadow Spear theme + dev modules
+### Sprint 17 — Dev + Shadow Spear personality
 
-- [ ] `themes/shadow-spear/` full theme personality
+- [ ] `themes/shadow-spear/` full theme personality using Sprint 15 token system
 - [ ] Git branch module in bar
 - [ ] AWS profile module in bar
 

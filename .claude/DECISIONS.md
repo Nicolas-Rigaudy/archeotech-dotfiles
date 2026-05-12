@@ -962,5 +962,92 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
+---
+
+### [2026-05-12] Settings App: Standalone Window vs CC-Embedded (Wave 2)
+
+**Context:** Wave 2 research confirmed all three QML shells (caelestia, end-4, DMS) provide a dedicated settings app/panel separate from their CC quick-settings.
+
+**Options Considered:**
+1. Keep everything in CC, keep growing it with more sections
+2. Separate settings app launched from CC gear icon (end-4 model: `qs -p settings.qml`)
+3. Expandable CC that becomes the settings panel (caelestia model)
+
+**Decision:** Separate settings window (option 2), launched from CC gear button via IPC. CC stays as quick-access. Sprint 12.
+
+**Rationale:** Caelestia's "CC is settings" model only works because they built it from day one for that purpose — retrofitting ours would require gutting it. End-4 and DMS have proper separation. With deep linking (`openSettingsWithTab(name)`) the two feel seamless anyway. Our CC will eventually have 8+ sections; a separate window with NavRail scales to that.
+
+**Trade-offs Accepted:** Two QML surfaces to maintain. IPC bridge required between CC and settings window. Worth it for the cleaner architecture.
+
+---
+
+### [2026-05-12] Settings Persistence: Config Singleton + JSON + setNestedValue
+
+**Context:** All three QML shells use a config singleton that reads/writes a JSON file. The pattern is convergent enough to adopt directly.
+
+**Options Considered:**
+1. Individual QML Settings properties scattered across service files
+2. Central `Config.qml` singleton with JSON adapter, dotted key API
+
+**Decision:** Central `Config.qml` singleton (option 2), modeled on end-4's implementation
+
+**Rationale:** Config.qml with `setNestedValue("a.b.c", val)` + JsonAdapter makes every setting instantly reactive throughout the shell. DMS and end-4 independently converged on this. Write debounce (50ms) prevents disk thrashing on slider drags.
+
+**Trade-offs Accepted:** All settings must be keyed by dotted path strings — potential for typos. Mitigated by using typed constants for keys rather than raw strings.
+
+---
+
+### [2026-05-12] Settings Navigation: NavRail (Sidebar) vs Horizontal Tabs
+
+**Context:** Settings panels with 8–34 items. caelestia, DMS, and Noctalia all chose a sidebar/NavRail model over horizontal tabs.
+
+**Options Considered:**
+1. Horizontal tab bar at top of settings window
+2. Vertical icon+label sidebar (NavRail) with collapsible category groups
+
+**Decision:** NavRail with collapsible categories (option 2)
+
+**Rationale:** Beyond ~6 items, horizontal tabs truncate or wrap. NavRail supports categories, icons, and selection state clearly at any item count. DMS shows it scales to 34 tabs with 10 category groups. Caelestia shows wheel-scroll navigation is a nice bonus.
+
+**Trade-offs Accepted:** Wider minimum window (NavRail takes ~200px). Worth the clarity.
+
+---
+
+### [2026-05-12] Deep Linking: CC Quick Toggle → Settings Pane
+
+**Context:** DMS's `PopoutService.openSettingsWithTab("network")` enables CC quick toggles to deep-link into the full settings panel. Noctalia uses a similar SettingsPanelService pattern.
+
+**Decision:** Implement deep linking from day one in settings architecture. CC gear button and section "more" buttons will call a global `SettingsService.openPane("appearance")` function.
+
+**Rationale:** Without deep linking, settings and CC feel disconnected. With deep linking, CC is the fast path and settings is the full path — they feel like one system.
+
+**Trade-offs Accepted:** Requires IPC or a shared singleton that both CC and settings window can reach. Use Quickshell `IpcHandler` or a `pragma Singleton`.
+
+---
+
+### [2026-05-12] Bluetooth Settings Depth: Three-Category Panel (Noctalia Model)
+
+**Context:** Current Sprint 8 BT implementation shows only paired devices. Noctalia's BluetoothSubTab has three categories (connected, paired, available) with battery + signal + per-category actions.
+
+**Decision:** Future BT settings pane (Sprint 13) will follow Noctalia's three-category model. CC BT section stays as paired-only quick-access.
+
+**Rationale:** The three-category model is the right UX — users need available devices to pair new ones. Battery and signal are valuable for headphone/speaker management. CC stays minimal; settings pane goes deep.
+
+**Trade-offs Accepted:** Requires active BT scanning when panel is open. Scanning is gated behind panel visibility (debounced start/stop) per Noctalia's approach.
+
+---
+
+### [2026-05-12] Theme System: QML-Native Tokens vs HyDE Shell Pipeline
+
+**Context:** HyDE uses a full bash pipeline (wallbash.sh → .dcol files → template substitution per app) for cross-app color cohesion. Requires ImageMagick, swww, and bash expertise.
+
+**Decision:** Build a QML-native token system (`Theme.qml` singleton) for the shell first (Sprint 12+), then add wallpaper color extraction as an enhancement (Sprint 15). Do NOT adopt HyDE's bash pipeline as primary approach.
+
+**Rationale:** Our stack is QML-first. A `Theme.qml` singleton with color tokens that all QML components read from is the right architecture. External app theming (kitty, dunst) can write config files as a side effect — similar to HyDE's template system but triggered from QML.
+
+**Trade-offs Accepted:** External apps won't match shell colors until Sprint 15.
+
+---
+
 **Last Updated:** 2026-05-12
-**Total Decisions:** 42
+**Total Decisions:** 49

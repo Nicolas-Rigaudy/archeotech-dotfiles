@@ -559,6 +559,88 @@ Item {
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
+                // ── BLUETOOTH ─────────────────────────────────────────────────
+                RowLayout {
+                    Layout.fillWidth: true
+                    Text {
+                        text: bt.icon() + "  Bluetooth"
+                        color: bt.enabled ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                        font.pixelSize: Commons.Appearance.font.sizeBase
+                        font.family: Commons.Appearance.font.family
+                        Layout.fillWidth: true
+                    }
+                    ToggleSwitch { checked: bt.enabled; onToggled: state => bt.toggle() }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: bt.enabled ? _btBody.implicitHeight : 0
+                    clip: true
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
+
+                    Column {
+                        id: _btBody
+                        width: parent.width
+                        spacing: 4
+                        topPadding: 2
+
+                        Text {
+                            width: parent.width
+                            visible: bt.devices.length === 0
+                            text: "No paired devices"
+                            color: Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.family: Commons.Appearance.font.family
+                            leftPadding: 2
+                        }
+
+                        Repeater {
+                            model: bt.devices
+                            delegate: RowLayout {
+                                required property var modelData
+                                width: _btBody.width
+                                spacing: 8
+                                Text {
+                                    text: modelData.connected ? "󰂱" : "󰂯"
+                                    color: modelData.connected ? Commons.Appearance.colors.mauve : Commons.Appearance.colors.overlay0
+                                    font.pixelSize: Commons.Appearance.font.sizeBase
+                                    font.family: Commons.Appearance.font.family
+                                }
+                                Text {
+                                    text: modelData.name
+                                    color: modelData.connected ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext1
+                                    font.pixelSize: Commons.Appearance.font.sizeSm
+                                    font.family: Commons.Appearance.font.family
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+                                Rectangle {
+                                    width: _btBtnLabel.implicitWidth + 16; height: 24
+                                    radius: Commons.Appearance.radius.base
+                                    color: _btBtnArea.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                                    Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                    Text {
+                                        id: _btBtnLabel
+                                        anchors.centerIn: parent
+                                        text: modelData.connected ? "Disconnect" : "Connect"
+                                        color: modelData.connected ? Commons.Appearance.colors.red : Commons.Appearance.colors.mauve
+                                        font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                                        font.family: Commons.Appearance.font.family
+                                    }
+                                    MouseArea {
+                                        id: _btBtnArea; anchors.fill: parent; hoverEnabled: true
+                                        onClicked: modelData.connected
+                                            ? bt.disconnectDevice(modelData.address)
+                                            : bt.connectDevice(modelData.address)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
+
                 // ── DISPLAY ───────────────────────────────────────────────────
                 Item {
                     Layout.fillWidth: true; height: 32
@@ -736,7 +818,6 @@ Item {
                     Layout.fillWidth: true; spacing: 8
                     ActionButton { iconName: "󰕾"; label: "Audio";     onClicked: { run("pavucontrol &");          Commons.State.controlCenterVisible = false } }
                     ActionButton { iconName: "󰤨"; label: "Network";   onClicked: { run("nm-connection-editor &"); Commons.State.controlCenterVisible = false } }
-                    ActionButton { iconName: "󰂯"; label: "Bluetooth"; onClicked: { run("blueman-manager &");       Commons.State.controlCenterVisible = false } }
                     ActionButton { iconName: "󰸉"; label: "Wallpaper"; onClicked: { run("wallpaper-picker.sh &");   Commons.State.controlCenterVisible = false } }
                     ActionButton { iconName: "󱛟"; label: "Disk";      onClicked: { run("kitty --title 'Disk Usage' -e duf &"); Commons.State.controlCenterVisible = false } }
                     ActionButton { iconName: "󰐥"; label: "Power";     onClicked: { run("wlogout-launch.sh &");    Commons.State.controlCenterVisible = false } }

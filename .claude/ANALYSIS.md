@@ -905,3 +905,497 @@ Key: use `Layout.preferredHeight` (not `height`) for ColumnLayout children — a
 | Captive portal detection | end-4 | Deferred — needs connectivity level check + browser open. Post-Sprint 9 |
 | Drag-to-reorder widget grid | DMS | Post-Sprint 12 — requires full layout engine |
 | Adjacent pane preloading | Caelestia | Not applicable until we have a multi-pane CC |
+
+---
+
+## §10 Settings Panel Research — Wave 2 (Dedicated Settings Apps)
+
+*Research date: 2026-05-12. All five shells studied: caelestia, end-4/dots-hyprland, DankMaterialShell, Noctalia, HyDE.*
+
+This section covers dedicated settings panels (as opposed to the quick-settings CC widgets studied in §9). The question: how do mature QML shells build a cohesive, OS-level settings experience?
+
+---
+
+### 10.1 caelestia-dots/shell — CC as Full Settings Panel
+
+caelestia's "Control Center" is simultaneously their quick-settings panel and their full settings app. No separate window.
+
+**Structure:**
+```
+modules/controlcenter/
+  ControlCenter.qml       — GridLayout: NavRail + Panes, session state, wheel-scroll
+  NavRail.qml             — vertical icon sidebar, Float Window button
+  PaneRegistry.qml        — singleton: list<QtObject> of pane descriptors
+  Panes.qml               — ClippingRectangle, y = -activeIndex * height carousel
+  WindowFactory.qml       — creates floating copy of any pane
+  state/
+    BluetoothState.qml, EthernetState.qml, NetworkState.qml, VpnState.qml, LauncherState.qml
+  components/
+    ConnectedButtonGroup, DeviceDetails, DeviceList, PaneTransition,
+    ReadonlySlider, SettingsHeader, SliderInput, SplitPaneLayout,
+    SplitPaneWithDetails, WallpaperGrid
+  appearance/sections/
+    AnimationsSection, BackgroundSection, BorderSection,
+    ColorSchemeSection, ColorVariantSection, FontsSection,
+    ScalesSection, ThemeModeSection
+```
+
+**PaneRegistry.qml** (singleton) — declarative pane manifest:
+```qml
+pragma Singleton
+QtObject {
+    readonly property list<QtObject> panes: [
+        QtObject { readonly property string id: "network"; label: "network"; icon: "router"; component: "network/NetworkingPane.qml" },
+        QtObject { id: "bluetooth"; icon: "settings_bluetooth"; component: "bluetooth/BtPane.qml" },
+        QtObject { id: "audio"; icon: "volume_up" },
+        QtObject { id: "appearance"; icon: "palette" },
+        QtObject { id: "taskbar"; icon: "task_alt" },
+        QtObject { id: "notifications"; icon: "notifications" },
+        QtObject { id: "launcher"; icon: "apps" },
+        QtObject { id: "dashboard" }
+    ]
+    function getByIndex(index): QtObject
+    readonly property int count: panes.length
+    readonly property var labels: panes.map(p => p.label)
+}
+```
+
+**Panes.qml** — vertical carousel via `y` offset:
+```qml
+ClippingRectangle {
+    ColumnLayout {
+        y: -root.session.activeIndex * root.height
+        Behavior on y { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Repeater {
+            model: PaneRegistry.count
+            delegate: Loader {
+                width: root.width; height: root.height
+                // Smart loading: load active pane + adjacent for instant switching
+                active: Math.abs(index - session.activeIndex) <= 1
+                source: PaneRegistry.panes[index].component
+                asynchronous: true
+            }
+        }
+    }
+}
+```
+
+**Appearance Pane** — full settings organized as `CollapsibleSection` rows:
+- ThemeModeSection: `Colours.setMode("dark"/"light")`
+- ColorVariantSection: `M3Variants.list` Repeater with styled radio buttons
+- ColorSchemeSection: palette picker from available schemes
+- ScalesSection: three `SliderInput` rows (padding 0.5–2×, rounding 0.1–5×, spacing 0.1–2×)
+- FontsSection: sans-serif, monospace, Material Symbols — each a filtered system font list
+- TransparencySection: enabled toggle + base% + layers% sliders
+- BorderSection: `SliderInput` for border rounding, border width
+- AnimationsSection: animation duration scale (0.1–5×)
+- BackgroundSection: wallpaper enabled, clock position (top/center/bottom + left/center/right)
+
+**SliderInput component** (shared across all panes):
+```qml
+// Combines slider + text field; supports integer or decimal
+// formatValueFunction and parseValueFunction for custom display
+// Auto-saves via rootPane.saveConfig() on any change
+```
+
+**WallpaperGrid component:**
+- `GridView` with `cellWidth = Math.max(200, Math.floor(width / columns)) * columns / columns`
+- `CachingImage` with fallback to standard Image
+- Checkmark icon on selected, primary-color border highlight
+- Gradient filename label at bottom, 1000ms opacity transition
+
+**SplitPaneWithDetails** — master/detail for device panes:
+```
+RowLayout {
+    left pane: fixed min 420px, 40% default ratio
+    right pane: Layout.fillWidth = true
+    resizable via leftWidthRatio property
+}
+```
+
+**Key OS-level cohesion factor:** Every appearance setting writes to a shared `Caelestia.Config` / `Tokens` singleton. The shell, bar, CC, and all panes read from the same token system — changing padding scale in settings updates every surface instantly.
+
+---
+
+### 10.2 end-4/dots-hyprland — Standalone QML Settings App
+
+Settings launches as a separate QML application via `qs -p settings.qml`.
+
+**settings.qml top-level:**
+```qml
+//@ pragma UseQApplication         ← standalone Qt app, not Quickshell overlay
+//@ pragma Env QS_NO_RELOAD_POPUP=1
+//@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
+//@ pragma Env QT_SCALE_FACTOR=1
+
+ApplicationWindow {
+    // 8 pages with collapsible NavigationRail sidebar
+    // Keyboard shortcuts: Ctrl+1…8 to jump to any page
+}
+```
+
+**8 pages:** Quick, General, Bar, Background, Interface, Services, Advanced, About
+
+**Config.qml** (singleton — the persistence layer):
+```qml
+pragma Singleton
+Singleton {
+    property string filePath: Directories.shellConfigPath
+    property alias options: configOptionsJsonAdapter  // JsonAdapter
+    property bool ready: false
+    property int readWriteDelay: 50  // debounce writes
+    property bool blockWrites: false
+
+    function setNestedValue(nestedKey, value) {
+        // splits "bar.indicators.notifications.showUnreadCount" into path
+        // navigates the options object and writes the leaf
+    }
+}
+```
+
+**Persistent.qml** (singleton — UI state, separate from user config):
+```qml
+pragma Singleton
+Singleton {
+    property alias states: persistentStatesJsonAdapter
+    property string filePath: Directories.state + "/states.json"
+}
+```
+
+**Page structure — each page follows the same pattern:**
+```qml
+ContentPage {
+    forceWidth: true
+    ContentSection {
+        icon: "notifications"
+        title: Translation.tr("Notifications")
+        ConfigSwitch {
+            buttonIcon: "counter_2"
+            text: Translation.tr("Unread indicator: show count")
+            checked: Config.options.bar.indicators.notifications.showUnreadCount
+            onCheckedChanged: Config.setNestedValue("bar.indicators.notifications.showUnreadCount", checked)
+        }
+    }
+}
+```
+
+**Selected page content:**
+- Background: parallax (vertical/horizontal), random wallpaper via external script
+- Services: audio settings, AI system prompt + translation locale Process
+- Interface: color generation from wallpaper, shell/utilities theming toggle
+- Advanced: Cheat sheet super key symbol, distro logo selector
+
+**Widget library** (150+ components in `modules/common/widgets/`):
+- Input: `MaterialTextField`, `MaterialTextArea`, `ConfigSwitch`, `ConfigSelectionArray`
+- Navigation: `NavigationRail`, `SecondaryTabBar`, `Toolbar`
+- Display: `CircularProgress`, `StyledProgressBar`, `MaterialLoadingIndicator`
+- Layout: `ContentPage`, `ContentSection`, `ContentSubsection`
+
+**Translation system:** `Translation.tr("key")` — used consistently across all UI text, enabling full i18n.
+
+**Key OS-level cohesion factor:** Config singleton is shared by settings app and shell via same JSON file. Changing a setting in the app = instant effect in the shell (JsonAdapter triggers property bindings immediately on write).
+
+---
+
+### 10.3 DankMaterialShell — Deep Settings with Search
+
+DMS has the most feature-complete settings panel of all studied shells.
+
+**Instantiation:**
+```qml
+// In FrameWindow.qml (PanelWindow)
+LazyLoader {
+    id: settingsModalLoader
+    active: false
+    Component.onCompleted: PopoutService.settingsModalLoader = settingsModalLoader
+    onActiveChanged: if (active && item) PopoutService.settingsModal = item
+    SettingsModal { ... }
+}
+```
+
+**SettingsModal.qml** — `FloatingWindow`:
+- Min size: 500×400; Default size: 900×900
+- Max height: screenHeight − 100
+- Header bar (48px): draggable, menu toggle for compact mode, settings icon, window controls
+- Split layout: SettingsSidebar (left) + SettingsContent (right, tab Loader)
+
+**SettingsSidebar.qml** — 34 tabs in 10 collapsible categories:
+| Category | Tabs |
+|---|---|
+| Personalization | Wallpaper, Time & Weather, Theme & Colors |
+| Keyboard Shortcuts | (standalone tab) |
+| Dank Bar | Dank Bar Settings |
+| Workspaces & Widgets | Workspaces, Desktop Widgets |
+| Dock & Launcher | Dock, Launcher |
+| Network | Network (standalone) |
+| System | Printers, Locale, Touchpad, Gamma Control |
+| Audio | Audio |
+| Advanced | Clipboard, Display Config, Gaming, Greeter, Lock Screen, Media Player, OSD, Process List, VPN |
+| About | About |
+
+**SettingsContent.qml** — tab switching via `currentIndex` (0–33):
+```qml
+// Each tab is a Loader — only activates when current, gets focus on activate
+Loader { active: currentIndex === 7; onActiveChanged: if (active) Qt.callLater(() => item.forceActiveFocus()) }
+```
+
+**PopoutService deep linking** — open settings at any tab from anywhere:
+```qml
+PopoutService.openSettings()                    // opens at last-used tab
+PopoutService.openSettingsWithTab("network")    // by tab name
+PopoutService.openSettingsWithTabIndex(7)       // by index
+```
+
+**SettingsSearchService** — global settings search:
+```qml
+// Index: settings_search_index.json with entries: {section, label, category, keywords, icon, description}
+// Algorithm: fuzzy match against all fields, max 15 results
+// SettingsCard.qml registers with service for highlight-on-match
+```
+
+**Settings widget library** (`Modules/Settings/Widgets/`):
+```
+SettingsToggleRow    — label + icon + DankToggle
+SettingsSliderRow    — label + DankSlider (compact)
+SettingsSliderCard   — full-width card with label, value display, DankSlider
+SettingsDropdownRow  — label + DankDropdown
+SettingsButtonGroupRow — label + DankButtonGroup (segmented)
+SettingsColorPicker  — label + color swatch → opens PopoutService.colorPickerModal
+SettingsDivider      — visual section separator
+SettingsCard         — collapsible card, registers with SettingsSearchService
+DeviceAliasRow       — custom name input for audio devices
+TerminalPickerRow    — dropdown of detected terminal emulators
+```
+
+**AudioTab features:**
+- Device aliasing: custom display name stored in `AudioService.setDeviceAlias()`
+- Visibility toggle: hide specific devices from sink list
+- Volume limit: cap per-device max volume
+
+**NetworkTab features:**
+- Status overview with backend type + connection state (color-coded)
+- Connection preference: Auto / Ethernet / WiFi priority when both connected
+- Ethernet: adapter list, expandable details, connect/disconnect
+- WiFi: AP list, expandable (SSID, security, signal, IP), password field inline
+- VPN: list + connect/disconnect
+
+**WallpaperTab:**
+- Modes: Single / Per-Mode (light+dark) / Per-Monitor / Color (solid `#rrggbb`)
+- Formats: JPEG, PNG, BMP, GIF, WebP, JXL, AVIF, HEIF, EXR
+- Matugen color extraction: generates Material You palette from wallpaper
+- "Target" selection: which display to extract from
+
+**Color picker:** `PopoutService.colorPickerModal.selectedColor = "#..."; PopoutService.colorPickerModal.onColorSelectedCallback = fn`
+
+**Plugin system:**
+- `PluginService.pluginDirectory` — local scan
+- Online browser via DMS registry API, `DMSService.listPlugins()` / `listInstalled()`
+- Manifest: `plugin.json` per plugin directory
+
+**Key OS-level cohesion factor:** `SettingsSearchService` makes any setting discoverable from anywhere. `PopoutService.openSettingsWithTab("network")` means CC quick-toggles can deep-link into the full network settings tab. Compact mode sidebar collapses to icon-only rail (like GNOME Settings on narrow screens).
+
+---
+
+### 10.4 Noctalia — Flexible Panel Modes + Connections Depth
+
+**Window:**
+```qml
+// SettingsPanelWindow.qml
+FloatingWindow {
+    title: "Noctalia"
+    minimumSize: Qt.size(840 * Style.uiScaleRatio, 910 * Style.uiScaleRatio)
+    Component.onCompleted: SettingsPanelService.register(root)
+}
+
+// SettingsPanel.qml
+SmartPanel {
+    // settingsPanelMode: "centered" | "attached" | "window"
+    // In window mode: FloatingWindow handles display
+    // In centered/attached: SmartPanel positions itself relative to bar
+}
+```
+
+**22 tabs** (all in `Modules/Panels/Settings/Tabs/`):
+About, Audio, Bar, ColorScheme, Connections, ControlCenter, Display, Dock, General, Hooks, Idle, Launcher, LockScreen, Notifications, Osd, Plugins, Region, SessionMenu, SystemMonitor, UserInterface, Wallpaper
+
+**Search:**
+```
+Fuzzy matching across all settings items
+subTabName matches boosted 1.5× vs other fields
+Collapsible sidebar with search input at top
+Results highlight matched settings cards
+```
+
+**ConnectionsTab — depth of BT implementation:**
+```qml
+// ConnectionsTab.qml: WiFi + Bluetooth via NTabBar
+NTabBar {
+    NTabButton { text: I18n.tr("common.wifi") }
+    NTabButton { text: I18n.tr("common.bluetooth") }
+}
+NTabView { currentIndex: tabBar.currentIndex; WifiSubTab {}; BluetoothSubTab {} }
+```
+
+**BluetoothSubTab — most complete BT panel found:**
+```
+Three device categories:
+  1. Connected devices
+  2. Paired/trusted devices (disconnected)
+  3. Available devices (for pairing)
+
+Per-device info:
+  - Battery level
+  - Signal strength
+  - Connection status
+
+Actions per category:
+  - Connected: Disconnect button
+  - Paired: Connect button, Unpair option
+  - Available: Pair button
+
+State management:
+  - Scanning managed based on panel visibility (debounced)
+  - Discoverability toggle
+```
+
+**ColorSchemeTab — theming depth:**
+- Dark mode toggle → `Settings.data.colorSchemes.darkMode`
+- Schedule: off / manual (pick sunrise+sunset time) / location-based (auto)
+- Generate from wallpaper: per-monitor wallpaper selector → color extraction
+- Time picker: `ListModel` with 48 entries (every 30 min from 00:00 to 23:30)
+- Schema downloader: `SchemeDownloader.qml` for fetching color schemes from network
+
+**DisplayTab:** Brightness sub-tab + Night Light sub-tab
+
+**GeneralTab:** Basics sub-tab + Keybinds sub-tab
+
+**I18n:** `I18n.tr("key")` used everywhere — string key → translated string via locale files
+
+**Key OS-level cohesion factor:** Three-mode panel (`centered`/`attached`/`window`) adapts to user workflow. Settings panel in "attached" mode slides out from the bar like a second CC layer — feels integrated, not like a separate app.
+
+---
+
+### 10.5 HyDE — OS-Level Theming via Script Templates (Not QML)
+
+HyDE is different: no QML settings app. Theming achieved through shell scripts and template substitution.
+
+**wallbash color pipeline:**
+```sh
+wallbash.sh <image>
+  → ImageMagick extracts dominant colors
+  → Applies color curve (default / vibrant / pastel / mono / custom)
+  → Outputs: ~/.cache/hyde/<hash>.dcol (shell variable declarations)
+
+# .dcol file format:
+export wallbash_pry1="#1e1e2e"
+export wallbash_txt1="#cdd6f4"
+export wallbash_1xa9="#b4befe"
+# ... 50+ color variables
+```
+
+**Template propagation:** Each app has a `.dcol` template file in `~/.config/hyde/wallbash/`:
+```
+Wall-Dcol/
+  gtk/gtk3.dcol    → updates GTK3 settings.ini
+  gtk/gtk4.dcol    → creates GTK4 symlink
+  hypr.dcol        → updates hyprland.conf colors
+  kitty.dcol       → writes ~/.config/kitty/theme.conf
+  rofi.dcol        → writes ~/.config/rofi/theme.rasi
+  waybar.dcol      → writes waybar/style.css variables
+  kvantum/         → updates Qt Kvantum theme
+```
+
+**Template format** (kitty as example):
+```
+foreground #<wallbash_txt1>
+background #<wallbash_pry1>
+color0     #<wallbash_pry2>
+...
+```
+
+**themeswitch.sh** — applies a named theme:
+- Updates: qt5ct.conf, qt6ct.conf, kdeglobals, GTK3 settings.ini, GTK4 symlink, Flatpak env vars
+- Calls: `hyprctl` for window border colors, `hyprctl reload` for full refresh
+- Triggers: waybar CSS recalculation (separate script)
+
+**UI for theme selection:** Rofi-based menu (NOT QML) — `themeselect.sh` generates a Rofi grid of theme thumbnails, calls themeswitch.sh on selection.
+
+**Key OS-level cohesion factor:** Template substitution touches every app simultaneously. The hash-based cache (`sha1sum` of wallpaper) means color generation runs once per image, then cached forever. This is the most complete "everything matches the wallpaper" system found — but it requires bash expertise and external tools (ImageMagick, swww, Rofi).
+
+**Why we're not adopting HyDE's approach:** It requires launching external apps (Rofi) for settings and depends on a complex bash pipeline. Our goal is native QML. We can adopt the *idea* (wallpaper → color extraction → apply everywhere) but implement it via a QML-first theme system later (Sprint 12+).
+
+---
+
+### 10.6 Cross-Repo Synthesis — What Makes Settings Feel "OS-Level"
+
+These patterns appear across all shells that feel cohesive:
+
+**1. Single config singleton with JSON persistence**
+All three QML shells (caelestia, end-4, DMS) use a singleton that reads/writes a JSON file. Writes are debounced (DMS 50ms delay, caelestia saves on user action). Any property change in settings immediately propagates to shell via property binding.
+
+**2. NavRail navigation (not tabs)**
+Icon sidebar with labeled items beats horizontal tabs at this pane count (8–34 items). Rail supports collapsible categories (DMS), wheel-scroll navigation (caelestia), keyboard shortcuts (end-4).
+
+**3. CollapsibleSection as the universal atom**
+Every pane uses collapsible sections with animated height changes. Prevents overwhelming the user with all settings visible at once. Caelestia's implementation is cleanest (`Layout.preferredHeight` + `clip: true` + dual animation).
+
+**4. Deep linking from CC to settings**
+DMS: `PopoutService.openSettingsWithTab("network")`. This is what makes a quick-toggle feel complete: tapping the WiFi quick-toggle opens WiFi, tapping "more options" deep-links to the full network settings pane.
+
+**5. Settings-specific widget library**
+All shells define reusable settings widgets beyond what Qt controls provide:
+- `ToggleRow` — icon + label + switch in a styled row
+- `SliderRow` — icon + label + slider + value display
+- `DropdownRow` — icon + label + select
+- `ButtonGroupRow` — icon + label + segmented buttons
+- `ColorPickerRow` — icon + label + color swatch → modal picker
+
+**6. Search across settings** (DMS, Noctalia)
+`SettingsSearchService` with JSON index enables "find anything" UX. Requires each settings card to register itself with keywords. Noctalia boosts subTabName matches to prioritize direct navigation.
+
+**7. Three display modes** (Noctalia)
+`centered` (modal), `attached` (slides from bar), `window` (resizable float). Attached mode is what makes settings feel integrated rather than external.
+
+**8. State vs. config separation**
+end-4 has two separate singletons: `Config.qml` (user preferences) and `Persistent.qml` (UI state like last-open tab, collapsed sections). DMS similarly separates `SettingsData` from ephemeral open/close state. Our future settings app should follow this.
+
+**9. Template-based app theming** (HyDE approach, adapted)
+The idea: one color extraction run → all apps match. Our QML-native adaptation: future `Theme.qml` singleton exports color tokens, all our QML reads from it, external apps get updated via a write to their config files.
+
+---
+
+### 10.7 Implementation Roadmap for Archeotech Settings
+
+Based on Wave 2 research, here is the recommended implementation order:
+
+**Sprint 9 (next):** WiFi CC section — no new settings patterns needed yet. CompoundPill + inline password, three-section list.
+
+**Sprint 10:** Audio + VPN CC sections — PipeWire native. Introduce `SliderRow` widget.
+
+**Sprint 11:** Lock screen.
+
+**Sprint 12 — Settings Foundation:**
+1. `Services/Persistence/Config.qml` — singleton, JSON file, `setNestedValue(dotted.key, val)`, 50ms debounce
+2. `Modules/Settings/Settings.qml` — `FloatingWindow`, min 800×700, IPC trigger from CC gear button
+3. `Modules/Settings/SettingsSidebar.qml` — NavRail with 6–8 initial categories
+4. `Modules/Settings/Widgets/` — ToggleRow, SliderRow, DropdownRow, ButtonGroupRow
+5. First panes: Appearance (theme mode, accent color, scales), Bar (height, clock format), Notifications (timeout, max visible)
+6. Deep link: CC gear → `Settings.openPane("appearance")`
+
+**Sprint 13 — Settings Depth:**
+- All CC sections also have a matching settings pane with full controls
+- WiFi: full NM integration (known networks, forget, priority)
+- Bluetooth: three-category panel (connected/paired/available) per Noctalia model
+- Audio: device aliasing, visibility toggle, per-device volume limits
+- ColorScheme: dark mode toggle, schedule, wallpaper color extraction
+
+**Sprint 14 — Settings Polish:**
+- Fuzzy search across all settings (DMS SettingsSearchService model)
+- Three panel modes: window / attached-to-bar / centered
+- Export/import settings (JSON backup)
+- Keyboard navigation (Ctrl+N to cycle sections)
+
+**Sprint 15 — Theme System:**
+- Wallpaper color extraction (ImageMagick subprocess or pure QML)
+- `Theme.qml` singleton with wallbash-style color tokens
+- Template propagation to external apps (kitty, foot, dunst, hyprland borders)
