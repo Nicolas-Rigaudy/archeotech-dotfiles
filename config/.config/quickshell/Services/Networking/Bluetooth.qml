@@ -20,15 +20,23 @@ QtObject {
         }
     }
 
-    // ── D-Bus signal monitor ───────────────────────────────────────────────────
+    // ── D-Bus signal monitor (best-effort; polling fallback below) ─────────────
     property var monitor: Process {
         command: ["busctl", "monitor", "--json=short", "org.bluez"]
         running: true
         stdout: SplitParser { onRead: _line => root._refresh() }
         onExited: (code, status) => {
-            console.warn("Bluetooth: busctl monitor exited, restarting")
-            running = true
+            if (code === 0) {
+                running = true  // clean exit (connection dropped) — restart
+            }
+            // code !== 0 (e.g., Access denied): stop; polling timer takes over
         }
+    }
+
+    // Polling fallback — fires every 3s when monitor is not available
+    property var _pollTimer: Timer {
+        interval: 3000; running: true; repeat: true
+        onTriggered: if (!root.monitor.running) root._refresh()
     }
 
     // ── Adapter powered state ──────────────────────────────────────────────────

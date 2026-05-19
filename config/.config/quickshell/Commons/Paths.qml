@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import QtCore
 
 QtObject {
     readonly property string home:         StandardPaths.writableLocation(StandardPaths.HomeLocation)
@@ -11,4 +12,5 @@ QtObject {
     readonly property string swaylockLaunch: localBin + "/swaylock-launch.sh"
     readonly property string wlogoutLaunch:  localBin + "/wlogout-launch.sh"
     readonly property string listDesktopApps: home + "/Projects/archeotech-dotfiles/scripts/list-desktop-apps.sh"
+    readonly property string wifiScan:        home + "/Projects/archeotech-dotfiles/scripts/wifi-scan.sh"
 }

@@ -28,13 +28,34 @@ Item {
     property bool displayExpanded:    false
     property bool nightLightExpanded: false
     property bool idleExpanded:       false
+    property bool wifiExpanded:       false
+    property bool btExpanded:         false
+    property string wifiAskPwFor:    ""
+
+    onWifiAskPwForChanged: {
+        if (wifiAskPwFor !== "") network.freezeList()
+        else network.unfreezeList()
+    }
+
+    readonly property var _wifiConnected:  network.displayNetworks.filter(function(n) { return n.active })
+    readonly property var _wifiSaved:      network.displayNetworks.filter(function(n) { return n.saved && !n.active })
+    readonly property var _wifiAvailable:  network.displayNetworks.filter(function(n) { return !n.saved && !n.active })
 
     Component.onCompleted: _syncState()
 
     Connections {
         target: Commons.State
         function onControlCenterVisibleChanged() {
-            if (Commons.State.controlCenterVisible) root._syncState()
+            if (Commons.State.controlCenterVisible) {
+                root._syncState()
+                if (Commons.State.controlCenterOpenSection === "wifi") {
+                    root.wifiExpanded = true
+                    Commons.State.controlCenterOpenSection = ""
+                } else if (Commons.State.controlCenterOpenSection === "bt") {
+                    root.btExpanded = true
+                    Commons.State.controlCenterOpenSection = ""
+                }
+            }
         }
     }
 
@@ -559,22 +580,188 @@ Item {
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
-                // ── BLUETOOTH ─────────────────────────────────────────────────
+                // ── CONNECTIVITY ───────────────────────────────────────────────
+                SectionHeader { label: "CONNECTIVITY" }
+
+                // WiFi CompoundPill
                 RowLayout {
                     Layout.fillWidth: true
-                    Text {
-                        text: bt.icon() + "  Bluetooth"
-                        color: bt.enabled ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
-                        font.pixelSize: Commons.Appearance.font.sizeBase
-                        font.family: Commons.Appearance.font.family
-                        Layout.fillWidth: true
+                    spacing: 6
+
+                    // Left tile — toggle adapter
+                    Rectangle {
+                        width: 48; height: 40
+                        radius: Commons.Appearance.radius.base
+                        color: network.wifiEnabled ? Commons.Appearance.colors.accent : Commons.Appearance.colors.surface0
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: network.icon()
+                            color: network.wifiEnabled ? Commons.Appearance.colors.base : Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeXl
+                            font.family: Commons.Appearance.font.family
+                        }
+                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: network.toggleWifi() }
                     }
-                    ToggleSwitch { checked: bt.enabled; onToggled: state => bt.toggle() }
+
+                    // Right body — expand
+                    Rectangle {
+                        Layout.fillWidth: true; height: 40
+                        radius: Commons.Appearance.radius.base
+                        color: root.wifiExpanded ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        RowLayout {
+                            anchors { fill: parent; leftMargin: 12; rightMargin: 8 }
+                            Text {
+                                text: !network.wifiEnabled ? "Off"
+                                    : network.connected ? network.ssid
+                                    : "Not connected"
+                                color: network.wifiEnabled ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                                font.pixelSize: Commons.Appearance.font.sizeBase
+                                font.family: Commons.Appearance.font.family
+                                Layout.fillWidth: true; elide: Text.ElideRight
+                            }
+                            Text {
+                                text: root.wifiExpanded ? "󰅃" : "󰅀"
+                                color: Commons.Appearance.colors.overlay0
+                                font.pixelSize: Commons.Appearance.font.sizeBase
+                                font.family: Commons.Appearance.font.family
+                            }
+                        }
+                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.wifiExpanded = !root.wifiExpanded }
+                    }
                 }
 
+                // WiFi expansion body
                 Item {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: bt.enabled ? _btBody.implicitHeight : 0
+                    Layout.preferredHeight: root.wifiExpanded ? _wifiBody.implicitHeight : 0
+                    clip: true
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
+
+                    ColumnLayout {
+                        id: _wifiBody
+                        width: parent.width
+                        spacing: 2
+                        opacity: root.wifiExpanded ? 1 : 0
+                        Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+
+                        // Not enabled placeholder
+                        Text {
+                            visible: !network.wifiEnabled
+                            text: "Enable WiFi to see networks"
+                            color: Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.family: Commons.Appearance.font.family
+                            leftPadding: 2; topPadding: 2
+                            Layout.fillWidth: true
+                        }
+
+                        // ── Connected ──────────────────────────────────────────
+                        Repeater {
+                            model: network.wifiEnabled ? root._wifiConnected : []
+                            delegate: WifiNetworkRow {}
+                        }
+
+                        // ── Saved section ──────────────────────────────────────
+                        Text {
+                            visible: network.wifiEnabled && root._wifiSaved.length > 0
+                            text: "SAVED"
+                            color: Commons.Appearance.colors.overlay0
+                            font.pixelSize: 9; font.family: Commons.Appearance.font.family
+                            font.weight: Font.Medium
+                            Layout.fillWidth: true; topPadding: 4; leftPadding: 2
+                        }
+                        Repeater {
+                            model: network.wifiEnabled ? root._wifiSaved : []
+                            delegate: WifiNetworkRow {}
+                        }
+
+                        // ── Available section ──────────────────────────────────
+                        Text {
+                            visible: network.wifiEnabled && root._wifiAvailable.length > 0
+                            text: "AVAILABLE"
+                            color: Commons.Appearance.colors.overlay0
+                            font.pixelSize: 9; font.family: Commons.Appearance.font.family
+                            font.weight: Font.Medium
+                            Layout.fillWidth: true; topPadding: 4; leftPadding: 2
+                        }
+                        Repeater {
+                            model: network.wifiEnabled ? root._wifiAvailable : []
+                            delegate: WifiNetworkRow {}
+                        }
+
+                        // ── Rescan ─────────────────────────────────────────────
+                        Item {
+                            visible: network.wifiEnabled
+                            Layout.fillWidth: true; height: 28
+                            Text {
+                                anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                                text: network.scanning ? "Scanning…" : "󰑙  Rescan"
+                                color: network.scanning ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.mauve
+                                font.pixelSize: Commons.Appearance.font.sizeSm
+                                font.family: Commons.Appearance.font.family
+                                MouseArea {
+                                    anchors.fill: parent; anchors.margins: -4
+                                    enabled: !network.scanning; cursorShape: Qt.PointingHandCursor
+                                    onClicked: network.scan()
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // BT CompoundPill
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    // Left tile — toggle adapter
+                    Rectangle {
+                        width: 48; height: 40
+                        radius: Commons.Appearance.radius.base
+                        color: bt.enabled ? Commons.Appearance.colors.mauve : Commons.Appearance.colors.surface0
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: bt.icon()
+                            color: bt.enabled ? Commons.Appearance.colors.base : Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeXl
+                            font.family: Commons.Appearance.font.family
+                        }
+                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: bt.toggle() }
+                    }
+
+                    // Right body — expand
+                    Rectangle {
+                        Layout.fillWidth: true; height: 40
+                        radius: Commons.Appearance.radius.base
+                        color: root.btExpanded ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        RowLayout {
+                            anchors { fill: parent; leftMargin: 12; rightMargin: 8 }
+                            Text {
+                                text: bt.connected ? bt.device : bt.enabled ? "On" : "Off"
+                                color: bt.enabled ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                                font.pixelSize: Commons.Appearance.font.sizeBase
+                                font.family: Commons.Appearance.font.family
+                                Layout.fillWidth: true; elide: Text.ElideRight
+                            }
+                            Text {
+                                text: root.btExpanded ? "󰅃" : "󰅀"
+                                color: Commons.Appearance.colors.overlay0
+                                font.pixelSize: Commons.Appearance.font.sizeBase
+                                font.family: Commons.Appearance.font.family
+                            }
+                        }
+                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.btExpanded = !root.btExpanded }
+                    }
+                }
+
+                // BT expansion body
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: root.btExpanded ? _btBody.implicitHeight : 0
                     clip: true
                     Behavior on Layout.preferredHeight { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
 
@@ -582,7 +769,9 @@ Item {
                         id: _btBody
                         width: parent.width
                         spacing: 4
-                        topPadding: 2
+                        topPadding: 4
+                        opacity: root.btExpanded ? 1 : 0
+                        Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
 
                         Text {
                             width: parent.width
@@ -611,16 +800,15 @@ Item {
                                     color: modelData.connected ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext1
                                     font.pixelSize: Commons.Appearance.font.sizeSm
                                     font.family: Commons.Appearance.font.family
-                                    Layout.fillWidth: true
-                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true; elide: Text.ElideRight
                                 }
                                 Rectangle {
-                                    width: _btBtnLabel.implicitWidth + 16; height: 24
+                                    width: _btBtnLbl.implicitWidth + 16; height: 24
                                     radius: Commons.Appearance.radius.base
-                                    color: _btBtnArea.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                                    color: _btBtnMa.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
                                     Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                                     Text {
-                                        id: _btBtnLabel
+                                        id: _btBtnLbl
                                         anchors.centerIn: parent
                                         text: modelData.connected ? "Disconnect" : "Connect"
                                         color: modelData.connected ? Commons.Appearance.colors.red : Commons.Appearance.colors.mauve
@@ -628,7 +816,7 @@ Item {
                                         font.family: Commons.Appearance.font.family
                                     }
                                     MouseArea {
-                                        id: _btBtnArea; anchors.fill: parent; hoverEnabled: true
+                                        id: _btBtnMa; anchors.fill: parent; hoverEnabled: true
                                         onClicked: modelData.connected
                                             ? bt.disconnectDevice(modelData.address)
                                             : bt.connectDevice(modelData.address)
@@ -640,6 +828,198 @@ Item {
                 }
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
+
+                // WiFi network row component (used in all three sections above)
+                component WifiNetworkRow: Item {
+                    required property var modelData
+                    Layout.fillWidth: true
+
+                    property bool _showPw: root.wifiAskPwFor === modelData.ssid
+                    property bool _busyConnect: network.connectingTo === modelData.ssid
+                    property bool _busyDisconn: modelData.active && network.disconnectingFrom === modelData.ssid
+                    property bool _busy: _busyConnect || _busyDisconn
+                    property bool _needsPw: !modelData.saved
+                        && modelData.security !== "" && modelData.security !== "--"
+
+                    Layout.preferredHeight: _showPw ? 82 : 34
+                    clip: true
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+                    // ── Main row ───────────────────────────────────────────────
+                    RowLayout {
+                        id: _netRow
+                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                        height: 34
+                        spacing: 6
+
+                        // Signal icon (+ lock indicator)
+                        Row {
+                            spacing: 1
+                            Text {
+                                text: network.signalIcon(modelData.signal, modelData.security !== "" && modelData.security !== "--")
+                                color: modelData.active ? Commons.Appearance.colors.accent : Commons.Appearance.colors.overlay0
+                                font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        // SSID
+                        Text {
+                            text: modelData.ssid
+                            color: modelData.active ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext1
+                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.family: Commons.Appearance.font.family
+                            Layout.fillWidth: true; elide: Text.ElideRight
+                        }
+
+                        // Spinner or action button
+                        Item {
+                            width: _busy ? 20 : _netBtnTxt.implicitWidth + 16
+                            height: 24
+                            Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+
+                            // Spinner
+                            Text {
+                                id: _netSpinner
+                                visible: _busy
+                                anchors.centerIn: parent
+                                text: "󰑙"
+                                color: Commons.Appearance.colors.accent
+                                font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                                RotationAnimator {
+                                    target: _netSpinner
+                                    running: _busy
+                                    loops: Animation.Infinite
+                                    from: 0; to: 360; duration: 900
+                                }
+                            }
+
+                            // Action button
+                            Rectangle {
+                                id: _netBtn
+                                visible: !_busy
+                                anchors.fill: parent
+                                radius: Commons.Appearance.radius.sm
+                                color: _netBtnMa.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                                Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                Text {
+                                    id: _netBtnTxt
+                                    anchors.centerIn: parent
+                                    text: modelData.active ? "Disconnect" : "Connect"
+                                    color: modelData.active ? Commons.Appearance.colors.red : Commons.Appearance.colors.mauve
+                                    font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                                    font.family: Commons.Appearance.font.family
+                                }
+                                MouseArea {
+                                    id: _netBtnMa; anchors.fill: parent; hoverEnabled: true
+                                    onClicked: {
+                                        if (modelData.active) {
+                                            network.disconnect()
+                                        } else if (_needsPw) {
+                                            root.wifiAskPwFor = modelData.ssid
+                                        } else {
+                                            network.connect(modelData.ssid)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ── Inline password field ──────────────────────────────────
+                    RowLayout {
+                        id: _pwRow
+                        anchors { top: _netRow.bottom; topMargin: 4; left: parent.left; right: parent.right }
+                        spacing: 6
+                        opacity: _showPw ? 1 : 0
+                        Behavior on opacity { NumberAnimation { duration: 100 } }
+
+                        Rectangle {
+                            Layout.fillWidth: true; height: 28
+                            radius: Commons.Appearance.radius.sm
+                            color: Commons.Appearance.colors.base
+                            border.color: _pwInput.activeFocus
+                                ? Commons.Appearance.colors.accent
+                                : Commons.Appearance.colors.surface1
+                            border.width: 1
+                            Behavior on border.color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+
+                            Text {
+                                anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 8 }
+                                text: "Password"
+                                color: Commons.Appearance.colors.overlay0
+                                font.pixelSize: Commons.Appearance.font.sizeBase
+                                font.family: Commons.Appearance.font.family
+                                visible: _pwInput.text.length === 0
+                            }
+                            TextInput {
+                                id: _pwInput
+                                anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
+                                echoMode: TextInput.Password
+                                color: Commons.Appearance.colors.text
+                                font.pixelSize: Commons.Appearance.font.sizeBase
+                                font.family: Commons.Appearance.font.family
+                                Keys.onReturnPressed: event => {
+                                    if (text.length > 0) {
+                                        network.connectWithPassword(modelData.ssid, text)
+                                        text = ""
+                                        root.wifiAskPwFor = ""
+                                    }
+                                }
+                                Keys.onEscapePressed: event => {
+                                    text = ""
+                                    root.wifiAskPwFor = ""
+                                    event.accepted = true
+                                }
+                            }
+                        }
+
+                        // Connect button
+                        Rectangle {
+                            width: 60; height: 28
+                            radius: Commons.Appearance.radius.sm
+                            color: _pwConnMa.containsMouse ? Commons.Appearance.colors.accent : Commons.Appearance.colors.surface0
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Connect"
+                                color: _pwConnMa.containsMouse ? Commons.Appearance.colors.base : Commons.Appearance.colors.mauve
+                                font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                                font.family: Commons.Appearance.font.family
+                                Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            }
+                            MouseArea {
+                                id: _pwConnMa; anchors.fill: parent; hoverEnabled: true
+                                onClicked: {
+                                    if (_pwInput.text.length > 0) {
+                                        network.connectWithPassword(modelData.ssid, _pwInput.text)
+                                        _pwInput.text = ""
+                                        root.wifiAskPwFor = ""
+                                    }
+                                }
+                            }
+                        }
+
+                        // Cancel button
+                        Rectangle {
+                            width: 52; height: 28
+                            radius: Commons.Appearance.radius.sm
+                            color: _pwCancelMa.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Cancel"
+                                color: Commons.Appearance.colors.subtext0
+                                font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                                font.family: Commons.Appearance.font.family
+                            }
+                            MouseArea {
+                                id: _pwCancelMa; anchors.fill: parent; hoverEnabled: true
+                                onClicked: { _pwInput.text = ""; root.wifiAskPwFor = "" }
+                            }
+                        }
+                    }
+                }
 
                 // ── DISPLAY ───────────────────────────────────────────────────
                 Item {

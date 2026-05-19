@@ -166,7 +166,7 @@ Done without Quickshell 0.3.0 (on 0.2.1-6 as of 2026-05-05 — 0.3.0 not yet pac
 - [x] Bar BT icon reflects adapter + connection state (unchanged wiring, now driven by accurate device scan)
 - [x] blueman ActionButton removed from TOOLS
 
-### Sprint 9 — Native settings ecosystem: WiFi
+### Sprint 9 — Native settings ecosystem: WiFi ✅ COMPLETE (2026-05-19)
 
 > **Research complete 2026-05-12** — cross-inspected caelestia, end-4, DankMaterialShell, Noctalia, HyDE, linuxmobile. Full findings in `ANALYSIS.md §9`. Decisions in `DECISIONS.md`.
 
@@ -201,11 +201,13 @@ DISPLAY / SYSTEM / IDLE / TOOLS ← unchanged
 - Card state colors: neutral / primary (connecting+connected) / error (disconnecting)
 - Signal icons: 5-tier × open/locked variants
 
-- [ ] `Services/Networking/Network.qml` extended — `wifiEnabled` (Quickshell.Networking), `networks[]` ({ssid, signal, security, active, saved, bssid}), `scanning`, `connectingTo`, `disconnectingFrom`; `scan()`, `connect(ssid)`, `connectWithPassword(ssid, pw)`, `disconnect()`, `forget(ssid)`
-- [ ] CC WiFi CompoundPill row — left tile toggles adapter, right body expands animated list
-- [ ] CC WiFi network list — three sections (connected/saved/available), signal icons, inline password field, rescan button, freeze-during-input, spinner while connecting
-- [ ] Refactor Sprint 8 BT section to CompoundPill pattern
-- [ ] CC CONNECTIVITY `SectionHeader` grouping WiFi + BT
+- [x] `Services/Networking/Network.qml` extended — `wifiEnabled` (nmcli radio), `networks[]` ({ssid, signal, security, active, saved, bssid}), `scanning`, `connectingTo`, `disconnectingFrom`; `scan()`, `connect(ssid)`, `connectWithPassword(ssid, pw)`, `disconnect()`, `forget(ssid)`; `scripts/wifi-scan.sh` Python helper handles nmcli colon-escaping
+- [x] CC WiFi CompoundPill row — left tile toggles adapter, right body expands animated list
+- [x] CC WiFi network list — three sections (connected/saved/available), signal icons, inline password field, rescan button, freeze-during-input, spinner while connecting
+- [x] Refactor Sprint 8 BT section to CompoundPill pattern
+- [x] CC CONNECTIVITY `SectionHeader` grouping WiFi + BT
+- [x] **Bar WiFi popup** — click network icon to open native WiFi panel (same ear+arc Shape as calendar), shows adapter toggle + up to 5 networks + rescan; unsaved secured networks redirect to CC with WiFi pre-expanded; `State.controlCenterOpenSection` added for CC deep-link
+- [x] **Bar BT popup** — click BT icon to open native BT panel, shows adapter toggle + paired device list with connect/disconnect
 
 ### Sprint 10 — Native settings ecosystem: Audio sinks + VPN
 

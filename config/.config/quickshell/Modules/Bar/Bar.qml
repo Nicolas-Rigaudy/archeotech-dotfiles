@@ -27,9 +27,14 @@ Item {
     property real    _lastShowTime:   0
     property var     _popupOwner:     null
 
-    property bool _calendarVisible: false
-    property int  _calendarYear:    new Date().getFullYear()
-    property int  _calendarMonth:   new Date().getMonth() + 1
+    property bool _calendarVisible:  false
+    property int  _calendarYear:     new Date().getFullYear()
+    property int  _calendarMonth:    new Date().getMonth() + 1
+
+    property bool _wifiPopupVisible: false
+    property bool _btPopupVisible:   false
+    property real _wifiAnchorX:      0
+    property real _btAnchorX:        0
 
     function calendarDays(year, month) {
         var days = []
@@ -88,7 +93,7 @@ Item {
 
         anchors { top: true; left: true; right: true }
         // Taller than the bar so popup can render below — mask controls input area
-        implicitHeight: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop + 220
+        implicitHeight: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop + 340
         color: "transparent"
         // Input mask: only bar strip (+ popup footprint when open) receives events
         mask: Region { item: _inputMask }
@@ -505,14 +510,26 @@ Item {
                         }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
-                            onClicked: networkCmd.running = true
+                            onClicked: {
+                                if (barGroup._wifiPopupVisible) {
+                                    barGroup._wifiPopupVisible = false
+                                } else {
+                                    var pt = parent.mapToItem(null, parent.width / 2, 0)
+                                    barGroup._wifiAnchorX      = pt.x
+                                    barGroup._wifiPopupVisible = true
+                                    barGroup._btPopupVisible   = false
+                                    barGroup._calendarVisible  = false
+                                    barGroup._popupVisible     = false
+                                }
+                            }
                             onEntered: {
                                 netIcon.color = Commons.Appearance.colors.accent
-                                barGroup.showPopup(parent, "NETWORK",
-                                    NetworkServices.Network.connected
-                                        ? "󰖩  " + NetworkServices.Network.ssid + "   ·   " + NetworkServices.Network.signal + "%  ·  " + NetworkServices.Network.band
-                                        : "󰖪  Disconnected",
-                                    "", "Click to open network settings")
+                                if (!barGroup._wifiPopupVisible)
+                                    barGroup.showPopup(parent, "NETWORK",
+                                        NetworkServices.Network.connected
+                                            ? "󰖩  " + NetworkServices.Network.ssid + "   ·   " + NetworkServices.Network.signal + "%  ·  " + NetworkServices.Network.band
+                                            : "󰖪  Disconnected",
+                                        "", "Click to manage WiFi")
                             }
                             onExited: {
                                 netIcon.color = NetworkServices.Network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
@@ -538,13 +555,25 @@ Item {
                         }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
-                            onClicked: bluetoothCmd.running = true
+                            onClicked: {
+                                if (barGroup._btPopupVisible) {
+                                    barGroup._btPopupVisible = false
+                                } else {
+                                    var pt = parent.mapToItem(null, parent.width / 2, 0)
+                                    barGroup._btAnchorX        = pt.x
+                                    barGroup._btPopupVisible   = true
+                                    barGroup._wifiPopupVisible = false
+                                    barGroup._calendarVisible  = false
+                                    barGroup._popupVisible     = false
+                                }
+                            }
                             onEntered: {
                                 btIcon.color = Commons.Appearance.colors.accent
-                                barGroup.showPopup(parent, "BLUETOOTH",
-                                    NetworkServices.Bluetooth.connected ? "󰂱  " + NetworkServices.Bluetooth.device
-                                        : NetworkServices.Bluetooth.enabled ? "󰂯  On — no device" : "󰂲  Off",
-                                    "", "Click to open bluetooth settings")
+                                if (!barGroup._btPopupVisible)
+                                    barGroup.showPopup(parent, "BLUETOOTH",
+                                        NetworkServices.Bluetooth.connected ? "󰂱  " + NetworkServices.Bluetooth.device
+                                            : NetworkServices.Bluetooth.enabled ? "󰂯  On — no device" : "󰂲  Off",
+                                        "", "Click to manage Bluetooth")
                             }
                             onExited: {
                                 btIcon.color = NetworkServices.Bluetooth.connected ? Commons.Appearance.colors.mauve
@@ -607,7 +636,11 @@ Item {
 
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
-                            onClicked: Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
+                            onClicked: {
+                                barGroup._wifiPopupVisible = false
+                                barGroup._btPopupVisible   = false
+                                Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
+                            }
                             onEntered: {
                                 if (!Commons.State.notificationCenterVisible) bellIcon.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "NOTIFICATIONS",
@@ -641,7 +674,11 @@ Item {
                         }
                         MouseArea {
                             anchors.fill: parent; hoverEnabled: true
-                            onClicked: Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible
+                            onClicked: {
+                                barGroup._wifiPopupVisible = false
+                                barGroup._btPopupVisible   = false
+                                Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible
+                            }
                             onEntered: {
                                 settingsIcon.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "SETTINGS", "󰒓  Control Center", "", "Click to toggle")
@@ -715,12 +752,14 @@ Item {
                 acceptedButtons: Qt.NoButton
                 z: 2
                 onEntered: {
-                    barGroup._calendarYear  = new Date().getFullYear()
-                    barGroup._calendarMonth = new Date().getMonth() + 1
+                    barGroup._calendarYear      = new Date().getFullYear()
+                    barGroup._calendarMonth     = new Date().getMonth() + 1
                     _calHideTimer.stop()
                     _hideTimer.stop()
-                    barGroup._popupVisible  = false
-                    barGroup._calendarVisible = true
+                    barGroup._popupVisible      = false
+                    barGroup._wifiPopupVisible  = false
+                    barGroup._btPopupVisible    = false
+                    barGroup._calendarVisible   = true
                 }
                 onExited: _calHideTimer.restart()
             }
@@ -732,7 +771,8 @@ Item {
             x: 0; y: 0
             width: barWindow.width
             height: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
-                  + (_popupCard.visible || barGroup._calendarVisible ? 220 : 0)
+                  + (_popupCard.visible || barGroup._calendarVisible
+                     || barGroup._wifiPopupVisible || barGroup._btPopupVisible ? 340 : 0)
         }
 
         // ── Popup card — persistent, never destroyed ────────────────────────
@@ -1006,8 +1046,358 @@ Item {
             }
         }
 
-        Process { id: powerCmd;     command: ["bash", "-c", "wlogout-launch.sh &"]; running: false }
-        Process { id: networkCmd;   command: ["bash", "-c", "nm-connection-editor &"]; running: false }
-        Process { id: bluetoothCmd; command: ["bash", "-c", "blueman-manager &"]; running: false }
+        Process { id: powerCmd; command: ["bash", "-c", "wlogout-launch.sh &"]; running: false }
+
+        // ── WiFi popup ─────────────────────────────────────────────────────────
+        Shape {
+            id: _wifiCard
+
+            property real _r:  Commons.Appearance.radius.xl
+            property real _rb: Commons.Appearance.radius.md
+            property real _bw: 260
+
+            x: Math.min(
+                   Math.max(barGroup._wifiAnchorX - width / 2,
+                            Commons.Appearance.bar.marginSide + 4),
+                   barWindow.width - width - Commons.Appearance.bar.marginSide - 4)
+            y: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
+            width:  _bw + _r * 2
+            height: _wifiContent.implicitHeight + 20
+
+            layer.enabled: true
+            layer.samples: 8
+            transformOrigin: Item.Top
+            scale:   barGroup._wifiPopupVisible ? 1.0 : 0.85
+            opacity: barGroup._wifiPopupVisible ? 1.0 : 0.0
+            visible: opacity > 0.01
+            Behavior on scale   { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            ShapePath {
+                fillColor: Commons.Appearance.colors.glassBgLight
+                strokeWidth: 0; strokeColor: "transparent"
+                startX: 0; startY: 0
+                PathLine { x: _wifiCard._bw + _wifiCard._r * 2; y: 0 }
+                PathArc  { x: _wifiCard._bw + _wifiCard._r;     y: _wifiCard._r
+                           radiusX: _wifiCard._r; radiusY: _wifiCard._r; direction: PathArc.Counterclockwise }
+                PathLine { x: _wifiCard._bw + _wifiCard._r;     y: _wifiCard.height - _wifiCard._rb }
+                PathArc  { x: _wifiCard._bw + _wifiCard._r - _wifiCard._rb; y: _wifiCard.height
+                           radiusX: _wifiCard._rb; radiusY: _wifiCard._rb; direction: PathArc.Clockwise }
+                PathLine { x: _wifiCard._r + _wifiCard._rb;     y: _wifiCard.height }
+                PathArc  { x: _wifiCard._r;                     y: _wifiCard.height - _wifiCard._rb
+                           radiusX: _wifiCard._rb; radiusY: _wifiCard._rb; direction: PathArc.Clockwise }
+                PathLine { x: _wifiCard._r;                     y: _wifiCard._r }
+                PathArc  { x: 0;                                y: 0
+                           radiusX: _wifiCard._r; radiusY: _wifiCard._r; direction: PathArc.Counterclockwise }
+                PathLine { x: 0; y: 0 }
+            }
+
+            MouseArea {
+                anchors.fill: parent; hoverEnabled: true
+                onEntered: { _hideTimer.stop(); _calHideTimer.stop() }
+            }
+
+            Column {
+                id: _wifiContent
+                x: _wifiCard._r + 12; y: 10
+                width: _wifiCard._bw - 24
+                spacing: 0
+
+                // Header: adapter toggle + label + close
+                Item {
+                    width: parent.width; height: 40
+                    RowLayout {
+                        anchors.fill: parent; spacing: 8
+                        Rectangle {
+                            width: 28; height: 28; radius: Commons.Appearance.radius.base
+                            color: NetworkServices.Network.wifiEnabled ? Commons.Appearance.colors.accent : Commons.Appearance.colors.surface0
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            Text {
+                                anchors.centerIn: parent
+                                text: NetworkServices.Network.icon()
+                                color: NetworkServices.Network.wifiEnabled ? Commons.Appearance.colors.base : Commons.Appearance.colors.overlay0
+                                font.pixelSize: 13; font.family: Commons.Appearance.font.family
+                            }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: NetworkServices.Network.toggleWifi() }
+                        }
+                        Text {
+                            text: !NetworkServices.Network.wifiEnabled ? "WiFi — Off"
+                                : NetworkServices.Network.connected ? "WiFi · " + NetworkServices.Network.ssid : "WiFi — Not connected"
+                            color: NetworkServices.Network.wifiEnabled ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeMd; font.family: Commons.Appearance.font.family
+                            font.weight: Font.Medium; Layout.fillWidth: true; elide: Text.ElideRight
+                        }
+                        Text {
+                            text: "✕"
+                            color: _wifiCloseMA.containsMouse ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                            font.pixelSize: 11; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            MouseArea { id: _wifiCloseMA; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: barGroup._wifiPopupVisible = false }
+                        }
+                    }
+                }
+
+                Rectangle { width: parent.width; height: 1; color: Commons.Appearance.colors.surface0 }
+
+                // Adapter-off placeholder
+                Item {
+                    width: parent.width; height: 32
+                    visible: !NetworkServices.Network.wifiEnabled
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Enable WiFi to see networks"
+                        color: Commons.Appearance.colors.overlay0
+                        font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                    }
+                }
+
+                // Network list (up to 5, sorted: active → saved → available)
+                Repeater {
+                    model: NetworkServices.Network.wifiEnabled ? NetworkServices.Network.displayNetworks.slice(0, 5) : []
+                    delegate: Item {
+                        required property var modelData
+                        width: parent.width; height: 32
+                        property bool _busy: NetworkServices.Network.connectingTo === modelData.ssid
+                            || (modelData.active && NetworkServices.Network.disconnectingFrom === modelData.ssid)
+                        property bool _needsPw: !modelData.saved
+                            && modelData.security !== "" && modelData.security !== "--"
+                        RowLayout {
+                            anchors.fill: parent; spacing: 6
+                            Text {
+                                text: NetworkServices.Network.signalIcon(
+                                    modelData.signal, modelData.security !== "" && modelData.security !== "--")
+                                color: modelData.active ? Commons.Appearance.colors.accent : Commons.Appearance.colors.overlay0
+                                font.pixelSize: 13; font.family: Commons.Appearance.font.family
+                            }
+                            Text {
+                                text: modelData.ssid
+                                color: modelData.active ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext1
+                                font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                                Layout.fillWidth: true; elide: Text.ElideRight
+                            }
+                            Item {
+                                width: _busy ? 20 : _wBtnTxt.implicitWidth + 16; height: 22
+                                Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+                                Text {
+                                    id: _wBtnSpinner; visible: _busy; anchors.centerIn: parent
+                                    text: "󰑙"; color: Commons.Appearance.colors.accent
+                                    font.pixelSize: 13; font.family: Commons.Appearance.font.family
+                                    RotationAnimator { target: _wBtnSpinner; running: _busy; loops: Animation.Infinite; from: 0; to: 360; duration: 900 }
+                                }
+                                Rectangle {
+                                    id: _wBtn; visible: !_busy; anchors.fill: parent
+                                    radius: Commons.Appearance.radius.sm
+                                    color: _wBtnMA.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                                    Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                    Text {
+                                        id: _wBtnTxt; anchors.centerIn: parent
+                                        text: modelData.active ? "Disconnect" : (_needsPw ? "Open CC" : "Connect")
+                                        color: modelData.active ? Commons.Appearance.colors.red
+                                            : _needsPw ? Commons.Appearance.colors.subtext0
+                                            : Commons.Appearance.colors.mauve
+                                        font.pixelSize: Commons.Appearance.font.sizeSm - 1; font.family: Commons.Appearance.font.family
+                                    }
+                                    MouseArea {
+                                        id: _wBtnMA; anchors.fill: parent; hoverEnabled: true
+                                        onClicked: {
+                                            if (modelData.active) {
+                                                NetworkServices.Network.disconnect()
+                                            } else if (_needsPw) {
+                                                Commons.State.controlCenterOpenSection = "wifi"
+                                                Commons.State.controlCenterVisible = true
+                                                barGroup._wifiPopupVisible = false
+                                            } else {
+                                                NetworkServices.Network.connect(modelData.ssid)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Rescan
+                Item {
+                    width: parent.width; height: 28
+                    visible: NetworkServices.Network.wifiEnabled
+                    Text {
+                        anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                        text: NetworkServices.Network.scanning ? "Scanning…" : "󰑙  Rescan"
+                        color: NetworkServices.Network.scanning ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.mauve
+                        font.pixelSize: Commons.Appearance.font.sizeSm - 1; font.family: Commons.Appearance.font.family
+                        MouseArea {
+                            anchors.fill: parent; anchors.margins: -4
+                            enabled: !NetworkServices.Network.scanning; cursorShape: Qt.PointingHandCursor
+                            onClicked: NetworkServices.Network.scan()
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Bluetooth popup ────────────────────────────────────────────────────
+        Shape {
+            id: _btCard
+
+            property real _r:  Commons.Appearance.radius.xl
+            property real _rb: Commons.Appearance.radius.md
+            property real _bw: 240
+
+            x: Math.min(
+                   Math.max(barGroup._btAnchorX - width / 2,
+                            Commons.Appearance.bar.marginSide + 4),
+                   barWindow.width - width - Commons.Appearance.bar.marginSide - 4)
+            y: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
+            width:  _bw + _r * 2
+            height: _btContent.implicitHeight + 20
+
+            layer.enabled: true
+            layer.samples: 8
+            transformOrigin: Item.Top
+            scale:   barGroup._btPopupVisible ? 1.0 : 0.85
+            opacity: barGroup._btPopupVisible ? 1.0 : 0.0
+            visible: opacity > 0.01
+            Behavior on scale   { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            ShapePath {
+                fillColor: Commons.Appearance.colors.glassBgLight
+                strokeWidth: 0; strokeColor: "transparent"
+                startX: 0; startY: 0
+                PathLine { x: _btCard._bw + _btCard._r * 2; y: 0 }
+                PathArc  { x: _btCard._bw + _btCard._r;     y: _btCard._r
+                           radiusX: _btCard._r; radiusY: _btCard._r; direction: PathArc.Counterclockwise }
+                PathLine { x: _btCard._bw + _btCard._r;     y: _btCard.height - _btCard._rb }
+                PathArc  { x: _btCard._bw + _btCard._r - _btCard._rb; y: _btCard.height
+                           radiusX: _btCard._rb; radiusY: _btCard._rb; direction: PathArc.Clockwise }
+                PathLine { x: _btCard._r + _btCard._rb;     y: _btCard.height }
+                PathArc  { x: _btCard._r;                   y: _btCard.height - _btCard._rb
+                           radiusX: _btCard._rb; radiusY: _btCard._rb; direction: PathArc.Clockwise }
+                PathLine { x: _btCard._r;                   y: _btCard._r }
+                PathArc  { x: 0;                            y: 0
+                           radiusX: _btCard._r; radiusY: _btCard._r; direction: PathArc.Counterclockwise }
+                PathLine { x: 0; y: 0 }
+            }
+
+            MouseArea {
+                anchors.fill: parent; hoverEnabled: true
+                onEntered: { _hideTimer.stop(); _calHideTimer.stop() }
+            }
+
+            Column {
+                id: _btContent
+                x: _btCard._r + 12; y: 10
+                width: _btCard._bw - 24
+                spacing: 0
+
+                // Header: adapter toggle + label + status + close
+                Item {
+                    width: parent.width; height: 40
+                    RowLayout {
+                        anchors.fill: parent; spacing: 8
+                        Rectangle {
+                            width: 28; height: 28; radius: Commons.Appearance.radius.base
+                            color: NetworkServices.Bluetooth.enabled ? Commons.Appearance.colors.mauve : Commons.Appearance.colors.surface0
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            Text {
+                                anchors.centerIn: parent
+                                text: NetworkServices.Bluetooth.icon()
+                                color: NetworkServices.Bluetooth.enabled ? Commons.Appearance.colors.base : Commons.Appearance.colors.overlay0
+                                font.pixelSize: 13; font.family: Commons.Appearance.font.family
+                            }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: NetworkServices.Bluetooth.toggle() }
+                        }
+                        Text {
+                            text: "Bluetooth"
+                            color: Commons.Appearance.colors.text
+                            font.pixelSize: Commons.Appearance.font.sizeMd; font.family: Commons.Appearance.font.family
+                            font.weight: Font.Medium; Layout.fillWidth: true
+                        }
+                        Text {
+                            text: !NetworkServices.Bluetooth.enabled ? "Off"
+                                : NetworkServices.Bluetooth.connected ? NetworkServices.Bluetooth.device : "On"
+                            color: NetworkServices.Bluetooth.enabled ? Commons.Appearance.colors.subtext0 : Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                            elide: Text.ElideRight; Layout.maximumWidth: 80
+                        }
+                        Text {
+                            text: "✕"
+                            color: _btCloseMA.containsMouse ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                            font.pixelSize: 11; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            MouseArea { id: _btCloseMA; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: barGroup._btPopupVisible = false }
+                        }
+                    }
+                }
+
+                Rectangle { width: parent.width; height: 1; color: Commons.Appearance.colors.surface0 }
+
+                // Adapter-off placeholder
+                Item {
+                    width: parent.width; height: 32
+                    visible: !NetworkServices.Bluetooth.enabled
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Bluetooth adapter is off"
+                        color: Commons.Appearance.colors.overlay0
+                        font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                    }
+                }
+
+                // No paired devices
+                Item {
+                    width: parent.width; height: 32
+                    visible: NetworkServices.Bluetooth.enabled && NetworkServices.Bluetooth.devices.length === 0
+                    Text {
+                        anchors.left: parent.left; anchors.leftMargin: 2; anchors.verticalCenter: parent.verticalCenter
+                        text: "No paired devices"
+                        color: Commons.Appearance.colors.overlay0
+                        font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                    }
+                }
+
+                // Device list
+                Repeater {
+                    model: NetworkServices.Bluetooth.enabled ? NetworkServices.Bluetooth.devices : []
+                    delegate: Item {
+                        required property var modelData
+                        width: parent.width; height: 32
+                        RowLayout {
+                            anchors.fill: parent; spacing: 8
+                            Text {
+                                text: modelData.connected ? "󰂱" : "󰂯"
+                                color: modelData.connected ? Commons.Appearance.colors.mauve : Commons.Appearance.colors.overlay0
+                                font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                            }
+                            Text {
+                                text: modelData.name
+                                color: modelData.connected ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext1
+                                font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
+                                Layout.fillWidth: true; elide: Text.ElideRight
+                            }
+                            Rectangle {
+                                width: _btDevLbl.implicitWidth + 16; height: 22
+                                radius: Commons.Appearance.radius.sm
+                                color: _btDevMA.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                                Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                Text {
+                                    id: _btDevLbl; anchors.centerIn: parent
+                                    text: modelData.connected ? "Disconnect" : "Connect"
+                                    color: modelData.connected ? Commons.Appearance.colors.red : Commons.Appearance.colors.mauve
+                                    font.pixelSize: Commons.Appearance.font.sizeSm - 1; font.family: Commons.Appearance.font.family
+                                }
+                                MouseArea {
+                                    id: _btDevMA; anchors.fill: parent; hoverEnabled: true
+                                    onClicked: modelData.connected
+                                        ? NetworkServices.Bluetooth.disconnectDevice(modelData.address)
+                                        : NetworkServices.Bluetooth.connectDevice(modelData.address)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -1049,5 +1049,31 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
-**Last Updated:** 2026-05-12
-**Total Decisions:** 49
+---
+
+### [2026-05-19] Bar Popups: Native QML Panels vs External App Launch
+
+**Context:** Bar network and BT icons previously launched `nm-connection-editor` and `blueman-manager`. Sprint 9 goal was to bring these inline as compact popups — same ear+arc Shape geometry as the calendar card.
+
+**Decision:** Replace external app launches with native Shape popups in Bar.qml. WiFi popup shows top-5 networks with connect/disconnect inline; BT popup shows paired device list. Both have adapter toggle headers. "Open Settings" deeplinks into CC via `State.controlCenterOpenSection`.
+
+**Rationale:** External apps break visual cohesion and require separate window management. Native popups give immediate status at a glance and keep the shell self-contained. CC remains the full settings surface for edge cases (password entry, forget, full device list).
+
+**Trade-offs Accepted:** Bar popup capped at 5 networks — power users use CC. Password entry stays in CC only (bar popup triggers deeplink).
+
+---
+
+### [2026-05-19] busctl monitor Fallback: Polling on Access Denied
+
+**Context:** `busctl monitor org.bluez` exits with code 1 (Access denied) in normal user sessions. The original `onExited` handler unconditionally restarted the process, causing an infinite crash loop.
+
+**Decision:** Only restart the monitor on `code === 0` (clean disconnect). Add a 3-second polling `Timer` as fallback when monitor is not running. Timer declared as `property var _pollTimer: Timer {}` — required because `QtObject` has no default property.
+
+**Rationale:** Polling at 3s is sufficient for BT state changes. The monitor approach is best-effort; crashing in a tight loop burns CPU and spams logs with no benefit.
+
+**Trade-offs Accepted:** 3s polling lag for BT state updates when busctl monitor is unavailable.
+
+---
+
+**Last Updated:** 2026-05-19
+**Total Decisions:** 51
