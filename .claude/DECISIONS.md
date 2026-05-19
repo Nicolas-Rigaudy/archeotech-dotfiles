@@ -108,22 +108,38 @@ This document tracks all technical decisions made during the project, with ratio
 
 ### [2025-11-28] Window Manager: Hyprland
 
+> **Superseded:** MangoWC became the primary compositor by late 2025. See entry below. Hyprland config retained as fallback only.
+
 **Context:** Main choice for this project - no alternatives seriously considered.
 
-**Decision:** Hyprland
+**Decision:** Hyprland (at project start)
 
 **Rationale:**
-- Modern Wayland compositor
-- Smooth animations and blur effects
-- Tiling window manager (productivity)
+- Modern Wayland compositor with smooth animations
 - Active development and community
-- Great documentation
-- The whole point of this project!
+- Good documentation
 
 **Trade-offs Accepted:**
 - Wayland compatibility issues with some apps
 - Bleeding edge (occasional bugs)
-- Requires learning new workflow
+
+---
+
+### [2025-12] Compositor: MangoWC as Primary (Supersedes Hyprland)
+
+**Context:** MangoWC (wlroots-based, scrolling/stacking layout model) was adopted early in the project. Better IPC integration with Quickshell; wlroots backend means `xdg-desktop-portal-wlr` works correctly. Hyprland config kept as fallback.
+
+**Decision:** MangoWC as primary compositor. Hyprland retained as fallback.
+
+**Rationale:**
+- MangoWC IPC via `mmsg -w` integrates cleanly with Quickshell `Process` + `SplitParser`
+- wlroots base aligns with xdg-desktop-portal-wlr (vs -hyprland)
+- Scrolling layout model suits the workflow better
+
+**Trade-offs Accepted:**
+- Smaller community, fewer reference configs
+- Quickshell's built-in Hyprland IPC (`Quickshell.Hyprland`) not usable — custom MangoWC IPC layer required
+- Some tooling is MangoWC-specific (`mmsg`, `mango/config.conf`)
 
 ---
 
@@ -210,7 +226,7 @@ This document tracks all technical decisions made during the project, with ratio
 - MangoWC requires custom IPC bridge instead of Quickshell's built-in Hyprland support
 - Migration is multi-month — waybar stays until each phase is complete
 
-**Review:** Waybar stays until Phase 2 (bar replacement) is complete. swaync stays until Phase 3.
+**Status (2026-05-19):** Migration complete. Waybar replaced by Quickshell bar (Sprint 2). swaync replaced by native Quickshell notifications (Sprint 6). Quickshell is now the sole shell.
 
 ---
 
@@ -610,13 +626,6 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
-## Decision Review Schedule
-
-- **Shell architecture:** Review after Sprint 2 — if polish gap still large, reconsider Noctalia fork
-- **Theme system:** Review after first theme switcher proof-of-concept (Sprint 3)
-- **Notification daemon:** swaync → Quickshell Phase 3 — review timeline after bar is fully polished
-- **Keybind philosophy:** Review if AZERTY/QWERTY conflicts emerge
-
 ---
 
 ## How to Use This Document
@@ -678,9 +687,6 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
-**Last Updated:** 2026-04-29
-**Total Decisions:** 24
-
 ## [2026-05-04] Idle management: configurable via control center
 
 **Context:** swayidle was hardcoded with fixed timers. Screen locking felt random (was actually `before-sleep` on lid-close resume). Needed per-action toggles and timer presets without editing config files.
@@ -705,8 +711,7 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
-**Last Updated:** 2026-05-04
-**Total Decisions:** 29
+**Last Updated:** 2026-05-19
 
 ---
 

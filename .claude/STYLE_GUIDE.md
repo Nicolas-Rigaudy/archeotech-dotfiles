@@ -28,7 +28,7 @@ AI assistants working for Corvus should prioritize:
 
 Properties: 
 - Dark, soft, elegant color palette 
-- Universally implemented across Hyprland, Waybar, Terminal, GTK, icons 
+- Universally implemented across compositor, Quickshell shell, terminal, GTK, icons 
 - Ensures consistency and aesthetic stability
 
 Why Macchiato: 
@@ -138,19 +138,22 @@ Tone should remain calm, ritualistic, and technical.
 6.  Use geometric spacing and HUD-like separators.
 7.  Create a sense of ritualistic futurism.
 
-### Hyprland
+### Compositor (MangoWC primary / Hyprland fallback)
 
--   Subtle blur
+-   Subtle blur (when available; currently disabled in MangoWC due to SceneFX artifact)
 -   Slight neon-purple border for active window
--   Dim inactive windows
+-   Dim inactive windows (0.85 opacity; per-window apply on MangoWC, compositor-level on Hyprland)
 -   Rounded corners
--   Animations
+-   Smooth animations
 
-### Waybar
+### Quickshell Shell (bar + panels)
 
--   Cockpit‑style segmentation
--   Optional small symbols
--   Gridlike or panel-based layout
+-   Cockpit‑style pill bar with glass panels
+-   Optional small symbols / glyphs in tray
+-   Gridlike or panel-based layout for CC and popups
+-   All components follow the same Catppuccin Macchiato glass aesthetic
+
+> *Note: Waybar applies only when running the Hyprland fallback compositor.*
 
 ### Terminal
 

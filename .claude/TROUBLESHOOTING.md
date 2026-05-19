@@ -23,7 +23,9 @@ This document contains all known issues, their symptoms, causes, and solutions. 
 
 ## Boot & System Issues
 
-### Fedora Won't Boot After Arch Install
+> **Note:** Fedora entries below are archived. System is Arch-only since ~2026-04-20 (Fedora partition removed). Kept for historical reference only.
+
+### [ARCHIVED] Fedora Won't Boot After Arch Install
 
 **Symptoms:**
 - GRUB doesn't show Fedora option
@@ -56,7 +58,7 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 ---
 
-### Fedora Boots to Wrong Environment from GRUB (Known Partial Issue)
+### [ARCHIVED] Fedora Boots to Wrong Environment from GRUB (Known Partial Issue)
 
 **Symptoms:**
 - Fedora kernel loads from GRUB successfully
@@ -77,7 +79,7 @@ scripts/fix-fedora-efi.sh         # Fix /boot/efi UUID in Fedora's fstab
 
 ---
 
-### GRUB Shows Only Arch, Not Fedora
+### [ARCHIVED] GRUB Shows Only Arch, Not Fedora
 
 **Symptoms:**
 - GRUB menu only shows Arch entries
@@ -212,24 +214,27 @@ systemctl --user status pipewire pipewire-pulse wireplumber
 ### External Monitor Not Detected
 
 **Symptoms:**
-- `hyprctl monitors` only shows laptop screen
 - Monitor is connected but not showing up
 
 **Cause:**
 - Cable not fully connected
 - Monitor not powered on
-- Hyprland needs manual reload
+- Compositor needs reload
 
-**Solution:**
+**Solution (MangoWC — primary):**
 ```bash
 # Check what kernel sees
 ls /sys/class/drm/
 
-# Force Hyprland to reload
-hyprctl reload
+# MangoWC: reload config (monitor rules may not apply — log out/in if needed)
+mmsg reload
 
-# Or restart Hyprland
-# (Logout and login via SDDM)
+# Or log out and log back in via SDDM for monitor rules to take effect
+```
+
+**Solution (Hyprland — fallback):**
+```bash
+hyprctl reload
 ```
 
 ---
@@ -238,24 +243,24 @@ hyprctl reload
 
 **Symptoms:**
 - Portrait monitor displays inverted
-- Waybar appears at bottom instead of top
 
 **Cause:**
-- Wrong transform value in Hyprland config
+- Wrong transform value in compositor config
 
-**Solution:**
-Edit `~/.config/hypr/hyprland.conf`:
-
+**Solution (MangoWC — primary):**
+Edit `~/.config/mango/config.conf`:
 ```conf
-# Try different transform values:
-# 0 = normal (landscape)
-# 1 = 90° clockwise
-# 2 = 180° (upside down)
-# 3 = 270° clockwise (or 90° counter-clockwise)
-
-monitor=DP-3,1920x1080@60,3840x0,1,transform,3  # Adjust transform value
+# MangoWC uses monitorrule with transform
+monitorrule=DP-3,1920x1080@60,3840x0,1,transform,3
 ```
+Then log out/in (mmsg reload doesn't reliably reapply monitor rules).
 
+**Solution (Hyprland — fallback):**
+Edit `~/.config/hypr/hyprland.conf`:
+```conf
+# 0=normal 1=90°CW 2=180° 3=270°CW
+monitor=DP-3,1920x1080@60,3840x0,1,transform,3
+```
 Then: `hyprctl reload`
 
 ---
@@ -320,10 +325,12 @@ sudo chmod +x /lib/systemd/system-sleep/logid
 - On AZERTY keyboard, Super+Q opens terminal when pressing 'A' key
 - Keybinds follow physical position, not letter
 
-**Cause:**
+> **Note:** This section applies to Hyprland (fallback). MangoWC uses `keybindsym` in `mango/config.conf` for layout-aware binds.
+
+**Cause (Hyprland):**
 - Hyprland uses keycodes by default, not keysyms
 
-**Solution:**
+**Solution (Hyprland — fallback):**
 Add to `~/.config/hypr/hyprland.conf`:
 
 ```conf
@@ -375,10 +382,12 @@ DisplayCommand=/usr/share/sddm/scripts/Xsetup
 - Alt+Shift doesn't toggle between US and FR
 - Stuck on one layout
 
-**Cause:**
-- Keyboard options not configured in Hyprland
+> **Note:** Hyprland-specific config below. MangoWC uses `kb_options` in its own input block in `mango/config.conf`.
 
-**Solution:**
+**Cause:**
+- Keyboard options not configured in compositor
+
+**Solution (Hyprland — fallback):**
 Check `~/.config/hypr/hyprland.conf`:
 
 ```conf
@@ -573,12 +582,10 @@ layer_shadows=0
 **Cause:**
 - ControlCenter reads state once in `Component.onCompleted` and never again
 
-**Workaround (current):**
-- State re-reads on `onVisibleChanged` for power profile, night light, DND
-
-**Proper fix (Sprint 2):**
-- Add a 2s poll timer that runs only while ControlCenter is visible
-- Or replace swaync DND with native QML toggle (Phase 3)
+**Current solution:**
+- State re-reads on `onVisibleChanged` for power profile and night light
+- DND: resolved — swaync replaced by native Quickshell notifications (Sprint 6), DND is now a direct QML property
+- Remaining: power profile and night light still use `onVisibleChanged` re-read; a 2s poll timer while CC is visible would be cleaner but isn't critical
 
 ---
 
@@ -696,6 +703,8 @@ animations {
 ---
 
 ## Waybar Issues
+
+> **Note:** Waybar is used only with Hyprland (fallback compositor). Primary shell is Quickshell. These entries apply only when running Hyprland.
 
 ### Waybar Not Showing / Crashes on Launch
 

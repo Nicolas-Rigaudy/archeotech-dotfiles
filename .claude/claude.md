@@ -78,7 +78,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 | **Display Manager** | SDDM | Best for Wayland compositors, Catppuccin themes available |
 | **Status Bar** | Quickshell (QML) | Primary — unified process: bar + control center + OSD. Waybar kept for Hyprland fallback only. Target structure: Commons/ + Services/<Domain>/ + Modules/ + Widgets/ (Noctalia-style, no qmldir files). |
 | **App Launcher** | rofi-wayland | Most features, extensible |
-| **Notifications** | swaync | GTK4 notification center with panel — replaces dunst. Phase 3 will replace with native Quickshell component. |
+| **Notifications** | Quickshell native | `Quickshell.Services.Notifications.NotificationServer` — fully integrated in Sprint 6. swaync removed. |
 | **Wallpaper** | awww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay (note: package was renamed from swww → awww) |
 | **Wallpaper Picker** | rofi (thumbnail grid) | scripts/wallpaper-picker.sh — 3-col grid, logos row 1, wallpapers below, vertical scroll |
 | **Lock Screen** | swaylock (MangoWC) / hyprlock (Hyprland) | Compositor-specific lock screens |
@@ -181,7 +181,7 @@ This is a comprehensive Arch Linux desktop environment with MangoWC (primary) an
 3. **Glass aesthetic** — blur + transparency consistent with waybar pill style
 4. **Icons everywhere** — Papirus-Dark icons in all menus, no text-only entries
 5. **Max 2 keystrokes** to reach any setting from anywhere
-6. **No fake toggles** — swaync button-grid toggles don't reflect real state reliably; use launcher buttons that open the right tool instead
+6. **No fake toggles** — toggles must reflect real state reliably; bind to actual QML property writes, not fire-and-forget shell commands that can desync
 7. **Nothing hardcoded** — colors in one place, easy to switch flavor (Mocha/Macchiato)
 
 ---
@@ -470,11 +470,8 @@ nmcli connection show
 ### Managing the Shell
 
 ```bash
-# Restart Quickshell (bar + control center + OSD)
+# Restart Quickshell (bar + control center + OSD + notifications)
 pkill quickshell && quickshell &
-
-# Restart swaync (notification daemon)
-pkill swaync && swaync &
 
 # Reload MangoWC config safely (re-applies monitor rules)
 ~/.local/bin/mango-reload.sh
@@ -558,14 +555,17 @@ aws sts get-caller-identity --profile profile-name
 
 ### Monitor Management
 ```bash
-# Check current monitors
-hyprctl monitors
+# MangoWC (primary):
+mmsg -O  # List current outputs
 
-# Force reload monitor config
+# Reload MangoWC config (monitor rules may not apply — log out/in if needed)
+~/.local/bin/mango-reload.sh
+
+# Hyprland (fallback):
+hyprctl monitors
 hyprctl reload
 
-# Monitors are auto-detected on dock/undock
-# Workspaces are assigned per monitor in hyprland.conf
+# Monitors are auto-detected on dock/undock via MangoWC monitor rules in mango/config.conf
 ```
 
 ### Taking Screenshots
@@ -601,13 +601,12 @@ pavucontrol
 
 ### Lock Screen & Idle
 ```bash
-# Manual lock
+# MangoWC (primary):
+swaylock  # or ~/.local/bin/swaylock-launch.sh (uses current wallpaper as bg)
+# Idle managed by swayidle — config written by CC, launched via swayidle/config.sh
+
+# Hyprland (fallback):
 hyprlock
-
-# Idle management settings in ~/.config/hypr/hypridle.conf
-# Default: 5min = dim, 10min = lock, 15min = screen off
-
-# Test idle config
 hypridle
 ```
 
@@ -768,16 +767,50 @@ new[MD]: add installation guide and keybinds reference
 
 After any significant work, update these files before committing:
 
-1. **`.claude/claude.md`** — move completed tasks, update "Recent Additions" and "Last Updated"
+1. **`.claude/claude.md`** — update "Last Updated", "Next Sprint", and shell status line
 2. **`docs/PACKAGES.md`** — add newly installed packages
 3. **`docs/KEYBINDS-MANGO.md`** / **`docs/KEYBINDS.md`** — add/update keybindings
 4. **`docs/TOOLS.md`** — document new tool configs/usage
-5. **`.claude/ROADMAP.md`** — update in-progress/done items if scope changed
+5. **`.claude/ROADMAP.md`** — move completed sprint to history table (one-line summary only); update "← NEXT" marker on next sprint
 6. **`docs/MANGOWC-SETUP.md`** — update if MangoWC setup steps changed
 7. **`.claude/DECISIONS.md`** — log any technical choices made (why X over Y)
 8. **`.claude/TROUBLESHOOTING.md`** — add any issues encountered and solved
 
 Then prepare a commit message following the Git Commit Messages format. Present it to the user — do not commit automatically. Do NOT include "Co-Authored-By: Claude" in commit messages.
+
+---
+
+## Documentation Structure Rules
+
+**This was consolidated on 2026-05-19. Keep it clean.**
+
+### The five docs and what goes where
+
+| File | Purpose | What belongs here |
+|------|---------|-------------------|
+| `claude.md` | System state snapshot | Current status, architecture decisions, installed tools, keybinds, file structure. NOT plans. |
+| `ROADMAP.md` | Single planning doc | Sprint history table, upcoming sprint specs, feature backlog, ideas. ONE doc for all planning. |
+| `ANALYSIS.md` | Research reference | Source-inspected findings, confirmed APIs, QML patterns, settings ecosystem research. Not plans. |
+| `DECISIONS.md` | Decision log | Why X over Y, trade-offs accepted. Date-stamped entries. |
+| `TROUBLESHOOTING.md` | Known issues | Problems encountered and how they were solved. |
+
+### Rules that prevent the next rewrite
+
+1. **Never create a new `.claude/` doc without asking first.** There are exactly 5 files: `claude.md`, `ROADMAP.md`, `ANALYSIS.md`, `DECISIONS.md`, `TROUBLESHOOTING.md`. Any new doc is a red flag.
+
+2. **ROADMAP.md is the only planning doc.** If it's getting unwieldy, reorganize within it — do not create a parallel file.
+
+3. **Completed sprint → history table only.** When a sprint ships, add one row to the Sprint History table in ROADMAP.md. Do not leave the full spec in the file. Remove the `← NEXT` marker from the completed sprint and add it to the next one.
+
+4. **Ideas stay in ROADMAP.md under "Ideas & Someday".** Do not scatter backlog items across multiple files.
+
+5. **Research goes in ANALYSIS.md.** When new reference projects are studied or APIs confirmed, add a section to ANALYSIS.md. Do not inline research into ROADMAP.md sprint specs.
+
+6. **Lessons learned go in TROUBLESHOOTING.md or DECISIONS.md**, not in ROADMAP.md.
+
+7. **claude.md "Last Updated" and "Next Sprint" must be updated every session.** These two fields are the fastest way to orient a new conversation.
+
+8. **Do not copy content between docs.** If something needs to reference another doc, link to it with a section anchor. Duplication is what caused the rewrite in the first place.
 
 ---
 
@@ -790,11 +823,11 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 4. **Verify permissions:** Some files need specific permissions (e.g., 755 for scripts)
 5. **Reload services:** Many changes require reloading (`mango-reload.sh`, `pkill quickshell && quickshell &`, etc.)
 6. **Use official Catppuccin themes:** Always fetch official themes from https://github.com/catppuccin/ repositories, never create custom color schemes
-7. **Check reference sources before solving QML/compositor problems:** All reference projects were source-inspected 2026-05-04. Key confirmed findings: MangoWC IPC use `Quickshell.DWL` (DwlIpc/DwlIpcOutput) NOT mmsg -w. MPRIS use `Quickshell.Services.Mpris`. Notifications use `Quickshell.Services.Notifications.NotificationServer`. Lock screen use `WlSessionLock` + `PamContext`. No qmldir files needed — Quickshell resolves from directory layout. See `.claude/ANALYSIS.md` §2 for full per-project findings.
-   - MangoWC IPC / compositor abstraction → Noctalia Shell (CompositorService facade + MangoService using DwlIpc)
+7. **Check reference sources before solving QML/compositor problems:** All reference projects were source-inspected 2026-05-04. Key confirmed findings: MangoWC IPC uses `mmsg -w` subprocess (NOT `Quickshell.DWL` — DWL is in a custom fork, not upstream). MPRIS: `Quickshell.Services.Mpris`. Notifications: `Quickshell.Services.Notifications.NotificationServer`. Lock screen: `WlSessionLock` + `PamContext`. No qmldir files — Quickshell resolves from directory layout. See `.claude/ANALYSIS.md` §2 for full per-project findings.
+   - MangoWC IPC / multi-compositor → Noctalia Shell
    - JsonAdapter / FileView / MPRIS / Notifications → end-4/dots-hyprland
-   - Unified panels / DrawerVisibilities / lock screen / C++ plugin → caelestia-dots/shell
-   - Lock screen PAM + WlSessionLock implementation → Qylock
+   - Unified panels / lock screen / C++ plugin → caelestia-dots/shell
+   - Lock screen PAM + WlSessionLock → Qylock
    - Go backend IPC pattern (Unix socket + newline-JSON) → DankMaterialShell
 
 ### When Installing Packages
@@ -829,10 +862,10 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-11 (sprint 6+7 bar polish — hover popups, calendar, toast fix)
+**Last Updated:** 2026-05-19 (sprints 0–10 complete; docs consolidation)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 1–7: full restructure, MPRIS service, notification system, bar polish. Bar now has hover popups on every element + calendar popup on clock hover. Notification toast fixed (plain-object queue). See `docs/DESIGN_DECISIONS.md` and `.claude/ROADMAP.md`.
-**Next Sprint:** Sprint 7 — launcher (parse .desktop files, fuzzy match, keyboard nav, centered panel).
+**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–10 complete: full restructure, MPRIS, notifications, bar polish, launcher, BT/WiFi/audio/VPN native. See `.claude/ROADMAP.md` for sprint history and upcoming sprints.
+**Next Sprint:** Sprint 11 — Settings Foundation (Config singleton, FloatingWindow, NavRail, 6 panes).
 **Quickshell version:** 0.2.1-6 (0.3.0 released 2026-05-04, pending Arch packaging). `Quickshell.DWL` is not upstream — stays on mmsg -w.
-**Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = `Quickshell.DWL` (NOT mmsg -w). See `.claude/ANALYSIS.md` §2 for full findings.
+**Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = mmsg -w (not DWL — DWL is a custom fork). See `.claude/ANALYSIS.md` §2 for full findings.

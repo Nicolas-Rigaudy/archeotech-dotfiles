@@ -1,7 +1,7 @@
 # Archeotech Dotfiles — Full System Analysis
 
-**Last Updated:** 2026-05-04 (deep-research pass — all reference projects source-inspected)
-**Purpose:** Comprehensive reference: ecosystem research, current state audit, gap analysis, and roadmap to a distributable GitHub release.
+**Last Updated:** 2026-05-19  
+**Purpose:** Comprehensive research reference — ecosystem findings, confirmed QML APIs, source-inspected patterns, settings deep-dives. Sprint plan lives in `ROADMAP.md`.
 
 ---
 
@@ -13,8 +13,11 @@
 4. [Gap Analysis — Where We Are vs Where We Want To Be](#4-gap-analysis)
 5. [Dead / Obsolete Files Found](#5-dead--obsolete-files)
 6. [Architecture Decision: Build vs Fork](#6-architecture-decision)
-7. [Roadmap To Distributable Release](#7-roadmap-to-distributable-release)
+7. [Sprint Plan](#7-sprint-plan)
 8. [Installation Design](#8-installation-design)
+9. [Settings Ecosystem Research — WiFi / Audio / BT Patterns](#9-settings-ecosystem-research--cross-repo-findings)
+10. [Settings Panel Research — Dedicated Settings Apps](#10-settings-panel-research--wave-2-dedicated-settings-apps)
+11. [QML Patterns & Design Principles](#11-qml-patterns--design-principles)
 
 ---
 
@@ -465,147 +468,16 @@ For a clean GitHub release:
 
 ---
 
-## 7. Roadmap To Distributable Release
+## 7. Sprint Plan
 
-> **Architecture decision (2026-05-04 research):** After source-inspecting all reference projects, the target structure is confirmed:
-> `Commons/` + `Services/<Domain>/` + `Modules/` + `Widgets/` (no qmldir files). MangoWC IPC via `Quickshell.DWL` not `mmsg -w`. MPRIS and Notifications are native `Quickshell.Services.*` — no Go needed for those. Go daemon is Sprint 8+, only for raw Wayland protocols (wlr-output-management, wlr-gamma-control, screencopy).
+The sprint plan has moved to `ROADMAP.md`. Key architecture decisions confirmed by this research:
 
-### Sprint 0 — Dead file cleanup + immediate fixes (30 min)
-
-**Goal:** Remove known broken state before any restructure.
-
-- [ ] Delete `scripts/show-keybinds.sh.bak`
-- [ ] Delete `config/.config/dunst/dunstrc`
-- [ ] Fix `Bar.qml` clock: `interval: 10000` → `interval: 1000`
-- [ ] Fix `install.sh` CONFIGS array — add missing 8 dirs (quickshell, swaync, wlogout, waypaper, navi, lazygit, atuin, swaylock, swayidle)
-- [ ] Update `docs/PACKAGES.md` — add quickshell-git, fix awww
-
-### Sprint 1 — Directory restructure (pure refactor, zero behavior change)
-
-**Goal:** Move files to Noctalia-style layout. Shell works identically after.
-
-Target structure:
-```
-quickshell/
-├── shell.qml
-├── Commons/          Appearance.qml, State.qml, Paths.qml
-├── Services/
-│   ├── Compositor/   CompositorService.qml, MangoService.qml, HyprlandService.qml
-│   ├── Hardware/     Battery.qml, Brightness.qml
-│   ├── Media/        Audio.qml, Mpris.qml (stub)
-│   ├── Networking/   Network.qml, Bluetooth.qml
-│   └── System/       (Notifications.qml — Phase 6)
-├── Modules/
-│   ├── Bar/          Bar.qml
-│   ├── OSD/          Osd.qml
-│   └── ControlCenter/ ControlCenter.qml
-└── Widgets/          ActionButton, PillButton, SectionHeader, ToggleSwitch, PopupCard
-```
-
-- [ ] Move files, update all import paths
-- [ ] Delete all `qmldir` files (Quickshell resolves from directory layout)
-- [ ] Add `Commons/State.qml` (global boolean bus: ccVisible, osdVisible, lockVisible)
-- [ ] Add `Commons/Paths.qml` (home dir, cache dir, theme dir — no hardcoded strings)
-- [ ] Replace manual bounding-box in shell.qml with `State.ccVisible` + proper TapHandler
-
-### Sprint 2 — MangoWC DWL IPC upgrade + compositor abstraction
-
-**Goal:** Replace `mmsg -w` subprocess stream with native `Quickshell.DWL` protocol.
-
-- [ ] Replace `MangoWC.qml` with `Services/Compositor/MangoService.qml` using `DwlIpc` + `DwlIpcOutput`
-- [ ] Create `Services/Compositor/HyprlandService.qml` (Hyprland fallback, uses existing Quickshell Hyprland IPC)
-- [ ] Create `Services/Compositor/CompositorService.qml` facade — detects running compositor, delegates all calls
-- [ ] Keep `mmsg` only for operations DWL protocol can't do (display scale queries)
-- [ ] Update Bar.qml and ControlCenter to use `CompositorService` instead of `MangoWC` directly
-
-### Sprint 3 — Service quality (signal-driven, no polling)
-
-**Goal:** All services use D-Bus signals or native Quickshell APIs. No subprocess polling.
-
-- [ ] Replace `Audio.qml` pactl subprocess with `Quickshell.Services.Pipewire` (native PipeWire)
-- [ ] Replace `Battery.qml` /sys 30s poll with UPower D-Bus (`org.freedesktop.UPower`)
-- [ ] Replace `Bluetooth.qml` 5s poll with D-Bus signal subscription (`busctl monitor org.bluez`)
-- [ ] Add `onExited: (code) => console.error(...)` to all remaining `Process` wrappers
-- [ ] Fix ControlCenter state sync: 2s poll on `onVisible` for powerprofilesctl, wlsunset, DND
-- [ ] Add `Commons/Paths.qml` and eliminate all hardcoded `$HOME/Projects/archeotech-dotfiles` refs
-
-### Sprint 4 — Bar polish + MPRIS
-
-**Goal:** Bar feels polished. MPRIS card visible when playing.
-
-- [ ] `Services/Media/Mpris.qml` — `Quickshell.Services.Mpris`, auto-track active player, no playerctl
-- [ ] MPRIS bar module — scrolling track+artist, play/pause on click, only visible when playing
-- [ ] MPRIS media card in ControlCenter — album art, prev/play/next, progress bar
-- [ ] ControlCenter enter/exit animation — 200ms `OutQuart` on x position + opacity
-- [ ] Spring easing on tag dot width/color transitions (`easing.type: Easing.OutBack`)
-
-### Sprint 5 — Theme switcher + `theme.json` hot-reload
-
-**Goal:** `Super+Shift+T` switches between Macchiato and Mocha end-to-end.
-
-- [ ] `Services/Theming/ThemeLoader.qml` — `FileView { watchChanges: true }` on `~/.config/quickshell/theme.json`
-- [ ] `Commons/Appearance.qml` reads from ThemeLoader instead of hardcoded values
-- [ ] `themes/archeotech-macchiato/theme.json` — extract all current hardcoded color/geometry values
-- [ ] `themes/archeotech-mocha/theme.json` — second theme proof-of-concept
-- [ ] `scripts/theme-switch.sh` — copies theme.json, patches mango conf (shadows/border), kitty include, rofi vars, calls mango-reload + wallpaper-set
-- [ ] Theme picker overlay in Quickshell (color swatches + wallpaper thumbnail preview)
-
-### Sprint 6 — Native notifications (replaces swaync)
-
-**Goal:** swaync removed. All notifications are native Quickshell components.
-
-- [ ] `Services/System/Notifications.qml` — `Quickshell.Services.Notifications.NotificationServer`, persistence via `FileView` (serialize list to JSON on every change)
-- [ ] `Modules/Notifications/NotifPopup.qml` — glass pill, app icon + title + body + action buttons, 5s auto-dismiss, popup inhibit when CC is open
-- [ ] `Modules/Notifications/NotifHistory.qml` — slide-in panel from right, replaces swaync panel
-- [ ] Wire bar bell icon to `NotifHistory` instead of `swaync-client --toggle-panel`
-- [ ] Real DND toggle in ControlCenter (write to `State.dndEnabled`, filter in NotificationServer)
-- [ ] Remove swaync from autostart; test with Teams, battery-alert.service, playerctl
-
-### Sprint 7 — Native lock screen (replaces swaylock)
-
-**Goal:** swaylock removed. Lock screen is a first-class Quickshell component.
-
-Reference: Qylock (source-inspected — implementation is simpler than expected, ~50 lines of real logic).
-
-- [ ] `Modules/LockScreen/LockScreen.qml` — `WlSessionLock { locked: State.sessionLocked }`, one `WlSessionLockSurface` per screen via `Variants`
-- [ ] PAM auth via `Quickshell.Services.Pam.PamContext` — `pam.start()` → `onResponseRequiredChanged` → `respond(password)` → `onCompleted`
-- [ ] Background: blurred wallpaper from `~/.cache/wallpaper/last-wallpaper`, clock overlay, password `TextInput { echoMode: Password }`
-- [ ] Focus: `Timer { interval: 300; onTriggered: pwInput.forceActiveFocus() }`
-- [ ] Wire `swayidle` to `qs ipc call lock lock` instead of `swaylock-launch.sh`
-- [ ] On success: `loginctl unlock-session`, `Qt.quit()` after 1.5s
-
-### Sprint 8 — Distribution polish
-
-**Goal:** First clean distributable GitHub release.
-
-- [ ] `scripts/install-packages.sh` — full `paru -S` list for fresh Arch install
-- [ ] Rewrite `scripts/install.sh` — prereq check, timestamped backup, stow deploy, verification (JaKooLit approach)
-- [ ] `docs/INSTALL.md` — step-by-step for fresh Arch + MangoWC
-- [ ] Screenshots for README (bar, OSD, ControlCenter, each theme)
-- [ ] Audit all hardcoded paths — no `/home/corvus/` anywhere, no `~/Projects/archeotech-dotfiles/` in configs
-
-### Sprint 9 — Go daemon (optional, additive)
-
-**Goal:** Replace remaining shell-call system integrations with a proper IPC backend.
-
-Scope (only what Go genuinely earns): `wlr-output-management` (display layout without wlr-randr), `wlr-gamma-control` (night light without wlsunset), screenshot via `wlr-screencopy`.
-
-NOT in scope (native QML handles these): MPRIS, notifications, audio, battery, network, BT, lock screen.
-
-- [ ] `archeotech-daemon` Go binary — Unix socket at `$XDG_RUNTIME_DIR/archeotech.sock`, newline-JSON RPC
-- [ ] Namespaced methods: `display.extend`, `display.mirror`, `display.laptop-only`, `gamma.set`, `screenshot.region`
-- [ ] `Services/ArcheotechDaemon.qml` singleton — Quickshell `Socket` type, exponential-backoff reconnect, `$ARCHEOTECH_SOCKET` env var
-- [ ] Replace `wlr-randr` shell calls in display submenu with daemon calls
-- [ ] Replace `wlsunset` shell calls in night light submenu with daemon calls
-
-### Sprint 10 — Shadow Spear theme + dev modules (ongoing)
-
-**Goal:** Second complete named theme personality. Developer workflow in bar.
-
-- [ ] `themes/shadow-spear/` — full theme (compositor shadows/border/radius, kitty palette, starship raven sigil, rofi vars, wallpaper symlink)
-- [ ] Git branch module in bar — CWD from focused window via `CompositorService`, dims when no git context
-- [ ] AWS profile module in bar — always visible, dims when `$AWS_PROFILE` unset
-- [ ] Per-workspace wallpapers — hook on tag switch via `CompositorService.onTagSwitched`
+- Target structure: `Commons/` + `Services/<Domain>/` + `Modules/` + `Widgets/` (no qmldir files) — confirmed from Noctalia source
+- MangoWC IPC: `mmsg -w` subprocess (Quickshell.DWL is in a custom fork, not upstream)
+- MPRIS: `Quickshell.Services.Mpris` — native D-Bus, no playerctl
+- Notifications: `Quickshell.Services.Notifications.NotificationServer`
+- Lock screen: `WlSessionLock` + `Quickshell.Services.Pam.PamContext` (~50 lines — confirmed from Qylock)
+- Go daemon: Sprint 17+, only for `wlr-output-management`, `wlr-gamma-control`, `wlr-screencopy`
 
 ---
 
@@ -1364,38 +1236,115 @@ The idea: one color extraction run → all apps match. Our QML-native adaptation
 
 ---
 
-### 10.7 Implementation Roadmap for Archeotech Settings
+### 10.7 Implementation Notes for Archeotech Settings
 
-Based on Wave 2 research, here is the recommended implementation order:
+Research-confirmed patterns for each layer — see `ROADMAP.md` for current sprint specs and numbering.
 
-**Sprint 9 (next):** WiFi CC section — no new settings patterns needed yet. CompoundPill + inline password, three-section list.
+**Config persistence:** `JsonAdapter` + 50ms debounce timer is the universal pattern (end-4, DMS, caelestia all use it). Two singletons: `Config.qml` for user prefs, `Persistent.qml` for UI state (last-open pane, collapsed sections).
 
-**Sprint 10:** Audio + VPN CC sections — PipeWire native. Introduce `SliderRow` widget.
+**NavRail navigation:** Icon sidebar with labeled items beats horizontal tabs at 6+ panes. Support collapsible categories and wheel-scroll navigation.
 
-**Sprint 11:** Lock screen.
+**Collapsible sections:** `Layout.preferredHeight` + `clip: true` + dual height+opacity animation (caelestia pattern — cleanest found).
 
-**Sprint 12 — Settings Foundation:**
-1. `Services/Persistence/Config.qml` — singleton, JSON file, `setNestedValue(dotted.key, val)`, 50ms debounce
-2. `Modules/Settings/Settings.qml` — `FloatingWindow`, min 800×700, IPC trigger from CC gear button
-3. `Modules/Settings/SettingsSidebar.qml` — NavRail with 6–8 initial categories
-4. `Modules/Settings/Widgets/` — ToggleRow, SliderRow, DropdownRow, ButtonGroupRow
-5. First panes: Appearance (theme mode, accent color, scales), Bar (height, clock format), Notifications (timeout, max visible)
-6. Deep link: CC gear → `Settings.openPane("appearance")`
+**Deep linking:** `IpcHandler { target: "settings" }` with `openPane(id)` method. CC quick-toggles call `openPane("connections")` — this is what makes quick settings feel complete rather than dead-end.
 
-**Sprint 13 — Settings Depth:**
-- All CC sections also have a matching settings pane with full controls
-- WiFi: full NM integration (known networks, forget, priority)
-- Bluetooth: three-category panel (connected/paired/available) per Noctalia model
-- Audio: device aliasing, visibility toggle, per-device volume limits
-- ColorScheme: dark mode toggle, schedule, wallpaper color extraction
+**Search (later sprint):** DMS `SettingsSearchService` pattern — JSON index, fuzzy match, max 15 results, subTabName matches boosted 1.5×.
 
-**Sprint 14 — Settings Polish:**
-- Fuzzy search across all settings (DMS SettingsSearchService model)
-- Three panel modes: window / attached-to-bar / centered
-- Export/import settings (JSON backup)
-- Keyboard navigation (Ctrl+N to cycle sections)
+---
 
-**Sprint 15 — Theme System:**
-- Wallpaper color extraction (ImageMagick subprocess or pure QML)
-- `Theme.qml` singleton with wallbash-style color tokens
-- Template propagation to external apps (kitty, foot, dunst, hyprland borders)
+## 11. QML Patterns & Design Principles
+
+### 11.1 Shell Design Principles
+
+Rules that govern all Quickshell component decisions:
+
+1. **Everything animates.** No instant state changes. Every visibility toggle, color change, and panel transition uses a defined animation token. No exceptions without a documented reason.
+
+2. **Popups connect to their trigger.** A popup drops down from the exact bar element that triggered it — anchored to the icon's x-position, slides down from the bar's bottom edge. No floating dialogs that appear from nowhere.
+
+3. **Catppuccin Macchiato is the law.** All colors come from the palette. No hardcoded hex values outside the theme token file. Future theme switching swaps the token file, not individual components.
+
+4. **One action per surface.** The bar is for glanceable status. CC is for adjustment. NC is for history. Avoid duplicating controls across surfaces — if volume is in CC, the bar icon scrolls and mutes only.
+
+5. **Density is a dial, not a default.** Dense information is acceptable in the bar. Panels use breathing room. Rarely-used controls collapse by default.
+
+6. **Native QML first.** No third-party apps embedded where a native QML component is feasible within a sprint. External tools (`bluetoothctl`, `pactl`) are wrapped via process/service interfaces, not launched as visible windows.
+
+7. **Compositor features are compositor features.** MangoWC overview, window snapping, and tiling are not replicated in shell code. The shell augments, never fights, the compositor.
+
+---
+
+### 11.2 Animation Token System
+
+All durations and easings defined as shared tokens — no component hardcodes a raw duration.
+
+| Token | Duration | Easing | Use cases |
+|-------|----------|--------|-----------|
+| `Anim.fast` | 100ms | OutCubic | Hover color, icon tint, dot color |
+| `Anim.base` | 200ms | OutCubic | Most transitions — opacity, small position shifts |
+| `Anim.slow` | 300ms | OutQuart | Panel slides (CC open/close), OSD appear |
+| `Anim.spring` | 400ms | OutBack overshoot 1.2 | Tag dot size change, pop-in effects |
+| `Anim.entrance` | 200ms | OutCubic | scale `0.92 → 1.0` + opacity `0 → 1`, simultaneous |
+| `Anim.exit` | 150ms | OutCubic | opacity `1 → 0` only — no scale on exit, intentionally faster |
+
+**Rules:**
+- Panels (CC, NC, launcher, settings) use `Anim.slow` for the slide, `Anim.entrance`/`Anim.exit` for inner content
+- Toasts use `Anim.entrance` on appear, `Anim.exit` on dismiss
+- Tag dots use `Anim.spring` for size, `Anim.fast` for color
+- OSD uses `Anim.slow` for appear, `Anim.exit` for fade out
+- Never animate `width`/`height` directly on text — animate a container instead
+
+---
+
+### 11.3 MPRIS Reactive Detection
+
+**caelestia approach** (declarative binding):
+```qml
+readonly property list<MprisPlayer> list: Mpris.players.values
+readonly property MprisPlayer active: props.manualActive ?? list.find(p => ...) ?? list[0] ?? null
+```
+`Mpris.players.values` typed as `list<MprisPlayer>` — reactive because it is a list property binding. No explicit change handler needed.
+
+**Noctalia approach** (imperative with fallback):
+```qml
+Connections {
+    target: Mpris.players
+    function onValuesChanged() { updateCurrentPlayer() }
+}
+```
+`Mpris.players` is an ObjectModel that emits `valuesChanged` when players are added or removed. A `playerStateMonitor` Timer polls every 2s as a fallback.
+
+---
+
+### 11.4 Panel Slide Animations
+
+**caelestia — single `offsetScale` property:**
+```qml
+property real offsetScale: 1
+anchors.rightMargin: (-implicitWidth - 5) * offsetScale
+opacity: 1 - offsetScale
+Behavior on offsetScale { Anim { type: Anim.DefaultSpatial } }
+```
+One property drives both position and opacity simultaneously. Value 0 = fully visible, 1 = fully hidden.
+
+**Noctalia — opacity fade only:**
+```qml
+opacity: 0
+Component.onCompleted: { opacity = 1 }
+Behavior on opacity { NumberAnimation { duration: Style.animationNormal; easing.type: Easing.OutCubic } }
+```
+Layer shell window is always present; entrance is a pure opacity fade. No x/y translation needed.
+
+---
+
+### 11.5 Key Architectural Patterns
+
+| Topic | Pattern | Notes |
+|-------|---------|-------|
+| Window visibility | Overlay window always present; show/hide via opacity or transform | Avoids window geometry timing issues from toggling `visible` |
+| Slide axis | caelestia uses `anchors.rightMargin` instead of `x` | Anchors recalculate automatically on window resize |
+| Width reference | Neither uses `parent.width` directly | Use anchors or implicit sizing instead |
+| Collapsible sections | `Layout.preferredHeight` (not `height`) + `clip: true` + dual height+opacity animation | Avoids fighting ColumnLayout engine |
+| Config persistence | `pragma Singleton` + `FileView` (`JsonAdapter`) + 50ms debounce timer | All three QML shells use this exact pattern |
+| State vs config | Two separate singletons: `Config.qml` (user prefs) + `Persistent.qml` (UI state) | end-4 and DMS both separate these |
+| Deep linking | `IpcHandler` with named targets + `openPane(id)` | Enables CC quick-toggles to open matching settings pane |
