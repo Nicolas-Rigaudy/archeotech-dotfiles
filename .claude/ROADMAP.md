@@ -209,19 +209,18 @@ DISPLAY / SYSTEM / IDLE / TOOLS ← unchanged
 - [x] **Bar WiFi popup** — click network icon to open native WiFi panel (same ear+arc Shape as calendar), shows adapter toggle + up to 5 networks + rescan; unsaved secured networks redirect to CC with WiFi pre-expanded; `State.controlCenterOpenSection` added for CC deep-link
 - [x] **Bar BT popup** — click BT icon to open native BT panel, shows adapter toggle + paired device list with connect/disconnect
 
-### Sprint 10 — Native settings ecosystem: Audio sinks + VPN
+### Sprint 10 — Native settings ecosystem: Audio sinks + VPN ✅ COMPLETE (2026-05-19)
 
-**Key implementation decisions (all source-confirmed):**
-- Audio sinks: `Quickshell.Services.Pipewire` + `PwObjectTracker` (mandatory for reactivity)
-- Sink list: `Pipewire.nodes.values` filtered to `!isStream && isSink`
-- Set default: `Pipewire.preferredDefaultAudioSink = node`
-- Sink display: pill buttons (our style), show only when >1 sink available
-- VPN: `nmcli -t -f NAME,TYPE,STATE connection show` filtered to VPN type
+**Key implementation decisions:**
+- Audio sinks: `pactl list sinks` subprocess (Quickshell 0.3.0 still not packaged for Arch — `Quickshell.Services.Pipewire` deferred). `pactl subscribe` already running triggers refresh on sink changes. ShortName extraction handles Intel cAVS naming (HDMI N, Headphones, etc.)
+- VPN: `nmcli -t -f NAME,TYPE,STATE connection show` + `nmcli monitor`; robust colon-escape parsing
+- Sink selector hidden when ≤1 sink (no unnecessary UI)
+- VPN shows "No VPN configured" when none installed; simple toggle (one active at a time)
 
-- [ ] `Services/Media/Audio.qml` extended — `sinks[]`, `sources[]` (Pipewire.nodes filtered); `setDefaultSink(node)`, `setDefaultSource(node)`; `PwObjectTracker` on active sink/source
-- [ ] CC Audio section — Output sink pill selector below mic toggle (hidden if single sink)
-- [ ] `Services/Networking/VPN.qml` (new) — `connections[]` ({name, active}) via nmcli; `toggle(name)`
-- [ ] CC VPN CompoundPill row — icon + active profile name + toggle
+- [x] `Services/Media/Audio.qml` extended — `sinks[]` (`pactl list sinks` parsed), `defaultSink` (`pactl get-default-sink`), `setDefaultSink(name)`; subscribe triggers refresh on sink events
+- [x] CC Audio section — Output sink pill selector below mic toggle; hidden when ≤1 sink; smart shortName strips Intel cAVS prefix, extracts HDMI N / Headphones / Speakers
+- [x] `Services/Networking/VPN.qml` (new) — `connections[]` ({name, active}) via nmcli; `active`/`activeConnection` computed; `toggle(name)`; robust `\:` escape parsing; `nmcli monitor` subscription
+- [x] CC VPN CompoundPill row — green tile icon, active name or "Off", simple toggle
 
 ### Sprint 11 — Lock screen
 

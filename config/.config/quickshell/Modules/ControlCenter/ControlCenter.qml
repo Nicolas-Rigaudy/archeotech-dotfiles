@@ -21,6 +21,7 @@ Item {
     property var battery: HardwareServices.Battery
     property var network: NetworkServices.Network
     property var bt:      NetworkServices.Bluetooth
+    property var vpn:     NetworkServices.VPN
     property string nightLightMode: "off"
     property string powerProfile:   "balanced"
     property string displayLayout:  "extend"
@@ -578,6 +579,28 @@ Item {
                     ToggleSwitch { checked: !audio.micMuted; onToggled: state => audio.toggleMicMute() }
                 }
 
+                // Sink selector — only when >1 output device present
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: audio.sinks.length > 1 ? _sinkFlow.implicitHeight + 4 : 0
+                    clip: true
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
+
+                    Flow {
+                        id: _sinkFlow
+                        width: parent.width; spacing: 4; topPadding: 4
+                        Repeater {
+                            model: audio.sinks
+                            delegate: PillButton {
+                                required property var modelData
+                                label: modelData.shortName || modelData.description
+                                active: audio.defaultSink === modelData.name
+                                onClicked: audio.setDefaultSink(modelData.name)
+                            }
+                        }
+                    }
+                }
+
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
                 // ── CONNECTIVITY ───────────────────────────────────────────────
@@ -823,6 +846,55 @@ Item {
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+
+                // VPN CompoundPill (simple toggle — no expand)
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    // Left tile — toggle active VPN
+                    Rectangle {
+                        width: 48; height: 40
+                        radius: Commons.Appearance.radius.base
+                        color: vpn.active ? Commons.Appearance.colors.green : Commons.Appearance.colors.surface0
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰒄"
+                            color: vpn.active ? Commons.Appearance.colors.base : Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeXl
+                            font.family: Commons.Appearance.font.family
+                        }
+                        MouseArea {
+                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                            onClicked: vpn.toggle(vpn.activeConnection || "")
+                        }
+                    }
+
+                    // Right body — active connection name or Off
+                    Rectangle {
+                        Layout.fillWidth: true; height: 40
+                        radius: Commons.Appearance.radius.base
+                        color: Commons.Appearance.colors.surface0
+                        RowLayout {
+                            anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
+                            Text {
+                                text: vpn.connections.length === 0 ? "No VPN configured"
+                                    : vpn.active ? vpn.activeConnection
+                                    : "Off"
+                                color: vpn.active ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                                font.pixelSize: Commons.Appearance.font.sizeBase
+                                font.family: Commons.Appearance.font.family
+                                Layout.fillWidth: true; elide: Text.ElideRight
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                            enabled: vpn.connections.length > 0
+                            onClicked: vpn.toggle(vpn.activeConnection || "")
                         }
                     }
                 }

@@ -22,6 +22,7 @@ ShellRoot {
     property var _battery:       HardwareServices.Battery
     property var _network:       NetworkServices.Network
     property var _bt:            NetworkServices.Bluetooth
+    property var _vpn:           NetworkServices.VPN
     property var _mango:         CompositorServices.MangoWC
     property var _brightness:    HardwareServices.Brightness
     property var _mpris:         MediaServices.MprisService
