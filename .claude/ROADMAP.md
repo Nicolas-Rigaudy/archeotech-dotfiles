@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last Updated:** 2026-05-19  
+**Last Updated:** 2026-05-20  
 **See also:** `ANALYSIS.md` — research, reference projects, confirmed QML APIs, settings ecosystem deep-dives.
 
 ---
@@ -21,6 +21,7 @@
 | 8 | Bluetooth native (org.bluez D-Bus, CC CompoundPill, connect/disconnect) | 2026-05-12 |
 | 9 | Native WiFi + bar WiFi/BT popups (CompoundPill, inline password, scan, CC deep-link) | 2026-05-19 |
 | 10 | Audio sinks + VPN (pactl sink selector, VPN CompoundPill, nmcli monitor) | 2026-05-19 |
+| 11 | Settings window (FloatingWindow, Config/Persistent singletons, 6 panes, bar wiring, CC gear button) | 2026-05-20 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -32,46 +33,7 @@
 
 ## Upcoming Sprints
 
-### Sprint 11 — Settings Foundation ← NEXT
-
-**Goal:** Dedicated settings window with Config singleton persistence, NavRail navigation, and 6 initial panes. CC gear button deep-links into it.
-
-**Architecture:**
-- `Services/Persistence/Config.qml` — `pragma Singleton`, reads/writes `~/.config/archeotech/config.json` via `JsonAdapter`, `setNestedValue(dotted.key, val)` with 50ms debounce, `property bool ready`
-- `Services/Persistence/Persistent.qml` — UI state only (last-open pane, collapsed sections) → `~/.local/share/archeotech/state.json`
-- `Modules/Settings/Settings.qml` — `FloatingWindow`, min 800×700, default 900×800, IPC trigger from CC gear button
-- `Modules/Settings/SettingsSidebar.qml` — vertical NavRail, icon + label, wheel-scroll navigation
-- `Modules/Settings/PaneRegistry.qml` — singleton, declarative list of `{id, label, icon, component}`
-- `Modules/Settings/SettingsContent.qml` — `Loader` per pane, carousel via `y: -activeIndex * height`
-- `Modules/Settings/Widgets/` — `ToggleRow`, `SliderRow`, `DropdownRow`, `ButtonGroupRow`, `SectionDivider`
-
-**Initial panes (6):**
-- Appearance — theme variant selector, accent color, padding/rounding/spacing scales, font size scale
-- Bar — height, clock format, module visibility toggles
-- Notifications — timeout, max visible toasts, show-on-fullscreen toggle
-- Connections — placeholder with deep-link to CC WiFi/BT sections (Sprint 13 fills out)
-- Audio — sink list, source list (Sprint 13 fills out)
-- About — version, links
-
-**CC integration:**
-- CC gear button → `qs ipc call settings open`
-- CC section "More" links → `qs ipc call settings openPane connections`
-- `Commons/State.settingsVisible` added to global state bus; mutual exclusion with CC, NC, Launcher
-
-**Checklist:**
-- [ ] `Config.qml` + `Persistent.qml` singletons with JSON persistence
-- [ ] `Settings.qml` FloatingWindow + IPC handler
-- [ ] `SettingsSidebar.qml` NavRail
-- [ ] `PaneRegistry.qml` singleton
-- [ ] `SettingsContent.qml` carousel loader
-- [ ] `Widgets/` — 5 reusable row types
-- [ ] 6 initial panes wired to Config singleton
-- [ ] CC gear button → settings deep-link
-- [ ] `Super+Shift+S` keybind in mango config
-
----
-
-### Sprint 12 — Theme System
+### Sprint 12 — Theme System ← NEXT
 
 **Goal:** All shell colors in a `theme.json` hot-reload chain. Runtime switching between Catppuccin variants. Foundation ready for named personality themes (Shadow Spear, Gundam HUD, etc.).
 

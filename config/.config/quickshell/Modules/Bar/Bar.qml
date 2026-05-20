@@ -10,6 +10,7 @@ import "../../Services/Hardware" as HardwareServices
 import "../../Services/Networking" as NetworkServices
 import "../../Services/Compositor" as CompositorServices
 import "../../Services/System" as SystemServices
+import "../../Services/Persistence" as Persistence
 
 // One Bar instance per screen: bar pill + popup overlay as siblings.
 Item {
@@ -185,6 +186,7 @@ Item {
                     Item {
                         id: mprisBarItem
                         Layout.alignment: Qt.AlignVCenter
+                        visible: Persistence.Config.get("bar.modules.music", true)
 
                         property bool active: MediaServices.MprisService.playing === true
                         property string displayText: {
@@ -497,6 +499,7 @@ Item {
 
                     // Network
                     Item {
+                        visible: Persistence.Config.get("bar.modules.wifi", true)
                         height: Commons.Appearance.bar.height
                         width: netIcon.implicitWidth + 10
 
@@ -540,6 +543,7 @@ Item {
 
                     // Bluetooth
                     Item {
+                        visible: Persistence.Config.get("bar.modules.bluetooth", true)
                         height: Commons.Appearance.bar.height
                         width: btIcon.implicitWidth + 10
 
@@ -585,7 +589,7 @@ Item {
 
                     // Battery
                     Item {
-                        visible: HardwareServices.Battery.present
+                        visible: HardwareServices.Battery.present && Persistence.Config.get("bar.modules.battery", true)
                         height: Commons.Appearance.bar.height
                         width: batRow.implicitWidth + 10
 
@@ -730,7 +734,7 @@ Item {
                 font.family: Commons.Appearance.font.family
                 function clockText() {
                     return "<span style='color:" + Commons.Appearance.colors.text + ";font-weight:600'>"
-                        + Qt.formatDateTime(new Date(), "HH:mm")
+                        + Qt.formatDateTime(new Date(), Persistence.Config.get("bar.clockFormat", "HH:mm"))
                         + "</span>"
                         + "<span style='color:" + Commons.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
                         + "<span style='color:" + Commons.Appearance.colors.subtext0 + "'>"

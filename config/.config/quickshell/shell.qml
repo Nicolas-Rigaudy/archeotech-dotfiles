@@ -8,11 +8,13 @@ import "Services/Hardware" as HardwareServices
 import "Services/Networking" as NetworkServices
 import "Services/Compositor" as CompositorServices
 import "Services/System" as SystemServices
+import "Services/Persistence" as Persistence
 import "Modules/Bar"
 import "Modules/OSD"
 import "Modules/ControlCenter"
 import "Modules/NotificationCenter"
 import "Modules/Launcher"
+import "Modules/Settings"
 
 ShellRoot {
     id: shell
@@ -27,6 +29,8 @@ ShellRoot {
     property var _brightness:    HardwareServices.Brightness
     property var _mpris:         MediaServices.MprisService
     property var _notifications: SystemServices.Notifications
+    property var _config:        Persistence.Config
+    property var _persistent:    Persistence.Persistent
 
     IpcHandler {
         target: "main"
@@ -49,13 +53,22 @@ ShellRoot {
         function close()  { Commons.State.launcherVisible = false }
     }
 
-    // ── Mutual exclusion: CC, NC, launcher close each other ───────────────────
+    IpcHandler {
+        target: "settings"
+        function toggle()              { Commons.State.settingsVisible = !Commons.State.settingsVisible }
+        function open()                { Commons.State.settingsVisible = true  }
+        function close()               { Commons.State.settingsVisible = false }
+        function openPane(pane: string) { Commons.State.settingsOpenPane = pane; Commons.State.settingsVisible = true }
+    }
+
+    // ── Mutual exclusion: CC, NC, launcher, settings close each other ─────────
     Connections {
         target: Commons.State
         function onNotificationCenterVisibleChanged() {
             if (Commons.State.notificationCenterVisible) {
                 Commons.State.controlCenterVisible = false
                 Commons.State.launcherVisible      = false
+                Commons.State.settingsVisible      = false
                 SystemServices.Notifications.unreadCount = 0
             }
         }
@@ -63,12 +76,21 @@ ShellRoot {
             if (Commons.State.controlCenterVisible) {
                 Commons.State.notificationCenterVisible = false
                 Commons.State.launcherVisible           = false
+                Commons.State.settingsVisible           = false
             }
         }
         function onLauncherVisibleChanged() {
             if (Commons.State.launcherVisible) {
                 Commons.State.controlCenterVisible      = false
                 Commons.State.notificationCenterVisible = false
+                Commons.State.settingsVisible           = false
+            }
+        }
+        function onSettingsVisibleChanged() {
+            if (Commons.State.settingsVisible) {
+                Commons.State.controlCenterVisible      = false
+                Commons.State.notificationCenterVisible = false
+                Commons.State.launcherVisible           = false
             }
         }
     }
@@ -241,6 +263,9 @@ ShellRoot {
             anchors.fill: parent
         }
     }
+
+    // ── Settings window ────────────────────────────────────────────────────────
+    Settings {}
 
     // ── Control Center window ──────────────────────────────────────────────────
     PanelWindow {

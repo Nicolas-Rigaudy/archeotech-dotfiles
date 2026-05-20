@@ -236,6 +236,23 @@ Item {
                     Rectangle {
                         width: 28; height: 28
                         radius: Commons.Appearance.radius.base
+                        color: settingsLaunchArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰖷"
+                            color: settingsLaunchArea.containsMouse ? Commons.Appearance.colors.accent : Commons.Appearance.colors.overlay0
+                            font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        }
+                        MouseArea {
+                            id: settingsLaunchArea; anchors.fill: parent; hoverEnabled: true
+                            onClicked: Commons.State.settingsVisible = true
+                        }
+                    }
+                    Rectangle {
+                        width: 28; height: 28
+                        radius: Commons.Appearance.radius.base
                         color: closeArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
                         Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                         Text {
