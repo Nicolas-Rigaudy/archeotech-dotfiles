@@ -11,6 +11,7 @@ import "../../Services/Networking" as NetworkServices
 import "../../Services/Compositor" as CompositorServices
 import "../../Services/System" as SystemServices
 import "../../Services/Persistence" as Persistence
+import "../Drawer" as Drawer
 
 // One Bar instance per screen: bar pill + popup overlay as siblings.
 Item {
@@ -629,7 +630,7 @@ Item {
                             id: bellIcon
                             anchors.centerIn: parent
                             text: "󰂚"
-                            color: Commons.State.notificationCenterVisible
+                            color: Drawer.DrawerVisibilities.ncVisible
                                 ? Commons.Appearance.colors.accent
                                 : SystemServices.Notifications.unreadCount > 0
                                 ? Commons.Appearance.colors.red
@@ -643,10 +644,12 @@ Item {
                             onClicked: {
                                 barGroup._wifiPopupVisible = false
                                 barGroup._btPopupVisible   = false
-                                Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible
+                                if (!Drawer.DrawerVisibilities.ncVisible)
+                                    SystemServices.Notifications.unreadCount = 0
+                                Drawer.DrawerVisibilities.ncVisible = !Drawer.DrawerVisibilities.ncVisible
                             }
                             onEntered: {
-                                if (!Commons.State.notificationCenterVisible) bellIcon.color = Commons.Appearance.colors.accent
+                                if (!Drawer.DrawerVisibilities.ncVisible) bellIcon.color = Commons.Appearance.colors.accent
                                 barGroup.showPopup(parent, "NOTIFICATIONS",
                                     SystemServices.Notifications.unreadCount > 0
                                         ? "󰂚  " + SystemServices.Notifications.unreadCount + " unread"
@@ -655,7 +658,7 @@ Item {
                                     "Click to toggle")
                             }
                             onExited: {
-                                if (!Commons.State.notificationCenterVisible)
+                                if (!Drawer.DrawerVisibilities.ncVisible)
                                     bellIcon.color = SystemServices.Notifications.unreadCount > 0
                                         ? Commons.Appearance.colors.red : Commons.Appearance.colors.subtext1
                                 barGroup.hidePopup(parent)
@@ -681,7 +684,7 @@ Item {
                             onClicked: {
                                 barGroup._wifiPopupVisible = false
                                 barGroup._btPopupVisible   = false
-                                Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible
+                                Drawer.DrawerVisibilities.ccVisible = !Drawer.DrawerVisibilities.ccVisible
                             }
                             onEntered: {
                                 settingsIcon.color = Commons.Appearance.colors.accent
@@ -1208,7 +1211,7 @@ Item {
                                                 NetworkServices.Network.disconnect()
                                             } else if (_needsPw) {
                                                 Commons.State.controlCenterOpenSection = "wifi"
-                                                Commons.State.controlCenterVisible = true
+                                                Drawer.DrawerVisibilities.ccVisible = true
                                                 barGroup._wifiPopupVisible = false
                                             } else {
                                                 NetworkServices.Network.connect(modelData.ssid)

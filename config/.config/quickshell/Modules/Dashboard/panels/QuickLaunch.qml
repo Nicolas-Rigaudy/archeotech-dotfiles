@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 import "../../../Commons" as Commons
+import "../../Drawer" as Drawer
 
 Rectangle {
     id: root
@@ -21,7 +22,7 @@ Rectangle {
     function launch(cmd) {
         launchProc.command = ["bash", "-c", "setsid " + cmd + " >/dev/null 2>&1 &"]
         launchProc.running = true
-        Commons.State.dashboardVisible = false
+        Drawer.DrawerVisibilities.dashboardVisible = false
     }
 
     // icon: real .desktop icon name, or "" to skip

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 import "../../../Commons" as Commons
+import "../../Drawer" as Drawer
 
 Rectangle {
     id: root
@@ -30,9 +31,9 @@ Rectangle {
     }
 
     Connections {
-        target: Commons.State
+        target: Drawer.DrawerVisibilities
         function onDashboardVisibleChanged() {
-            if (Commons.State.dashboardVisible) root._pickTip()
+            if (Drawer.DrawerVisibilities.dashboardVisible) root._pickTip()
         }
     }
 

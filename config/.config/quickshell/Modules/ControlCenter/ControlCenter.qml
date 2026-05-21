@@ -9,11 +9,13 @@ import "../../Services/Hardware" as HardwareServices
 import "../../Services/Networking" as NetworkServices
 import "../../Widgets"
 import "../../Services/System" as SystemServices
+import "../Drawer" as Drawer
 
 Item {
     id: root
     anchors.fill: parent
-    Keys.onEscapePressed: Commons.State.controlCenterVisible = false
+    focus: Drawer.DrawerVisibilities.ccVisible
+    Keys.onEscapePressed: Drawer.DrawerVisibilities.ccVisible = false
 
     property real panelHeight: panel.height
 
@@ -45,9 +47,9 @@ Item {
     Component.onCompleted: _syncState()
 
     Connections {
-        target: Commons.State
-        function onControlCenterVisibleChanged() {
-            if (Commons.State.controlCenterVisible) {
+        target: Drawer.DrawerVisibilities
+        function onCcVisibleChanged() {
+            if (Drawer.DrawerVisibilities.ccVisible) {
                 root._syncState()
                 if (Commons.State.controlCenterOpenSection === "wifi") {
                     root.wifiExpanded = true
@@ -152,7 +154,7 @@ Item {
         width: 320
         // No anchors.right — x is animated; anchors would override x and break the slide
         anchors.top:       parent.top
-        anchors.topMargin: 50
+        anchors.topMargin: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height + Commons.Appearance.spacing.base
 
         height: Math.min(contentColumn.implicitHeight + 24, root.height - 60)
         radius: Commons.Appearance.radius.lg
@@ -164,42 +166,31 @@ Item {
         property real restX:   root.width - width - Commons.Appearance.spacing.base
         property real hiddenX: root.width + 8
 
-        x: 9999
-        opacity: 0
+        // offsetScale: 0.0 = hidden (at hiddenX, opacity 0), 1.0 = visible (at restX, opacity 1)
+        property real _vis: 0.0
+        Behavior on _vis { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutQuart } }
 
+        x: hiddenX + _vis * (restX - hiddenX)
+        opacity: _vis
+
+        // 50ms delay so DrawerSurface width is settled before animation starts
         Timer {
             id: slideInTimer
             interval: 50; repeat: false
-            onTriggered: {
-                panel.x = panel.hiddenX
-                panel.opacity = 1
-                slideAnim.from = panel.hiddenX
-                slideAnim.to   = panel.restX
-                slideAnim.start()
-            }
+            onTriggered: panel._vis = 1.0
         }
 
         Connections {
-            target: root
-            function onVisibleChanged() {
-                if (root.visible) {
-                    panel.opacity = 0
-                    if (root.width > 0) slideInTimer.restart()
+            target: Drawer.DrawerVisibilities
+            function onCcVisibleChanged() {
+                if (Drawer.DrawerVisibilities.ccVisible) {
+                    panel._vis = 0.0
+                    slideInTimer.restart()
                 } else {
                     slideInTimer.stop()
+                    panel._vis = 0.0
                 }
             }
-            function onWidthChanged() {
-                if (root.visible && root.width > 0 && panel.opacity === 0
-                        && !slideInTimer.running && !slideAnim.running)
-                    slideInTimer.restart()
-            }
-        }
-
-        NumberAnimation {
-            id: slideAnim
-            target: panel; property: "x"
-            duration: Commons.Appearance.anim.base; easing.type: Easing.OutQuart
         }
 
         Flickable {
@@ -264,7 +255,7 @@ Item {
                         }
                         MouseArea {
                             id: closeArea; anchors.fill: parent; hoverEnabled: true
-                            onClicked: Commons.State.controlCenterVisible = false
+                            onClicked: Drawer.DrawerVisibilities.ccVisible = false
                         }
                     }
                 }
@@ -338,7 +329,7 @@ Item {
                             }
                             MouseArea {
                                 id: spotifyArea; anchors.fill: parent; hoverEnabled: true
-                                onClicked: { root.run("spotify-launcher &"); Commons.State.controlCenterVisible = false }
+                                onClicked: { root.run("spotify-launcher &"); Drawer.DrawerVisibilities.ccVisible = false }
                             }
                         }
                     }
@@ -1138,7 +1129,7 @@ Item {
                         PillButton { label: "Mirror";   active: root.displayLayout === "mirror";   onClicked: { root.displayLayout = "mirror";   run("wlr-randr --output eDP-1 --on --mode 1920x1200 --pos 0,0; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 0,0; done") } }
                         PillButton { label: "Laptop";   active: root.displayLayout === "laptop";   onClicked: { root.displayLayout = "laptop";   run("wlr-randr --output eDP-1 --on; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --off; done") } }
                         PillButton { label: "External"; active: root.displayLayout === "external"; onClicked: { root.displayLayout = "external"; run("wlr-randr --output eDP-1 --off; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 0,0; done") } }
-                        PillButton { label: "Adjust…";  active: false; onClicked: { run("wdisplays &"); Commons.State.controlCenterVisible = false } }
+                        PillButton { label: "Adjust…";  active: false; onClicked: { run("wdisplays &"); Drawer.DrawerVisibilities.ccVisible = false } }
                     }
                 }
 
@@ -1285,12 +1276,12 @@ Item {
 
                 Flow {
                     Layout.fillWidth: true; spacing: 8
-                    ActionButton { iconName: "󰕾"; label: "Audio";     onClicked: { run("pavucontrol &");          Commons.State.controlCenterVisible = false } }
-                    ActionButton { iconName: "󰤨"; label: "Network";   onClicked: { run("nm-connection-editor &"); Commons.State.controlCenterVisible = false } }
-                    ActionButton { iconName: "󰸉"; label: "Wallpaper"; onClicked: { run("wallpaper-picker.sh &");   Commons.State.controlCenterVisible = false } }
-                    ActionButton { iconName: "󱛟"; label: "Disk";      onClicked: { run("kitty --title 'Disk Usage' -e duf &"); Commons.State.controlCenterVisible = false } }
-                    ActionButton { iconName: "󰐥"; label: "Power";     onClicked: { run("wlogout-launch.sh &");    Commons.State.controlCenterVisible = false } }
-                    ActionButton { iconName: "󰌾"; label: "Lock";      onClicked: { run("swaylock-launch.sh &");   Commons.State.controlCenterVisible = false } }
+                    ActionButton { iconName: "󰕾"; label: "Audio";     onClicked: { run("pavucontrol &");          Drawer.DrawerVisibilities.ccVisible = false } }
+                    ActionButton { iconName: "󰤨"; label: "Network";   onClicked: { run("nm-connection-editor &"); Drawer.DrawerVisibilities.ccVisible = false } }
+                    ActionButton { iconName: "󰸉"; label: "Wallpaper"; onClicked: { run("wallpaper-picker.sh &");   Drawer.DrawerVisibilities.ccVisible = false } }
+                    ActionButton { iconName: "󱛟"; label: "Disk";      onClicked: { run("kitty --title 'Disk Usage' -e duf &"); Drawer.DrawerVisibilities.ccVisible = false } }
+                    ActionButton { iconName: "󰐥"; label: "Power";     onClicked: { run("wlogout-launch.sh &");    Drawer.DrawerVisibilities.ccVisible = false } }
+                    ActionButton { iconName: "󰌾"; label: "Lock";      onClicked: { run("swaylock-launch.sh &");   Drawer.DrawerVisibilities.ccVisible = false } }
                 }
 
                 Item { height: 2 }

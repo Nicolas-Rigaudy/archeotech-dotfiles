@@ -3,13 +3,14 @@ import QtQuick
 import QtQuick.Layouts
 import "../../Commons" as Commons
 import "./panels"
+import "../Drawer" as Drawer
 
 Item {
     id: root
     anchors.fill: parent
 
-    focus: Commons.State.dashboardVisible
-    Keys.onEscapePressed: Commons.State.dashboardVisible = false
+    focus: Drawer.DrawerVisibilities.dashboardVisible
+    Keys.onEscapePressed: Drawer.DrawerVisibilities.dashboardVisible = false
     Keys.priority: Keys.BeforeItem
 
     // Auto-dismiss when opened via autostart (openAuto IPC call)
@@ -19,28 +20,29 @@ Item {
         repeat: false
         running: false
         onTriggered: {
-            Commons.State.dashboardVisible = false
+            Drawer.DrawerVisibilities.dashboardVisible = false
             Commons.State.dashboardAutoOpen = false
         }
     }
 
     Connections {
-        target: Commons.State
+        target: Drawer.DrawerVisibilities
         function onDashboardVisibleChanged() {
-            if (Commons.State.dashboardVisible && Commons.State.dashboardAutoOpen)
+            if (Drawer.DrawerVisibilities.dashboardVisible && Commons.State.dashboardAutoOpen)
                 autoDismiss.restart()
             else
                 autoDismiss.stop()
         }
     }
 
-    // Click-outside-to-close backdrop
+    // Click-outside-to-close backdrop (click on the dimmed area around the panel)
     TapHandler {
+        enabled: Drawer.DrawerVisibilities.dashboardVisible
         onTapped: point => {
-            var cx = panel.x, cy = panel.y
-            if (point.position.x < cx || point.position.x > cx + panel.width ||
-                point.position.y < cy || point.position.y > cy + panel.height)
-                Commons.State.dashboardVisible = false
+            var x = point.position.x, y = point.position.y
+            if (x < panel.x || x > panel.x + panel.width ||
+                y < panel.y || y > panel.y + panel.height)
+                Drawer.DrawerVisibilities.dashboardVisible = false
         }
     }
 
@@ -57,8 +59,8 @@ Item {
         border.width: 2
         radius: Commons.Appearance.radius.lg
 
-        opacity: Commons.State.dashboardVisible ? 1 : 0
-        scale:   Commons.State.dashboardVisible ? 1 : 0.96
+        opacity: Drawer.DrawerVisibilities.dashboardVisible ? 1 : 0
+        scale:   Drawer.DrawerVisibilities.dashboardVisible ? 1 : 0.96
         Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.base } }
         Behavior on scale   { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
 
@@ -92,7 +94,7 @@ Item {
                 Timer {
                     interval: 60000
                     repeat: true
-                    running: Commons.State.dashboardVisible
+                    running: Drawer.DrawerVisibilities.dashboardVisible
                     onTriggered: dateLbl._now = new Date()
                 }
             }
@@ -115,7 +117,7 @@ Item {
                     anchors.centerIn: parent
                 }
                 HoverHandler { id: closeBtnHov }
-                TapHandler { onTapped: Commons.State.dashboardVisible = false }
+                TapHandler { onTapped: Drawer.DrawerVisibilities.dashboardVisible = false }
             }
         }
 

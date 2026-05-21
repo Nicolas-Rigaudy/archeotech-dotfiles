@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 import "../../../Commons" as Commons
+import "../../Drawer" as Drawer
 
 Rectangle {
     id: root
@@ -20,16 +21,16 @@ Rectangle {
     Component.onCompleted: _refresh()
 
     Connections {
-        target: Commons.State
+        target: Drawer.DrawerVisibilities
         function onDashboardVisibleChanged() {
-            if (Commons.State.dashboardVisible) root._refresh()
+            if (Drawer.DrawerVisibilities.dashboardVisible) root._refresh()
         }
     }
 
     Timer {
         interval: 5000
         repeat: true
-        running: Commons.State.dashboardVisible
+        running: Drawer.DrawerVisibilities.dashboardVisible
         onTriggered: root._refresh()
     }
 

@@ -11,11 +11,9 @@ import "Services/System" as SystemServices
 import "Services/Persistence" as Persistence
 import "Modules/Bar"
 import "Modules/OSD"
-import "Modules/ControlCenter"
-import "Modules/NotificationCenter"
-import "Modules/Launcher"
 import "Modules/Settings"
-import "Modules/Dashboard"
+import "Modules/Drawer" as Drawer
+import "Modules/NotificationCenter"
 
 ShellRoot {
     id: shell
@@ -32,6 +30,9 @@ ShellRoot {
     property var _notifications: SystemServices.Notifications
     property var _config:        Persistence.Config
     property var _persistent:    Persistence.Persistent
+    property var _drawerCfg:     Drawer.DrawerConfig  // force singleton instantiation
+
+    // ── IPC handlers ───────────────────────────────────────────────────────────
 
     IpcHandler {
         target: "theme"
@@ -40,84 +41,65 @@ ShellRoot {
 
     IpcHandler {
         target: "main"
-        function toggle() { Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible }
-        function open()   { Commons.State.controlCenterVisible = true  }
-        function close()  { Commons.State.controlCenterVisible = false }
+        function toggle() { Drawer.DrawerVisibilities.ccVisible = !Drawer.DrawerVisibilities.ccVisible }
+        function open()   { Drawer.DrawerVisibilities.ccVisible = true  }
+        function close()  { Drawer.DrawerVisibilities.ccVisible = false }
     }
 
     IpcHandler {
         target: "notifications"
-        function toggle() { Commons.State.notificationCenterVisible = !Commons.State.notificationCenterVisible }
-        function open()   { Commons.State.notificationCenterVisible = true  }
-        function close()  { Commons.State.notificationCenterVisible = false }
+        function toggle() {
+            if (Drawer.DrawerVisibilities.ncVisible) {
+                Drawer.DrawerVisibilities.ncVisible = false
+            } else {
+                Drawer.DrawerVisibilities.ncVisible = true
+                SystemServices.Notifications.unreadCount = 0
+            }
+        }
+        function open() {
+            Drawer.DrawerVisibilities.ncVisible = true
+            SystemServices.Notifications.unreadCount = 0
+        }
+        function close() { Drawer.DrawerVisibilities.ncVisible = false }
     }
 
     IpcHandler {
         target: "launcher"
-        function toggle() { Commons.State.launcherVisible = !Commons.State.launcherVisible }
-        function open()   { Commons.State.launcherVisible = true  }
-        function close()  { Commons.State.launcherVisible = false }
+        function toggle() { Drawer.DrawerVisibilities.launcherVisible = !Drawer.DrawerVisibilities.launcherVisible }
+        function open()   { Drawer.DrawerVisibilities.launcherVisible = true  }
+        function close()  { Drawer.DrawerVisibilities.launcherVisible = false }
     }
 
     IpcHandler {
         target: "settings"
-        function toggle()              { Commons.State.settingsVisible = !Commons.State.settingsVisible }
-        function open()                { Commons.State.settingsVisible = true  }
-        function close()               { Commons.State.settingsVisible = false }
+        function toggle()               { Commons.State.settingsVisible = !Commons.State.settingsVisible }
+        function open()                 { Commons.State.settingsVisible = true  }
+        function close()                { Commons.State.settingsVisible = false }
         function openPane(pane: string) { Commons.State.settingsOpenPane = pane; Commons.State.settingsVisible = true }
     }
 
     IpcHandler {
         target: "dashboard"
-        function toggle()   { Commons.State.dashboardVisible = !Commons.State.dashboardVisible }
-        function open()     { Commons.State.dashboardVisible = true  }
-        function close()    { Commons.State.dashboardVisible = false }
-        function openAuto() { Commons.State.dashboardAutoOpen = true; Commons.State.dashboardVisible = true }
+        function toggle()   { Drawer.DrawerVisibilities.dashboardVisible = !Drawer.DrawerVisibilities.dashboardVisible }
+        function open()     { Drawer.DrawerVisibilities.dashboardVisible = true  }
+        function close()    { Drawer.DrawerVisibilities.dashboardVisible = false }
+        function openAuto() { Commons.State.dashboardAutoOpen = true; Drawer.DrawerVisibilities.dashboardVisible = true }
     }
 
-    // ── Mutual exclusion: all overlays close each other ───────────────────────
+    // ── Mutual exclusion: drawer ↔ settings ───────────────────────────────────
+    Connections {
+        target: Drawer.DrawerVisibilities
+        function onAnyDrawerActiveChanged() {
+            if (Drawer.DrawerVisibilities.anyDrawerActive)
+                Commons.State.settingsVisible = false
+        }
+    }
+
     Connections {
         target: Commons.State
-        function onNotificationCenterVisibleChanged() {
-            if (Commons.State.notificationCenterVisible) {
-                Commons.State.controlCenterVisible = false
-                Commons.State.launcherVisible      = false
-                Commons.State.settingsVisible      = false
-                Commons.State.dashboardVisible     = false
-                SystemServices.Notifications.unreadCount = 0
-            }
-        }
-        function onControlCenterVisibleChanged() {
-            if (Commons.State.controlCenterVisible) {
-                Commons.State.notificationCenterVisible = false
-                Commons.State.launcherVisible           = false
-                Commons.State.settingsVisible           = false
-                Commons.State.dashboardVisible          = false
-            }
-        }
-        function onLauncherVisibleChanged() {
-            if (Commons.State.launcherVisible) {
-                Commons.State.controlCenterVisible      = false
-                Commons.State.notificationCenterVisible = false
-                Commons.State.settingsVisible           = false
-                Commons.State.dashboardVisible          = false
-            }
-        }
         function onSettingsVisibleChanged() {
-            if (Commons.State.settingsVisible) {
-                Commons.State.controlCenterVisible      = false
-                Commons.State.notificationCenterVisible = false
-                Commons.State.launcherVisible           = false
-                Commons.State.dashboardVisible          = false
-            }
-        }
-        function onDashboardVisibleChanged() {
-            if (Commons.State.dashboardVisible) {
-                Commons.State.controlCenterVisible      = false
-                Commons.State.notificationCenterVisible = false
-                Commons.State.launcherVisible           = false
-                Commons.State.settingsVisible           = false
-            }
+            if (Commons.State.settingsVisible)
+                Drawer.DrawerVisibilities.hideAll()
         }
     }
 
@@ -128,8 +110,6 @@ ShellRoot {
         target: SystemServices.Notifications
         function onArrived(notification) {
             if (!SystemServices.Notifications.dndEnabled) {
-                // Snapshot to plain object — the QObject's bindings resolve as null
-                // when read later from a JS array inside a Repeater delegate.
                 shell._toastQueue = shell._toastQueue.concat([{
                     appIcon:       notification.appIcon       || "",
                     appName:       notification.appName       || "",
@@ -142,7 +122,7 @@ ShellRoot {
         }
     }
 
-    // ── OSD — one per screen, IPC triggers on primary screen ─────────────────
+    // ── OSD — one per screen ──────────────────────────────────────────────────
     Variants {
         id: osdVariants
         model: Quickshell.screens
@@ -164,7 +144,7 @@ ShellRoot {
         function brightness() { shell._osdShow("brightness") }
     }
 
-    // ── Bar — one instance per screen ──────────────────────────────────────────
+    // ── Bar — one instance per screen ─────────────────────────────────────────
     Variants {
         model: Quickshell.screens
         delegate: Bar {}
@@ -224,139 +204,67 @@ ShellRoot {
         }
     }
 
-    // ── Notification Center window ─────────────────────────────────────────────
-    PanelWindow {
-        id: ncWindow
-        visible: Commons.State.notificationCenterVisible
-        exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.namespace: "quickshell:notification-center"
-        WlrLayershell.keyboardFocus: Commons.State.notificationCenterVisible
-            ? WlrKeyboardFocus.Exclusive
-            : WlrKeyboardFocus.None
-
-        anchors { top: true; bottom: true; left: true; right: true }
-        color: "transparent"
-
-        Item {
-            anchors.fill: parent
-            focus: Commons.State.notificationCenterVisible
-            Keys.onEscapePressed: Commons.State.notificationCenterVisible = false
-            Keys.priority: Keys.BeforeItem
-        }
-
-        Item {
-            anchors.fill: parent
-            z: 0
-            enabled: Commons.State.notificationCenterVisible
-
-            TapHandler {
-                onTapped: point => {
-                    var panelRight  = ncWindow.width - 8
-                    var panelLeft   = panelRight - 320
-                    var panelTop    = 50
-                    var panelBottom = panelTop + notifCenter.panelHeight
-                    var x = point.position.x
-                    var y = point.position.y
-                    if (x < panelLeft || x > panelRight || y < panelTop || y > panelBottom)
-                        Commons.State.notificationCenterVisible = false
-                }
-            }
-        }
-
-        NotificationCenter {
-            id: notifCenter
-            anchors.fill: parent
-            z: 1
-        }
-    }
-
-    // ── Launcher window ───────────────────────────────────────────────────────
-    PanelWindow {
-        id: launcherWindow
-        visible: Commons.State.launcherVisible
-        exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.namespace: "quickshell:launcher"
-        WlrLayershell.keyboardFocus: Commons.State.launcherVisible
-            ? WlrKeyboardFocus.Exclusive
-            : WlrKeyboardFocus.None
-
-        anchors { top: true; bottom: true; left: true; right: true }
-        color: "transparent"
-
-        Launcher {
-            anchors.fill: parent
-        }
-    }
-
     // ── Settings window ────────────────────────────────────────────────────────
     Settings {}
 
-    // ── Dashboard window ───────────────────────────────────────────────────────
-    PanelWindow {
-        id: dashWindow
-        visible: Commons.State.dashboardVisible
-        exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.namespace: "quickshell:dashboard"
-        WlrLayershell.keyboardFocus: Commons.State.dashboardVisible
-            ? WlrKeyboardFocus.Exclusive
-            : WlrKeyboardFocus.None
+    // ── Drawer surface — CC, NC, Launcher, Dashboard ──────────────────────────
+    Drawer.DrawerSurface {}
 
-        anchors { top: true; bottom: true; left: true; right: true }
-        color: "transparent"
-
-        Dashboard { anchors.fill: parent }
+    // ── Edge hover zones — one instance per screen ───────────────────────────
+    // Right edge → Control Center
+    Variants {
+        model: Quickshell.screens
+        delegate: PanelWindow {
+            required property var modelData
+            screen: modelData
+            exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.namespace: "archeotech-edge-right"
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            anchors { top: true; bottom: true; right: true }
+            implicitWidth: 4
+            color: "transparent"
+            HoverHandler { onHoveredChanged: if (hovered) Drawer.DrawerVisibilities.ccVisible = true }
+        }
     }
 
-    // ── Control Center window ──────────────────────────────────────────────────
-    PanelWindow {
-        id: ccWindow
-        visible: Commons.State.controlCenterVisible
-        exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.namespace: "quickshell:control-center"
-        WlrLayershell.keyboardFocus: Commons.State.controlCenterVisible
-            ? WlrKeyboardFocus.Exclusive
-            : WlrKeyboardFocus.None
-
-        anchors { top: true; bottom: true; left: true; right: true }
-        color: "transparent"
-
-        // Keyboard dismiss
-        Item {
-            id: escCatcher
-            anchors.fill: parent
-            focus: Commons.State.controlCenterVisible
-            Keys.onEscapePressed: Commons.State.controlCenterVisible = false
-            Keys.priority: Keys.BeforeItem
-        }
-
-        // Click-outside-to-close — only active when CC is open
-        Item {
-            anchors.fill: parent
-            z: 0
-            enabled: Commons.State.controlCenterVisible
-
-            TapHandler {
-                onTapped: point => {
-                    var panelRight  = ccWindow.width - 8
-                    var panelLeft   = panelRight - 320
-                    var panelTop    = 50
-                    var panelBottom = panelTop + controlCenter.panelHeight
-                    var x = point.position.x
-                    var y = point.position.y
-                    if (x < panelLeft || x > panelRight || y < panelTop || y > panelBottom)
-                        Commons.State.controlCenterVisible = false
+    // Top-right corner → Notification Center
+    Variants {
+        model: Quickshell.screens
+        delegate: PanelWindow {
+            required property var modelData
+            screen: modelData
+            exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.namespace: "archeotech-edge-nc"
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            anchors { top: true; right: true }
+            implicitWidth: 160
+            implicitHeight: 4
+            color: "transparent"
+            HoverHandler {
+                onHoveredChanged: if (hovered) {
+                    Drawer.DrawerVisibilities.ncVisible = true
+                    SystemServices.Notifications.unreadCount = 0
                 }
             }
         }
+    }
 
-        ControlCenter {
-            id: controlCenter
-            anchors.fill: parent
-            z: 1
+    // Bottom edge → Dashboard
+    Variants {
+        model: Quickshell.screens
+        delegate: PanelWindow {
+            required property var modelData
+            screen: modelData
+            exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.namespace: "archeotech-edge-bottom"
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            anchors { bottom: true; left: true; right: true }
+            implicitHeight: 4
+            color: "transparent"
+            HoverHandler { onHoveredChanged: if (hovered) Drawer.DrawerVisibilities.dashboardVisible = true }
         }
     }
 }

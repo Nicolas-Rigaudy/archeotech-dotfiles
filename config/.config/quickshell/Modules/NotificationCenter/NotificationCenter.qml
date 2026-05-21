@@ -3,11 +3,13 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import "../../Commons" as Commons
 import "../../Services/System" as SystemServices
+import "../Drawer" as Drawer
 
 Item {
     id: root
     anchors.fill: parent
-    Keys.onEscapePressed: Commons.State.notificationCenterVisible = false
+    focus: Drawer.DrawerVisibilities.ncVisible
+    Keys.onEscapePressed: Drawer.DrawerVisibilities.ncVisible = false
 
     property real panelHeight: panel.height
 
@@ -15,7 +17,7 @@ Item {
         id: panel
         width: 320
         anchors.top:       parent.top
-        anchors.topMargin: 50
+        anchors.topMargin: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height + Commons.Appearance.spacing.base
 
         height: Math.min(contentColumn.implicitHeight + 24, root.height - 60)
         radius: Commons.Appearance.radius.lg
@@ -27,42 +29,29 @@ Item {
         property real restX:   root.width - width - Commons.Appearance.spacing.base
         property real hiddenX: root.width + 8
 
-        x: 9999
-        opacity: 0
+        property real _vis: 0.0
+        Behavior on _vis { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutQuart } }
+
+        x: hiddenX + _vis * (restX - hiddenX)
+        opacity: _vis
 
         Timer {
             id: slideInTimer
             interval: 50; repeat: false
-            onTriggered: {
-                panel.x = panel.hiddenX
-                panel.opacity = 1
-                slideAnim.from = panel.hiddenX
-                slideAnim.to   = panel.restX
-                slideAnim.start()
-            }
+            onTriggered: panel._vis = 1.0
         }
 
         Connections {
-            target: root
-            function onVisibleChanged() {
-                if (root.visible) {
-                    panel.opacity = 0
-                    if (root.width > 0) slideInTimer.restart()
+            target: Drawer.DrawerVisibilities
+            function onNcVisibleChanged() {
+                if (Drawer.DrawerVisibilities.ncVisible) {
+                    panel._vis = 0.0
+                    slideInTimer.restart()
                 } else {
                     slideInTimer.stop()
+                    panel._vis = 0.0
                 }
             }
-            function onWidthChanged() {
-                if (root.visible && root.width > 0 && panel.opacity === 0
-                        && !slideInTimer.running && !slideAnim.running)
-                    slideInTimer.restart()
-            }
-        }
-
-        NumberAnimation {
-            id: slideAnim
-            target: panel; property: "x"
-            duration: Commons.Appearance.anim.base; easing.type: Easing.OutQuart
         }
 
         Flickable {
@@ -129,7 +118,7 @@ Item {
                         }
                         MouseArea {
                             id: _closeArea; anchors.fill: parent; hoverEnabled: true
-                            onClicked: Commons.State.notificationCenterVisible = false
+                            onClicked: Drawer.DrawerVisibilities.ncVisible = false
                         }
                     }
                 }

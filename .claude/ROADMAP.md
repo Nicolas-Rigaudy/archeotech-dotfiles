@@ -39,6 +39,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 | 12 | Theme system (ThemeLoader hot-reload, Appearance bindings, Macchiato/Mocha JSON, theme-switch.sh, AppearancePane picker) | 2026-05-20 |
 | 13 | 5 new themes (Dracula, Nord, Gruvbox, Tokyo Night, Monochrome); neutral dark shadows across all themes; theme dirs symlinked (single source of truth); Settings Escape key + FloatingWindow cleanup; ButtonGroupRow Flow + dynamic widths | 2026-05-21 |
 | 14 | Mission Dashboard — full-screen PanelWindow overlay; SystemStatus (CPU/RAM/Disk/Bat progress bars); ActiveProjects (git repo scan, branch + dirty); SystemNotes (snapshot, updates, VPN, AWS); QuickLaunch (8-app grid); TipOfSession (42 tips, random pick); auto-show 4s on login via openAuto IPC; Super+Home keybind | 2026-05-21 |
+| 15 | Drawer Surface — DrawerConfig.json (edge→panel mapping); DrawerVisibilities singleton (mutual exclusion); DrawerSurface single PanelWindow (CC/NC/Launcher/Dashboard); offsetScale bidirectional animation; per-screen edge hover zones (right→CC, top-right→NC, bottom→Dashboard); mango blur rule for archeotech-drawer | 2026-05-21 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -101,7 +102,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ---
 
-### Sprint 15 — UI Architecture: Drawer Surface + Glassmorphism
+### Sprint 15 — UI Architecture: Drawer Surface + Glassmorphism ✓ DONE
 
 **Goal:** Replace the per-panel PanelWindow approach with a single `DrawerSurface` overlay per monitor. All sliding panels become children of one shared coordinate space. Enable edge hover zones (caelestia-style). Apply consistent glassmorphism via a single MangoWC blur target.
 
@@ -145,6 +146,11 @@ Sprint 15 must wire all panel-to-trigger mappings through `DrawerConfig.json` (n
 - [ ] Left-bar mode: DrawerSurface panels anchor to `x = barWidth`, edge zones swap axes
 - [ ] Dashboard revisited inside new drawer — can now animate from bar origin correctly
 - [ ] Ship default `drawer-config.json` with sensible defaults
+
+**Deferred to Sprint 16+:**
+- Full glassmorphism pass (`glassBg`/`glassBorder` on all panels) — blocked on Settings moving into DrawerSurface; once all panels share the same blur target, one pass gets them all consistent
+- Bar-icon-origin animation (panel slides from exact gear/bell position) — requires exposing bar icon screen coordinates
+- Left-bar mode anchor swapping — Sprint 20 (multi-compositor)
 
 ---
 

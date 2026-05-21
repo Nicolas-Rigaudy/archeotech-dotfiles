@@ -3,6 +3,7 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import "../../Commons" as Commons
+import "../Drawer" as Drawer
 
 Item {
     id: root
@@ -166,14 +167,14 @@ Item {
         }
         appProc.command = entry.runInTerminal ? ["kitty", "-e"].concat(cmd) : cmd
         appProc.running = true
-        Commons.State.launcherVisible = false
+        Drawer.DrawerVisibilities.launcherVisible = false
     }
 
     // ── Reset on open ──────────────────────────────────────────────────────────
     Connections {
-        target: Commons.State
+        target: Drawer.DrawerVisibilities
         function onLauncherVisibleChanged() {
-            if (!Commons.State.launcherVisible) return
+            if (!Drawer.DrawerVisibilities.launcherVisible) return
             root.query = ""
             searchInput.text = ""
             root._filter()
@@ -183,11 +184,12 @@ Item {
 
     // ── Click-outside-to-close ─────────────────────────────────────────────────
     TapHandler {
+        enabled: Drawer.DrawerVisibilities.launcherVisible
         onTapped: point => {
             var x = point.position.x, y = point.position.y
             if (x < panel.x || x > panel.x + panel.width ||
                 y < panel.y || y > panel.y + panel.height)
-                Commons.State.launcherVisible = false
+                Drawer.DrawerVisibilities.launcherVisible = false
         }
     }
 
@@ -204,8 +206,8 @@ Item {
         border.width: 2
         radius:       Commons.Appearance.radius.lg
 
-        scale:   Commons.State.launcherVisible ? 1.0 : 0.95
-        opacity: Commons.State.launcherVisible ? 1.0 : 0.0
+        scale:   Drawer.DrawerVisibilities.launcherVisible ? 1.0 : 0.95
+        opacity: Drawer.DrawerVisibilities.launcherVisible ? 1.0 : 0.0
         Behavior on scale   { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutQuart } }
         Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
 
@@ -254,7 +256,7 @@ Item {
                         resultList.positionViewAtIndex(root.selectedIdx, ListView.Contain)
                     }
                     Keys.onReturnPressed: root._launch(root.filtered[root.selectedIdx])
-                    Keys.onEscapePressed: Commons.State.launcherVisible = false
+                    Keys.onEscapePressed: Drawer.DrawerVisibilities.launcherVisible = false
                 }
             }
 
