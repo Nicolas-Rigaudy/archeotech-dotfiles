@@ -6,6 +6,8 @@ QtObject {
     property bool   notificationCenterVisible: false
     property bool   launcherVisible:           false
     property bool   settingsVisible:           false
+    property bool   dashboardVisible:          false
+    property bool   dashboardAutoOpen:         false
     property string controlCenterOpenSection:  ""
     property string settingsOpenPane:          ""
 }

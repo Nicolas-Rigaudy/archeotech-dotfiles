@@ -199,9 +199,9 @@ Item {
         anchors.centerIn:             parent
         anchors.verticalCenterOffset: -80
 
-        color:        Commons.Appearance.colors.glassBg
+        color:        Commons.Appearance.colors.base
         border.color: Commons.Appearance.colors.accentBorder
-        border.width: 1
+        border.width: 2
         radius:       Commons.Appearance.radius.lg
 
         scale:   Commons.State.launcherVisible ? 1.0 : 0.95

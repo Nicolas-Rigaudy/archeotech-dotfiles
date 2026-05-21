@@ -1,7 +1,21 @@
 # Roadmap
 
-**Last Updated:** 2026-05-20  
+**Last Updated:** 2026-05-21  
 **See also:** `ANALYSIS.md` — research, reference projects, confirmed QML APIs, settings ecosystem deep-dives.
+
+---
+
+## Project Vision
+
+Archeotech is a **fully composable, community-extensible Quickshell shell** targeting MangoWC (primary), Hyprland, and Niri. The goal is a publishable v1.0 that anyone can install, customize, and extend without editing QML.
+
+**Four pillars:**
+1. **Module system** — every panel, widget, and bar element is a self-describing module (`module.json`). Drop a folder into `~/.local/share/archeotech/modules/` to install.
+2. **Theme system** — themes are pure JSON + asset folders (`theme.json` + wallpaper + app-overrides). Drop into `themes/` to install.
+3. **Visual builder** — drag-and-drop edit mode wires any module to any trigger (edge hover, bar icon, keyboard, desktop widget). Config persists to `DrawerConfig.json`, hot-reloads instantly.
+4. **Compositor abstraction** — `CompositorService` facade means one codebase runs on MangoWC, Hyprland, and Niri.
+
+**Target release:** v1.0 after Sprint 21 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
 
 ---
 
@@ -24,6 +38,7 @@
 | 11 | Settings window (FloatingWindow, Config/Persistent singletons, 6 panes, bar wiring, CC gear button) | 2026-05-20 |
 | 12 | Theme system (ThemeLoader hot-reload, Appearance bindings, Macchiato/Mocha JSON, theme-switch.sh, AppearancePane picker) | 2026-05-20 |
 | 13 | 5 new themes (Dracula, Nord, Gruvbox, Tokyo Night, Monochrome); neutral dark shadows across all themes; theme dirs symlinked (single source of truth); Settings Escape key + FloatingWindow cleanup; ButtonGroupRow Flow + dynamic widths | 2026-05-21 |
+| 14 | Mission Dashboard — full-screen PanelWindow overlay; SystemStatus (CPU/RAM/Disk/Bat progress bars); ActiveProjects (git repo scan, branch + dirty); SystemNotes (snapshot, updates, VPN, AWS); QuickLaunch (8-app grid); TipOfSession (42 tips, random pick); auto-show 4s on login via openAuto IPC; Super+Home keybind | 2026-05-21 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -35,46 +50,7 @@
 
 ## Upcoming Sprints
 
-### Sprint 12 — Theme System ← NEXT
-
-**Goal:** All shell colors in a `theme.json` hot-reload chain. Runtime switching between Catppuccin variants. Foundation ready for named personality themes (Shadow Spear, Gundam HUD, etc.).
-
-**Architecture:**
-- `Services/Theming/ThemeLoader.qml` — `FileView { watchChanges: true }` on `~/.config/archeotech/theme.json`; `onFileChanged` debounce (50ms) → re-parse JSON → push to `Commons/Appearance.qml`
-- `Commons/Appearance.qml` reads all color + geometry tokens from `ThemeLoader`, not hardcoded hex
-- `themes/archeotech-macchiato/theme.json` — extract all current hardcoded values
-- `themes/archeotech-mocha/theme.json` — second variant proof-of-concept
-- `scripts/theme-switch.sh` — copies selected `theme.json` to `~/.config/archeotech/theme.json`, patches MangoWC border/shadow/radius config, patches kitty include, patches rofi vars, calls `mango-reload.sh`
-- Appearance pane in Settings → variant picker (Macchiato / Mocha / Frappe / Latte radio buttons)
-
-**Named personalities (design intent — full per-personality files in future sprints):**
-
-| Theme | Palette | MangoWC feel | Personality |
-|-------|---------|--------------|-------------|
-| **Archeotech Macchiato** | Catppuccin Macchiato + Mauve | Soft pills, 12px radius, purple glow shadow | Default — cyber-monastic |
-| **Archeotech Mocha** | Catppuccin Mocha + Mauve | Same, deeper bg | Darker variant |
-| **Shadow Spear** | Near-black + blood violet | 4px radius, black void shadow + red glow | WH40K Raven Guard |
-| **Gundam HUD** | Navy/steel + cyan + orange | 0px radius (square), cyan shadow | Mecha cockpit |
-| **Neon Liturgy** | Near-black + neon pink/teal | 6px radius, thick neon border + diffuse glow | Cyberpunk ritual |
-
-**Neon glow note:** Achievable today via MangoWC `shadowscolor` + `shadows_size`. No plugins needed. Per-theme values:
-- Macchiato: `shadowscolor=0xc6a0f666`, size 20
-- Shadow Spear: `shadowscolor=0x8b000088`, size 25
-- Gundam: `shadowscolor=0x00ffffaa`, size 15
-- Neon Liturgy: `shadowscolor=0xff79c666`, size 30
-
-**Checklist:**
-- [ ] `ThemeLoader.qml` singleton with hot-reload
-- [ ] Appearance.qml reads from ThemeLoader
-- [ ] `themes/archeotech-macchiato/theme.json` extracted
-- [ ] `themes/archeotech-mocha/theme.json` second variant
-- [ ] `scripts/theme-switch.sh` patches MangoWC + kitty + rofi
-- [ ] Appearance pane variant picker
-- [ ] `Super+Shift+T` → future theme picker overlay (this sprint: just sets via Settings)
-
----
-
-### Sprint 13 — Mission Dashboard
+### Sprint 14 — Mission Dashboard
 
 **Goal:** `Super+Home` → full-screen overlay panel. Cyber-monastic mission briefing. All data from subprocess polling, no extra deps.
 
@@ -125,9 +101,152 @@
 
 ---
 
-### Sprint 14 — Lock Screen (Native QML)
+### Sprint 15 — UI Architecture: Drawer Surface + Glassmorphism
 
-**Goal:** Replace swaylock with a first-class Quickshell component. Now that the design system (Sprint 12) and token system are in place, build it properly.
+**Goal:** Replace the per-panel PanelWindow approach with a single `DrawerSurface` overlay per monitor. All sliding panels become children of one shared coordinate space. Enable edge hover zones (caelestia-style). Apply consistent glassmorphism via a single MangoWC blur target.
+
+**Architecture: Drawer Overlay hybrid**
+- Bar stays as its own PanelWindow (untouched)
+- New `DrawerSurface.qml` on `WlrLayer.Overlay` sits above everything
+- CC, NC, Dashboard, Launcher all move inside DrawerSurface
+- Panels anchor to `y = Appearance.bar.height` (top-bar) or `x = Appearance.bar.width` (left-bar) — true bar-origin animation
+- `DrawerInteractions.qml` — edge hover zones mapping to `DrawerVisibilities`
+- MangoWC applies blur once to the drawer's named layer namespace
+
+**Edge interaction zones (caelestia-inspired):**
+- Right edge → CC slides in from right
+- Top-right corner → NC slides down
+- Bottom edge (or `Super+Home`) → Dashboard slides up
+- Top-left area / `Super+Space` → Launcher
+- Left edge (left-bar mode only) → sidebar equivalent
+
+**Glassmorphism visual spec (from YAHR-Quickshell source-inspection):**
+- Panel bg: `Qt.rgba(r, g, b, 0.92)` — 92% opacity from Catppuccin mantle
+- Border: 1px accent at 35% alpha
+- Blur: MangoWC `layerrule = blur, namespace:archeotech-drawer`
+- No solid `colors.base` backgrounds inside the drawer
+
+**Critical design constraint — config-driven from day one:**
+Sprint 15 must wire all panel-to-trigger mappings through `DrawerConfig.json` (not hardcode them), because Sprint 16 (Module Builder) adds the UI to edit that config. ~20 extra lines in Sprint 15, eliminates a full rewrite in Sprint 16.
+
+**Checklist:**
+- [ ] `Modules/Drawer/DrawerConfig.qml` — singleton reading `~/.config/quickshell/drawer-config.json` via `FileView`; properties: `barEdge`, `edgeRight`, `edgeLeft`, `edgeBottom`, `edgeTop`, `barModules[]`; hot-reloads on file change
+- [ ] `Modules/Drawer/DrawerSurface.qml` — full-screen transparent PanelWindow, `WlrLayer.Overlay`, `WlrLayershell.namespace: "archeotech-drawer"`, mouse passthrough except on active panels; panel slots read from `DrawerConfig`
+- [ ] `Modules/Drawer/DrawerVisibilities.qml` — singleton replacing `State.qml` per-panel booleans; `ccVisible`, `ncVisible`, `dashboardVisible`, `launcherVisible`; mutual exclusion logic
+- [ ] `Modules/Drawer/DrawerInteractions.qml` — thin HoverHandler strips at screen edges; drag gesture detection; edge→panel mapping reads from `DrawerConfig`
+- [ ] `Modules/Drawer/DrawerAnimations.qml` (or inline) — `offsetScale` pattern: one property 0.0↔1.0 drives both position and opacity; `Behavior` with `Anim.slow` easing
+- [ ] Migrate `Modules/ControlCenter/ControlCenter.qml` into DrawerSurface — anchored right, slides from right edge
+- [ ] Migrate `Modules/NotificationCenter/NotificationCenter.qml` into DrawerSurface — anchored top-right, slides down
+- [ ] Migrate `Modules/Dashboard/Dashboard.qml` into DrawerSurface — anchored below bar, slides down
+- [ ] Migrate `Modules/Launcher/Launcher.qml` into DrawerSurface — centered below bar, scale+opacity entrance
+- [ ] Remove now-redundant per-panel PanelWindows from `shell.qml`
+- [ ] `mango.conf`: add `layerrule = blur, namespace:archeotech-drawer`; remove `noblur` overrides for CC/NC/Dashboard
+- [ ] `DrawerConfig.barEdge: "top" | "left"` — affects panel anchor points and edge zone positions
+- [ ] Left-bar mode: DrawerSurface panels anchor to `x = barWidth`, edge zones swap axes
+- [ ] Dashboard revisited inside new drawer — can now animate from bar origin correctly
+- [ ] Ship default `drawer-config.json` with sensible defaults
+
+---
+
+### Sprint 16 — Module Builder & Community Extension System
+
+**Goal:** Turn the shell into a fully composable platform. Every panel, widget, and bar element becomes a self-describing module with a manifest. A drag-and-drop edit mode lets users wire any module to any trigger (bar icon, edge hover, keyboard shortcut, desktop). Third parties can publish new modules and themes that install by dropping a folder.
+
+**Why this sprint:** Once DrawerConfig exists (Sprint 15), the builder is a UI layer on top. Doing this before the Theme Switcher and Lock Screen means both of those can be built as installable modules that demonstrate the system.
+
+**Module manifest spec** (`module.json`):
+```json
+{
+  "id": "control-center",
+  "name": "Control Center",
+  "author": "archeotech",
+  "version": "1.0.0",
+  "canLiveIn": ["edge-panel", "bar-popout", "desktop-widget"],
+  "defaultSize": { "width": 340, "height": "auto" },
+  "configSchema": {},
+  "entry": "ControlCenter.qml"
+}
+```
+
+**ModuleRegistry** — scans `Modules/*/module.json` + `~/.local/share/archeotech/modules/*/module.json` (user-installed). FileView watcher picks up newly installed modules without shell restart.
+
+**Edit mode** — activated via `Super+Shift+E` or a settings button. Overlay shows:
+- All slot targets (edges, bar zones) as labelled drop zones
+- Available modules as draggable chips with their icon + name
+- Desktop widget grid with resize handles + drag-to-reorder (Noctalia-style grid snapping)
+- On drop: writes to `DrawerConfig.json` → `DrawerConfig` hot-reloads → shell reconfigures instantly
+
+**Bar configurator** — Left / Center / Right zones (DMS-style). In edit mode, bar modules are draggable chips within their zones. Zone contents persist to `DrawerConfig.barModules.left[]` etc.
+
+**Desktop widget layer** — new `Modules/DesktopWidgets/` surface on `WlrLayer.Background` or `.Bottom`. In edit mode: widgets become draggable (Noctalia `DraggableDesktopWidget` pattern — MouseArea only active in edit mode, grid snap, boundary clamp, persist x/y to `DrawerConfig`).
+
+**Theme spec for community publishing:**
+```
+themes/<name>/
+  theme.json          — color tokens, fonts, radii, animation timings, metadata
+  wallpaper.*         — default wallpaper (jpg/png)
+  logo.svg            — optional theme avatar
+  app-overrides/
+    kitty-colors.conf
+    starship.toml
+    rofi-colors.rasi
+  preview.jpg         — thumbnail shown in theme picker
+```
+
+**Checklist:**
+- [ ] `module.json` spec finalized and documented in `docs/MODULE_API.md`
+- [ ] `Modules/ModuleRegistry.qml` — singleton scanning module dirs, `list<QtObject> available`, FileView watcher for hot-discovery
+- [ ] Edit mode overlay (`Modules/Builder/EditOverlay.qml`) — full-screen glass surface, slot drop zones, module chip palette, exit on `Escape` or `Super+Shift+E`
+- [ ] Drag-and-drop: chips → slot targets write to `DrawerConfig.json` via JS `JSON.stringify`
+- [ ] Bar configurator — zone slot UI in edit mode, drag chips between left/center/right
+- [ ] Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom`
+- [ ] `Modules/DesktopWidgets/DraggableWidget.qml` — edit mode drag, grid snap, persist, z-raise on drag
+- [ ] At least 3 desktop widgets to demonstrate the system: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
+- [ ] `~/.local/share/archeotech/modules/` — user module install path, scanned alongside built-in modules
+- [ ] `docs/MODULE_API.md` — module manifest spec, QML entry point contract, config schema format
+- [ ] `docs/THEME_SPEC.md` — complete theme folder structure, all required + optional fields, preview thumbnail spec
+- [ ] Default `drawer-config.json` ships with the repo as the reference configuration
+
+---
+
+### Sprint 17 — Full System-Wide Theme Switcher
+
+**Goal:** One `theme-switch.sh` invocation changes every app simultaneously. Quickshell already hot-reloads; this sprint wires in the rest. Also: redesign the theme picker UI — fluid card/swatch grid with wallpaper thumbnail and avatar logo preview, inspired by caelestia-dots / end-4 style.
+
+**Layers to add (MangoWC + Quickshell + Kitty already done in Sprint 12/13):**
+
+| Layer | Mechanism |
+|-------|-----------|
+| Starship | Config symlink swap (`~/.config/starship.toml` → `themes/<name>/starship.toml`) |
+| Rofi | rasi variable file swap (`~/.config/rofi/colors.rasi` → per-theme) |
+| GTK apps | `gsettings set org.gnome.desktop.interface` (gtk-theme + icon-theme + cursor-theme) |
+| VSCode | `jq` patch on `~/.config/Code/User/settings.json` (`workbench.colorTheme`) |
+| Obsidian | `jq` patch on vault `.obsidian/appearance.json` (`cssTheme`, `baseFontSize`) |
+| Zen Browser | CSS file swap (`userChrome.css` → per-theme variant, best effort) |
+| Wallpaper | `awww` transition to theme wallpaper family |
+| swaylock | Config patch (`~/.config/swaylock/config`, bg tint) |
+
+**Theme picker UI redesign:**
+- Replace the current radio button list with a fluid card grid (2-3 cols) — each card shows: wallpaper thumbnail, theme name, accent color swatch strip
+- Avatar/logo picker: per-theme logo option (raven sigil, mech crosshair, etc.) shown in card; click to override independently
+- Animated transition between selected card (scale + border highlight)
+- Wallpaper picker: file browser row below the cards, or a separate tab in AppearancePane
+- Reference: caelestia-dots AppearancePage, end-4 quickshell theme overlay
+
+**Checklist:**
+- [ ] `scripts/theme-switch.sh` extended — Starship symlink, rofi rasi swap, `gsettings`, VSCode `jq` patch, Obsidian `jq` patch, Zen CSS swap, wallpaper, swaylock
+- [ ] Per-theme starship config stubs in `themes/<name>/starship.toml`
+- [ ] Per-theme rofi colors stub in `themes/<name>/rofi-colors.rasi`
+- [ ] AppearancePane card grid redesign — wallpaper thumbnail + accent swatches per card
+- [ ] Wallpaper picker (file row or sub-tab) wired to `awww`
+- [ ] Per-theme logo/avatar field in `theme.json`, picker in card
+- [ ] `Super+Shift+T` → theme picker overlay (dedicated Quickshell panel, not Settings window)
+
+---
+
+### Sprint 18 — Lock Screen (Native QML)
+
+**Goal:** Replace swaylock with a first-class Quickshell component. Now that the design system (Sprint 12/13) and token system are in place, build it properly.
 
 **Reference:** Qylock (source-inspected — WlSessionLock + PamContext, ~50 lines of real logic).
 
@@ -143,31 +262,66 @@
 
 ## Planned Sprints
 
-### Sprint 15 — Settings Depth
+### Sprint 19 — Settings Depth
 Fill out Sprint 11's placeholder panes with full native implementations:
 - Connections pane: WiFi sub-tab (known networks, forget, priority) + BT sub-tab (connected/paired/available per Noctalia model, battery level, signal)
 - Audio pane: PipeWire sinks + sources (once QS 0.3.0 lands), device aliasing, per-device volume limit
 - ColorScheme pane: dark mode toggle, schedule (off/manual/location), wallpaper color extraction toggle
 - Settings search: fuzzy index per registered pane, max 15 results, sidebar search input
 
-### Sprint 16 — Distribution
-- `scripts/install-packages.sh` — full `paru -S` list for fresh Arch
-- Rewrite `scripts/install.sh` — prereq check, timestamped backup, stow deploy, verification
-- `scripts/backup-configs.sh` — timestamped snapshot of current working configs (pre-update safety net)
-- `scripts/restore-configs.sh` — deploy configs to a new machine from backup
-- `docs/INSTALL.md` — step-by-step for fresh Arch + MangoWC from zero
-- Harden README — screenshots of bar, OSD, CC, launcher, dashboard
-- Hardcoded path audit — no `/home/corvus/` in any config or script
-- Version tag for first GitHub release
+### Sprint 20 — Multi-Compositor Support
 
-### Sprint 17 — Go Daemon
+**Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).
+
+**Reference:** Noctalia `Services/Compositor/` — `CompositorService.qml` (singleton facade), `MangoService.qml` (DWL protocol), `HyprlandService.qml` (socket IPC), `NiriService.qml` (JSON IPC), `SwayService.qml` (i3-compatible IPC).
+
+**API contract** (compositor-agnostic):
+```qml
+CompositorService.switchWorkspace(n)
+CompositorService.focusWindow(id)
+CompositorService.activeWorkspace       // readable property
+CompositorService.focusedApp            // readable property
+CompositorService.activeWindowTitle     // readable property
+```
+
+**Checklist:**
+- [ ] `Services/Compositor/CompositorService.qml` — detects active compositor on startup (`$XDG_CURRENT_DESKTOP`, `$WAYLAND_DISPLAY` hints), delegates to detected backend
+- [ ] `Services/Compositor/MangoService.qml` — current `mmsg -w` subprocess pattern, promotes to primary backend
+- [ ] `Services/Compositor/HyprlandService.qml` — Hyprland IPC socket (`/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.ipc`), workspace + window events
+- [ ] `Services/Compositor/NiriService.qml` — Niri IPC socket (`$NIRI_SOCKET`), JSON event stream
+- [ ] Replace all direct MangoWC calls in bar/modules with `CompositorService.*`
+- [ ] `docs/COMPOSITOR_SUPPORT.md` — supported compositors, how to add a new backend
+- [ ] Test on Hyprland (backup compositor already in the repo)
+
+---
+
+### Sprint 21 — Distribution & GitHub Release
+
+**Goal:** Clean, documented, installable by a stranger on a fresh Arch Linux machine. Everything hardcoded to `/home/corvus` is gone. Module + theme APIs are documented. Community can publish extensions.
+
+**Checklist:**
+- [ ] Hardcoded path audit — zero `/home/corvus` in any config or script; all paths via `$HOME` or `Paths.qml`
+- [ ] `scripts/install-packages.sh` — full `paru -S` list for fresh Arch; split: required vs optional
+- [ ] Rewrite `scripts/install.sh` — prereq check, timestamped backup, stow deploy, service enable, verification
+- [ ] `docs/INSTALL.md` — step-by-step for fresh Arch + MangoWC from zero; also Hyprland path
+- [ ] `docs/MODULE_API.md` — finalize from Sprint 16 draft; add example module walkthrough
+- [ ] `docs/THEME_SPEC.md` — finalize from Sprint 16 draft; add community submission guidelines
+- [ ] README harden — screenshots of bar, OSD, CC, launcher, dashboard, settings, edit mode
+- [ ] Demo GIF of edit mode + theme switching
+- [ ] Version tag `v1.0.0` on first release
+- [ ] GitHub repo description, topics, social preview
+- [ ] `CONTRIBUTING.md` — how to submit a module, how to submit a theme
+
+---
+
+### Sprint 22 — Go Daemon
 Only for raw Wayland protocols that QML can't reach natively:
 - `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
 - `Services/ArcheotechDaemon.qml` — Quickshell Socket, exponential-backoff reconnect
 - Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
 - Does NOT handle: audio, network, BT, notifications, lock (all native QML)
 
-### Sprint 18 — Dev Personality + Shadow Spear
+### Sprint 23 — Dev Personality + Shadow Spear
 - `themes/shadow-spear/` full theme package (compositor + kitty + starship raven sigil + rofi + wallpaper set)
 - Git branch module in bar — CWD from focused window, dims when no git context
 - AWS profile module in bar — always visible, dims when `$AWS_PROFILE` unset
@@ -180,29 +334,8 @@ Only for raw Wayland protocols that QML can't reach natively:
 
 Well-defined features not yet scheduled into a sprint.
 
-### Full System-Wide Theme Switcher
-
-Beyond QML tokens (Sprint 12), a full `theme-switch.sh` that patches every layer of the system simultaneously:
-
-| Layer | Mechanism |
-|-------|-----------|
-| MangoWC | Config patch (border, radius, shadow color/size) + `mango-reload.sh` |
-| Quickshell | Live `theme.json` reload — no restart |
-| Kitty | Include file swap + `kill -USR1 $(pgrep kitty)` |
-| Starship | Config symlink swap (raven `󱉧` for Shadow Spear, crosshair for Gundam) |
-| Rofi | rasi variable file swap |
-| GTK apps | `gsettings set` (theme + icon + cursor) |
-| VSCode | `jq` patch on `settings.json` |
-| Obsidian | `jq` patch on `obsidian.json` |
-| Zen Browser | CSS file swap (userChrome.css, best effort) |
-| Wallpaper | `awww` transition to theme wallpaper family |
-| swaylock | Config patch (bg tint) |
-| GRUB | Config patch (applies next boot only) |
-
-**Keybind:** `Super+Shift+T` → Quickshell theme picker overlay (swatches + wallpaper thumbnail, keyboard nav).
-
 ### Dev Workflow Bar Modules
-*(sprint 18 covers git + AWS + terraform; these are the rest)*
+*(sprint 23 covers git + AWS + terraform; these are the rest)*
 - Docker containers count badge — click to open btop or lazydocker
 - Keyboard layout indicator — QWERTY/AZERTY, reflected from MangoWC `keyboardLayout` state
 - Caps Lock indicator — low priority, currently undetected

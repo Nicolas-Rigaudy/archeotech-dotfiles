@@ -1,6 +1,6 @@
 # Archeotech Dotfiles — Full System Analysis
 
-**Last Updated:** 2026-05-19  
+**Last Updated:** 2026-05-21  
 **Purpose:** Comprehensive research reference — ecosystem findings, confirmed QML APIs, source-inspected patterns, settings deep-dives. Sprint plan lives in `ROADMAP.md`.
 
 ---
@@ -18,6 +18,9 @@
 9. [Settings Ecosystem Research — WiFi / Audio / BT Patterns](#9-settings-ecosystem-research--cross-repo-findings)
 10. [Settings Panel Research — Dedicated Settings Apps](#10-settings-panel-research--wave-2-dedicated-settings-apps)
 11. [QML Patterns & Design Principles](#11-qml-patterns--design-principles)
+12. [Widget & Bar Systems — Cross-Repo Deep Dive](#12-widget--bar-systems--cross-repo-deep-dive)
+13. [Information Architecture — Grouping, Icons, Quick vs. Deep](#13-information-architecture--grouping-icons-quick-vs-deep)
+14. [Technical Unknowns — Resolved Pre-Sprint Research](#14-technical-unknowns--resolved-pre-sprint-research)
 
 ---
 
@@ -1348,3 +1351,742 @@ Layer shell window is always present; entrance is a pure opacity fade. No x/y tr
 | Config persistence | `pragma Singleton` + `FileView` (`JsonAdapter`) + 50ms debounce timer | All three QML shells use this exact pattern |
 | State vs config | Two separate singletons: `Config.qml` (user prefs) + `Persistent.qml` (UI state) | end-4 and DMS both separate these |
 | Deep linking | `IpcHandler` with named targets + `openPane(id)` | Enables CC quick-toggles to open matching settings pane |
+
+---
+
+## 12. Widget & Bar Systems — Cross-Repo Deep Dive
+
+*Research date: 2026-05-21. Repos inspected: caelestia-dots/shell, end-4/dots-hyprland, Noctalia, DankMaterialShell, AMBXST, HyprPanel (AGS — cross-framework reference).*
+
+This section covers the full widget/bar module systems across all reference repos. Primary purpose: inform Sprint 16 (Module Builder) implementation. Cross-reference this section before building any new bar widget or panel type.
+
+---
+
+### 12.1 caelestia-dots/shell — Config-Driven Bar (THE reference pattern)
+
+**Research date:** 2026-05-21 (source-inspected)
+
+caelestia has the cleanest config-driven bar architecture found across all repos. This is the pattern to steal for Sprint 16.
+
+**DelegateChooser pattern** — bar layout is a pure data model, no hardcoded widget placement:
+```qml
+// Bar.qml
+Repeater {
+    model: Config.bar.entries  // array of { id: "clock", enabled: true, ...props }
+    DelegateChooser {
+        role: "id"
+        DelegateChoice { roleValue: "clock";       WrappedLoader { source: "Clock.qml" } }
+        DelegateChoice { roleValue: "workspaces";  WrappedLoader { source: "Workspaces.qml" } }
+        DelegateChoice { roleValue: "activewnd";   WrappedLoader { source: "ActiveWindow.qml" } }
+        DelegateChoice { roleValue: "tray";        WrappedLoader { source: "Tray.qml" } }
+        DelegateChoice { roleValue: "statusicons"; WrappedLoader { source: "StatusIcons.qml" } }
+        DelegateChoice { roleValue: "power";       WrappedLoader { source: "Power.qml" } }
+        DelegateChoice { roleValue: "osicon";      WrappedLoader { source: "OsIcon.qml" } }
+    }
+}
+```
+
+**WrappedLoader** — each widget is async-loaded with adaptive margins:
+- Loads component asynchronously (`asynchronous: true`)
+- Applies conditional left/right margins on first/last elements
+- Centers content horizontally within its slot
+
+**Bar widget types (8 built-in):**
+| Widget | Description |
+|---|---|
+| ActiveWindow | Focused window title + app icon; auto-hides in fullscreen |
+| Clock | Time display; auto-hides in fullscreen |
+| OsIcon | Operating system logo/icon |
+| Power | Power menu trigger |
+| StatusIcons | Grouped system status badges; auto-hides in fullscreen |
+| Tray | System tray, compact/expanded modes; auto-hides in fullscreen |
+| TrayItem | Individual tray item renderer |
+| Workspaces | Workspace switcher with ActiveIndicator, OccupiedBg, SpecialWorkspaces sub-components |
+
+**Popout module system** — 9 popout panels hanging off bar widgets:
+```
+modules/bar/popouts/
+  ActiveWindow.qml
+  Audio.qml
+  Battery.qml
+  Bluetooth.qml
+  Network.qml
+  WirelessPassword.qml
+  LockStatus.qml
+  TrayMenu.qml
+  kblayout/          ← keyboard layout sub-popout
+```
+Each popout follows `Wrapper.qml → ClipWrapper.qml → Content.qml` chain. `PopoutState.qml` manages open/close state per popout. This clean separation means popouts can be swapped independently of the bar widget that triggers them.
+
+**Key implication for Sprint 16:** `Config.bar.entries` is an array in JSON. Reordering or adding widgets = editing the JSON array. The DelegateChooser maps `id` → QML file at runtime. This is exactly the architecture our `DrawerConfig.json` + `ModuleRegistry` should use for the bar zone configurator.
+
+---
+
+### 12.2 Noctalia — Most Complete Bar Widget Catalog
+
+**Research date:** 2026-05-21 (source-inspected)
+
+Noctalia has 30 bar widgets — the largest catalog found across all Quickshell repos. Use this as the reference for what widget types to support.
+
+**Full widget catalog (30 types):**
+| Widget | Notes |
+|---|---|
+| ActiveWindow | Focused app title |
+| AudioVisualizer | Canvas-rendered spectrum — 3 modes: linear, mirrored, wave |
+| Battery | Percentage + charging state |
+| Bluetooth | Toggle + connection status |
+| Brightness | Screen brightness indicator |
+| Clock | Configurable 12/24h, date formats |
+| ControlCenter | Capsule button → CC panel; per-instance config |
+| CustomButton | State machine marquee text, shell command execution, JSON output parsing, IPC registration |
+| DarkMode | Dark/light mode toggle |
+| KeepAwake | Idle inhibitor toggle |
+| KeyboardLayout | Current kb layout, click to cycle |
+| Launcher | Opens app launcher panel |
+| LockKeys | Caps/Num lock indicator |
+| MediaMini | MPRIS mini player: reactive property cascading, context menu from player capabilities |
+| Microphone | Mic mute toggle + level |
+| Network | WiFi/ethernet status |
+| NightLight | Night light toggle |
+| NoctaliaPerformance | CPU + RAM sparkline bars |
+| NotificationHistory | Unread badge → opens NC |
+| PowerProfile | Power/battery profile switcher |
+| SessionMenu | Power/session actions trigger |
+| Settings | Opens settings panel |
+| Spacer | Flexible/fixed space between widgets |
+| SystemMonitor | Real-time CPU/mem/temp, 1000ms poll, color-coded states, tooltip |
+| Taskbar | Running app icons |
+| Tray | System tray |
+| VPN | VPN connection status |
+| Volume | Audio volume slider pill |
+| WallpaperSelector | Wallpaper picker trigger |
+| Workspace | Dual modes: pill (2.2× scale for active) OR grouped grid with app icon flow + burst animation on switch |
+
+**BarPill pattern** — every widget is wrapped in a capsule container:
+```qml
+// BarPill.qml → loads BarPillHorizontal.qml or BarPillVertical.qml
+property bool barIsVertical: Settings.data.bar.vertical
+
+// BarPillHorizontal.qml
+Rectangle {
+    width: contentLoader.implicitWidth + padding * 2
+    height: parent.height
+    radius: Style.barPillRadius
+    color: hovered ? Style.colors.surface1 : "transparent"
+
+    Loader { id: contentLoader; sourceComponent: widgetComponent }
+
+    // Signals exposed to widget: clicked, rightClicked, middleClicked, wheel
+    // Methods: show(), hide(), showDelayed(ms)
+}
+```
+
+**BarWidgetLoader.qml** — dynamic instantiation with service registration:
+```qml
+// Handles onCompleted/onDestruction hooks for resource management
+// AudioVisualizer registers with SpectrumService on load, deregisters on destroy
+// CustomButton registers IPC handler on load
+```
+
+**Notable widget implementation details:**
+
+*AudioVisualizer* — `Canvas` item, `requestPaint()` on every spectrum update from `SpectrumService`. Three render modes with configurable colors, bar count, spacing. Rounded caps via `ctx.arc()`.
+
+*Workspace (grouped mode)* — when a workspace has >1 window, shows a mini icon grid instead of a plain pill. Burst animation on workspace switch: scale 1.0 → 1.3 → 1.0 with spring easing.
+
+*CustomButton* — accepts a `command` string, runs it via `Process`, parses JSON stdout to update its display text. Built-in marquee for long text: phase-based state machine (wait → scroll left → wait → scroll right → repeat).
+
+*MediaMini* — reads MPRIS player metadata, falls back through: user-set override → player-reported metadata → sensible defaults. Context menu generated dynamically from which capabilities the player reports (canPlay, canNext, canPrev, canSeek, canLoop, canShuffle).
+
+*TrayMenu* — `StackView`-based hierarchical menus. Submenu push uses `NoAnim` transition (parent StackView handles the animation externally). Back navigation via top-left chevron.
+
+**Bar layout architecture:**
+Three-zone RowLayout (swapped to ColumnLayout for vertical bars). `Settings.getBarWidgetsForScreen(screen?.name)` returns per-screen widget arrays. `BarExclusionZone.qml` prevents window overlap with the bar.
+
+---
+
+### 12.3 end-4/dots-hyprland — Bar Widgets + Panel Families
+
+**Research date:** 2026-05-21 (source-inspected)
+
+**Bar widget types (13):**
+| Widget | Notes |
+|---|---|
+| ActiveWindow | Window title + app icon |
+| CircleUtilButton | Small circular button, executes a shell command |
+| ClockWidget | 12/24h configurable |
+| BatteryIndicator | Color-coded percentage + charging state |
+| Media | MPRIS controls + metadata |
+| Resource | CPU/mem/disk/temp mini gauges |
+| Workspaces | Pill indicators |
+| HyprlandXkbIndicator | Keyboard layout |
+| LeftSidebarButton | Toggle for left sidebar |
+| NotificationUnreadCount | Unread badge |
+| SysTray | Compact/expanded modes |
+| WeatherBar | Temperature + conditions |
+| UtilButtons | Configurable icon buttons |
+
+**BarGroup.qml** — widget grouping container: background rect + padding + corner radius. Standardizes appearance of widget clusters. Widgets placed inside `BarGroup` form a visually cohesive pill.
+
+**Composition approach:** Hardcoded in `BarContent.qml` — no widget registry. However:
+- `Config.options` controls which widgets render (`excludedScreens`, `autoHide`, `persistent`)
+- `useShortenedForm` property hides lower-priority indicators on narrow screens
+
+**Auto-hide bar pattern:**
+```qml
+// Bar.qml
+MouseArea {
+    hoverEnabled: true
+    onEntered: barReveal.stop(); bar.anchors.topMargin = 0
+    onExited: barReveal.start()
+}
+NumberAnimation {
+    id: barReveal
+    target: bar
+    property: "anchors.topMargin"
+    to: -(bar.height + 4)
+    duration: 300; easing.type: Easing.OutCubic
+}
+```
+Simple and effective. The bar anchors to topMargin 0 (visible) or negative (hidden off-screen). No separate surface needed.
+
+**Panel families system** — two complete alternate bar designs:
+- `modules/ii/bar/` — primary design
+- `modules/waffle/bar/` — alternate design
+Switchable via IPC: `qs ipc call bar setFamily waffle`. Each family is a complete self-contained implementation. This is end-4's answer to "multiple bar layouts" — whole-family swap rather than per-widget reconfiguration.
+
+**Settings-driven per-screen config:**
+```qml
+// Config.options.bar.excludedScreens: ["DP-1"]  → bar not shown on that screen
+// Config.options.bar.autoHide: true              → uses the auto-hide animation
+```
+
+---
+
+### 12.4 DankMaterialShell — DankBar (30 widgets) + Desktop Layer
+
+**Research date:** 2026-05-21 (source-inspected from previous session)
+
+**DankBar widget types (30):**
+AppsDock, AudioVisualization, Battery, CapsLockIndicator, ClipboardButton, Clock, ColorPicker, ControlCenterButton, CpuMonitor, CpuTemperature, DWLLayout, DiskUsage, FocusedApp, GpuTemperature, IdleInhibitor, KeyboardLayoutName, LauncherButton, Media, NetworkMonitor, NotepadButton, NotificationCenterButton, PowerMenuButton, PrivacyIndicator, RamMonitor, RunningApps, SystemTrayBar, SystemUpdate, VPN, Weather, WorkspaceSwitcher
+
+**Three-zone layout:** Left / Center / Right as separate `ScriptModel` instances. Per-zone widget arrays configured in settings JSON.
+
+**Cross-compositor support:** `triggerControlCenterOnFocusedScreen()` dispatches to active compositor backend (Hyprland, Niri, Sway, Scroll, Miracle, DWL). DankBar is one of the few bars designed for multi-compositor from day one.
+
+**Desktop widget layer:**
+- Two built-in widgets: Desktop Clock + System Monitor
+- Plugin system: additional widgets via `PluginService.pluginDirectory`
+- Plugin manifest: `plugin.json` per plugin directory
+- Widgets have `x`, `y`, `scale` + grid snapping + boundary clamping
+- Config per-monitor: each monitor has its own widget positions in settings
+
+**Panel animation system** — height-based, NOT slide-from-edge:
+```qml
+// ControlCenterPopout
+property real targetPopupHeight  // computed from content implicitHeight + screen constraints
+NumberAnimation {
+    target: popup; property: "height"; to: targetPopupHeight
+    duration: Theme.variantPopoutEnterDuration
+    easing: Theme.variantPopoutEnterCurve  // custom Bézier per theme variant
+}
+```
+`collapseAll()` called before closing. Height updates queued via `Qt.callLater()` to batch recalculations. Enter vs exit curves differ — enter is slower (content materializing) than exit (fast dismiss).
+
+---
+
+### 12.5 AMBXST — UnifiedShellPanel + Reveal System
+
+**Research date:** 2026-05-21 (source-inspected from previous session)
+
+**Architecture:** One `UnifiedShellPanel` root item anchored fullscreen with transparent background. All shell surfaces (Bar, Dock, Notch, Frame, Corners) are children with z-index ordering:
+```
+ScreenFrameContent  z:1
+BarContent          z:2
+DockContent         z:3
+NotchContent        z:4
+AssistantSidebar    (dynamic margins)
+```
+
+**Reveal system** — visibility driven by boolean properties, not hover zones:
+```qml
+property bool barReveal:   barEnabled   && barContent.reveal
+property bool dockReveal:  dockEnabled  && dockContent.reveal
+property bool notchReveal: notchContent.reveal
+```
+Each content component manages its own `.reveal` internally, based on focus state and fullscreen detection.
+
+**NOT edge-hover based** — screen corners (`ScreenCorners.qml`) are decorative rounded overlays that hide when a fullscreen app is active. Edge interactions are NOT triggered by mouse proximity to screen edges. This is a key distinction from caelestia's `Interactions.qml`.
+
+**Input management:**
+- Full-screen `MouseArea` backdrop detects clicks outside modules to dismiss popups
+- `FocusGrab` + `FocusGrabManager` coordinate popup focus state
+- Switches between `WlrKeyboardFocus.Exclusive` (when text input needed) and `None` (compositor input pass-through)
+
+**Widget module subdirs:** config, dashboard, defaultview, launcher, overview, powermenu, presets, tools. No detailed widget registry found — modules are self-contained QML components.
+
+---
+
+### 12.6 HyprPanel (AGS/TypeScript) — Cross-Framework Widget Reference
+
+**Research date:** 2026-05-21 (source-inspected)
+**Framework:** AGS (Aylur's GTK Shell) / Astal / TypeScript / GTK3. Not Quickshell — reference only for widget type catalog and patterns.
+
+**Configuration model:**
+```json
+// settings.json
+{
+  "bar": {
+    "layouts": {
+      "0": {
+        "left":   ["dashboard", "workspaces", "windowtitle"],
+        "middle": ["media"],
+        "right":  ["volume", "network", "bluetooth", "battery", "systray", "clock"]
+      }
+    }
+  }
+}
+```
+Per-screen layouts keyed by monitor index. Most config-driven bar system found — every widget slot is user-editable JSON.
+
+**ListModel sync pattern** — preserves widget delegates on config change:
+```typescript
+// syncWidgetModel() only adds/removes widgets that changed
+// Existing widget instances are reused, not destroyed+recreated
+// Prevents jarring animation reset when user saves settings
+```
+This pattern is critical for a responsive Module Builder — live preview of layout changes without full reload.
+
+**Widget catalog:**
+Bar widgets: Calendar/Clock, Media controls, Quick toggles (WiFi, BT, Brightness), Notifications badge, System monitors, Workspace switcher, Window title, Dashboard trigger, Volume, Battery, SysTray, Hyprsunset (night light), Hypridle inhibitor, Power menu.
+
+**Hot corners:** Left edge of leftmost bar widget triggers first widget's popout. Not a separate interaction zone — emerges from widget positioning.
+
+**Per-screen assignment:** `Settings.getBarWidgetsForScreen(screen?.name)` — each monitor can have a completely different bar layout.
+
+---
+
+### 12.7 Cross-Repo Synthesis — Module Builder Design Implications
+
+These patterns appear across multiple repos and should directly inform Sprint 15 (DrawerSurface) and Sprint 16 (Module Builder):
+
+#### The config-driven bar: caelestia DelegateChooser is THE pattern
+
+caelestia's `DelegateChooser` + `Config.bar.entries` is the cleanest implementation found. Steal it directly:
+
+```qml
+// Our DrawerConfig.json:
+{ "bar": { "left": ["osicon", "workspaces"], "center": ["clock"], "right": ["media", "cc-button", "tray"] } }
+
+// Our Bar.qml:
+Repeater {
+    model: DrawerConfig.bar.right  // just a JSON array of widget ids
+    DelegateChooser {
+        role: "modelData"
+        DelegateChoice { roleValue: "clock";     BarPill { ClockWidget {} } }
+        DelegateChoice { roleValue: "media";     BarPill { MediaMiniWidget {} } }
+        DelegateChoice { roleValue: "cc-button"; BarPill { CCButton {} } }
+        // new community widget: add one DelegateChoice, drop a module.json
+    }
+}
+```
+
+Adding a new community widget = one new `DelegateChoice` + a `module.json`. Zero changes to existing code.
+
+#### BarPill wrapper: Noctalia's is the most complete
+
+Noctalia's `BarPill` → `BarPillHorizontal`/`BarPillVertical` chain handles orientation switching cleanly. Our `BarPill.qml` should expose:
+- `signal clicked`, `rightClicked`, `middleClicked`, `wheel(delta)`
+- `method show()`, `hide()`, `showDelayed(ms)`
+- `property bool barIsVertical` — swaps RowLayout to ColumnLayout
+
+#### Desktop widget layer: Noctalia DraggableDesktopWidget
+
+Noctalia's implementation is the reference for Sprint 16's desktop widget layer:
+- `MouseArea { enabled: editMode }` — drag only in edit mode
+- Grid snap: `Math.round(coord / gridSize) * gridSize`
+- Persist: `updateWidgetData()` writes x/y to config JSON on release
+- Z-raise: `raiseToTop()` while dragging, restore on drop
+- Boundary clamp: 75% off-screen tolerance before hard clamp
+
+#### ListModel sync: HyprPanel's preserve-delegates pattern
+
+When the Module Builder writes a new `DrawerConfig.json`, the bar should diff the old vs new widget lists and only add/remove changed items — not destroy and recreate all instances. HyprPanel's `syncWidgetModel()` is the reference.
+
+#### Widget catalog priority for Sprint 16 baseline
+
+Based on frequency across repos (Noctalia 30, DMS 30, end-4 13, caelestia 8, HyprPanel ~15), these widget types appear in every shell and should be our Sprint 16 baseline:
+
+| Widget | Frequency | Priority |
+|---|---|---|
+| Clock | 5/5 | P0 — already built |
+| Workspaces | 5/5 | P0 — already built |
+| SystemTray | 5/5 | P0 — already built |
+| Media (MPRIS) | 5/5 | P0 — already built |
+| Battery | 5/5 | P0 — already built |
+| Network | 5/5 | P0 — already built |
+| Volume | 5/5 | P0 — already built |
+| ActiveWindow | 5/5 | P0 — already built |
+| Notifications badge | 4/5 | P1 |
+| Bluetooth | 4/5 | P1 — already in CC, needs bar widget |
+| Keyboard layout | 4/5 | P1 |
+| CPU/RAM monitor | 4/5 | P1 |
+| Launcher button | 4/5 | P0 — already built |
+| AudioVisualizer | 2/5 | P2 |
+| Spacer | 2/5 | P1 — trivial to add |
+| Weather | 3/5 | P2 |
+| ColorPicker | 2/5 | P2 |
+| Clipboard | 2/5 | P2 |
+| Idle inhibitor | 3/5 | P1 |
+| VPN | 3/5 | P1 — already in CC, needs bar widget |
+| Power profile | 2/5 | P2 |
+| Brightness | 3/5 | P1 |
+
+P0 = must exist at Sprint 16 launch (most already exist from earlier sprints). P1 = second wave, within Sprint 16. P2 = community contribution targets.
+
+#### Panel animation patterns: height vs slide
+
+| Repo | Panel open animation | Notes |
+|---|---|---|
+| caelestia | `offsetScale` — single property drives position + opacity | Slide from edge, one Behavior |
+| end-4 | Opacity fade only | No position change, simplest |
+| Noctalia | Cubic ease on height + opacity | Works for expand-in-place panels |
+| DMS | Height-based + custom Bézier per theme | Most customizable, most complex |
+| AMBXST | Reveal boolean + internal animation | Unified surface handles it |
+
+**For Archeotech DrawerSurface:** use caelestia's `offsetScale` for edge-panels (CC, NC) and Noctalia's height+opacity for panels that expand from the bar (dashboard, launcher). Both can be implemented as `Behavior on offsetScale` and `Behavior on Layout.preferredHeight` respectively — no special animation engine needed.
+
+---
+
+## 13. Information Architecture — Grouping, Icons, Quick vs. Deep
+
+*Research date: 2026-05-21. Repos inspected: caelestia-dots/shell, Noctalia, end-4/dots-hyprland, DankMaterialShell. Answers the question: what lives where, how is it grouped, what icons/visuals are used.*
+
+---
+
+### 13.1 The Universal 3-Tier Rule
+
+Every mature shell studied uses a strict three-tier information architecture. The same piece of information never lives at two tiers.
+
+| Tier | Surface | Information density | Interaction | Max items |
+|---|---|---|---|---|
+| **Tier 1 — Glance** | Bar | Icon + state badge only. No labels. | Scroll = adjust, click = toggle/open CC | 8–12 icons |
+| **Tier 2 — Quick** | CC / Drawer panel | Icon + label + status text + toggle. One-tap action. Expand for context. | Tap/click. Right-click (Noctalia) = quick toggle | 6–8 cards |
+| **Tier 3 — Deep** | Settings panes | Sliders, device lists, schedules, per-item config. Full descriptions. | Navigate, configure, save | Unlimited (scrollable) |
+
+**Decision rule for placement:** "Can a user fix this in one tap?" → Tier 2. "Does this require choices?" → Tier 3. "Is this purely informational?" → Tier 1.
+
+---
+
+### 13.2 CC Grouping Patterns
+
+**caelestia — NavRail + split pane (8 panes):**
+8 distinct domains, each a full pane: Network, Bluetooth, Audio, Appearance, Taskbar, Notifications, Launcher, Dashboard. The CC *is* the settings app. Navigation via vertical icon sidebar. Active pane loads left panel (quick controls, 40% width) + right panel (full detail, 60% width). Deep = right side of the same surface.
+
+**Noctalia — Card stack (6–8 cards, ~60–260px each):**
+Cards arranged vertically in a ColumnLayout. Not grouped by domain categories — grouped by interaction frequency (most-used at top). Card heights vary by content density: small toggles (52–60px), audio slider (60px), weather widget (210px conditional), media player (260px). Conditional visibility: weather card only renders if enabled in settings. Cards that are disabled don't consume layout space (`implicitWidth/Height = 0`).
+
+Noctalia's key UX insight — **dual-click pattern:**
+- **Left-click** on a CC widget → opens the full panel for that domain (deep)
+- **Right-click** → immediate toggle, no navigation
+
+This is the cleanest quick/deep separation found. A single widget serves both tiers without separate affordances.
+
+**DMS — Quick toggles + PopoutService deep-link:**
+CC is a flat row of CompoundPill toggles. Each pill has a small "⋯" or chevron that calls `PopoutService.openSettingsWithTab("network")`, jumping directly to the corresponding settings tab. The pill itself handles the quick action; the deep-link handles everything else.
+
+**end-4 — Physically separated concerns:**
+No CC in the traditional sense. Bar handles all system status + quick toggles. A separate "sidebar" handles productivity tools (AI, translation) — not system settings. This is the most radical approach: the sidebar is not a settings panel at all.
+
+---
+
+### 13.3 What Should Live in Each Tier — Concrete Mapping
+
+Based on cross-repo analysis, here is the canonical assignment for common shell features:
+
+| Feature | Bar (Tier 1) | CC (Tier 2) | Settings (Tier 3) |
+|---|---|---|---|
+| WiFi | Status icon + SSID | Toggle + current network name + expand → scan list | Known networks, forget, priority, enterprise |
+| Bluetooth | Status icon | Toggle + connected device name + expand → device list | Paired devices, discovery, forget |
+| Volume | Scroll to adjust, icon = mute | Slider + source selector | Per-app volume, device aliasing |
+| Brightness | Scroll to adjust (optional) | Slider | Auto-brightness schedule |
+| Battery | % + charging icon | Status + estimate + power profile toggle | Battery health, charge limit, schedule |
+| Notifications | Unread count badge | DND toggle | Per-app rules, quiet hours, grouping |
+| VPN | Connected indicator | Toggle + profile name | Profile list, add/remove |
+| Night light | State icon | Toggle + intensity slider | Schedule (auto/manual), color temp |
+| Media | Now-playing pill (compact) | Full player card (art + controls + seek) | — (no deep settings needed) |
+| Clock | Time | Date expanded on hover/open | Timezone, format |
+| Workspaces | Pill indicators + tags | — | Workspace names, persistent |
+| Display | — | Brightness slider | Resolution, scale, arrangement |
+| Power | — | Profile toggle (balanced/perf/saver) | Full power plan editor |
+| Appearance | — | Theme picker (quick swap) | Full theme editor |
+| System tools | — | Quick actions (screenshot, color picker) | — |
+
+---
+
+### 13.4 Icon Systems Used
+
+All three major Quickshell repos (caelestia, end-4, Noctalia) use **Material Symbols** (Google's ligature icon font — successor to Material Icons). DMS uses Material Design Icons (MDI).
+
+**Material Symbols** is the dominant choice because:
+- 2,500+ icons, all well-named and consistently drawn
+- Ligature-based: `Text { font.family: "Material Symbols Rounded"; text: "wifi" }` renders the WiFi icon
+- Three styles (Outlined, Rounded, Sharp) — Rounded is used by every repo
+- Variable font: weight, fill, grade, optical size all adjustable via `font.variableAxes`
+- AUR package: `ttf-material-symbols-variable-git`
+
+**How repos declare icons:**
+```qml
+// caelestia — icon name as a string constant, font applied globally
+Text {
+    font.family: "Material Symbols Rounded"
+    text: "router"          // renders WiFi router icon
+}
+// OR via MaterialIcon component:
+MaterialIcon { name: "bluetooth"; size: 20 }
+```
+
+**Nerd Fonts** is used for terminal contexts (bar workspace indicators that use powerline glyphs, font in kitty/terminal text), NOT for UI icons. The two coexist — Material Symbols for the shell UI, Nerd Fonts for the terminal.
+
+**Icon naming conventions found in source:**
+```
+Network/connectivity: router, wifi, wifi_off, signal_wifi_0_bar…wifi_4_bar, vpn_key
+Bluetooth: bluetooth, bluetooth_connected, bluetooth_disabled, bluetooth_searching
+Audio: volume_up, volume_mute, headset, speaker, mic, mic_off
+Power: battery_0_bar…battery_6_bar, battery_charging_full, power_settings_new
+Display: brightness_5, brightness_7, monitor, computer
+Notifications: notifications, notifications_off, do_not_disturb_on, circle_notifications
+System: settings, tune, build, developer_mode, terminal
+Media: play_arrow, pause, skip_next, skip_previous, repeat, shuffle, music_note
+Weather: sunny, cloud, thunderstorm, water_drop, air, thermostat
+```
+
+**Recommendation for Archeotech:** Add `ttf-material-symbols-variable-git` as a dependency. Use Material Symbols Rounded for all CC/Settings/panel UI icons. Keep Nerd Fonts for bar workspace glyphs and terminal integration. This aligns with the entire ecosystem and gives 2,500 icons with consistent visual weight.
+
+---
+
+### 13.5 Visual Density Patterns
+
+**Card sizing (Noctalia — most systematic):**
+- Toggle-only card (on/off + label): 52px height
+- Toggle + single status line: 60px height  
+- Toggle + slider: 72–80px height
+- Media player card: 200–260px height (art + controls)
+- Weather card: 180–210px (conditional, can be collapsed)
+
+**Row/pill sizing:**
+- Bar icons: 16–20px icon, 32–40px pill height
+- CC CompoundPill: 48px height — left tile (48×48px icon toggle), right body (fills remaining)
+- Settings rows: 48–56px per row, 12–16px padding
+
+**Visual hierarchy cues (across all repos):**
+- Section headers: small allcaps label + colored accent line (same as our current SYSTEM STATUS etc.) ✅
+- Active/connected state: `accent` color fill, stronger border — not just an icon change
+- Disabled/inactive: `overlay1` or `surface0` color — same icon, much lower contrast
+- "Expand for more" affordance: right-facing chevron `›` or `󰅀`/`󰅃` Nerd Font glyphs; never a full "Settings" button in the quick tier
+- Separator between sections: 1px `surface0` line OR 8–12px gap — not both
+
+**Hover state patterns:**
+- Bar icons: background pill appears on hover (`accentAlpha` or `surface0Alpha`)
+- CC cards: subtle `surface1` background shift (no border change)
+- CC interactive elements (sliders, buttons): `accentAlpha` on hover, `accentBorder` border
+- Settings rows: full row highlight on hover
+
+---
+
+### 13.6 The CC Expansion Problem (our specific situation)
+
+Our current CC (`ControlCenter.qml`) has grown to include: audio sink selector, WiFi CompoundPill, BT CompoundPill, VPN CompoundPill, display section, system section (idle/power), and a tools section (snapper, btop, etc.). This is too much for a single panel.
+
+Cross-repo guidance on how to split:
+
+**Keep in CC (Tier 2 — quick actions):**
+- WiFi toggle + current network + expand to nearby list
+- BT toggle + connected device + expand to device list
+- VPN toggle + active profile name
+- Volume slider + source selector
+- Brightness slider
+- Night light toggle
+- DND toggle
+- Power profile toggle (balanced/perf/saver chips)
+- Media player card (compact — art, play/pause, skip)
+
+**Move to dedicated drawer panels triggered from bar icons:**
+- Full audio settings (device aliasing, per-app, EQ) → audio panel
+- Full display settings (resolution, scale, arrangement) → display panel
+- Full network details (known networks, manual IP) → deep-link to Settings
+
+**Move out of CC entirely:**
+- Tools section (snapper, btop, etc.) → Quick Launch (already in Dashboard) or Quick Actions panel
+- Appearance/theme picker → stays in Settings (too deep for CC)
+- Idle settings → stays in Settings
+
+**The guideline:** CC should be fully usable in under 10 seconds without reading a single label. If an item requires choosing from a list longer than 5 items, it belongs in Settings, not CC.
+
+---
+
+### 13.7 Implementation Notes
+
+**For Sprint 15 (DrawerSurface):** When migrating CC into DrawerSurface, also reorganize it per §13.6 — remove the tools section, restructure as 6–8 cards max.
+
+**For Sprint 16 (Module Builder):** Bar modules should map 1:1 to CC cards. The bar WiFi icon → right-click quick toggle, left-click → opens CC to WiFi card. This is the DMS PopoutService deep-link pattern in reverse: bar icon is the entry point, CC card is the quick surface, Settings pane is the deep surface.
+
+**Material Symbols integration:** Add to `Appearance.qml` font declarations. Add to `docs/MODULE_API.md` as the required icon font for community module authors. Include `ttf-material-symbols-variable-git` in the Sprint 21 `install-packages.sh`.
+
+---
+
+## 14. Technical Unknowns — Resolved Pre-Sprint Research
+
+*Research date: 2026-05-21. Four critical unknowns resolved before Sprint 15. Source: Quickshell docs, Quickshell source (git.outfoxxed.me), caelestia issues, Qt6 drag docs, MangoWC rules docs.*
+
+---
+
+### 14.1 Input Passthrough on a Full-Screen DrawerSurface
+
+**Status: RESOLVED — `QsWindow.mask: Region`**
+
+When a full-screen transparent PanelWindow is on WlrLayer.Overlay, input passthrough is controlled via:
+
+```qml
+PanelWindow {
+    // null = full passthrough (no panels open)
+    // Region = only that area receives input
+    QsWindow.mask: DrawerVisibilities.anyPanelOpen ? activeRegion : null
+}
+
+Region {
+    id: activeRegion
+    item: currentPanelRect  // the visible panel Rectangle
+    intersection: Intersection.Combine
+}
+```
+
+**Key facts:**
+- `QsWindow.mask = null` → all mouse events pass through to windows below
+- `QsWindow.mask = Region { item: panelRect }` → only panelRect receives input
+- `WlrLayershell.keyboardFocus: WlrKeyboardFocus.None` controls *keyboard* only — does NOT affect mouse passthrough
+- `exclusiveZone` is unrelated (controls screen edge reserved space)
+- No `WlrLayershell.inputRegion` property exists — `QsWindow.mask` is the only API
+
+**Implementation for DrawerSurface:** Update `QsWindow.mask` whenever `DrawerVisibilities.anyPanelOpen` changes. The `Region` item should reference the active panel's bounding Rectangle, not the full surface.
+
+---
+
+### 14.2 MangoWC Blur on WlrLayer.Overlay Surfaces
+
+**Status: RESOLVED — works, but requires correct layerrule syntax + ignore_alpha**
+
+MangoWC `layerrule = blur` works on Overlay-level surfaces. caelestia's confirmed working configuration:
+
+```ini
+# mango.conf — matches all Quickshell surfaces by namespace prefix
+layerrule = blur true, match:namespace qs-.
+layerrule = ignore_alpha 0.57, match:namespace qs-.
+```
+
+`ignore_alpha 0.57` is critical: without it, blur looks over-applied at semi-transparent opacity values (~0.92 for our panels).
+
+**For Archeotech, use:**
+```ini
+layerrule = blur, namespace:archeotech-drawer
+layerrule = ignorealpha 0.1, namespace:archeotech-drawer
+```
+(The `ignorealpha` value means "don't blur pixels below this alpha threshold" — set low to ensure the panel content blurs but the transparent background doesn't create artifacts.)
+
+**Known caveats:**
+- Blur may look incorrect at fractional display scaling — general wlroots issue, not Overlay-specific
+- The ext-background-effect-v1 Wayland protocol (2025-era) is what Quickshell uses under the hood; MangoWC must support it
+
+---
+
+### 14.3 Directory Watching for Module Hot-Discovery
+
+**Status: RESOLVED — no native API, use inotifywait subprocess**
+
+`FileView { watchChanges: true }` watches a single file only. **There is no `DirView` or directory-watching type in Quickshell.Io.** QFileSystemWatcher is used internally but not exposed at the QML level.
+
+**Implementation for ModuleRegistry hot-discovery:**
+
+```qml
+Process {
+    id: dirWatcher
+    running: true
+    command: ["inotifywait", "-m", "-e", "create,delete,moved_to,moved_from",
+              "--format", "%e %f",
+              Qt.resolvedUrl(Paths.userModules).toString().replace("file://", "")]
+    stdout: SplitParser {
+        onRead: line => {
+            const [event, filename] = line.split(" ")
+            if (filename.endsWith("module.json"))
+                ModuleRegistry.rescan()
+        }
+    }
+}
+```
+
+`inotifywait` is in the `inotify-tools` package (available in Arch, Ubuntu, etc.). `rescan()` re-reads all `module.json` files and rebuilds the registry.
+
+**Alternative for Sprint 16 MVP:** Skip hot-discovery entirely — scan once on shell start, rescan via IPC `qs ipc call modules rescan`. Hot-discovery is a nice-to-have for v1.0, not a blocker.
+
+---
+
+### 14.4 Cross-Window Drag-and-Drop in the Module Builder
+
+**Status: RESOLVED — unreliable on Wayland, use click-to-assign instead**
+
+QML `Drag`/`DropArea` are designed for single-window trees. Cross-window drag on Wayland has documented state leakage bugs and unreliable MIME handling. No existing Quickshell shell does cross-window drag.
+
+**Decision for Sprint 16: use click-to-assign UX**
+
+```
+Edit mode flow:
+1. User enters edit mode (Super+Shift+E)
+2. Edit overlay appears, showing all slots as highlighted drop targets
+3. User CLICKS a module chip (highlights it, shows source slot)
+4. User CLICKS a target slot (assigns module, writes DrawerConfig.json)
+5. Slots can be dragged to reorder WITHIN the same surface (bar zones, CC cards)
+   — this is safe because it's within one Item tree
+
+Desktop widget layer (WidgetLayer.qml):
+- Drag-to-reorder works fine (all widgets are children of the same PanelWindow)
+- Noctalia's DraggableDesktopWidget pattern applies directly
+```
+
+**Why click-to-assign is actually better UX:**
+- Works reliably on all compositors
+- Keyboard accessible (Tab to cycle through slots, Enter to assign)
+- Clearer visual state — selected module is highlighted until assigned or cancelled
+- No cursor issues from cross-window drag coordinates
+
+---
+
+### 14.5 Remaining Gaps (Not Yet Fully Resolved)
+
+These are unknowns that will require either additional research before their respective sprints or careful prototyping:
+
+| Gap | Sprint | Risk | Notes |
+|---|---|---|---|
+| `Quickshell.DWL` availability | Sprint 20 | Medium | ANALYSIS.md notes it may be in a custom fork. Verify via `paru -Qi quickshell-git` build flags before Sprint 20. |
+| Niri IPC event format | Sprint 20 | Low | Socket at `$NIRI_SOCKET`, JSON events. Need exact event names for workspace switch + window focus. Research when Sprint 20 starts. |
+| `WlSessionLock` + `Pam.PamContext` in current build | Sprint 18 | Low | Qylock confirms the API exists; verify with `quickshell-git` build at Sprint 18 time. |
+| Per-monitor DrawerConfig design | Sprint 15/16 | Medium | Global config vs per-monitor overrides. Decision: global config with `perMonitor: {}` override map in DrawerConfig.json. |
+| Material Symbols variable font loading in QML | Sprint 15 | Low | Standard font load via `FontLoader`. Variable axes (`fill`, `weight`) via `font.variableAxes: {"FILL": 1}`. Needs one test. |
+| Community module security model | Sprint 16/21 | Known | No QML sandboxing possible. Resolution: document that modules are trusted code (same as browser extensions). Verified modules get a `verified` badge in ModuleRegistry. |
+| `inotify-tools` as a dependency | Sprint 16 | Low | Not universally installed. Add to `install-packages.sh`. Fallback: polling every 30s if `inotifywait` not found. |
+
+---
+
+### 14.6 Architecture Decisions Locked Before Sprint 15
+
+These cannot be changed mid-sprint without breaking things. Locked here:
+
+| Decision | Choice | Reason |
+|---|---|---|
+| Input passthrough API | `QsWindow.mask: null / Region` | Only reliable API |
+| Blur layerrule namespace | `archeotech-drawer` | Single named namespace for MangoWC layerrule |
+| Blur ignorealpha value | `0.1` | Prevents artifact on transparent background; panel content at 0.92 opacity blurs correctly |
+| Module Builder drag model | Click-to-assign | Cross-window drag unreliable on Wayland |
+| Module hot-discovery | inotifywait subprocess | Only viable approach without native Quickshell API |
+| DrawerConfig scope | Global with per-monitor override map | Simpler than full per-monitor configs; matches HyprPanel model |
+| State.qml migration | Fully replaced by DrawerVisibilities.qml in Sprint 15 | Clean break, no dual maintenance |
+| Bar module data model | `DrawerConfig.bar: { left: [], center: [], right: [] }` — arrays of widget ID strings | Matches caelestia's Config.bar.entries pattern; DelegateChooser maps IDs to QML |

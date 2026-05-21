@@ -19,9 +19,9 @@ Item {
 
         height: Math.min(contentColumn.implicitHeight + 24, root.height - 60)
         radius: Commons.Appearance.radius.lg
-        color:  Commons.Appearance.colors.glassBg
+        color:  Commons.Appearance.colors.base
         border.color: Commons.Appearance.colors.accentBorder
-        border.width: 1
+        border.width: 2
         clip: true
 
         property real restX:   root.width - width - Commons.Appearance.spacing.base

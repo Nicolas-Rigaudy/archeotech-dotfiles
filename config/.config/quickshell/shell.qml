@@ -15,6 +15,7 @@ import "Modules/ControlCenter"
 import "Modules/NotificationCenter"
 import "Modules/Launcher"
 import "Modules/Settings"
+import "Modules/Dashboard"
 
 ShellRoot {
     id: shell
@@ -66,7 +67,15 @@ ShellRoot {
         function openPane(pane: string) { Commons.State.settingsOpenPane = pane; Commons.State.settingsVisible = true }
     }
 
-    // ── Mutual exclusion: CC, NC, launcher, settings close each other ─────────
+    IpcHandler {
+        target: "dashboard"
+        function toggle()   { Commons.State.dashboardVisible = !Commons.State.dashboardVisible }
+        function open()     { Commons.State.dashboardVisible = true  }
+        function close()    { Commons.State.dashboardVisible = false }
+        function openAuto() { Commons.State.dashboardAutoOpen = true; Commons.State.dashboardVisible = true }
+    }
+
+    // ── Mutual exclusion: all overlays close each other ───────────────────────
     Connections {
         target: Commons.State
         function onNotificationCenterVisibleChanged() {
@@ -74,6 +83,7 @@ ShellRoot {
                 Commons.State.controlCenterVisible = false
                 Commons.State.launcherVisible      = false
                 Commons.State.settingsVisible      = false
+                Commons.State.dashboardVisible     = false
                 SystemServices.Notifications.unreadCount = 0
             }
         }
@@ -82,6 +92,7 @@ ShellRoot {
                 Commons.State.notificationCenterVisible = false
                 Commons.State.launcherVisible           = false
                 Commons.State.settingsVisible           = false
+                Commons.State.dashboardVisible          = false
             }
         }
         function onLauncherVisibleChanged() {
@@ -89,6 +100,7 @@ ShellRoot {
                 Commons.State.controlCenterVisible      = false
                 Commons.State.notificationCenterVisible = false
                 Commons.State.settingsVisible           = false
+                Commons.State.dashboardVisible          = false
             }
         }
         function onSettingsVisibleChanged() {
@@ -96,6 +108,15 @@ ShellRoot {
                 Commons.State.controlCenterVisible      = false
                 Commons.State.notificationCenterVisible = false
                 Commons.State.launcherVisible           = false
+                Commons.State.dashboardVisible          = false
+            }
+        }
+        function onDashboardVisibleChanged() {
+            if (Commons.State.dashboardVisible) {
+                Commons.State.controlCenterVisible      = false
+                Commons.State.notificationCenterVisible = false
+                Commons.State.launcherVisible           = false
+                Commons.State.settingsVisible           = false
             }
         }
     }
@@ -271,6 +292,23 @@ ShellRoot {
 
     // ── Settings window ────────────────────────────────────────────────────────
     Settings {}
+
+    // ── Dashboard window ───────────────────────────────────────────────────────
+    PanelWindow {
+        id: dashWindow
+        visible: Commons.State.dashboardVisible
+        exclusionMode: ExclusionMode.Ignore
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.namespace: "quickshell:dashboard"
+        WlrLayershell.keyboardFocus: Commons.State.dashboardVisible
+            ? WlrKeyboardFocus.Exclusive
+            : WlrKeyboardFocus.None
+
+        anchors { top: true; bottom: true; left: true; right: true }
+        color: "transparent"
+
+        Dashboard { anchors.fill: parent }
+    }
 
     // ── Control Center window ──────────────────────────────────────────────────
     PanelWindow {

@@ -13,5 +13,8 @@ QtObject {
     readonly property string wlogoutLaunch:  localBin + "/wlogout-launch.sh"
     readonly property string listDesktopApps: home + "/Projects/archeotech-dotfiles/scripts/list-desktop-apps.sh"
     readonly property string wifiScan:        home + "/Projects/archeotech-dotfiles/scripts/wifi-scan.sh"
-    readonly property string themeSwitch:     home + "/Projects/archeotech-dotfiles/scripts/theme-switch.sh"
+    readonly property string themeSwitch:        home + "/Projects/archeotech-dotfiles/scripts/theme-switch.sh"
+    readonly property string dashboardStats:     home + "/Projects/archeotech-dotfiles/scripts/dashboard-stats.sh"
+    readonly property string dashboardProjects:  home + "/Projects/archeotech-dotfiles/scripts/dashboard-projects.sh"
+    readonly property string dashboardNotes:     home + "/Projects/archeotech-dotfiles/scripts/dashboard-notes.sh"
 }
