@@ -33,6 +33,11 @@ ShellRoot {
     property var _persistent:    Persistence.Persistent
 
     IpcHandler {
+        target: "theme"
+        function reload() { Commons.Appearance.reload() }
+    }
+
+    IpcHandler {
         target: "main"
         function toggle() { Commons.State.controlCenterVisible = !Commons.State.controlCenterVisible }
         function open()   { Commons.State.controlCenterVisible = true  }

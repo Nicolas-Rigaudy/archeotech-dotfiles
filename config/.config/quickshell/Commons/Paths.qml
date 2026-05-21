@@ -13,4 +13,5 @@ QtObject {
     readonly property string wlogoutLaunch:  localBin + "/wlogout-launch.sh"
     readonly property string listDesktopApps: home + "/Projects/archeotech-dotfiles/scripts/list-desktop-apps.sh"
     readonly property string wifiScan:        home + "/Projects/archeotech-dotfiles/scripts/wifi-scan.sh"
+    readonly property string themeSwitch:     home + "/Projects/archeotech-dotfiles/scripts/theme-switch.sh"
 }

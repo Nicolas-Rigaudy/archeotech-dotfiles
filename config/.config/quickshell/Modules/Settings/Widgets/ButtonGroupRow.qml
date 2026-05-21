@@ -10,12 +10,13 @@ Item {
     property string currentValue: ""
     signal selected(string value)
 
-    implicitHeight: description ? 56 : 40
+    implicitHeight: _col.implicitHeight
     Layout.fillWidth: true
 
-    RowLayout {
-        anchors.fill: parent
-        spacing: Commons.Appearance.spacing.xl
+    ColumnLayout {
+        id: _col
+        anchors { left: parent.left; right: parent.right; top: parent.top }
+        spacing: 6
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -37,8 +38,9 @@ Item {
             }
         }
 
-        Row {
+        Flow {
             spacing: 4
+            Layout.fillWidth: true
 
             Repeater {
                 model: root.options
@@ -46,7 +48,10 @@ Item {
                     required property var modelData
                     required property int index
 
-                    width: 72; height: 28
+                    height: 28
+                    implicitWidth: _btnText.implicitWidth + 24
+                    width: implicitWidth
+
                     color: modelData.value === root.currentValue
                         ? Commons.Appearance.colors.accentAlpha
                         : (btnArea.containsMouse ? Commons.Appearance.colors.surface0 : Commons.Appearance.colors.base)
@@ -59,6 +64,7 @@ Item {
                     Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
 
                     Text {
+                        id: _btnText
                         anchors.centerIn: parent
                         text: modelData.label
                         color: modelData.value === root.currentValue

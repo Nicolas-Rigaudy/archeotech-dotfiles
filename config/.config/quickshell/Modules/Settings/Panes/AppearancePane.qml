@@ -1,12 +1,19 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell.Io
 import "../../../Commons" as Commons
 import "../../../Services/Persistence" as Persistence
 import "../Widgets"
 
 Item {
     id: root
+
+    Process {
+        id: themeProc
+        command: []
+        running: false
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -50,16 +57,27 @@ Item {
                         anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 16; rightMargin: 16 }
                         spacing: 0
 
-                        Item { implicitHeight: 12; Layout.fillWidth: true }
-                        Text {
-                            text: "Full theme switching coming in Sprint 12. The palette, MangoWC blur/shadow colours, and per-app theme files will all be wired together."
-                            color: Commons.Appearance.colors.subtext0
-                            font.pixelSize: Commons.Appearance.font.sizeBase
-                            font.family: Commons.Appearance.font.family
-                            wrapMode: Text.WordWrap
-                            Layout.fillWidth: true
+                        Item { implicitHeight: 4; Layout.fillWidth: true }
+                        ButtonGroupRow {
+                            label: "Color Palette"
+                            description: "Switches shell, terminal, and launcher theme simultaneously"
+                            options: [
+                                { value: "archeotech-macchiato", label: "Macchiato"   },
+                                { value: "archeotech-mocha",     label: "Mocha"       },
+                                { value: "dracula",              label: "Dracula"     },
+                                { value: "nord",                 label: "Nord"        },
+                                { value: "gruvbox",              label: "Gruvbox"     },
+                                { value: "tokyo-night",          label: "Tokyo Night" },
+                                { value: "monochrome",           label: "Monochrome"  }
+                            ]
+                            currentValue: Persistence.Config.get("theme.variant", "archeotech-macchiato")
+                            onSelected: function(value) {
+                                Persistence.Config.set("theme.variant", value)
+                                themeProc.command = [Commons.Paths.themeSwitch, value]
+                                themeProc.running = true
+                            }
                         }
-                        Item { implicitHeight: 12; Layout.fillWidth: true }
+                        Item { implicitHeight: 4; Layout.fillWidth: true }
                     }
                 }
 

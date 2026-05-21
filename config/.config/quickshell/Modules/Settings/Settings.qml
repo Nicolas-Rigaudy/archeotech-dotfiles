@@ -8,12 +8,9 @@ FloatingWindow {
     id: settingsWindow
     visible: Commons.State.settingsVisible
     title: "Archeotech Settings"
-    minimumSize: Qt.size(800, 700)
-    implicitWidth: 900
-    implicitHeight: 800
+    width: 900
+    height: 800
     color: Commons.Appearance.colors.base
-
-    onClosed: Commons.State.settingsVisible = false
 
     Connections {
         target: Commons.State
@@ -29,28 +26,34 @@ FloatingWindow {
         }
     }
 
-    RowLayout {
+    Item {
         anchors.fill: parent
-        spacing: 0
+        focus: true
+        Keys.onEscapePressed: Commons.State.settingsVisible = false
 
-        SettingsSidebar {
-            id: sidebar
-            Layout.preferredWidth: 200
-            Layout.fillHeight: true
-            Component.onCompleted: activeIndex = Persistence.Persistent.settingsActivePaneIndex
-            onActiveIndexChanged: Persistence.Persistent.settingsActivePaneIndex = activeIndex
-        }
+        RowLayout {
+            anchors.fill: parent
+            spacing: 0
 
-        Rectangle {
-            Layout.preferredWidth: 1
-            Layout.fillHeight: true
-            color: Commons.Appearance.colors.surface0
-        }
+            SettingsSidebar {
+                id: sidebar
+                Layout.preferredWidth: 200
+                Layout.fillHeight: true
+                Component.onCompleted: activeIndex = Persistence.Persistent.settingsActivePaneIndex
+                onActiveIndexChanged: Persistence.Persistent.settingsActivePaneIndex = activeIndex
+            }
 
-        SettingsContent {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            activeIndex: sidebar.activeIndex
+            Rectangle {
+                Layout.preferredWidth: 1
+                Layout.fillHeight: true
+                color: Commons.Appearance.colors.surface0
+            }
+
+            SettingsContent {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                activeIndex: sidebar.activeIndex
+            }
         }
     }
 }
