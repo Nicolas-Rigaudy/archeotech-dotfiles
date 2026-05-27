@@ -25,16 +25,16 @@ Rectangle {
         Drawer.DrawerVisibilities.dashboardVisible = false
     }
 
-    // icon: real .desktop icon name, or "" to skip
+    readonly property string _p: "file:///usr/share/icons/Papirus/32x32/"
     readonly property var apps: [
-        { label: "Terminal",    icon: "kitty",                cmd: "kitty" },
-        { label: "Browser",     icon: "zen-browser",          cmd: "zen-browser" },
-        { label: "Editor",      icon: "visual-studio-code",   cmd: "code" },
-        { label: "Notes",       icon: "obsidian",             cmd: "obsidian" },
-        { label: "Lazygit",     icon: "git",                  cmd: "kitty --title lazygit -e lazygit" },
-        { label: "Files",       icon: "folder",               cmd: "kitty --title yazi -e yazi" },
-        { label: "Monitor",     icon: "btop",                 cmd: "kitty --title btop -e btop" },
-        { label: "Cheatsheets", icon: "help-browser",         cmd: "kitty --title navi -e navi" }
+        { label: "Terminal",    icon: _p + "apps/kitty.svg",               cmd: "kitty" },
+        { label: "Browser",     icon: _p + "apps/zen-browser.svg",         cmd: "zen-browser" },
+        { label: "Editor",      icon: _p + "apps/visual-studio-code.svg",  cmd: "code" },
+        { label: "Notes",       icon: _p + "apps/obsidian.svg",            cmd: "obsidian" },
+        { label: "Lazygit",     icon: _p + "apps/git.svg",                 cmd: "kitty --title lazygit -e lazygit" },
+        { label: "Files",       icon: _p + "places/folder.svg",            cmd: "kitty --title yazi -e yazi" },
+        { label: "Monitor",     icon: _p + "apps/btop.svg",                cmd: "kitty --title btop -e btop" },
+        { label: "Cheatsheets", icon: _p + "apps/help-browser.svg",        cmd: "kitty --title navi -e navi" }
     ]
 
     ColumnLayout {
@@ -46,7 +46,7 @@ Rectangle {
             text: "QUICK LAUNCH"
             color: Commons.Appearance.colors.accent
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             font.letterSpacing: 1.5
             opacity: 0.85
         }
@@ -72,11 +72,10 @@ Rectangle {
                         spacing: 6
 
                         Image {
-                            source: "image://icon/" + modelData.icon
+                            source: modelData.icon
                             width: 16; height: 16
                             anchors.verticalCenter: parent.verticalCenter
                             smooth: true
-                            // hide broken icon placeholder — keep label only
                             visible: status === Image.Ready
                         }
 
@@ -84,7 +83,7 @@ Rectangle {
                             text: modelData.label
                             color: Commons.Appearance.colors.text
                             font.family: Commons.Appearance.font.family
-                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.pixelSize: Commons.Appearance.font.sizeBase
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }

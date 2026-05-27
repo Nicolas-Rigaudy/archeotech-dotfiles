@@ -1080,5 +1080,37 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
-**Last Updated:** 2026-05-19
-**Total Decisions:** 51
+---
+
+### [2026-05-27] Perimeter Frame: bar marginTop 6→0
+
+**Decision:** Move bar flush with screen top edge (`marginTop: 0`), making the bar part of a continuous glass frame rather than a floating pill.
+
+**Rationale:** Enables wrapping the screen with strips on all four sides (Caelestia-style perimeter frame). With marginTop=0, the bar's exclusive zone shrinks from 42→36px, and side strips can start immediately below the bar at y=36.
+
+**Trade-offs Accepted:** Bar corners now fully flat at top (radius already 0 at top). Bottom corners also set to radius:0 for Sprint 16 to avoid corner gap artefacts; Sprint 18 (goth corners) re-introduces curves with proper concave connectors.
+
+---
+
+### [2026-05-27] Edge Strip Exclusive Zones for Equal Gaps
+
+**Decision:** Edge strips use `exclusiveZone: 10` (replacing `exclusionMode: ExclusionMode.Ignore`). MangoWC gaps set to `gappoh=4`, `gappov=4`.
+
+**Rationale:** With Ignore, the gap from bar-bottom to window-top was 12px while left/right gaps (strip-edge to window) were 4px — visually unequal. Exclusive zones let MangoWC's gappoh/gappov apply symmetrically: each side reserves 10px for its strip then adds 4px gap, giving equal 4px breathing room on all four sides.
+
+**Trade-offs Accepted:** Wayland layer-shell exclusive zones from adjacent panels constrain each other geometrically — the right and bottom strips leave a 10×10px uncovered corner at bottom-right (and similarly other corners). Deferred to Sprint 18 (goth corner connectors). Bar width is also reduced by left/right strip exclusive zones, but since the strips carry the same glass color the visual boundary is seamless.
+
+---
+
+### [2026-05-27] Bar radius:0 Pending Goth Corners
+
+**Decision:** Set `radius: 0` on the bar pill. Previously `bottomLeftRadius: xl (18)`, `bottomRightRadius: xl (18)`.
+
+**Rationale:** The 18px bottom-corner radius creates a concave notch at the bar/strip junction — the bar curves inward while the strip runs straight, leaving an unfilled gap. Flat corners eliminate this. Sprint 18 will re-introduce curves alongside concave ShapePath connectors (DankMaterialShell BarCanvas.qml pattern) that fill the junction properly.
+
+**Trade-offs Accepted:** Bar looks boxy until Sprint 18. Acceptable since the frame aesthetic (flush bar + full-height strips) is already a significant visual improvement.
+
+---
+
+**Last Updated:** 2026-05-27
+**Total Decisions:** 54

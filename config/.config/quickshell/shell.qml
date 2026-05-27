@@ -210,43 +210,64 @@ ShellRoot {
     // ── Drawer surface — CC, NC, Launcher, Dashboard ──────────────────────────
     Drawer.DrawerSurface {}
 
-    // ── Edge hover zones — one instance per screen ───────────────────────────
+    // ── Edge strips — bar-colored frame wrap, instant expand on hover, click to open ─
+    // Right → CC, Bottom → Dashboard, Left → Launcher. NC is on the bar bell icon.
+
     // Right edge → Control Center
     Variants {
         model: Quickshell.screens
         delegate: PanelWindow {
             required property var modelData
             screen: modelData
-            exclusionMode: ExclusionMode.Ignore
+            exclusiveZone: 10
             WlrLayershell.layer: WlrLayer.Top
             WlrLayershell.namespace: "archeotech-edge-right"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             anchors { top: true; bottom: true; right: true }
-            implicitWidth: 4
+            implicitWidth: 56
             color: "transparent"
-            HoverHandler { onHoveredChanged: if (hovered) Drawer.DrawerVisibilities.ccVisible = true }
-        }
-    }
+            mask: Region { item: _ccZone }
 
-    // Top-right corner → Notification Center
-    Variants {
-        model: Quickshell.screens
-        delegate: PanelWindow {
-            required property var modelData
-            screen: modelData
-            exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Top
-            WlrLayershell.namespace: "archeotech-edge-nc"
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-            anchors { top: true; right: true }
-            implicitWidth: 160
-            implicitHeight: 4
-            color: "transparent"
-            HoverHandler {
-                onHoveredChanged: if (hovered) {
-                    Drawer.DrawerVisibilities.ncVisible = true
-                    SystemServices.Notifications.unreadCount = 0
+            // Visual strip — full screen height keeps the wrap-around frame continuous
+            Rectangle {
+                id: _ccStrip
+                anchors { top: parent.top; bottom: parent.bottom; right: parent.right }
+                width: _ccZone._hov ? 56 : 10
+                color: Drawer.DrawerVisibilities.ccVisible
+                     ? Commons.Appearance.colors.accentAlpha
+                     : Commons.Appearance.colors.glassBgLight
+                Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
+                Behavior on color { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰒓"
+                    color: Drawer.DrawerVisibilities.ccVisible
+                         ? Commons.Appearance.colors.accent
+                         : Commons.Appearance.colors.subtext1
+                    font.pixelSize: 18
+                    font.family: Commons.Appearance.font.family
+                    opacity: _ccZone._hov ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+                    Behavior on color   { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
                 }
+            }
+
+            // Input zone — 12px collapsed (fits within gappoh dead zone, no app UI)
+            //             56px expanded (mask grows with strip so full visible area is clickable)
+            Item {
+                id: _ccZone
+                property bool _hov: false
+                anchors {
+                    top: parent.top
+                    topMargin: Commons.Appearance.bar.height
+                    bottom: parent.bottom
+                    right: parent.right
+                }
+                width: _hov ? 56 : 12
+
+                HoverHandler { onHoveredChanged: _ccZone._hov = hovered }
+                TapHandler { onTapped: Drawer.DrawerVisibilities.ccVisible = !Drawer.DrawerVisibilities.ccVisible }
             }
         }
     }
@@ -257,14 +278,104 @@ ShellRoot {
         delegate: PanelWindow {
             required property var modelData
             screen: modelData
-            exclusionMode: ExclusionMode.Ignore
+            exclusiveZone: 10
             WlrLayershell.layer: WlrLayer.Top
             WlrLayershell.namespace: "archeotech-edge-bottom"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             anchors { bottom: true; left: true; right: true }
-            implicitHeight: 4
+            implicitHeight: 56
             color: "transparent"
-            HoverHandler { onHoveredChanged: if (hovered) Drawer.DrawerVisibilities.dashboardVisible = true }
+            mask: Region { item: _dashZone }
+
+            Rectangle {
+                id: _dashStrip
+                anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+                height: _dashZone._hov ? 56 : 10
+                color: Drawer.DrawerVisibilities.dashboardVisible
+                     ? Commons.Appearance.colors.accentAlpha
+                     : Commons.Appearance.colors.glassBgLight
+                Behavior on height { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
+                Behavior on color  { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰕮"
+                    color: Drawer.DrawerVisibilities.dashboardVisible
+                         ? Commons.Appearance.colors.accent
+                         : Commons.Appearance.colors.subtext1
+                    font.pixelSize: 18
+                    font.family: Commons.Appearance.font.family
+                    opacity: _dashZone._hov ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+                    Behavior on color   { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
+                }
+            }
+
+            Item {
+                id: _dashZone
+                property bool _hov: false
+                anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+                height: _hov ? 56 : 12
+
+                HoverHandler { onHoveredChanged: _dashZone._hov = hovered }
+                TapHandler { onTapped: Drawer.DrawerVisibilities.dashboardVisible = !Drawer.DrawerVisibilities.dashboardVisible }
+            }
+        }
+    }
+
+    // Left edge → Launcher
+    Variants {
+        model: Quickshell.screens
+        delegate: PanelWindow {
+            required property var modelData
+            screen: modelData
+            exclusiveZone: 10
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.namespace: "archeotech-edge-left"
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            anchors { top: true; bottom: true; left: true }
+            implicitWidth: 56
+            color: "transparent"
+            mask: Region { item: _launchZone }
+
+            Rectangle {
+                id: _launchStrip
+                anchors { top: parent.top; bottom: parent.bottom; left: parent.left }
+                width: _launchZone._hov ? 56 : 10
+                color: Drawer.DrawerVisibilities.launcherVisible
+                     ? Commons.Appearance.colors.accentAlpha
+                     : Commons.Appearance.colors.glassBgLight
+                Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
+                Behavior on color { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "󱓞"
+                    color: Drawer.DrawerVisibilities.launcherVisible
+                         ? Commons.Appearance.colors.accent
+                         : Commons.Appearance.colors.subtext1
+                    font.pixelSize: 18
+                    font.family: Commons.Appearance.font.family
+                    opacity: _launchZone._hov ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+                    Behavior on color   { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
+                }
+            }
+
+            Item {
+                id: _launchZone
+                property bool _hov: false
+                anchors {
+                    top: parent.top
+                    topMargin: Commons.Appearance.bar.height
+                    bottom: parent.bottom
+                    left: parent.left
+                }
+                width: _hov ? 56 : 12
+
+                HoverHandler { onHoveredChanged: _launchZone._hov = hovered }
+                TapHandler { onTapped: Drawer.DrawerVisibilities.launcherVisible = !Drawer.DrawerVisibilities.launcherVisible }
+            }
         }
     }
 }

@@ -2090,3 +2090,229 @@ These cannot be changed mid-sprint without breaking things. Locked here:
 | DrawerConfig scope | Global with per-monitor override map | Simpler than full per-monitor configs; matches HyprPanel model |
 | State.qml migration | Fully replaced by DrawerVisibilities.qml in Sprint 15 | Clean break, no dual maintenance |
 | Bar module data model | `DrawerConfig.bar: { left: [], center: [], right: [] }` — arrays of widget ID strings | Matches caelestia's Config.bar.entries pattern; DelegateChooser maps IDs to QML |
+
+---
+
+## 15. Edge Strips, Multi-Screen Handling & Bar Frame Architecture
+
+*Research date: 2026-05-27. Repos inspected: caelestia-dots/shell, Noctalia, end-4/dots-hyprland, DankMaterialShell. Context: Sprint 16 implementation of per-screen edge strips with hover-reveal, and designing a unified wrap-around bar frame.*
+
+---
+
+### 15.1 Universal Rules (apply to every shell studied)
+
+**Multi-screen:** Every shell uses `Variants { model: Quickshell.screens }` for any window that must appear on each monitor. No exceptions. This is the only correct approach — confirmed in caelestia, Noctalia, end-4, and DMS.
+
+**No cursor barriers:** No shell implements mouse confinement or cursor barriers at screen edges. The compositor (Hyprland/Niri/MangoWC) owns cross-monitor cursor flow entirely. There is no Quickshell API for cursor barriers, and compositors don't expose one either. The consequence: a 6px edge strip on a multi-monitor setup *will* be missed sometimes as the cursor jumps monitors. This is unsolvable at the shell layer.
+
+**Drawers on one screen only:** Even when bars are per-screen, drawer panels (CC, launcher, NC) are single global PanelWindows. The compositor picks which screen they appear on, or QML positions them relative to a specific screen reference. The only shell that avoids this is Noctalia (per-screen state dict). See §15.3.
+
+---
+
+### 15.2 Caelestia — Gold Standard: One Full-Screen PanelWindow Per Monitor
+
+**Architecture:**
+- ONE full-screen `PanelWindow` per monitor (created via `Variants { model: Quickshell.screens }`).
+- The bar is a plain `Item` *inside* this surface — NOT its own PanelWindow.
+- All panels (CC, NC, launcher, drawer) are also children of this same full-screen surface.
+- 4 tiny dedicated `PanelWindow` instances per screen for exclusive zone definitions (top/bottom/left/right), each 1px tall/wide. These reserve compositor space so maximized windows don't cover the bar area.
+
+**Why this matters for wrap-around visuals:**
+The bar and edge strips are in the **same coordinate space** — they're all children of one Item. There is no "seam" between bar and strip because they're literally the same surface. Corner blending is trivial, since the bar's pill ends and the strip rectangles are siblings. This is why caelestia's corners look seamless.
+
+**Input masking — `Intersection.Xor` Region:**
+The full-screen transparent surface would eat all input if not masked. caelestia uses `QsWindow.mask` with `Intersection.Xor` — visible UI regions are added to the mask with XOR so only the bar and strips receive input. The rest is click-through.
+
+```qml
+QsWindow.mask: Region {
+    item: barRect      // or a combined region of bar + all strips
+    intersection: Intersection.Xor
+}
+```
+
+**`offsetScale` animation:**
+Single property `offsetScale` (0 = visible, 1 = hidden) drives both position and opacity simultaneously:
+```qml
+property real offsetScale: 1
+anchors.rightMargin: (-implicitWidth - 5) * offsetScale
+opacity: 1 - offsetScale
+Behavior on offsetScale { Anim { type: Anim.DefaultSpatial } }
+```
+This slides panels off-screen (physical translation) rather than fading/scaling in place. One property, one `Behavior`, handles everything.
+
+**SDF blob for corners:**
+caelestia uses a custom GLSL shader (SDF — signed distance field) to render a rounded concave blob that connects the bar ends to the side strips. This is not just rounded `Rectangle` corners — it's a continuously smooth curve that "melts" the bar ends into the strips at any geometry. Filed under Sprint 18 as a stretch goal.
+
+**Multi-screen:**
+Each screen gets its own full-screen PanelWindow. Drawers open relative to the screen that owns the strip that was clicked — because everything is in the same surface, there's no ambiguity.
+
+---
+
+### 15.3 Noctalia — Explicit Per-Screen State Dictionary
+
+**Architecture:**
+Separate `PanelWindow` per edge per screen (NOT a single full-screen window). Each edge strip is its own dedicated thin PanelWindow.
+
+**`BarTriggerZone`:**
+A 1px `PanelWindow` anchored full-width/height on one edge per screen. At rest: invisible (1px = invisible). Hover triggers a `Timer` → opens the drawer.
+
+**Per-screen state dictionary:**
+```qml
+property var stateMap: ({})   // keyed by screen.name, e.g. "DP-1", "eDP-1"
+
+function getState(screen) {
+    if (!stateMap[screen.name])
+        stateMap[screen.name] = { open: false, activePanel: "" }
+    return stateMap[screen.name]
+}
+```
+When a strip on screen "DP-1" is hovered, it looks up `stateMap["DP-1"]` and opens the drawer for that screen. This is the cleanest multi-monitor pattern for sidebars that should open on the interacted screen.
+
+**Why archeotech should adopt this later:**
+Our current `DrawerVisibilities` singleton is global — CC always opens on compositor-chosen screen. For a multi-monitor setup with CC on the right, NC on the top, and launcher on the left, the per-screen state dict ensures each drawer opens on the screen the user interacted with. Sprint 17+ improvement.
+
+---
+
+### 15.4 end-4 — Global Single PanelWindow for Sidebars (The Outlier)
+
+**Architecture:**
+Bar: per-screen via `Variants { model: Quickshell.screens }`. Sidebars: single global `PanelWindow`. The compositor decides which screen the sidebar appears on.
+
+**Why this is the outlier:**
+No per-screen state. The sidebar doesn't know which screen triggered it. On multi-monitor setups, sidebars appear on compositor-chosen screen (usually primary). This is the simplest approach but worst UX on multi-monitor.
+
+**Archeotech's current state:** We follow end-4's approach (global DrawerSurface, DrawerVisibilities singleton). This is fine for now but should be improved to Noctalia's per-screen model in a later sprint.
+
+---
+
+### 15.5 DankMaterialShell — Production Multi-Monitor Features
+
+**`FrameInstance.qml`:**
+Per-screen frame rendering with `FrameExclusions` for exclusive zone management. Same `Variants { model: Quickshell.screens }` pattern. Frames can be selectively enabled/disabled per display via `SettingsData.isScreenInPreferences()`.
+
+**`SettingsData.getFilteredScreens()`:**
+Users can assign UI elements to specific monitor subsets via settings. Example: "show dock on primary only", "show bar on all monitors". Stored as an array of screen names in `settings.json`. This is the right long-term pattern for archeotech's multi-monitor users.
+
+**Screen recovery system (two-pass, escalating timers):**
+When a display disconnects/reconnects, DMS recreates surfaces:
+```qml
+// 500ms debounce for dock recreation
+Timer { interval: 500; onTriggered: recreateDockSurface() }
+
+// 120ms debounce for OSD recreation
+Timer { interval: 120; onTriggered: recreateOsdSurface() }
+```
+Staggered timing prevents compositor sync storms. Real vs. placeholder screen detection (`screen.width > 0 && screen.name !== ""`) prevents instantiating on phantom screens.
+
+**"Goth corners" — `BarCanvas.qml` ShapePath implementation:**
+DMS implements concave wing cutouts at bar ends connecting the bar to side strips. These are exactly the Sprint 18 "concave curve connector" concept under a different name.
+
+Key implementation approach:
+```qml
+// BarCanvas.qml generates a ShapePath for each corner
+// The path uses cubic bezier curves to create a concave (inward) cut
+// at the junction between bar end and edge strip
+Shape {
+    ShapePath {
+        fillColor: Appearance.colors.glassBg
+        startX: ...; startY: ...
+        PathCubic { /* concave corner curve */ }
+        PathLine  { /* along strip edge */ }
+        // ...
+    }
+}
+```
+Read `BarCanvas.qml` from DMS when implementing Sprint 18. The concave radius follows the bar's corner radius (`barCornerRadius`) and is derived from the strip width.
+
+**Translate transform animations (NOT offsetScale, NOT opacity+scale):**
+DMS uses `Translate { x: value }` transform components to slide panels from their originating edge:
+```qml
+transform: Translate { x: panelOpen ? 0 : -panelWidth }
+Behavior on x { NumberAnimation { duration: 450; easing.type: Easing.OutCubic } }
+```
+Physically grounded: the panel slides *from* the edge rather than appearing/scaling in the center. More convincing for edge-anchored panels. Consider adopting for CC/launcher in Sprint 17.
+
+---
+
+### 15.6 Comparison Table — All Shells
+
+| Shell | Bar | Edge strips | Sidebar/drawer | Multi-screen state | Animation |
+|---|---|---|---|---|---|
+| caelestia | Item inside full-screen PanelWindow | Same surface as bar | Per-screen (same PanelWindow) | Implicit — one window per screen | offsetScale → translate |
+| Noctalia | Per-screen PanelWindow | 1px PanelWindow per edge per screen | Per-screen | Explicit dict keyed by screen.name | Opacity+translate |
+| end-4 | Per-screen PanelWindow | None | Global single PanelWindow (outlier) | None | Opacity+scale |
+| DankMaterialShell | Per-screen Variants | FrameInstance per screen | Per-screen | getFilteredScreens() | Translate transform |
+| **archeotech (current)** | Per-screen Variants | Per-screen Variants (6px strip) | **Global** DrawerSurface | DrawerVisibilities singleton (global) | Opacity+scale |
+
+---
+
+### 15.7 Archeotech Gaps & Future Improvements
+
+| Gap | Current state | Fix | Sprint |
+|---|---|---|---|
+| Drawers open on compositor-chosen screen | Global DrawerSurface, end-4 pattern | Noctalia per-screen state dict | 17+ |
+| No screen recovery on disconnect/reconnect | Surfaces may break on hotplug | DMS two-pass timer pattern (500ms/120ms) | 19+ |
+| opacity+scale drawer animation | Physically ungrounded for edge panels | Translate from edge (DMS/caelestia pattern) | 17+ |
+| No concave corner connectors | Bar pill ends are visually disconnected from strips | ShapePath concave curves (DMS BarCanvas.qml reference) | 18 |
+| No per-monitor UI assignment | All screens get identical UI | `getFilteredScreens()` pattern in settings | 17+ |
+| No cursor barrier at edge strips | Mouse jumps monitor before strip caught | Not solvable at shell layer — compositor owns this | N/A |
+
+---
+
+### 15.8 Final Implementation — Archeotech Edge Strips
+
+**Implemented 2026-05-27 in `shell.qml`.**
+
+#### The three-action conflict
+
+In a horizontal scrolling layout (MangoWC), the right screen edge can trigger three different actions:
+1. **Shell sidebar** — hover strip → expand → click → CC opens
+2. **Compositor layout scroll** — cursor reaches edge pixel → next window/tag
+3. **Multi-monitor jump** — cursor past edge → lands on next screen
+
+These must be disambiguated without a compositor-level barrier (none exists in MangoWC or Niri).
+
+#### Solution: separated hover zone + expansion delay
+
+**Architecture per strip (right shown, left/bottom are mirrors):**
+```
+PanelWindow (44px wide, anchored right, mask = _ccZone)
+  └─ Item _ccZone (20px when idle, 44px when hovered — drives the mask)
+       ├─ Timer _ccExpandTimer (80ms, fires _ccZone._hov = true)
+       ├─ HoverHandler (enter → start timer; exit → stop timer + _hov = false)
+       └─ Rectangle _ccStrip (6px → 44px visual, anchored right)
+            └─ TapHandler (click to toggle CC)
+```
+
+**Why 20px hover zone:**
+- Caelestia uses 10px (their minimum). 20px gives more margin for fast mouse movement.
+- The zone fires when cursor is 20px from the screen edge, well before the compositor's edge-pixel boundary.
+- The mask (`_ccZone`) tracks this 20px zone, expanding to 44px when hovered — so input coverage grows with the visual.
+
+**Why 80ms expansion delay:**
+- Fast cursor passthrough (layout scroll intent): cursor enters 20px zone and exits in <80ms → timer cancelled → strip never expands → no visual distraction.
+- Deliberate approach (sidebar intent): cursor dwells ≥80ms → strip expands to 44px → user clicks.
+- 80ms is imperceptible as lag but filters out fast layout navigation. Noctalia uses 100ms; 80ms is sufficient.
+
+**Why click-to-toggle (not hover-to-open):**
+- Distinguishes "passing through to next monitor" from "intending to open sidebar."
+- Hover only expands the visual strip. The drawer only opens on explicit click.
+- Works for both mouse and touchpad users.
+
+**Dynamic mask:**
+`mask: Region { item: _ccZone }` — the Region tracks `_ccZone`'s current geometry. When `_hov = true`, `_ccZone` grows to 44px and the input region expands with it. When `_hov = false`, `_ccZone` shrinks to 20px immediately (mask shrinks; visual strip animates back over 200ms).
+
+#### Behaviour matrix
+
+| Action | Cursor speed | Outcome |
+|---|---|---|
+| Open CC | Slow → edge, dwell ≥80ms, click | Strip expands, CC opens |
+| Scroll layout (MangoWC) | Fast through edge zone, no click | Timer cancelled, strip doesn't expand, layout scrolls |
+| Jump to monitor 2 | Fast through edge zone, no click | Same as above; cursor lands on monitor 2 |
+| Accidental hover | Slow approach but no click | Strip expands, no drawer opens; collapses on exit |
+
+#### Why full-height strips (no bar safety margin):
+Bar icons end at `innerPadding: 10px` from screen edges. 20px hover zone starts 20px from the edge. The bar pill at the top does not extend to the top corners, so there is no overlap zone between bar icon hit targets and strip hover zones.
+
+#### Future: caelestia single-surface approach (Sprint 18+):
+One full-screen PanelWindow per monitor eliminates the seam between bar and strips entirely. Requires refactoring bar to be an Item child of that surface. Not a blocker — current approach is functionally correct.

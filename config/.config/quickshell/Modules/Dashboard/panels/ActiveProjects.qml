@@ -29,13 +29,30 @@ Rectangle {
     }
 
     Process {
+        id: launchProc
+        running: false
+        command: ["bash", "-c", ""]
+        onExited: command = ["bash", "-c", ""]
+    }
+
+    function openProject(path) {
+        var p = JSON.stringify(path.trim())
+        launchProc.command = ["bash", "-c",
+            "setsid code " + p + " >/dev/null 2>&1 & " +
+            "setsid kitty --directory " + p + " >/dev/null 2>&1 &"
+        ]
+        launchProc.running = true
+        Drawer.DrawerVisibilities.dashboardVisible = false
+    }
+
+    Process {
         id: projectsProc
         running: false
         command: ["bash", "-c",
             "scan(){ [ -d \"$1\" ] || return; for d in \"$1\"/*/; do [ -d \"$d/.git\" ] || continue; " +
             "n=$(basename \"$d\"); b=$(git -C \"$d\" branch --show-current 2>/dev/null||echo '?'); " +
             "x=$(git -C \"$d\" status --short 2>/dev/null|wc -l|tr -d ' '); " +
-            "echo \"$n|${b:-detached}|$x\"; done; }; " +
+            "echo \"$n|${b:-detached}|$x|$d\"; done; }; " +
             "scan \"$HOME/Projects\"; scan \"$HOME/Documents/repos\""
         ]
 
@@ -45,8 +62,8 @@ Rectangle {
         stdout: SplitParser {
             onRead: line => {
                 var p = line.trim().split("|")
-                if (p.length >= 3)
-                    projectsProc._buf = projectsProc._buf.concat([{ name: p[0], branch: p[1], dirty: parseInt(p[2]) || 0 }])
+                if (p.length >= 4)
+                    projectsProc._buf = projectsProc._buf.concat([{ name: p[0], branch: p[1], dirty: parseInt(p[2]) || 0, path: p[3] }])
             }
         }
         onExited: root.projects = projectsProc._buf
@@ -61,7 +78,7 @@ Rectangle {
             text: "ACTIVE PROJECTS"
             color: Commons.Appearance.colors.accent
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             font.letterSpacing: 1.5
             opacity: 0.85
         }
@@ -72,20 +89,23 @@ Rectangle {
             text: projectsProc.running ? "scanning…" : "no repositories found"
             color: Commons.Appearance.colors.overlay1
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             font.italic: true
         }
 
         Repeater {
             model: root.projects.slice(0, 8)
-            delegate: Item {
+            delegate: Rectangle {
                 required property var modelData
                 Layout.fillWidth: true
-                height: 20
+                height: 24
+                radius: Commons.Appearance.radius.sm
+                color: rowHov.containsMouse ? Commons.Appearance.colors.accentAlpha : "transparent"
+                Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
 
                 Rectangle {
                     width: 7; height: 7; radius: 4
-                    anchors { left: parent.left; verticalCenter: parent.verticalCenter }
+                    anchors { left: parent.left; leftMargin: 6; verticalCenter: parent.verticalCenter }
                     color: modelData.dirty > 0 ? Commons.Appearance.colors.peach : Commons.Appearance.colors.green
                 }
                 Text {
@@ -93,16 +113,16 @@ Rectangle {
                     text: modelData.name
                     color: Commons.Appearance.colors.text
                     font.family: Commons.Appearance.font.family
-                    font.pixelSize: Commons.Appearance.font.sizeSm
-                    anchors { left: parent.left; leftMargin: 15; verticalCenter: parent.verticalCenter }
+                    font.pixelSize: Commons.Appearance.font.sizeBase
+                    anchors { left: parent.left; leftMargin: 21; verticalCenter: parent.verticalCenter }
                     elide: Text.ElideRight
-                    width: parent.width * 0.52
+                    width: parent.width * 0.50
                 }
                 Text {
                     text: modelData.branch
                     color: Commons.Appearance.colors.subtext0
                     font.family: Commons.Appearance.font.family
-                    font.pixelSize: Commons.Appearance.font.sizeSm
+                    font.pixelSize: Commons.Appearance.font.sizeBase
                     anchors { left: nameLbl.right; leftMargin: 8; verticalCenter: parent.verticalCenter }
                     elide: Text.ElideRight
                     width: parent.width * 0.28
@@ -111,9 +131,12 @@ Rectangle {
                     text: modelData.dirty > 0 ? "+" + modelData.dirty : "✔"
                     color: modelData.dirty > 0 ? Commons.Appearance.colors.peach : Commons.Appearance.colors.green
                     font.family: Commons.Appearance.font.family
-                    font.pixelSize: Commons.Appearance.font.sizeSm
-                    anchors { right: parent.right; verticalCenter: parent.verticalCenter }
+                    font.pixelSize: Commons.Appearance.font.sizeBase
+                    anchors { right: parent.right; rightMargin: 4; verticalCenter: parent.verticalCenter }
                 }
+
+                HoverHandler { id: rowHov }
+                TapHandler { onTapped: root.openProject(modelData.path) }
             }
         }
     }

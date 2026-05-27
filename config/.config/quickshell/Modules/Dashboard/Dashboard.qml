@@ -51,7 +51,8 @@ Item {
         id: panel
         anchors.centerIn: parent
         width:  Math.min(root.width  - 120, 1040)
-        height: Math.min(root.height - 120, 700)
+        height: Math.min(root.height - 120,
+                         Math.max(leftCol.implicitHeight, rightCol.implicitHeight) + 96)
         clip: true
 
         color:  Commons.Appearance.colors.base
@@ -85,7 +86,7 @@ Item {
                 id: dateLbl
                 color: Commons.Appearance.colors.subtext0
                 font.family: Commons.Appearance.font.family
-                font.pixelSize: Commons.Appearance.font.sizeSm
+                font.pixelSize: Commons.Appearance.font.sizeMd
                 anchors { right: closeBtn.left; rightMargin: 12; verticalCenter: parent.verticalCenter }
 
                 property var _now: new Date()
@@ -102,7 +103,7 @@ Item {
             // Close button
             Rectangle {
                 id: closeBtn
-                width: 22; height: 22
+                width: 26; height: 26
                 radius: Commons.Appearance.radius.sm
                 color: closeBtnHov.containsMouse ? Commons.Appearance.colors.accentAlpha : "transparent"
                 border.color: closeBtnHov.containsMouse ? Commons.Appearance.colors.accentBorder : "transparent"
@@ -113,7 +114,7 @@ Item {
                     text: "✕"
                     color: closeBtnHov.containsMouse ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay1
                     font.family: Commons.Appearance.font.family
-                    font.pixelSize: 11
+                    font.pixelSize: Commons.Appearance.font.sizeMd
                     anchors.centerIn: parent
                 }
                 HoverHandler { id: closeBtnHov }
@@ -132,31 +133,29 @@ Item {
         ColumnLayout {
             id: leftCol
             anchors {
-                top:         divider.bottom; topMargin:    16
-                left:        parent.left;    leftMargin:   24
-                bottom:      parent.bottom;  bottomMargin: 20
+                top:  divider.bottom; topMargin:  16
+                left: parent.left;    leftMargin: 24
             }
             width: 320
-            spacing: 12
+            spacing: 8
 
             SystemStatus { Layout.fillWidth: true }
-            SystemNotes  { Layout.fillWidth: true; Layout.fillHeight: true }
+            SystemNotes  { Layout.fillWidth: true }
         }
 
         // ── Right column ─────────────────────────────────────────────────
         ColumnLayout {
             id: rightCol
             anchors {
-                top:    divider.bottom; topMargin:    16
-                left:   leftCol.right;  leftMargin:   16
-                right:  parent.right;   rightMargin:  24
-                bottom: parent.bottom;  bottomMargin: 20
+                top:   divider.bottom; topMargin:   16
+                left:  leftCol.right;  leftMargin:  16
+                right: parent.right;   rightMargin: 24
             }
-            spacing: 12
+            spacing: 8
 
             ActiveProjects { Layout.fillWidth: true }
             QuickLaunch    { Layout.fillWidth: true }
-            TipOfSession   { Layout.fillWidth: true; Layout.fillHeight: true }
+            TipOfSession   { Layout.fillWidth: true }
         }
     }
 }

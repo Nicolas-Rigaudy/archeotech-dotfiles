@@ -862,10 +862,10 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-19 (sprints 0–10 complete; docs consolidation)
+**Last Updated:** 2026-05-27 (sprint 16 complete — perimeter frame layout, edge strips, mango gaps)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–10 complete: full restructure, MPRIS, notifications, bar polish, launcher, BT/WiFi/audio/VPN native. See `.claude/ROADMAP.md` for sprint history and upcoming sprints.
-**Next Sprint:** Sprint 11 — Settings Foundation (Config singleton, FloatingWindow, NavRail, 6 panes).
+**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–16 complete. Perimeter glass frame: bar flush top, 10px strips on left/right/bottom with exclusiveZone:10 (equal 4px gaps), bar radius:0 pending Sprint 18 goth corners. See `.claude/ROADMAP.md` for sprint history and upcoming sprints.
+**Next Sprint:** Sprint 17 — Full System-Wide Theme Switcher.
 **Quickshell version:** 0.2.1-6 (0.3.0 released 2026-05-04, pending Arch packaging). `Quickshell.DWL` is not upstream — stays on mmsg -w.
 **Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = mmsg -w (not DWL — DWL is a custom fork). See `.claude/ANALYSIS.md` §2 for full findings.

@@ -6,7 +6,7 @@ import "../../Drawer" as Drawer
 
 Rectangle {
     id: root
-    implicitHeight: 88
+    implicitHeight: col.implicitHeight + 24
     color: Commons.Appearance.colors.mantle
     border.color: Commons.Appearance.colors.surface0
     border.width: 1
@@ -38,14 +38,15 @@ Rectangle {
     }
 
     ColumnLayout {
-        anchors { fill: parent; margins: 12 }
+        id: col
+        anchors { left: parent.left; right: parent.right; top: parent.top; margins: 12 }
         spacing: 6
 
         Text {
             text: "TIP OF THE SESSION"
             color: Commons.Appearance.colors.accent
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             font.letterSpacing: 1.5
             opacity: 0.85
         }
@@ -56,10 +57,10 @@ Rectangle {
             text: root.tip || "loading…"
             color: Commons.Appearance.colors.subtext1
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             wrapMode: Text.WordWrap
             font.italic: root.tip === ""
-            maximumLineCount: 2
+            maximumLineCount: 3
             elide: Text.ElideRight
         }
     }

@@ -82,7 +82,7 @@ Rectangle {
             text: label
             color: Commons.Appearance.colors.subtext1
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             width: 42
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -107,7 +107,7 @@ Rectangle {
             text: value + "%"
             color: Commons.Appearance.colors.text
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             width: 32
             horizontalAlignment: Text.AlignRight
             anchors { right: parent.right; verticalCenter: parent.verticalCenter }
@@ -123,7 +123,7 @@ Rectangle {
             text: "SYSTEM STATUS"
             color: Commons.Appearance.colors.accent
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             font.letterSpacing: 1.5
             opacity: 0.85
         }

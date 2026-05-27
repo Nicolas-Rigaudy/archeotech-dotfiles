@@ -15,7 +15,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 3. **Visual builder** — drag-and-drop edit mode wires any module to any trigger (edge hover, bar icon, keyboard, desktop widget). Config persists to `DrawerConfig.json`, hot-reloads instantly.
 4. **Compositor abstraction** — `CompositorService` facade means one codebase runs on MangoWC, Hyprland, and Niri.
 
-**Target release:** v1.0 after Sprint 21 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
+**Target release:** v1.0 after Sprint 22 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
 
 ---
 
@@ -40,6 +40,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 | 13 | 5 new themes (Dracula, Nord, Gruvbox, Tokyo Night, Monochrome); neutral dark shadows across all themes; theme dirs symlinked (single source of truth); Settings Escape key + FloatingWindow cleanup; ButtonGroupRow Flow + dynamic widths | 2026-05-21 |
 | 14 | Mission Dashboard — full-screen PanelWindow overlay; SystemStatus (CPU/RAM/Disk/Bat progress bars); ActiveProjects (git repo scan, branch + dirty); SystemNotes (snapshot, updates, VPN, AWS); QuickLaunch (8-app grid); TipOfSession (42 tips, random pick); auto-show 4s on login via openAuto IPC; Super+Home keybind | 2026-05-21 |
 | 15 | Drawer Surface — DrawerConfig.json (edge→panel mapping); DrawerVisibilities singleton (mutual exclusion); DrawerSurface single PanelWindow (CC/NC/Launcher/Dashboard); offsetScale bidirectional animation; per-screen edge hover zones (right→CC, top-right→NC, bottom→Dashboard); mango blur rule for archeotech-drawer | 2026-05-21 |
+| 16 | Perimeter frame layout — bar flush with top (marginTop:0), edge strips exclusiveZone:10 (equal 4px gaps all sides via gappoh=4/gappov=4), 10→56px dynamic strips with hover+tap, bar radius:0 (flat until Sprint 18 goth corners) | 2026-05-27 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -51,114 +52,9 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Upcoming Sprints
 
-### Sprint 14 — Mission Dashboard
-
-**Goal:** `Super+Home` → full-screen overlay panel. Cyber-monastic mission briefing. All data from subprocess polling, no extra deps.
-
-**Layout:**
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│  ARCHEOTECH-OS ── corvus@archeotech ──────────────────── 2026-05-19  │
-│  ────────────────────────────────────────────────────────────────────│
-│                                                                      │
-│  ┌── SYSTEM STATUS ────────┐   ┌── ACTIVE PROJECTS ───────────────┐  │
-│  │ CPU  ████░░░  42%       │   │ ● archeotech-dotfiles   main  ✗  │  │
-│  │ RAM  ██████░  68%       │   │ ● work-project-alpha    dev   ✗  │  │
-│  │ Disk ███░░░░  51%       │   │ ○ terraform-infra       main  ✔  │  │
-│  │ Bat  ████░░░  72% ↑     │   └──────────────────────────────────┘  │
-│  └─────────────────────────┘                                         │
-│                               ┌── QUICK LAUNCH ─────────────────┐   │
-│  ┌── SYSTEM NOTES ──────────┐ │  terminal  browser  code        │   │
-│  │ Last snapshot: 2d ago    │ │  obsidian  lazygit   yazi       │   │
-│  │ Pending updates: 3       │ └─────────────────────────────────┘   │
-│  │ VPN: inactive            │                                        │
-│  │ AWS: prod-account        │  ┌── TIP OF THE SESSION ────────────┐  │
-│  └──────────────────────────┘  │ zoxide: `z proj` jumps to most  │  │
-│                                │ visited matching directory       │  │
-│                                └──────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────────┘
-```
-
-**Data sources (no extra deps):**
-- System stats: `/proc/meminfo`, `/proc/stat`, `df`, `upower -i /org/freedesktop/UPower/devices/battery_BAT0`
-- Active projects: scan `~/Projects/` + `~/Documents/repos/` for git repos → `git branch --show-current` + `git status --short`
-- Snapshots: `snapper list` last entry date
-- Pending updates: `checkupdates | wc -l`
-- VPN: `nmcli con show --active | grep vpn`
-- AWS: `$AWS_PROFILE` env
-- Tips: curated flat text file (`assets/tips.txt`) — one tip per line, random on open
-
-**Checklist:**
-- [ ] `Modules/Dashboard/Dashboard.qml` — full-screen glass overlay, `PanelWindow` covering all outputs
-- [ ] `Modules/Dashboard/panels/SystemStatus.qml` — CPU/RAM/Disk/Bat progress bars
-- [ ] `Modules/Dashboard/panels/ActiveProjects.qml` — git repo scan via `Process`, branch + dirty flag
-- [ ] `Modules/Dashboard/panels/SystemNotes.qml` — snapshot date, pending updates, VPN, AWS
-- [ ] `Modules/Dashboard/panels/QuickLaunch.qml` — icon grid, click to launch
-- [ ] `Modules/Dashboard/panels/TipOfSession.qml` — random line from `assets/tips.txt` via `FileView`
-- [ ] Auto-shown for 4s on login (via autostart), then dismissed; shown on demand any time
-- [ ] `Super+Home` keybind in mango config → `qs ipc call dashboard toggle`
-- [ ] `Commons/State.dashboardVisible` + mutual exclusion
-- [ ] `assets/tips.txt` — write 30+ tips covering all installed tools
-
----
-
-### Sprint 15 — UI Architecture: Drawer Surface + Glassmorphism ✓ DONE
-
-**Goal:** Replace the per-panel PanelWindow approach with a single `DrawerSurface` overlay per monitor. All sliding panels become children of one shared coordinate space. Enable edge hover zones (caelestia-style). Apply consistent glassmorphism via a single MangoWC blur target.
-
-**Architecture: Drawer Overlay hybrid**
-- Bar stays as its own PanelWindow (untouched)
-- New `DrawerSurface.qml` on `WlrLayer.Overlay` sits above everything
-- CC, NC, Dashboard, Launcher all move inside DrawerSurface
-- Panels anchor to `y = Appearance.bar.height` (top-bar) or `x = Appearance.bar.width` (left-bar) — true bar-origin animation
-- `DrawerInteractions.qml` — edge hover zones mapping to `DrawerVisibilities`
-- MangoWC applies blur once to the drawer's named layer namespace
-
-**Edge interaction zones (caelestia-inspired):**
-- Right edge → CC slides in from right
-- Top-right corner → NC slides down
-- Bottom edge (or `Super+Home`) → Dashboard slides up
-- Top-left area / `Super+Space` → Launcher
-- Left edge (left-bar mode only) → sidebar equivalent
-
-**Glassmorphism visual spec (from YAHR-Quickshell source-inspection):**
-- Panel bg: `Qt.rgba(r, g, b, 0.92)` — 92% opacity from Catppuccin mantle
-- Border: 1px accent at 35% alpha
-- Blur: MangoWC `layerrule = blur, namespace:archeotech-drawer`
-- No solid `colors.base` backgrounds inside the drawer
-
-**Critical design constraint — config-driven from day one:**
-Sprint 15 must wire all panel-to-trigger mappings through `DrawerConfig.json` (not hardcode them), because Sprint 16 (Module Builder) adds the UI to edit that config. ~20 extra lines in Sprint 15, eliminates a full rewrite in Sprint 16.
-
-**Checklist:**
-- [ ] `Modules/Drawer/DrawerConfig.qml` — singleton reading `~/.config/quickshell/drawer-config.json` via `FileView`; properties: `barEdge`, `edgeRight`, `edgeLeft`, `edgeBottom`, `edgeTop`, `barModules[]`; hot-reloads on file change
-- [ ] `Modules/Drawer/DrawerSurface.qml` — full-screen transparent PanelWindow, `WlrLayer.Overlay`, `WlrLayershell.namespace: "archeotech-drawer"`, mouse passthrough except on active panels; panel slots read from `DrawerConfig`
-- [ ] `Modules/Drawer/DrawerVisibilities.qml` — singleton replacing `State.qml` per-panel booleans; `ccVisible`, `ncVisible`, `dashboardVisible`, `launcherVisible`; mutual exclusion logic
-- [ ] `Modules/Drawer/DrawerInteractions.qml` — thin HoverHandler strips at screen edges; drag gesture detection; edge→panel mapping reads from `DrawerConfig`
-- [ ] `Modules/Drawer/DrawerAnimations.qml` (or inline) — `offsetScale` pattern: one property 0.0↔1.0 drives both position and opacity; `Behavior` with `Anim.slow` easing
-- [ ] Migrate `Modules/ControlCenter/ControlCenter.qml` into DrawerSurface — anchored right, slides from right edge
-- [ ] Migrate `Modules/NotificationCenter/NotificationCenter.qml` into DrawerSurface — anchored top-right, slides down
-- [ ] Migrate `Modules/Dashboard/Dashboard.qml` into DrawerSurface — anchored below bar, slides down
-- [ ] Migrate `Modules/Launcher/Launcher.qml` into DrawerSurface — centered below bar, scale+opacity entrance
-- [ ] Remove now-redundant per-panel PanelWindows from `shell.qml`
-- [ ] `mango.conf`: add `layerrule = blur, namespace:archeotech-drawer`; remove `noblur` overrides for CC/NC/Dashboard
-- [ ] `DrawerConfig.barEdge: "top" | "left"` — affects panel anchor points and edge zone positions
-- [ ] Left-bar mode: DrawerSurface panels anchor to `x = barWidth`, edge zones swap axes
-- [ ] Dashboard revisited inside new drawer — can now animate from bar origin correctly
-- [ ] Ship default `drawer-config.json` with sensible defaults
-
-**Deferred to Sprint 16+:**
-- Full glassmorphism pass (`glassBg`/`glassBorder` on all panels) — blocked on Settings moving into DrawerSurface; once all panels share the same blur target, one pass gets them all consistent
-- Bar-icon-origin animation (panel slides from exact gear/bell position) — requires exposing bar icon screen coordinates
-- Left-bar mode anchor swapping — Sprint 20 (multi-compositor)
-
----
-
-### Sprint 16 — Module Builder & Community Extension System
+### Sprint 17 — Module Builder & Community Extension System ← NEXT
 
 **Goal:** Turn the shell into a fully composable platform. Every panel, widget, and bar element becomes a self-describing module with a manifest. A drag-and-drop edit mode lets users wire any module to any trigger (bar icon, edge hover, keyboard shortcut, desktop). Third parties can publish new modules and themes that install by dropping a folder.
-
-**Why this sprint:** Once DrawerConfig exists (Sprint 15), the builder is a UI layer on top. Doing this before the Theme Switcher and Lock Screen means both of those can be built as installable modules that demonstrate the system.
 
 **Module manifest spec** (`module.json`):
 ```json
@@ -186,19 +82,6 @@ Sprint 15 must wire all panel-to-trigger mappings through `DrawerConfig.json` (n
 
 **Desktop widget layer** — new `Modules/DesktopWidgets/` surface on `WlrLayer.Background` or `.Bottom`. In edit mode: widgets become draggable (Noctalia `DraggableDesktopWidget` pattern — MouseArea only active in edit mode, grid snap, boundary clamp, persist x/y to `DrawerConfig`).
 
-**Theme spec for community publishing:**
-```
-themes/<name>/
-  theme.json          — color tokens, fonts, radii, animation timings, metadata
-  wallpaper.*         — default wallpaper (jpg/png)
-  logo.svg            — optional theme avatar
-  app-overrides/
-    kitty-colors.conf
-    starship.toml
-    rofi-colors.rasi
-  preview.jpg         — thumbnail shown in theme picker
-```
-
 **Checklist:**
 - [ ] `module.json` spec finalized and documented in `docs/MODULE_API.md`
 - [ ] `Modules/ModuleRegistry.qml` — singleton scanning module dirs, `list<QtObject> available`, FileView watcher for hot-discovery
@@ -207,7 +90,7 @@ themes/<name>/
 - [ ] Bar configurator — zone slot UI in edit mode, drag chips between left/center/right
 - [ ] Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom`
 - [ ] `Modules/DesktopWidgets/DraggableWidget.qml` — edit mode drag, grid snap, persist, z-raise on drag
-- [ ] At least 3 desktop widgets to demonstrate the system: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
+- [ ] At least 3 desktop widgets: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
 - [ ] `~/.local/share/archeotech/modules/` — user module install path, scanned alongside built-in modules
 - [ ] `docs/MODULE_API.md` — module manifest spec, QML entry point contract, config schema format
 - [ ] `docs/THEME_SPEC.md` — complete theme folder structure, all required + optional fields, preview thumbnail spec
@@ -215,7 +98,7 @@ themes/<name>/
 
 ---
 
-### Sprint 17 — Full System-Wide Theme Switcher
+### Sprint 18 — Full System-Wide Theme Switcher
 
 **Goal:** One `theme-switch.sh` invocation changes every app simultaneously. Quickshell already hot-reloads; this sprint wires in the rest. Also: redesign the theme picker UI — fluid card/swatch grid with wallpaper thumbnail and avatar logo preview, inspired by caelestia-dots / end-4 style.
 
@@ -250,7 +133,7 @@ themes/<name>/
 
 ---
 
-### Sprint 18 — Lock Screen (Native QML)
+### Sprint 19 — Lock Screen (Native QML)
 
 **Goal:** Replace swaylock with a first-class Quickshell component. Now that the design system (Sprint 12/13) and token system are in place, build it properly.
 
@@ -268,14 +151,14 @@ themes/<name>/
 
 ## Planned Sprints
 
-### Sprint 19 — Settings Depth
+### Sprint 20 — Settings Depth
 Fill out Sprint 11's placeholder panes with full native implementations:
 - Connections pane: WiFi sub-tab (known networks, forget, priority) + BT sub-tab (connected/paired/available per Noctalia model, battery level, signal)
 - Audio pane: PipeWire sinks + sources (once QS 0.3.0 lands), device aliasing, per-device volume limit
 - ColorScheme pane: dark mode toggle, schedule (off/manual/location), wallpaper color extraction toggle
 - Settings search: fuzzy index per registered pane, max 15 results, sidebar search input
 
-### Sprint 20 — Multi-Compositor Support
+### Sprint 21 — Multi-Compositor Support
 
 **Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).
 
@@ -301,7 +184,7 @@ CompositorService.activeWindowTitle     // readable property
 
 ---
 
-### Sprint 21 — Distribution & GitHub Release
+### Sprint 22 — Distribution & GitHub Release
 
 **Goal:** Clean, documented, installable by a stranger on a fresh Arch Linux machine. Everything hardcoded to `/home/corvus` is gone. Module + theme APIs are documented. Community can publish extensions.
 
@@ -320,14 +203,14 @@ CompositorService.activeWindowTitle     // readable property
 
 ---
 
-### Sprint 22 — Go Daemon
+### Sprint 23 — Go Daemon
 Only for raw Wayland protocols that QML can't reach natively:
 - `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
 - `Services/ArcheotechDaemon.qml` — Quickshell Socket, exponential-backoff reconnect
 - Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
 - Does NOT handle: audio, network, BT, notifications, lock (all native QML)
 
-### Sprint 23 — Dev Personality + Shadow Spear
+### Sprint 24 — Dev Personality + Shadow Spear
 - `themes/shadow-spear/` full theme package (compositor + kitty + starship raven sigil + rofi + wallpaper set)
 - Git branch module in bar — CWD from focused window, dims when no git context
 - AWS profile module in bar — always visible, dims when `$AWS_PROFILE` unset

@@ -6,6 +6,7 @@ import "../../Drawer" as Drawer
 
 Rectangle {
     id: root
+    implicitHeight: noteCol.implicitHeight + 24
     color: Commons.Appearance.colors.mantle
     border.color: Commons.Appearance.colors.surface0
     border.width: 1
@@ -33,9 +34,10 @@ Rectangle {
         id: notesProc
         running: false
         command: ["bash", "-c",
-            "snap=$(snapper -c root list --output-columns number,date 2>/dev/null " +
-            "  | grep -v '^#\\|^Number\\|^---' | tail -1 | awk '{print $2}'); echo snap:${snap:-N/A}; " +
-            "upd=$(checkupdates 2>/dev/null | wc -l | tr -d ' '); echo updates:${upd:-0}; " +
+            "snap=$(snapper -c root list 2>/dev/null | awk -F'│' " +
+            "'NR>2 && NF>1 && length($4)>4 {gsub(/^[[:space:]]+|[[:space:]]+$/,\"\",$(4)); last=$(4)} " +
+            "END{print length(last)>0 ? last : \"N/A\"}'); echo snap:${snap:-N/A}; " +
+            "upd=$(pacman -Qu 2>/dev/null | wc -l | tr -d ' '); echo updates:${upd:-0}; " +
             "vpn=$(nmcli con show --active 2>/dev/null | awk '/vpn/{print $1;exit}'); " +
             "echo vpn:${vpn:-inactive}; " +
             "echo aws:${AWS_PROFILE:-unset}"
@@ -58,13 +60,13 @@ Rectangle {
         required property string value
         required property color  valueColor
         Layout.fillWidth: true
-        height: 20
+        height: 22
 
         Text {
             text: label
             color: Commons.Appearance.colors.subtext0
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             width: 120
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -72,21 +74,22 @@ Rectangle {
             text: value
             color: valueColor
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             anchors { left: parent.left; leftMargin: 124; right: parent.right; verticalCenter: parent.verticalCenter }
             elide: Text.ElideRight
         }
     }
 
     ColumnLayout {
-        anchors { fill: parent; margins: 12 }
+        id: noteCol
+        anchors { left: parent.left; right: parent.right; top: parent.top; margins: 12 }
         spacing: 8
 
         Text {
             text: "SYSTEM NOTES"
             color: Commons.Appearance.colors.accent
             font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeSm
+            font.pixelSize: Commons.Appearance.font.sizeBase
             font.letterSpacing: 1.5
             opacity: 0.85
         }
@@ -113,6 +116,5 @@ Rectangle {
             valueColor: root.aws === "unset" ? Commons.Appearance.colors.overlay1 : Commons.Appearance.colors.blue
         }
 
-        Item { Layout.fillHeight: true }
     }
 }

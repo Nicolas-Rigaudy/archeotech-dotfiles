@@ -89,13 +89,13 @@ Item {
         id: barWindow
         screen: barGroup.modelData
 
-        exclusiveZone: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop
+        exclusiveZone: Commons.Appearance.bar.height
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "quickshell:bar"
 
         anchors { top: true; left: true; right: true }
         // Taller than the bar so popup can render below — mask controls input area
-        implicitHeight: Commons.Appearance.bar.height + Commons.Appearance.bar.marginTop + 340
+        implicitHeight: Commons.Appearance.bar.height + 340
         color: "transparent"
         // Input mask: only bar strip (+ popup footprint when open) receives events
         mask: Region { item: _inputMask }
@@ -110,7 +110,7 @@ Item {
                 rightMargin: Commons.Appearance.bar.marginSide
             }
             height: Commons.Appearance.bar.height
-            radius: Commons.Appearance.radius.xl
+            radius: 0
             color: Commons.Appearance.colors.glassBgLight
 
             RowLayout {
