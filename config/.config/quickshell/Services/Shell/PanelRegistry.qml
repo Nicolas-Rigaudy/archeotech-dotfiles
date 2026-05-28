@@ -25,7 +25,7 @@ QtObject {
             size:    320
         },
         launcher: {
-            content: _placeholderComp,
+            content: _launcherComp,
             side:    "left",
             size:    600
         },
@@ -58,6 +58,7 @@ QtObject {
     }
 
     // Extracted panel content components — one per migrated panel.
-    property Component _ccComp: Component { Content.ControlCenter {} }
-    property Component _ncComp: Component { Content.NotificationCenter {} }
+    property Component _ccComp:       Component { Content.ControlCenter      {} }
+    property Component _ncComp:       Component { Content.NotificationCenter {} }
+    property Component _launcherComp: Component { Content.Launcher           {} }
 }
