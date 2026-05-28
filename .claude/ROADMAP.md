@@ -105,7 +105,7 @@ Per monitor (Variants { model: Quickshell.screens }):
 - ✅ **Stage 2** — Sides as Items (`Sides/Bar.qml`, `Sides/Strip.qml`, `Sides/SideLoader.qml`) — files created, qmllint clean, dormant until Stage 6 wire-up
 - ✅ **Stage 3** — `Corners/CornerBlend.qml` — 4 concave ShapePath arcs (CCW), clamped to `min(hSize, vSize, ShellConfig.cornerRadius())`
 - ✅ **Stage 4** — `ShellSurface.qml` (Variants → full-screen Overlay PanelWindow per monitor, 8-region mask, keyboardFocus=Exclusive on panel open) + `ShellExclusions.qml` (4×Variants → thin Top-layer windows with `exclusiveZone=sideSize`, conditional on `type !== "none"`); files created + qmllint clean, dormant until Stage 6 wire-up
-- ⏭ **Stage 5** — Panels migrated as siblings with `offsetScale` anim
+- ✅ **Stage 5** — Modular panel architecture (5 commits): `Panels/Panel.qml` uniform container (glass chrome, asymmetric per-side radius, `offsetScale` slide-from-edge anim, ShellState binding, focus/Esc/click-outside-to-close) + `Services/Shell/PanelRegistry.qml` (panelId → content/side/size) + `Panels/Content/{ControlCenter,NotificationCenter,Launcher,Dashboard}.qml` (content modules, no chrome). Dashboard UX shift: centered modal → bottom-edge panel. ShellSurface mounts panels via Repeater + a panel-open mask region for click-outside-to-close. All dormant.
 - ⏭ **Stage 6** — `shell.qml` wire-up, `mango.conf` gap=0, delete old `Modules/Drawer/*` + per-screen strip blocks
 
 **Checklist:**
@@ -119,9 +119,9 @@ Per monitor (Variants { model: Quickshell.screens }):
 - [x] `Modules/Shell/ShellSurface.qml` — full-screen PanelWindow per monitor via Variants, mask via `QsWindow.mask`
 - [x] `Modules/Shell/ShellExclusions.qml` — thin PanelWindows per side per monitor, conditional on `sides.*.type !== "none"`
 - [x] `Modules/Shell/Corners/CornerBlend.qml` — ShapePath concave arc, sized by adjacent collapsed side gaps
-- [ ] `Modules/Shell/Panels/*` — CC, NC, Launcher, Dashboard moved inside ShellSurface as Items
-- [ ] `offsetScale` animation: `anchors.*Margin: -(implicitWidth + 5) * offsetScale; opacity: 1 - offsetScale`
-- [ ] Panels grow from their strip's inner edge (CC/NC from right strip, Launcher from left strip, Dashboard from bottom strip — flush at the strip side, rounded on the content side)
+- [x] `Modules/Shell/Panels/Panel.qml` — universal container; `Modules/Shell/Panels/Content/*.qml` — extracted content modules; `Services/Shell/PanelRegistry.qml` — panelId → metadata
+- [x] `offsetScale` animation: `anchors.*Margin: -(_size + 5) * offsetScale; opacity reduced as a function of offsetScale`
+- [x] Panels grow from their strip's inner edge (CC/NC from right strip, Launcher from left strip, Dashboard from bottom strip — asymmetric corner radius: rounded on the content side, flat on the strip side)
 - [ ] `mango.conf`: `gappoh=0`, `gappov=0` (strip exclusiveZone IS the spacing — fixes the "bigger gaps with multiple windows" bug)
 - [ ] Delete dead code: `Modules/Drawer/DrawerSurface.qml`, `Modules/Drawer/DrawerConfig.qml`, `Modules/Drawer/DrawerVisibilities.qml`, old per-screen edge strip PanelWindow blocks in `shell.qml`
 
