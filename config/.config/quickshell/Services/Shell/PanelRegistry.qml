@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import "../../Modules/Shell/Panels/Content" as Content
 
 // Sprint 17 Stage 5 — registry mapping panelId → { content, side, size }.
 // Adding a panel = one entry here + one file in Modules/Shell/Panels/Content/.
@@ -14,7 +15,7 @@ QtObject {
 
     readonly property var panels: ({
         cc: {
-            content: _placeholderComp,
+            content: _ccComp,
             side:    "right",
             size:    320
         },
@@ -55,4 +56,7 @@ QtObject {
             }
         }
     }
+
+    // Extracted panel content components — one per migrated panel.
+    property Component _ccComp: Component { Content.ControlCenter {} }
 }

@@ -34,7 +34,10 @@ Item {
 
     function close() { ShellServices.ShellState.close(_screenName) }
 
-    readonly property bool _open: ShellServices.ShellState.isOpen(_screenName, panelId)
+    // Public visibility flag for content modules — they connect to onPanelOpenChanged
+    // to run state-sync side effects (e.g., refresh nm-cli state when CC opens).
+    readonly property bool panelOpen: ShellServices.ShellState.isOpen(_screenName, panelId)
+    readonly property bool _open: panelOpen
 
     // 0 = fully visible at rest, 1 = fully off-screen on the panel's side
     property real offsetScale: _open ? 0 : 1
