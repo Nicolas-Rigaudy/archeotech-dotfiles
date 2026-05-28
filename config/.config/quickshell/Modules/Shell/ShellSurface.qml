@@ -3,6 +3,7 @@ import Quickshell.Wayland
 import QtQuick
 import "Sides" as Sides
 import "Corners" as Corners
+import "Panels" as Panels
 import "../../Services/Shell" as ShellServices
 
 // Sprint 17 Stage 4 — one full-screen overlay PanelWindow per monitor.
@@ -34,9 +35,9 @@ Variants {
             : WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true; right: true }
 
-        // Mask = union of the 4 side regions + 4 corner blends. Inactive sides
-        // collapse to 0×0 (Loader without sourceComponent) so they contribute
-        // nothing to the mask.
+        // Mask = union of the 4 side regions + 4 corner blends + (when any
+        // panel is open) a full-surface region for click-outside-to-close.
+        // Inactive sides collapse to 0×0 so they contribute nothing.
         mask: Region {
             Region { item: _topSide }
             Region { item: _bottomSide }
@@ -46,22 +47,27 @@ Variants {
             Region { item: _cTR }
             Region { item: _cBL }
             Region { item: _cBR }
+            Region { item: _panelOpenMask }
+        }
+
+        // When any panel is open on this screen, _panelOpenMask covers the
+        // whole surface so the Panel's TapHandler can detect off-panel clicks.
+        // When no panel is open, it collapses to 0×0 and contributes nothing.
+        Item {
+            id: _panelOpenMask
+            x: 0; y: 0
+            width:  ShellServices.ShellState.anyOpen(_surface._screenName) ? _surface.width  : 0
+            height: ShellServices.ShellState.anyOpen(_surface._screenName) ? _surface.height : 0
         }
 
         // Static collapsed sizes — drive corner-gap margins. The live
         // SideLoader widths can grow during strip hover, but the gap for
         // corner pieces stays at the collapsed size so the corner geometry
         // doesn't reflow and the bar pill doesn't shift.
-        readonly property int _topGap:    _sideGap("top")
-        readonly property int _bottomGap: _sideGap("bottom")
-        readonly property int _leftGap:   _sideGap("left")
-        readonly property int _rightGap:  _sideGap("right")
-
-        function _sideGap(name) {
-            var type = ShellServices.ShellConfig.sideType(name, _screenName)
-            if (type === "none") return 0
-            return ShellServices.ShellConfig.sideSize(name, _screenName)
-        }
+        readonly property int _topGap:    ShellServices.ShellConfig.sideGap("top",    _screenName)
+        readonly property int _bottomGap: ShellServices.ShellConfig.sideGap("bottom", _screenName)
+        readonly property int _leftGap:   ShellServices.ShellConfig.sideGap("left",   _screenName)
+        readonly property int _rightGap:  ShellServices.ShellConfig.sideGap("right",  _screenName)
 
         // ── Sides ─────────────────────────────────────────────────────────────
         // Horizontal sides own the corners visually (they span beyond the strip
@@ -153,6 +159,21 @@ Variants {
             vSize: _surface._rightGap
             visible: _surface._bottomGap > 0 && _surface._rightGap > 0
             anchors { bottom: parent.bottom; right: parent.right }
+        }
+
+        // ── Panels ────────────────────────────────────────────────────────────
+        // One Panel per registered ID; each renders its content from
+        // PanelRegistry inside the uniform glass chrome. z-order puts panels
+        // above sides+corners so they cover them when open (the strip
+        // visually merges with the panel's flush edge).
+        Repeater {
+            model: ShellServices.PanelRegistry.panelIds
+            delegate: Panels.Panel {
+                required property string modelData
+                panelId: modelData
+                screen: _surface.modelData
+                z: 5
+            }
         }
     }
 }

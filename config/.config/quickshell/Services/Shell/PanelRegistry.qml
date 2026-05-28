@@ -1,0 +1,58 @@
+pragma Singleton
+import QtQuick
+
+// Sprint 17 Stage 5 — registry mapping panelId → { content, side, size }.
+// Adding a panel = one entry here + one file in Modules/Shell/Panels/Content/.
+// ShellSurface mounts every entry via Repeater; Panel.qml reads `content`
+// and renders it inside the uniform glass chrome with offsetScale anim.
+//
+// Sprint 18 makes this hot-loadable from `shell-config.json` (alongside
+// widget registry); for Stage 5 it stays in QML so the four built-in panels
+// can be migrated incrementally without a config-schema change.
+QtObject {
+    id: root
+
+    readonly property var panels: ({
+        cc: {
+            content: _placeholderComp,
+            side:    "right",
+            size:    320
+        },
+        nc: {
+            content: _placeholderComp,
+            side:    "right",
+            size:    320
+        },
+        launcher: {
+            content: _placeholderComp,
+            side:    "left",
+            size:    600
+        },
+        dashboard: {
+            content: _placeholderComp,
+            side:    "bottom",
+            size:    600
+        }
+    })
+
+    readonly property var panelIds: Object.keys(panels)
+
+    function panelFor(id) {
+        return panels[id]
+    }
+
+    // Stage 5 commit-1 placeholder. Each subsequent commit replaces one
+    // entry's `content` with an extracted Content/*.qml component.
+    property Component _placeholderComp: Component {
+        Item {
+            property var panelRoot
+            Text {
+                anchors.centerIn: parent
+                text: "(panel content TODO)"
+                color: "#cad3f5"
+                font.pixelSize: 14
+                font.family: "FiraCode Nerd Font"
+            }
+        }
+    }
+}

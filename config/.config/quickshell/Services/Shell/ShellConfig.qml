@@ -65,6 +65,14 @@ QtObject {
         return s.expanded !== undefined ? s.expanded : 56
     }
 
+    // 0 for "none" sides, collapsed size otherwise. Drives ShellSurface side
+    // margins, Panel cross-axis offsets, CornerBlend gap geometry — anywhere
+    // we need "how much room does this side reserve when at rest".
+    function sideGap(sideName, screenName) {
+        if (sideType(sideName, screenName) === "none") return 0
+        return sideSize(sideName, screenName)
+    }
+
     function cornerRadius() {
         return (data.corners && data.corners.radius !== undefined) ? data.corners.radius : _defaults.corners.radius
     }

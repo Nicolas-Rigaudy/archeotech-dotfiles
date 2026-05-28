@@ -34,6 +34,7 @@ ShellRoot {
     property var _drawerCfg:     Drawer.DrawerConfig  // force singleton instantiation
     property var _shellConfig:   ShellServices.ShellConfig
     property var _shellState:    ShellServices.ShellState
+    property var _panelRegistry: ShellServices.PanelRegistry
 
     // Force eager evaluation of the new shell singletons (QML bindings are lazy
     // and these aren't yet read by any other binding — Stage 2+ will reach them).
