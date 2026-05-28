@@ -9,6 +9,7 @@ import "Services/Networking" as NetworkServices
 import "Services/Compositor" as CompositorServices
 import "Services/System" as SystemServices
 import "Services/Persistence" as Persistence
+import "Services/Shell" as ShellServices
 import "Modules/Bar"
 import "Modules/OSD"
 import "Modules/Settings"
@@ -31,6 +32,15 @@ ShellRoot {
     property var _config:        Persistence.Config
     property var _persistent:    Persistence.Persistent
     property var _drawerCfg:     Drawer.DrawerConfig  // force singleton instantiation
+    property var _shellConfig:   ShellServices.ShellConfig
+    property var _shellState:    ShellServices.ShellState
+
+    // Force eager evaluation of the new shell singletons (QML bindings are lazy
+    // and these aren't yet read by any other binding — Stage 2+ will reach them).
+    Component.onCompleted: {
+        console.log("[Sprint 17] shellConfig.ready =", _shellConfig.ready,
+                    "  shellState screens =", Object.keys(_shellState.stateMap).join(","))
+    }
 
     // ── IPC handlers ───────────────────────────────────────────────────────────
 

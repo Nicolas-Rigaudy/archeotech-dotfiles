@@ -8,8 +8,8 @@ FloatingWindow {
     id: settingsWindow
     visible: Commons.State.settingsVisible
     title: "Archeotech Settings"
-    width: 900
-    height: 800
+    implicitWidth: 900
+    implicitHeight: 800
     color: Commons.Appearance.colors.base
 
     Connections {

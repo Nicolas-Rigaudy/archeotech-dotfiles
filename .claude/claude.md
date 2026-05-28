@@ -862,10 +862,21 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-27 (sprint 16 complete — perimeter frame layout, edge strips, mango gaps)
+**Last Updated:** 2026-05-28 (Sprint 17 Stage 1 complete — `ShellConfig` + `ShellState` singletons + `shell-config.json` wired and verified)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–16 complete. Perimeter glass frame: bar flush top, 10px strips on left/right/bottom with exclusiveZone:10 (equal 4px gaps), bar radius:0 pending Sprint 18 goth corners. See `.claude/ROADMAP.md` for sprint history and upcoming sprints.
-**Next Sprint:** Sprint 17 — Full System-Wide Theme Switcher.
+**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–16 complete. Sprint 17 Stage 1 complete: `Services/Shell/ShellConfig.qml` (FileView watcher on `shell-config.json`, hot-reload) and `Services/Shell/ShellState.qml` (per-screen `stateMap`) live alongside the existing DrawerSurface. Current architecture still has separate PanelWindows for bar + 3 edge strips + DrawerSurface; Stages 2–6 progressively migrate them into ONE full-screen PanelWindow per monitor with bar/strips/panels/corners as sibling Items (Caelestia §15.2). See `.claude/ROADMAP.md` Sprint 17 section for stage breakdown.
+**Next Sprint:** Sprint 17 Stage 2 — Sides as Items (`Sides/Strip.qml`, `Sides/SideLoader.qml`, then full `Sides/Bar.qml` migration).
+**Locked architecture decisions (Sprint 17, do not deviate without re-reading `ANALYSIS.md` §15):**
+- One full-screen PanelWindow per monitor (`Variants { model: Quickshell.screens }`) — Caelestia §15.2
+- Bar, edge strips, panels, corner blends = sibling Items in same coord space
+- 4× 1px dedicated PanelWindows per monitor for `exclusiveZone` reservation (conditional on `sides.*.type !== "none"`)
+- Input passthrough = `QsWindow.mask` + `Intersection.Xor` (only reliable API)
+- Per-screen state = `stateMap` dict keyed by `screen.name` — Noctalia §15.3
+- Animation = `offsetScale` single property (Caelestia §15.2 lines 2133–2141)
+- Corner geometry = `Shape { ShapePath { PathCubic } }` (DMS BarCanvas); SDF shader is Sprint 26 stretch
+- Widget mounting = `Repeater + DelegateChooser` keyed by widget ID (Caelestia §12.1)
+- Config schema = `shell-config.json` with per-side `{ type: "bar"|"strip"|"none" }` + zones/icons + perScreen overrides
+- Module Builder uses **click-to-assign** not drag-and-drop (Wayland cross-window drag unreliable — `ANALYSIS.md` line 2092)
 **Quickshell version:** 0.2.1-6 (0.3.0 released 2026-05-04, pending Arch packaging). `Quickshell.DWL` is not upstream — stays on mmsg -w.
-**Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = mmsg -w (not DWL — DWL is a custom fork). See `.claude/ANALYSIS.md` §2 for full findings.
+**Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = mmsg -w (not DWL — DWL is a custom fork). See `.claude/ANALYSIS.md` §2 for full findings, §15 for architecture decisions.

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last Updated:** 2026-05-21  
+**Last Updated:** 2026-05-28  
 **See also:** `ANALYSIS.md` — research, reference projects, confirmed QML APIs, settings ecosystem deep-dives.
 
 ---
@@ -52,55 +52,110 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Upcoming Sprints
 
-### Sprint 17 — Module Builder & Community Extension System ← NEXT
+### Sprint 17 — Unified Shell Surface (Foundation) ← NEXT
 
-**Goal:** Turn the shell into a fully composable platform. Every panel, widget, and bar element becomes a self-describing module with a manifest. A drag-and-drop edit mode lets users wire any module to any trigger (bar icon, edge hover, keyboard shortcut, desktop). Third parties can publish new modules and themes that install by dropping a folder.
+**Goal:** Replace the current 5-PanelWindow design (bar + 3 strips + drawer surface) with **one full-screen PanelWindow per monitor**. Bar, edge strips, panels, and corner blends become Items in a single coordinate space — corners auto-sync, strips can persist while panels open, animations stay physically grounded. This is the **foundational architecture** that unblocks every subsequent sprint.
 
-**Module manifest spec** (`module.json`):
-```json
+**Why now:** The current architecture has no path to the long-term vision (configurable per-side bars, composable widgets, smooth corner blending) because separate PanelWindows can't coordinate visually. Sprint 16's "perimeter frame" exposed this — corners drift on multi-monitor, strips don't reach the bottom, blur effects mismatch, strips collapse when clicked. All symptoms of the same root cause.
+
+**Reference:** Caelestia §15.2 (gold-standard architecture — `ANALYSIS.md`), Noctalia §15.3 (per-screen state dict), DMS BarCanvas (ShapePath corner blending).
+
+**Architecture:**
+```
+Per monitor (Variants { model: Quickshell.screens }):
+  1× ShellSurface — full-screen PanelWindow, WlrLayer.Overlay
+    - QsWindow.mask + Intersection.Xor → only UI regions capture input, rest is click-through
+    - WlrLayershell.keyboardFocus: dynamic (Exclusive when panel open)
+    Child Items (all siblings in the same coordinate space):
+      - Side[top]      — Bar / Strip / none (SideLoader)
+      - Side[right]    — Bar / Strip / none
+      - Side[bottom]   — Bar / Strip / none
+      - Side[left]     — Bar / Strip / none
+      - CornerBlend × 4 — only render where both adjacent sides are present
+      - ControlCenter, NotificationCenter — grow from right strip
+      - Launcher       — grows from left strip
+      - Dashboard      — grows from bottom strip
+  4× ExclusionStrip — 1px PanelWindows per side, reserve compositor exclusiveZone (conditional on `sides.*.type !== "none"`)
+```
+
+**Configuration schema** (`~/.config/quickshell/shell-config.json` — replaces `drawer-config.json`):
+```jsonc
 {
-  "id": "control-center",
-  "name": "Control Center",
-  "author": "archeotech",
-  "version": "1.0.0",
-  "canLiveIn": ["edge-panel", "bar-popout", "desktop-widget"],
-  "defaultSize": { "width": 340, "height": "auto" },
-  "configSchema": {},
-  "entry": "ControlCenter.qml"
+  "sides": {
+    "top":    { "type": "bar",   "size": 36, "zones": { "left": [...], "center": [...], "right": [...] } },
+    "right":  { "type": "strip", "size": 10, "expanded": 56, "icons": ["cc", "nc"] },
+    "bottom": { "type": "strip", "size": 10, "expanded": 56, "icons": ["dashboard"] },
+    "left":   { "type": "strip", "size": 10, "expanded": 56, "icons": ["launcher"] }
+    // Any side can be "type": "none" → no exclusion, no rendering, apps extend to that edge
+  },
+  "corners": { "radius": 14 },
+  "perScreen": { "HDMI-A-1": { /* per-screen overrides */ } }
 }
 ```
 
-**ModuleRegistry** — scans `Modules/*/module.json` + `~/.local/share/archeotech/modules/*/module.json` (user-installed). FileView watcher picks up newly installed modules without shell restart.
+**Locked architectural decisions** (do not deviate without re-reading `ANALYSIS.md` §15):
+- Input passthrough = `QsWindow.mask` with `Intersection.Xor` (the only reliable API — `WlrLayershell.inputRegion` does not exist)
+- Per-screen state = `stateMap` dict keyed by `screen.name` (Noctalia §15.3)
+- Animation = `offsetScale` (single property drives position + opacity, Caelestia §15.2)
+- Corner geometry = `Shape { ShapePath { PathCubic } }` (DMS BarCanvas; SDF shader is Sprint 24+ stretch)
+- Widget mounting = `Repeater { model: ... } DelegateChooser` keyed by widget ID (Caelestia §12.1)
 
-**Edit mode** — activated via `Super+Shift+E` or a settings button. Overlay shows:
-- All slot targets (edges, bar zones) as labelled drop zones
-- Available modules as draggable chips with their icon + name
-- Desktop widget grid with resize handles + drag-to-reorder (Noctalia-style grid snapping)
-- On drop: writes to `DrawerConfig.json` → `DrawerConfig` hot-reloads → shell reconfigures instantly
-
-**Bar configurator** — Left / Center / Right zones (DMS-style). In edit mode, bar modules are draggable chips within their zones. Zone contents persist to `DrawerConfig.barModules.left[]` etc.
-
-**Desktop widget layer** — new `Modules/DesktopWidgets/` surface on `WlrLayer.Background` or `.Bottom`. In edit mode: widgets become draggable (Noctalia `DraggableDesktopWidget` pattern — MouseArea only active in edit mode, grid snap, boundary clamp, persist x/y to `DrawerConfig`).
+**Stage Progress (2026-05-28):**
+- ✅ **Stage 1** — Config + state foundation (`shell-config.json`, `ShellConfig.qml`, `ShellState.qml` wired and verified)
+- ✅ **Stage 2** — Sides as Items (`Sides/Bar.qml`, `Sides/Strip.qml`, `Sides/SideLoader.qml`) — files created, qmllint clean, dormant until Stage 6 wire-up
+- ✅ **Stage 3** — `Corners/CornerBlend.qml` — 4 concave ShapePath arcs (CCW), clamped to `min(hSize, vSize, ShellConfig.cornerRadius())`
+- ✅ **Stage 4** — `ShellSurface.qml` (Variants → full-screen Overlay PanelWindow per monitor, 8-region mask, keyboardFocus=Exclusive on panel open) + `ShellExclusions.qml` (4×Variants → thin Top-layer windows with `exclusiveZone=sideSize`, conditional on `type !== "none"`); files created + qmllint clean, dormant until Stage 6 wire-up
+- ⏭ **Stage 5** — Panels migrated as siblings with `offsetScale` anim
+- ⏭ **Stage 6** — `shell.qml` wire-up, `mango.conf` gap=0, delete old `Modules/Drawer/*` + per-screen strip blocks
 
 **Checklist:**
-- [ ] `module.json` spec finalized and documented in `docs/MODULE_API.md`
-- [ ] `Modules/ModuleRegistry.qml` — singleton scanning module dirs, `list<QtObject> available`, FileView watcher for hot-discovery
-- [ ] Edit mode overlay (`Modules/Builder/EditOverlay.qml`) — full-screen glass surface, slot drop zones, module chip palette, exit on `Escape` or `Super+Shift+E`
-- [ ] Drag-and-drop: chips → slot targets write to `DrawerConfig.json` via JS `JSON.stringify`
-- [ ] Bar configurator — zone slot UI in edit mode, drag chips between left/center/right
-- [ ] Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom`
-- [ ] `Modules/DesktopWidgets/DraggableWidget.qml` — edit mode drag, grid snap, persist, z-raise on drag
-- [ ] At least 3 desktop widgets: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
-- [ ] `~/.local/share/archeotech/modules/` — user module install path, scanned alongside built-in modules
-- [ ] `docs/MODULE_API.md` — module manifest spec, QML entry point contract, config schema format
-- [ ] `docs/THEME_SPEC.md` — complete theme folder structure, all required + optional fields, preview thumbnail spec
-- [ ] Default `drawer-config.json` ships with the repo as the reference configuration
+- [x] Revert previous Sprint 17 attempts: bar `bottomRightRadius`/`bottomLeftRadius` + `_cBR`/`_cBL`, panel `topLeft/Right Radius`, panel scale animation, DrawerSurface mask, `Appearance.bar.cornerBottom` token
+- [x] `Services/Shell/ShellConfig.qml` — singleton, FileView watcher on `shell-config.json`, hot-reload
+- [x] `Services/Shell/ShellState.qml` — singleton, per-screen `stateMap` keyed by `screen.name`, mutual exclusion of panels per screen
+- [x] Default `shell-config.json` ships with the repo as the reference configuration
+- [x] `Modules/Shell/Sides/Strip.qml` — persistent expansion (stays open with panel), multi-icon Column (Caelestia-style sidebar); strip body hover-only, icons click-to-toggle
+- [x] `Modules/Shell/Sides/SideLoader.qml` — Loader picking Bar/Strip/nothing from config
+- [x] `Modules/Shell/Sides/Bar.qml` — current Bar.qml content as plain Item, supports horizontal (top/bottom) AND vertical (left/right) orientation
+- [x] `Modules/Shell/ShellSurface.qml` — full-screen PanelWindow per monitor via Variants, mask via `QsWindow.mask`
+- [x] `Modules/Shell/ShellExclusions.qml` — thin PanelWindows per side per monitor, conditional on `sides.*.type !== "none"`
+- [x] `Modules/Shell/Corners/CornerBlend.qml` — ShapePath concave arc, sized by adjacent collapsed side gaps
+- [ ] `Modules/Shell/Panels/*` — CC, NC, Launcher, Dashboard moved inside ShellSurface as Items
+- [ ] `offsetScale` animation: `anchors.*Margin: -(implicitWidth + 5) * offsetScale; opacity: 1 - offsetScale`
+- [ ] Panels grow from their strip's inner edge (CC/NC from right strip, Launcher from left strip, Dashboard from bottom strip — flush at the strip side, rounded on the content side)
+- [ ] `mango.conf`: `gappoh=0`, `gappov=0` (strip exclusiveZone IS the spacing — fixes the "bigger gaps with multiple windows" bug)
+- [ ] Delete dead code: `Modules/Drawer/DrawerSurface.qml`, `Modules/Drawer/DrawerConfig.qml`, `Modules/Drawer/DrawerVisibilities.qml`, old per-screen edge strip PanelWindow blocks in `shell.qml`
+
+**Sprint 17 decisions (2026-05-28):**
+- Strip click UX: **body = hover-only, icons = click-to-toggle** (Caelestia anchor pattern). Strip body acts as a passive reveal trigger; explicit close affordance is the icon.
+- Bar migration: **copy first, delete old after sign-off** — `Sides/Bar.qml` is a new file, `Modules/Bar/Bar.qml` stays untouched until Stage 6.
 
 ---
 
-### Sprint 18 — Full System-Wide Theme Switcher
+### Sprint 18 — Configurable Sides + Widget Registry
+
+**Goal:** Make the bar/strip widgets fully composable via JSON config. Extract each widget into its own QML file. A `WidgetRegistry` singleton maps widget IDs to QML paths. `Bar.qml` and `Strip.qml` use `Repeater` + `DelegateChooser` to mount widgets from config. Per-screen overrides supported. Editing `shell-config.json` instantly reconfigures the bar without restart. This is the bridge between the foundational architecture (S17) and the visual Module Builder UI (S20).
+
+**Reference:** Caelestia §12.1 (DelegateChooser + `Config.bar.entries` pattern, `ANALYSIS.md` lines 1365–1422), Caelestia `WrappedLoader` (async + adaptive margins), HyprPanel `syncWidgetModel()` (preserve-delegates pattern, §12 line 1712).
+
+**Checklist:**
+- [ ] `Services/Shell/WidgetRegistry.qml` — singleton: `{ id: { source: "path.qml", category: "bar-zone"|"strip-icon"|"panel-content" } }`
+- [ ] Extract all bar modules into `Widgets/Bar/*.qml` — `TagsWidget`, `TitleWidget`, `MediaWidget`, `ClockWidget`, `MicWidget`, `VolumeWidget`, `BrightnessWidget`, `NetworkWidget`, `BluetoothWidget`, `BatteryWidget`, `BellWidget`, `SettingsWidget`, `PowerWidget` — each self-contained with a `module.json`
+- [ ] Extract strip icons into `Widgets/Strip/*.qml` — `CcIcon`, `NcIcon`, `LauncherIcon`, `DashboardIcon`
+- [ ] `Modules/Shell/Widgets/Loader.qml` — async `WrappedLoader` (Caelestia pattern): `asynchronous: true`, adaptive left/right margins on first/last in zone
+- [ ] `Bar.qml` rewritten with `Repeater { model: ShellConfig.zoneWidgets(side, zone) } DelegateChooser { ... }` — widget IDs map to components at runtime
+- [ ] `Strip.qml` rewritten with same Repeater + DelegateChooser for icon stack
+- [ ] Per-side conditional mounting — any side can be set to bar/strip/none via config without code edits
+- [ ] Per-screen overrides — `ShellConfig.sides(screen.name)` merges base + per-screen
+- [ ] Hot-reload: editing `shell-config.json` updates bar/strip composition live (HyprPanel-style ListModel diff — only add/remove changed widgets, don't destroy+recreate the rest)
+- [ ] `docs/WIDGET_API.md` — widget QML contract (props, signals, category), `module.json` schema
+
+---
+
+### Sprint 19 — Full System-Wide Theme Switcher
 
 **Goal:** One `theme-switch.sh` invocation changes every app simultaneously. Quickshell already hot-reloads; this sprint wires in the rest. Also: redesign the theme picker UI — fluid card/swatch grid with wallpaper thumbnail and avatar logo preview, inspired by caelestia-dots / end-4 style.
+
+**Architecture note:** Theme tokens must be **layout-agnostic** — no hardcoded assumptions about which side has a bar or strip. Themes provide colors, fonts, radii; the layout is controlled by `shell-config.json` (S17/S18). The theme picker overlay (`Super+Shift+T`) is an Item inside `ShellSurface`, not a separate PanelWindow.
 
 **Layers to add (MangoWC + Quickshell + Kitty already done in Sprint 12/13):**
 
@@ -129,15 +184,58 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 - [ ] AppearancePane card grid redesign — wallpaper thumbnail + accent swatches per card
 - [ ] Wallpaper picker (file row or sub-tab) wired to `awww`
 - [ ] Per-theme logo/avatar field in `theme.json`, picker in card
-- [ ] `Super+Shift+T` → theme picker overlay (dedicated Quickshell panel, not Settings window)
+- [ ] `Super+Shift+T` → theme picker overlay as Item inside ShellSurface (not a separate PanelWindow)
+- [ ] `docs/THEME_SPEC.md` — complete theme folder structure, all required + optional fields, preview thumbnail spec (moved from old Sprint 17)
 
 ---
 
-### Sprint 19 — Lock Screen (Native QML)
+### Sprint 20 — Module Builder & Community Extension System
+
+**Goal:** Visual UI for editing `shell-config.json`. Builds on the Widget Registry (S18). Adds module manifest discovery + desktop widget layer. After this, third parties can publish modules and themes that install by dropping a folder.
+
+**Changes from original spec** (was old Sprint 17 — adjusted for new architecture):
+- 🔁 **Click-to-assign** instead of drag-and-drop — cross-window drag is unreliable on Wayland (`ANALYSIS.md` line 2092). Workflow: click an empty slot, then click a module from the palette → assigned.
+- 🔁 `DrawerConfig.json` → `shell-config.json` everywhere (matches S17 architecture)
+- 🔁 `canLiveIn` enum is more granular: `["bar-zone:top.left", "bar-zone:top.center", "bar-zone:top.right", "strip-icon:right", "strip-icon:left", "strip-icon:bottom", "panel-content", "desktop-widget"]`
+- ✅ Module manifest, ModuleRegistry, ~/.local/share/archeotech/modules/, DraggableWidget for desktop layer — unchanged (intra-window drag works fine on Wayland)
+
+**Module manifest spec** (`module.json`):
+```json
+{
+  "id": "control-center",
+  "name": "Control Center",
+  "author": "archeotech",
+  "version": "1.0.0",
+  "canLiveIn": ["panel-content", "desktop-widget"],
+  "defaultSize": { "width": 340, "height": "auto" },
+  "configSchema": {},
+  "entry": "ControlCenter.qml"
+}
+```
+
+**Checklist:**
+- [ ] `module.json` spec finalized; `docs/MODULE_API.md` written
+- [ ] `Modules/ModuleRegistry.qml` — singleton scanning `Modules/*/module.json` + `~/.local/share/archeotech/modules/*/module.json`, FileView watcher for hot-discovery
+- [ ] Edit mode overlay (`Modules/Builder/EditOverlay.qml`) — full-screen glass surface inside ShellSurface, exit on `Escape` or `Super+Shift+E`
+- [ ] **Click-to-assign** flow: click slot → palette opens → click module → assigned. Click occupied slot → unassign or open settings.
+- [ ] Side type switcher (per-side: bar / strip / none) — toggles in edit overlay
+- [ ] Bar configurator — Left / Center / Right zone slots per side, click-to-assign chips
+- [ ] Strip icon configurator — Column of icon slots, click-to-assign
+- [ ] Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom` — separate PanelWindow, independent of ShellSurface
+- [ ] `Modules/DesktopWidgets/DraggableWidget.qml` — intra-window drag (works on Wayland), grid snap, boundary clamp, persist x/y to config (Noctalia pattern)
+- [ ] At least 3 desktop widgets: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
+- [ ] `~/.local/share/archeotech/modules/` — user module install path, scanned alongside built-in modules
+- [ ] All edits write to `shell-config.json` → `ShellConfig` hot-reloads → shell reconfigures instantly
+
+---
+
+### Sprint 21 — Lock Screen (Native QML)
 
 **Goal:** Replace swaylock with a first-class Quickshell component. Now that the design system (Sprint 12/13) and token system are in place, build it properly.
 
-**Reference:** Qylock (source-inspected — WlSessionLock + PamContext, ~50 lines of real logic).
+**Reference:** Qylock (source-inspected — `WlSessionLock` + `PamContext`, ~50 lines of real logic).
+
+**Architecture note:** Lock screen is **independent of ShellSurface** — uses `WlSessionLock` + `WlSessionLockSurface` (ext-session-lock-v1 protocol). Compositor-level lock, not layershell.
 
 **Checklist:**
 - [ ] `Modules/LockScreen/LockScreen.qml` — `WlSessionLock` surface on all outputs
@@ -151,14 +249,15 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Planned Sprints
 
-### Sprint 20 — Settings Depth
+### Sprint 22 — Settings Depth
 Fill out Sprint 11's placeholder panes with full native implementations:
 - Connections pane: WiFi sub-tab (known networks, forget, priority) + BT sub-tab (connected/paired/available per Noctalia model, battery level, signal)
 - Audio pane: PipeWire sinks + sources (once QS 0.3.0 lands), device aliasing, per-device volume limit
 - ColorScheme pane: dark mode toggle, schedule (off/manual/location), wallpaper color extraction toggle
 - Settings search: fuzzy index per registered pane, max 15 results, sidebar search input
+- **Layout pane** (new) — UI for `shell-config.json` side type switcher (top/right/bottom/left = bar/strip/none) + per-zone widget chooser. Bridge between current Settings and full Module Builder UI (Sprint 20). Lets users reconfigure sides from a familiar settings interface without needing the visual edit mode.
 
-### Sprint 21 — Multi-Compositor Support
+### Sprint 23 — Multi-Compositor Support
 
 **Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).
 
@@ -173,49 +272,57 @@ CompositorService.focusedApp            // readable property
 CompositorService.activeWindowTitle     // readable property
 ```
 
+**Architecture validation tasks** (from S17 audit):
+- Verify 4× 1px ExclusionStrip PanelWindows behave correctly on Hyprland/Niri (layershell anchors with `implicitHeight: 1` — may need compositor-specific tweaks)
+- Per-compositor blur namespace handling — MangoWC `layerrule = blur, namespace:archeotech-shell` vs Hyprland `layerrule = blur, archeotech-*`
+- `Services/Compositor/Blur.qml` — abstraction for compositor-specific blur rules
+
 **Checklist:**
 - [ ] `Services/Compositor/CompositorService.qml` — detects active compositor on startup (`$XDG_CURRENT_DESKTOP`, `$WAYLAND_DISPLAY` hints), delegates to detected backend
 - [ ] `Services/Compositor/MangoService.qml` — current `mmsg -w` subprocess pattern, promotes to primary backend
 - [ ] `Services/Compositor/HyprlandService.qml` — Hyprland IPC socket (`/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.ipc`), workspace + window events
 - [ ] `Services/Compositor/NiriService.qml` — Niri IPC socket (`$NIRI_SOCKET`), JSON event stream
-- [ ] Replace all direct MangoWC calls in bar/modules with `CompositorService.*`
+- [ ] `Services/Compositor/Blur.qml` — per-compositor blur rule abstraction
+- [ ] Replace all direct MangoWC calls in widgets/services with `CompositorService.*`
+- [ ] Verify ShellSurface + ExclusionStrips work on Hyprland (backup compositor)
 - [ ] `docs/COMPOSITOR_SUPPORT.md` — supported compositors, how to add a new backend
-- [ ] Test on Hyprland (backup compositor already in the repo)
 
 ---
 
-### Sprint 22 — Distribution & GitHub Release
+### Sprint 24 — Distribution & GitHub Release
 
-**Goal:** Clean, documented, installable by a stranger on a fresh Arch Linux machine. Everything hardcoded to `/home/corvus` is gone. Module + theme APIs are documented. Community can publish extensions.
+**Goal:** Clean, documented, installable by a stranger on a fresh Arch Linux machine. Everything hardcoded to `/home/corvus` is gone. Module + theme APIs are documented. Community can publish extensions. **v1.0 milestone.**
 
 **Checklist:**
 - [ ] Hardcoded path audit — zero `/home/corvus` in any config or script; all paths via `$HOME` or `Paths.qml`
 - [ ] `scripts/install-packages.sh` — full `paru -S` list for fresh Arch; split: required vs optional
 - [ ] Rewrite `scripts/install.sh` — prereq check, timestamped backup, stow deploy, service enable, verification
-- [ ] `docs/INSTALL.md` — step-by-step for fresh Arch + MangoWC from zero; also Hyprland path
-- [ ] `docs/MODULE_API.md` — finalize from Sprint 16 draft; add example module walkthrough
-- [ ] `docs/THEME_SPEC.md` — finalize from Sprint 16 draft; add community submission guidelines
+- [ ] `docs/INSTALL.md` — step-by-step for fresh Arch + MangoWC from zero; also Hyprland path; documents `shell-config.json` per-side configuration
+- [ ] `docs/MODULE_API.md` — finalized (from S20); example module walkthrough
+- [ ] `docs/THEME_SPEC.md` — finalized (from S19); community submission guidelines
+- [ ] `docs/WIDGET_API.md` — finalized (from S18)
 - [ ] README harden — screenshots of bar, OSD, CC, launcher, dashboard, settings, edit mode
-- [ ] Demo GIF of edit mode + theme switching
+- [ ] Demo GIF of edit mode + theme switching + per-side reconfiguration
 - [ ] Version tag `v1.0.0` on first release
 - [ ] GitHub repo description, topics, social preview
 - [ ] `CONTRIBUTING.md` — how to submit a module, how to submit a theme
 
 ---
 
-### Sprint 23 — Go Daemon
+### Sprint 25 — Go Daemon
 Only for raw Wayland protocols that QML can't reach natively:
 - `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
 - `Services/ArcheotechDaemon.qml` — Quickshell Socket, exponential-backoff reconnect
 - Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
 - Does NOT handle: audio, network, BT, notifications, lock (all native QML)
 
-### Sprint 24 — Dev Personality + Shadow Spear
+### Sprint 26 — Dev Personality + Shadow Spear
 - `themes/shadow-spear/` full theme package (compositor + kitty + starship raven sigil + rofi + wallpaper set)
-- Git branch module in bar — CWD from focused window, dims when no git context
-- AWS profile module in bar — always visible, dims when `$AWS_PROFILE` unset
-- Terraform workspace indicator — shows `terraform workspace show`, only in tf repos
-- Per-workspace wallpapers via tag-switch hook
+- Git branch widget (`Widgets/Bar/GitWidget.qml`) — CWD from focused window, dims when no git context
+- AWS profile widget (`Widgets/Bar/AwsWidget.qml`) — always visible, dims when `$AWS_PROFILE` unset
+- Terraform workspace indicator (`Widgets/Bar/TerraformWidget.qml`) — shows `terraform workspace show`, only in tf repos
+- Per-workspace wallpapers via `CompositorService.onTagSwitched` hook (S23 dependency)
+- **Stretch:** SDF GLSL shader for corner blob (replaces ShapePath cubic bezier for ultra-smooth corners — Caelestia §15.2 line 2143)
 
 ---
 
@@ -223,11 +330,11 @@ Only for raw Wayland protocols that QML can't reach natively:
 
 Well-defined features not yet scheduled into a sprint.
 
-### Dev Workflow Bar Modules
-*(sprint 23 covers git + AWS + terraform; these are the rest)*
-- Docker containers count badge — click to open btop or lazydocker
-- Keyboard layout indicator — QWERTY/AZERTY, reflected from MangoWC `keyboardLayout` state
-- Caps Lock indicator — low priority, currently undetected
+### Dev Workflow Bar Widgets
+*(sprint 26 covers git + AWS + terraform; these are the rest. All become `Widgets/Bar/*.qml` files per S18 widget registry.)*
+- `DockerWidget` — containers count badge, click to open btop or lazydocker
+- `KeyboardLayoutWidget` — QWERTY/AZERTY indicator, reflected from MangoWC `keyboardLayout` state
+- `CapsLockWidget` — low priority, currently undetected
 
 ### Dev Workflow Scripts
 Quick-access rofi menus for cloud/infra work:
