@@ -30,7 +30,7 @@ QtObject {
             size:    600
         },
         dashboard: {
-            content: _placeholderComp,
+            content: _dashboardComp,
             side:    "bottom",
             size:    600
         }
@@ -58,7 +58,8 @@ QtObject {
     }
 
     // Extracted panel content components — one per migrated panel.
-    property Component _ccComp:       Component { Content.ControlCenter      {} }
-    property Component _ncComp:       Component { Content.NotificationCenter {} }
-    property Component _launcherComp: Component { Content.Launcher           {} }
+    property Component _ccComp:        Component { Content.ControlCenter      {} }
+    property Component _ncComp:        Component { Content.NotificationCenter {} }
+    property Component _launcherComp:  Component { Content.Launcher           {} }
+    property Component _dashboardComp: Component { Content.Dashboard          {} }
 }
