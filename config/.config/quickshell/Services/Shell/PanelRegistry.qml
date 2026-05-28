@@ -20,7 +20,7 @@ QtObject {
             size:    320
         },
         nc: {
-            content: _placeholderComp,
+            content: _ncComp,
             side:    "right",
             size:    320
         },
@@ -59,4 +59,5 @@ QtObject {
 
     // Extracted panel content components — one per migrated panel.
     property Component _ccComp: Component { Content.ControlCenter {} }
+    property Component _ncComp: Component { Content.NotificationCenter {} }
 }
