@@ -2316,3 +2316,133 @@ Bar icons end at `innerPadding: 10px` from screen edges. 20px hover zone starts 
 
 #### Future: caelestia single-surface approach (Sprint 18+):
 One full-screen PanelWindow per monitor eliminates the seam between bar and strips entirely. Requires refactoring bar to be an Item child of that surface. Not a blocker — current approach is functionally correct.
+
+## 16. Caelestia Blob System — Full Source Research
+
+**Date**: 2026-05-29  
+**Decision**: Deferred. Using plain QML Shape/Rectangle. Full notes → `.claude/CAELESTIA_BLOB_RESEARCH.md`
+
+### Frame sizing
+
+Caelestia uses one constant — `Config.border.thickness = 10px` — for everything:
+- Collapsed bar strip width = 10 px (same as border thickness)
+- Top / right / bottom content inset = 10 px
+- Left inset = `bar.implicitWidth` (grows with bar when visible)
+- Frame corner rounding = `Config.border.rounding = 25 px`
+- SDF smoothing / feather radius = `Config.border.smoothing = 32`
+
+This gives a perfectly symmetric 10 px gap on all four sides when the bar is hidden.
+
+### What the blob system is
+
+A custom Qt Quick Scene Graph material (`QSGMaterial` + GLSL shader, ~200 lines) compiled as a
+QML module (`Caelestia.Blobs`). Renders up to 16 SDF rounded rectangles per frame with:
+
+1. **`smin` goo-merge** (cubic smooth-min, k = 32 px) — rects within 32 px smoothly flow together
+2. **Spring physics** (`BlobRect`) — squash-and-stretch deformation matrix driven by scene velocity
+   (stiffness = 200, damping = 16)
+3. **Frame cutout** (`BlobInvertedRect`) — hollow rect with "border sink" SDF warping so panels
+   merge flush into the frame edge
+4. **CPU per-corner radius reduction** — corners inside a neighbour's SDF zone shrink to ~2 px;
+   this is what makes adjacent panels look seamlessly joined without visible gaps
+5. **Ownership masking** — each BlobRect renders only its own pixels; no overdraw
+
+### Core GLSL (the entire visual identity)
+
+```glsl
+float sdRoundedBox4(vec2 p, vec2 center, vec2 halfSize, vec4 r) {
+    p -= center;
+    r.xy = (p.x > 0.0) ? r.xy : r.wz;
+    r.x  = (p.y > 0.0) ? r.y  : r.x;
+    vec2 q = abs(p) - halfSize + r.x;
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r.x;
+}
+
+float smin(float a, float b, float k) {
+    float h = max(k - abs(a - b), 0.0) / k;
+    return min(a, b) - h * h * h * k * (1.0/6.0);  // cubic smooth-min, C2
+}
+```
+
+### Portability assessment
+
+| Layer | Approach | Effort |
+|---|---|---|
+| Full multi-rect SDF + smin + border cutout | `ShaderEffect` + custom UBO packing | ~2–3 days |
+| Single-rect SDF (one popup, no merge) | `ShaderEffect` | ~2–4 hours |
+| Current approach (Rectangle + Shape) | Already working | 0 |
+
+The shader itself is standard GLSL 300es/330 — no Qt private APIs. The bookkeeping
+(ownership masking, `vec4[80]` uniform array via QML, spatial dirty propagation) is
+where the effort lives.
+
+## 17. Strip → Popup → Panel — Unified Card Architecture
+
+**Date**: 2026-06-01
+**Decision**: The strip's popup card *is* the panel. One component handles all
+three states (idle frame, hover popup, active panel). `Panels/Panel.qml` is no
+longer mounted in `ShellSurface`; `PanelRegistry` is read directly by the strip.
+
+### Three states, one Shape
+
+A single `Shape` (with concave neck arcs at the strip-attached edge) animates two
+dimensions:
+
+- **`_perp`** — depth perpendicular to the strip. Targets:
+  `0` idle / `_popupExtra` (= `_bodyDepth + _r`) hover / `_panelSize` (from
+  `PanelRegistry`) active.
+- **`_axis`** — extent along the strip. Targets: `_bodyAxis + 2*_r` popup /
+  full strip Item extent active.
+
+Both have `Behavior on { NumberAnimation 240ms OutCubic }`. The strip `Item`'s
+`implicitWidth`/`Height` follows `collapsedSize + _perp` so the Wayland input
+mask grows with the popup/panel.
+
+### Why icons stay put
+
+`iconArea` is anchored to the *strip-attached* edge of the card with a `_r/2`
+margin, full cross-axis extent, `bodyDepth` thick. In popup mode this puts the
+icon row perpendicular-centered in the small card; in panel mode the iconArea
+sits next to the strip body, with content filling the new space. Icons within
+`iconArea` are positioned via a **clustered formula**:
+
+```
+_cluster = (axisLen - bodyAxis) / 2
+_center  = _cluster + bodyAxis * (i + 0.5) / N
+```
+
+The clustering keeps the icons in a `bodyAxis`-wide band regardless of how wide
+the iconArea grows in panel mode — so icons stay at the same screen position
+through the popup → panel animation. Content for the active panel loads in a
+`Loader` anchored opposite the iconArea, reading `PanelRegistry.panelFor(id).content`.
+
+### Hover state robustness (Qt 6 child-MA shadowing)
+
+Naive parent-`HoverHandler` + child-`HoverHandler` lost hover when the cursor
+moved onto a child (Qt 6 nested-handler shadowing). Naive parent-`MouseArea` +
+child-`MouseArea` *also* lost hover when child took it. The robust pattern:
+
+- Strip-level `MouseArea` (`acceptedButtons: Qt.NoButton`, `hoverEnabled`)
+  tracks "cursor anywhere in strip Item".
+- Each icon `MouseArea` increments/decrements `_iconHoverCount` on enter/exit.
+- `_updateHover()` (called by both) evaluates `_stripMA.containsMouse ||
+  _iconHoverCount > 0`. If either is true, stop the leave-timer and assert
+  `_hov=true`. Otherwise restart the 250ms timer.
+
+Even if the strip MA loses `containsMouse` to a child, the icon counter holds
+the popup open.
+
+### Click-outside-to-close
+
+Lives on `ShellSurface`'s `_panelOpenMask` (full-surface when any panel is
+open). A `TapHandler` checks the tap point against all four `SideLoader`
+bounds; if outside every strip, calls `ShellState.close(screenName)`.
+
+### Why Panel.qml is no longer mounted
+
+The slide-from-edge animation in `Panel.qml` re-renders the panel on top of
+the strip popup — two cards, same content, fighting for the same edge. The
+unified Shape *is* the slide animation (via `_perp`/`_axis` Behaviors),
+emerging *from* the popup position rather than from the screen edge. Panel.qml
+stays in the tree as a reference; its `panelRoot.close()` / `panelOpen`
+interface is mirrored on the strip so existing content modules work unchanged.

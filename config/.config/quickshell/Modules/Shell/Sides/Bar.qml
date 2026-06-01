@@ -10,7 +10,6 @@ import "../../../Services/Compositor" as CompositorServices
 import "../../../Services/System" as SystemServices
 import "../../../Services/Persistence" as Persistence
 import "../../../Services/Shell" as ShellServices
-import "../../Drawer" as Drawer
 
 // Sprint 17 Stage 2b — Bar as a plain Item hosted inside ShellSurface (Stage 4).
 // No PanelWindow / mask / exclusiveZone — those live on ShellSurface.
@@ -101,7 +100,6 @@ Item {
     Rectangle {
         id: pill
         z: 1  // renders on top of popup so pill covers the popup's flat top edge
-        radius: 0
         color: Commons.Appearance.colors.glassBgLight
 
         // Anchor 3 sides — all except the one opposite to `bar.side`.
@@ -640,7 +638,7 @@ Item {
                             id: bellIcon
                             anchors.centerIn: parent
                             text: "󰂚"
-                            color: Drawer.DrawerVisibilities.ncVisible
+                            color: ShellServices.ShellState.isOpenAnywhere("nc")
                                 ? Commons.Appearance.colors.accent
                                 : SystemServices.Notifications.unreadCount > 0
                                 ? Commons.Appearance.colors.red
@@ -654,12 +652,12 @@ Item {
                             onClicked: {
                                 bar._wifiPopupVisible = false
                                 bar._btPopupVisible   = false
-                                if (!Drawer.DrawerVisibilities.ncVisible)
+                                if (!ShellServices.ShellState.isOpenAnywhere("nc"))
                                     SystemServices.Notifications.unreadCount = 0
-                                Drawer.DrawerVisibilities.ncVisible = !Drawer.DrawerVisibilities.ncVisible
+                                ShellServices.ShellState.toggleGlobal("nc")
                             }
                             onEntered: {
-                                if (!Drawer.DrawerVisibilities.ncVisible) bellIcon.color = Commons.Appearance.colors.accent
+                                if (!ShellServices.ShellState.isOpenAnywhere("nc")) bellIcon.color = Commons.Appearance.colors.accent
                                 bar.showPopup(parent, "NOTIFICATIONS",
                                     SystemServices.Notifications.unreadCount > 0
                                         ? "󰂚  " + SystemServices.Notifications.unreadCount + " unread"
@@ -668,7 +666,7 @@ Item {
                                     "Click to toggle")
                             }
                             onExited: {
-                                if (!Drawer.DrawerVisibilities.ncVisible)
+                                if (!ShellServices.ShellState.isOpenAnywhere("nc"))
                                     bellIcon.color = SystemServices.Notifications.unreadCount > 0
                                         ? Commons.Appearance.colors.red : Commons.Appearance.colors.subtext1
                                 bar.hidePopup(parent)
@@ -694,7 +692,7 @@ Item {
                             onClicked: {
                                 bar._wifiPopupVisible = false
                                 bar._btPopupVisible   = false
-                                Drawer.DrawerVisibilities.ccVisible = !Drawer.DrawerVisibilities.ccVisible
+                                ShellServices.ShellState.toggleGlobal("cc")
                             }
                             onEntered: {
                                 settingsIcon.color = Commons.Appearance.colors.accent
@@ -820,16 +818,16 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "󰂚"
-                        color: Drawer.DrawerVisibilities.ncVisible       ? Commons.Appearance.colors.accent
+                        color: ShellServices.ShellState.isOpenAnywhere("nc")       ? Commons.Appearance.colors.accent
                              : SystemServices.Notifications.unreadCount > 0 ? Commons.Appearance.colors.red
                              :                                                 Commons.Appearance.colors.subtext1
                         font.pixelSize: 16; font.family: Commons.Appearance.font.family
                     }
                     TapHandler {
                         onTapped: {
-                            if (!Drawer.DrawerVisibilities.ncVisible)
+                            if (!ShellServices.ShellState.isOpenAnywhere("nc"))
                                 SystemServices.Notifications.unreadCount = 0
-                            Drawer.DrawerVisibilities.ncVisible = !Drawer.DrawerVisibilities.ncVisible
+                            ShellServices.ShellState.toggleGlobal("nc")
                         }
                     }
                 }
@@ -841,10 +839,10 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "󰒓"
-                        color: Drawer.DrawerVisibilities.ccVisible ? Commons.Appearance.colors.accent : Commons.Appearance.colors.subtext1
+                        color: ShellServices.ShellState.isOpenAnywhere("cc") ? Commons.Appearance.colors.accent : Commons.Appearance.colors.subtext1
                         font.pixelSize: 16; font.family: Commons.Appearance.font.family
                     }
-                    TapHandler { onTapped: Drawer.DrawerVisibilities.ccVisible = !Drawer.DrawerVisibilities.ccVisible }
+                    TapHandler { onTapped: ShellServices.ShellState.toggleGlobal("cc") }
                 }
 
                 // Power
@@ -1339,7 +1337,7 @@ Item {
                                                 NetworkServices.Network.disconnect()
                                             } else if (_needsPw) {
                                                 Commons.State.controlCenterOpenSection = "wifi"
-                                                Drawer.DrawerVisibilities.ccVisible = true
+                                                ShellServices.ShellState.openGlobal("cc")
                                                 bar._wifiPopupVisible = false
                                             } else {
                                                 NetworkServices.Network.connect(modelData.ssid)

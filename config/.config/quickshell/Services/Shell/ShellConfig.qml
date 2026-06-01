@@ -10,18 +10,18 @@ QtObject {
         sides: {
             top: {
                 type: "bar",
-                size: 36,
+                size: 30,
                 zones: {
                     left:   ["workspaces", "title", "media"],
                     center: ["clock"],
                     right:  ["mic", "volume", "network", "bluetooth", "battery", "notifications", "settings", "power"]
                 }
             },
-            right:  { type: "strip", size: 10, expanded: 56, icons: ["cc", "nc"] },
-            bottom: { type: "strip", size: 10, expanded: 56, icons: ["dashboard"] },
-            left:   { type: "strip", size: 10, expanded: 56, icons: ["launcher"] }
+            right:  { type: "strip", size: 10, expanded: 44, icons: ["cc", "nc"] },
+            bottom: { type: "strip", size: 10, expanded: 44, icons: ["dashboard"] },
+            left:   { type: "strip", size: 10, expanded: 44, icons: ["launcher"] }
         },
-        corners: { radius: 14 },
+        corners: { radius: 12 },
         perScreen: {}
     })
 

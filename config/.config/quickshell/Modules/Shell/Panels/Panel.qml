@@ -77,25 +77,24 @@ Item {
         anchors.right:  panel._side === "left"   ? undefined : parent.right
 
         anchors.topMargin:    panel._side === "bottom" ? 0
-                            : panel._side === "top"    ? -(panel._size + 5) * panel.offsetScale
+                            : panel._side === "top"    ? panel._topGap - (panel._size + panel._topGap + 5) * panel.offsetScale
                             : panel._topGap
         anchors.bottomMargin: panel._side === "top"    ? 0
-                            : panel._side === "bottom" ? -(panel._size + 5) * panel.offsetScale
+                            : panel._side === "bottom" ? panel._bottomGap - (panel._size + panel._bottomGap + 5) * panel.offsetScale
                             : panel._bottomGap
         anchors.leftMargin:   panel._side === "right"  ? 0
-                            : panel._side === "left"   ? -(panel._size + 5) * panel.offsetScale
+                            : panel._side === "left"   ? panel._leftGap - (panel._size + panel._leftGap + 5) * panel.offsetScale
                             : panel._leftGap
         anchors.rightMargin:  panel._side === "left"   ? 0
-                            : panel._side === "right"  ? -(panel._size + 5) * panel.offsetScale
+                            : panel._side === "right"  ? panel._rightGap - (panel._size + panel._rightGap + 5) * panel.offsetScale
                             : panel._rightGap
 
         width:  panel._side === "left" || panel._side === "right" ? panel._size : 0
         height: panel._side === "top"  || panel._side === "bottom" ? panel._size : 0
 
         color: Commons.Appearance.colors.glassBg
-        border.color: Commons.Appearance.colors.accentBorder
-        border.width: 1
 
+        // Strip-adjacent corners are flat; content-facing corners are rounded.
         readonly property real _r: Commons.Appearance.radius.lg
         topLeftRadius:     panel._side === "right"  || panel._side === "bottom" ? _r : 0
         topRightRadius:    panel._side === "left"   || panel._side === "bottom" ? _r : 0

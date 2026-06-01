@@ -10,10 +10,9 @@ import "Services/Compositor" as CompositorServices
 import "Services/System" as SystemServices
 import "Services/Persistence" as Persistence
 import "Services/Shell" as ShellServices
-import "Modules/Bar"
 import "Modules/OSD"
 import "Modules/Settings"
-import "Modules/Drawer" as Drawer
+import "Modules/Shell" as Shell
 import "Modules/NotificationCenter"
 
 ShellRoot {
@@ -31,13 +30,10 @@ ShellRoot {
     property var _notifications: SystemServices.Notifications
     property var _config:        Persistence.Config
     property var _persistent:    Persistence.Persistent
-    property var _drawerCfg:     Drawer.DrawerConfig  // force singleton instantiation
     property var _shellConfig:   ShellServices.ShellConfig
     property var _shellState:    ShellServices.ShellState
     property var _panelRegistry: ShellServices.PanelRegistry
 
-    // Force eager evaluation of the new shell singletons (QML bindings are lazy
-    // and these aren't yet read by any other binding — Stage 2+ will reach them).
     Component.onCompleted: {
         console.log("[Sprint 17] shellConfig.ready =", _shellConfig.ready,
                     "  shellState screens =", Object.keys(_shellState.stateMap).join(","))
@@ -52,33 +48,33 @@ ShellRoot {
 
     IpcHandler {
         target: "main"
-        function toggle() { Drawer.DrawerVisibilities.ccVisible = !Drawer.DrawerVisibilities.ccVisible }
-        function open()   { Drawer.DrawerVisibilities.ccVisible = true  }
-        function close()  { Drawer.DrawerVisibilities.ccVisible = false }
+        function toggle() { ShellServices.ShellState.toggleGlobal("cc") }
+        function open()   { ShellServices.ShellState.openGlobal("cc")  }
+        function close()  { ShellServices.ShellState.closeAllAcross()  }
     }
 
     IpcHandler {
         target: "notifications"
         function toggle() {
-            if (Drawer.DrawerVisibilities.ncVisible) {
-                Drawer.DrawerVisibilities.ncVisible = false
+            if (ShellServices.ShellState.isOpenAnywhere("nc")) {
+                ShellServices.ShellState.closeAllAcross()
             } else {
-                Drawer.DrawerVisibilities.ncVisible = true
+                ShellServices.ShellState.openGlobal("nc")
                 SystemServices.Notifications.unreadCount = 0
             }
         }
         function open() {
-            Drawer.DrawerVisibilities.ncVisible = true
+            ShellServices.ShellState.openGlobal("nc")
             SystemServices.Notifications.unreadCount = 0
         }
-        function close() { Drawer.DrawerVisibilities.ncVisible = false }
+        function close() { ShellServices.ShellState.closeAllAcross() }
     }
 
     IpcHandler {
         target: "launcher"
-        function toggle() { Drawer.DrawerVisibilities.launcherVisible = !Drawer.DrawerVisibilities.launcherVisible }
-        function open()   { Drawer.DrawerVisibilities.launcherVisible = true  }
-        function close()  { Drawer.DrawerVisibilities.launcherVisible = false }
+        function toggle() { ShellServices.ShellState.toggleGlobal("launcher") }
+        function open()   { ShellServices.ShellState.openGlobal("launcher")  }
+        function close()  { ShellServices.ShellState.closeAllAcross()        }
     }
 
     IpcHandler {
@@ -91,17 +87,20 @@ ShellRoot {
 
     IpcHandler {
         target: "dashboard"
-        function toggle()   { Drawer.DrawerVisibilities.dashboardVisible = !Drawer.DrawerVisibilities.dashboardVisible }
-        function open()     { Drawer.DrawerVisibilities.dashboardVisible = true  }
-        function close()    { Drawer.DrawerVisibilities.dashboardVisible = false }
-        function openAuto() { Commons.State.dashboardAutoOpen = true; Drawer.DrawerVisibilities.dashboardVisible = true }
+        function toggle()   { ShellServices.ShellState.toggleGlobal("dashboard") }
+        function open()     { ShellServices.ShellState.openGlobal("dashboard")  }
+        function close()    { ShellServices.ShellState.closeAllAcross()         }
+        function openAuto() {
+            Commons.State.dashboardAutoOpen = true
+            ShellServices.ShellState.openGlobal("dashboard")
+        }
     }
 
-    // ── Mutual exclusion: drawer ↔ settings ───────────────────────────────────
+    // ── Mutual exclusion: panels ↔ settings ───────────────────────────────────
     Connections {
-        target: Drawer.DrawerVisibilities
-        function onAnyDrawerActiveChanged() {
-            if (Drawer.DrawerVisibilities.anyDrawerActive)
+        target: ShellServices.ShellState
+        function onStateMapChanged() {
+            if (ShellServices.ShellState.anyOpenAnywhere())
                 Commons.State.settingsVisible = false
         }
     }
@@ -110,7 +109,7 @@ ShellRoot {
         target: Commons.State
         function onSettingsVisibleChanged() {
             if (Commons.State.settingsVisible)
-                Drawer.DrawerVisibilities.hideAll()
+                ShellServices.ShellState.closeAllAcross()
         }
     }
 
@@ -155,11 +154,15 @@ ShellRoot {
         function brightness() { shell._osdShow("brightness") }
     }
 
-    // ── Bar — one instance per screen ─────────────────────────────────────────
-    Variants {
-        model: Quickshell.screens
-        delegate: Bar {}
-    }
+    // ── Shell surface (Sprint 17) — one full-screen overlay per monitor.
+    //    Hosts bar, edge strips, corner blends, and all 4 panels (CC/NC/
+    //    Launcher/Dashboard) as siblings. Replaces the old per-screen Bar
+    //    PanelWindow, edge-strip Variants blocks, and DrawerSurface.
+    Shell.ShellSurface  {}
+
+    // Compositor exclusion zones — thin transparent windows per side per
+    // monitor with exclusiveZone=sideSize, conditional on type !== "none".
+    Shell.ShellExclusions {}
 
     // ── Toast layer ───────────────────────────────────────────────────────────
     PanelWindow {
@@ -217,176 +220,4 @@ ShellRoot {
 
     // ── Settings window ────────────────────────────────────────────────────────
     Settings {}
-
-    // ── Drawer surface — CC, NC, Launcher, Dashboard ──────────────────────────
-    Drawer.DrawerSurface {}
-
-    // ── Edge strips — bar-colored frame wrap, instant expand on hover, click to open ─
-    // Right → CC, Bottom → Dashboard, Left → Launcher. NC is on the bar bell icon.
-
-    // Right edge → Control Center
-    Variants {
-        model: Quickshell.screens
-        delegate: PanelWindow {
-            required property var modelData
-            screen: modelData
-            exclusiveZone: 10
-            WlrLayershell.layer: WlrLayer.Top
-            WlrLayershell.namespace: "archeotech-edge-right"
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-            anchors { top: true; bottom: true; right: true }
-            implicitWidth: 56
-            color: "transparent"
-            mask: Region { item: _ccZone }
-
-            // Visual strip — full screen height keeps the wrap-around frame continuous
-            Rectangle {
-                id: _ccStrip
-                anchors { top: parent.top; bottom: parent.bottom; right: parent.right }
-                width: _ccZone._hov ? 56 : 10
-                color: Drawer.DrawerVisibilities.ccVisible
-                     ? Commons.Appearance.colors.accentAlpha
-                     : Commons.Appearance.colors.glassBgLight
-                Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
-                Behavior on color { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "󰒓"
-                    color: Drawer.DrawerVisibilities.ccVisible
-                         ? Commons.Appearance.colors.accent
-                         : Commons.Appearance.colors.subtext1
-                    font.pixelSize: 18
-                    font.family: Commons.Appearance.font.family
-                    opacity: _ccZone._hov ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
-                    Behavior on color   { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
-                }
-            }
-
-            // Input zone — 12px collapsed (fits within gappoh dead zone, no app UI)
-            //             56px expanded (mask grows with strip so full visible area is clickable)
-            Item {
-                id: _ccZone
-                property bool _hov: false
-                anchors {
-                    top: parent.top
-                    topMargin: Commons.Appearance.bar.height
-                    bottom: parent.bottom
-                    right: parent.right
-                }
-                width: _hov ? 56 : 12
-
-                HoverHandler { onHoveredChanged: _ccZone._hov = hovered }
-                TapHandler { onTapped: Drawer.DrawerVisibilities.ccVisible = !Drawer.DrawerVisibilities.ccVisible }
-            }
-        }
-    }
-
-    // Bottom edge → Dashboard
-    Variants {
-        model: Quickshell.screens
-        delegate: PanelWindow {
-            required property var modelData
-            screen: modelData
-            exclusiveZone: 10
-            WlrLayershell.layer: WlrLayer.Top
-            WlrLayershell.namespace: "archeotech-edge-bottom"
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-            anchors { bottom: true; left: true; right: true }
-            implicitHeight: 56
-            color: "transparent"
-            mask: Region { item: _dashZone }
-
-            Rectangle {
-                id: _dashStrip
-                anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-                height: _dashZone._hov ? 56 : 10
-                color: Drawer.DrawerVisibilities.dashboardVisible
-                     ? Commons.Appearance.colors.accentAlpha
-                     : Commons.Appearance.colors.glassBgLight
-                Behavior on height { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
-                Behavior on color  { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "󰕮"
-                    color: Drawer.DrawerVisibilities.dashboardVisible
-                         ? Commons.Appearance.colors.accent
-                         : Commons.Appearance.colors.subtext1
-                    font.pixelSize: 18
-                    font.family: Commons.Appearance.font.family
-                    opacity: _dashZone._hov ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
-                    Behavior on color   { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
-                }
-            }
-
-            Item {
-                id: _dashZone
-                property bool _hov: false
-                anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-                height: _hov ? 56 : 12
-
-                HoverHandler { onHoveredChanged: _dashZone._hov = hovered }
-                TapHandler { onTapped: Drawer.DrawerVisibilities.dashboardVisible = !Drawer.DrawerVisibilities.dashboardVisible }
-            }
-        }
-    }
-
-    // Left edge → Launcher
-    Variants {
-        model: Quickshell.screens
-        delegate: PanelWindow {
-            required property var modelData
-            screen: modelData
-            exclusiveZone: 10
-            WlrLayershell.layer: WlrLayer.Top
-            WlrLayershell.namespace: "archeotech-edge-left"
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-            anchors { top: true; bottom: true; left: true }
-            implicitWidth: 56
-            color: "transparent"
-            mask: Region { item: _launchZone }
-
-            Rectangle {
-                id: _launchStrip
-                anchors { top: parent.top; bottom: parent.bottom; left: parent.left }
-                width: _launchZone._hov ? 56 : 10
-                color: Drawer.DrawerVisibilities.launcherVisible
-                     ? Commons.Appearance.colors.accentAlpha
-                     : Commons.Appearance.colors.glassBgLight
-                Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
-                Behavior on color { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "󱓞"
-                    color: Drawer.DrawerVisibilities.launcherVisible
-                         ? Commons.Appearance.colors.accent
-                         : Commons.Appearance.colors.subtext1
-                    font.pixelSize: 18
-                    font.family: Commons.Appearance.font.family
-                    opacity: _launchZone._hov ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
-                    Behavior on color   { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
-                }
-            }
-
-            Item {
-                id: _launchZone
-                property bool _hov: false
-                anchors {
-                    top: parent.top
-                    topMargin: Commons.Appearance.bar.height
-                    bottom: parent.bottom
-                    left: parent.left
-                }
-                width: _hov ? 56 : 12
-
-                HoverHandler { onHoveredChanged: _launchZone._hov = hovered }
-                TapHandler { onTapped: Drawer.DrawerVisibilities.launcherVisible = !Drawer.DrawerVisibilities.launcherVisible }
-            }
-        }
-    }
 }

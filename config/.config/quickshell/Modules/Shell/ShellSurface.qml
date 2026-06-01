@@ -51,13 +51,28 @@ Variants {
         }
 
         // When any panel is open on this screen, _panelOpenMask covers the
-        // whole surface so the Panel's TapHandler can detect off-panel clicks.
+        // whole surface so a click outside the strip/panel area can close it.
         // When no panel is open, it collapses to 0×0 and contributes nothing.
         Item {
             id: _panelOpenMask
             x: 0; y: 0
             width:  ShellServices.ShellState.anyOpen(_surface._screenName) ? _surface.width  : 0
             height: ShellServices.ShellState.anyOpen(_surface._screenName) ? _surface.height : 0
+
+            // Click outside any side strip → close the active panel.
+            TapHandler {
+                enabled: ShellServices.ShellState.anyOpen(_surface._screenName)
+                onTapped: point => {
+                    function inside(s) {
+                        return point.position.x >= s.x && point.position.x < s.x + s.width
+                            && point.position.y >= s.y && point.position.y < s.y + s.height
+                    }
+                    if (!inside(_topSide) && !inside(_bottomSide)
+                        && !inside(_leftSide) && !inside(_rightSide)) {
+                        ShellServices.ShellState.close(_surface._screenName)
+                    }
+                }
+            }
         }
 
         // Static collapsed sizes — drive corner-gap margins. The live
@@ -69,59 +84,69 @@ Variants {
         readonly property int _leftGap:   ShellServices.ShellConfig.sideGap("left",   _screenName)
         readonly property int _rightGap:  ShellServices.ShellConfig.sideGap("right",  _screenName)
 
+        // Extended corner geometry — each corner piece extends `_r` pixels into
+        // the adjacent bar/strip areas so a single concave arc (radius _r) can
+        // span from the bar's edge to the strip's edge with smooth tangents.
+        readonly property int _r: ShellServices.ShellConfig.cornerRadius()
+
         // ── Sides ─────────────────────────────────────────────────────────────
         // Horizontal sides own the corners visually (they span beyond the strip
         // edges with leftMargin/rightMargin = strip collapsed size, leaving a
         // gap that CornerBlend fills).
+        // z: 10 — above panels (z:5) so strips stay visible and interactive when a panel is open.
         Sides.SideLoader {
             id: _topSide
+            z: 10
             side: "top"
             screen: _surface.modelData
             anchors {
                 top:   parent.top
                 left:  parent.left
                 right: parent.right
-                leftMargin:  _surface._leftGap
-                rightMargin: _surface._rightGap
+                leftMargin:  _surface._leftGap  + _surface._r
+                rightMargin: _surface._rightGap + _surface._r
             }
         }
 
         Sides.SideLoader {
             id: _bottomSide
+            z: 10
             side: "bottom"
             screen: _surface.modelData
             anchors {
                 bottom: parent.bottom
                 left:   parent.left
                 right:  parent.right
-                leftMargin:  _surface._leftGap
-                rightMargin: _surface._rightGap
+                leftMargin:  _surface._leftGap  + _surface._r
+                rightMargin: _surface._rightGap + _surface._r
             }
         }
 
         Sides.SideLoader {
             id: _rightSide
+            z: 10
             side: "right"
             screen: _surface.modelData
             anchors {
                 top:    parent.top
                 bottom: parent.bottom
                 right:  parent.right
-                topMargin:    _surface._topGap
-                bottomMargin: _surface._bottomGap
+                topMargin:    _surface._topGap    + _surface._r
+                bottomMargin: _surface._bottomGap + _surface._r
             }
         }
 
         Sides.SideLoader {
             id: _leftSide
+            z: 10
             side: "left"
             screen: _surface.modelData
             anchors {
                 top:    parent.top
                 bottom: parent.bottom
                 left:   parent.left
-                topMargin:    _surface._topGap
-                bottomMargin: _surface._bottomGap
+                topMargin:    _surface._topGap    + _surface._r
+                bottomMargin: _surface._bottomGap + _surface._r
             }
         }
 
@@ -131,49 +156,42 @@ Variants {
         Corners.CornerBlend {
             id: _cTL
             corner: "top-left"
-            hSize: _surface._topGap
-            vSize: _surface._leftGap
+            hSize: _surface._topGap    + _surface._r
+            vSize: _surface._leftGap   + _surface._r
             visible: _surface._topGap > 0 && _surface._leftGap > 0
             anchors { top: parent.top; left: parent.left }
         }
         Corners.CornerBlend {
             id: _cTR
             corner: "top-right"
-            hSize: _surface._topGap
-            vSize: _surface._rightGap
+            hSize: _surface._topGap    + _surface._r
+            vSize: _surface._rightGap  + _surface._r
             visible: _surface._topGap > 0 && _surface._rightGap > 0
             anchors { top: parent.top; right: parent.right }
         }
         Corners.CornerBlend {
             id: _cBL
             corner: "bottom-left"
-            hSize: _surface._bottomGap
-            vSize: _surface._leftGap
+            hSize: _surface._bottomGap + _surface._r
+            vSize: _surface._leftGap   + _surface._r
             visible: _surface._bottomGap > 0 && _surface._leftGap > 0
             anchors { bottom: parent.bottom; left: parent.left }
         }
         Corners.CornerBlend {
             id: _cBR
             corner: "bottom-right"
-            hSize: _surface._bottomGap
-            vSize: _surface._rightGap
+            hSize: _surface._bottomGap + _surface._r
+            vSize: _surface._rightGap  + _surface._r
             visible: _surface._bottomGap > 0 && _surface._rightGap > 0
             anchors { bottom: parent.bottom; right: parent.right }
         }
 
         // ── Panels ────────────────────────────────────────────────────────────
-        // One Panel per registered ID; each renders its content from
-        // PanelRegistry inside the uniform glass chrome. z-order puts panels
-        // above sides+corners so they cover them when open (the strip
-        // visually merges with the panel's flush edge).
-        Repeater {
-            model: ShellServices.PanelRegistry.panelIds
-            delegate: Panels.Panel {
-                required property string modelData
-                panelId: modelData
-                screen: _surface.modelData
-                z: 5
-            }
-        }
+        // Sprint 17 → S5 update: panels are now rendered INSIDE the Strip
+        // popup card (Sides/Strip.qml). The strip's card grows from popup-size
+        // to panel-size on activation, with the icons staying as a sidebar at
+        // the strip-attached edge so the user can switch between panels (e.g.
+        // CC ↔ NC) without losing them. Panels.Panel is no longer instantiated
+        // here; PanelRegistry remains the source of truth for content + size.
     }
 }

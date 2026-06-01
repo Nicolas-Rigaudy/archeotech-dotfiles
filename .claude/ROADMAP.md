@@ -100,12 +100,13 @@ Per monitor (Variants { model: Quickshell.screens }):
 - Corner geometry = `Shape { ShapePath { PathCubic } }` (DMS BarCanvas; SDF shader is Sprint 24+ stretch)
 - Widget mounting = `Repeater { model: ... } DelegateChooser` keyed by widget ID (Caelestia §12.1)
 
-**Stage Progress (2026-05-28):**
+**Stage Progress (2026-05-29):**
 - ✅ **Stage 1** — Config + state foundation (`shell-config.json`, `ShellConfig.qml`, `ShellState.qml` wired and verified)
 - ✅ **Stage 2** — Sides as Items (`Sides/Bar.qml`, `Sides/Strip.qml`, `Sides/SideLoader.qml`) — files created, qmllint clean, dormant until Stage 6 wire-up
 - ✅ **Stage 3** — `Corners/CornerBlend.qml` — 4 concave ShapePath arcs (CCW), clamped to `min(hSize, vSize, ShellConfig.cornerRadius())`
 - ✅ **Stage 4** — `ShellSurface.qml` (Variants → full-screen Overlay PanelWindow per monitor, 8-region mask, keyboardFocus=Exclusive on panel open) + `ShellExclusions.qml` (4×Variants → thin Top-layer windows with `exclusiveZone=sideSize`, conditional on `type !== "none"`); files created + qmllint clean, dormant until Stage 6 wire-up
 - ✅ **Stage 5** — Modular panel architecture (5 commits): `Panels/Panel.qml` uniform container (glass chrome, asymmetric per-side radius, `offsetScale` slide-from-edge anim, ShellState binding, focus/Esc/click-outside-to-close) + `Services/Shell/PanelRegistry.qml` (panelId → content/side/size) + `Panels/Content/{ControlCenter,NotificationCenter,Launcher,Dashboard}.qml` (content modules, no chrome). Dashboard UX shift: centered modal → bottom-edge panel. ShellSurface mounts panels via Repeater + a panel-open mask region for click-outside-to-close. All dormant.
+- 🔧 **Visual polish (2026-05-29, between Stage 5 and 6)** — frame sizing tuned: bar 36→30px, strip `expanded` 56→44px, corner radius 14→12, `gappoh/gappov` 10→4. Strip expansion currently still renders full-height rectangle — **next task: replace with floating pill** (see checklist item below). Caelestia blob shader system fully researched and documented in `.claude/CAELESTIA_BLOB_RESEARCH.md` + `ANALYSIS.md §16`; decision: defer, use plain QML Rectangle/Shape.
 - ⏭ **Stage 6** — `shell.qml` wire-up, `mango.conf` gap=0, delete old `Modules/Drawer/*` + per-screen strip blocks
 
 **Checklist:**
@@ -122,6 +123,7 @@ Per monitor (Variants { model: Quickshell.screens }):
 - [x] `Modules/Shell/Panels/Panel.qml` — universal container; `Modules/Shell/Panels/Content/*.qml` — extracted content modules; `Services/Shell/PanelRegistry.qml` — panelId → metadata
 - [x] `offsetScale` animation: `anchors.*Margin: -(_size + 5) * offsetScale; opacity reduced as a function of offsetScale`
 - [x] Panels grow from their strip's inner edge (CC/NC from right strip, Launcher from left strip, Dashboard from bottom strip — asymmetric corner radius: rounded on the content side, flat on the strip side)
+- [x] **Strip pill → popup-becomes-panel** (2026-06-01) — Strip's popup card unified with the panel. Single `Shape` animates `_perp` (idle 0 / hover `_popupExtra` / active `_panelSize`) and `_axis` (popup-axis / full strip extent) via Behaviors. Icons anchored to strip-attached edge with `_r/2` margin, clustered formula keeps them at the same screen position through expansion. `Panels/Panel.qml` no longer mounted by `ShellSurface`; strip mirrors `panelRoot.close()`/`panelOpen` so content modules work unchanged. Click-outside-to-close added via `TapHandler` on `_panelOpenMask`. Hover robustness via OR'd strip-MA `containsMouse` + per-icon hover counter (`_updateHover()`) to defeat Qt 6 child-MA hover shadowing. Full notes: `ANALYSIS.md §17`.
 - [ ] `mango.conf`: `gappoh=0`, `gappov=0` (strip exclusiveZone IS the spacing — fixes the "bigger gaps with multiple windows" bug)
 - [ ] Delete dead code: `Modules/Drawer/DrawerSurface.qml`, `Modules/Drawer/DrawerConfig.qml`, `Modules/Drawer/DrawerVisibilities.qml`, old per-screen edge strip PanelWindow blocks in `shell.qml`
 

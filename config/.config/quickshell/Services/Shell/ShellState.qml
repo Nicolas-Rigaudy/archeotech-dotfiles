@@ -67,6 +67,20 @@ QtObject {
         _commit(m)
     }
 
+    // True if `panel` is open on any screen — used by IPC toggles that want
+    // global "is this panel showing somewhere?" semantics.
+    function isOpenAnywhere(panel) {
+        for (var k in stateMap) if (stateMap[k].open === panel) return true
+        return false
+    }
+
+    // True if any screen has any panel open — drives the mutual exclusion
+    // with the Settings window.
+    function anyOpenAnywhere() {
+        for (var k in stateMap) if (stateMap[k].open !== "") return true
+        return false
+    }
+
     // Legacy/IPC convenience: open the same panel on all screens (use until
     // ShellSurface plumbs per-screen IPC). Mirrors how DrawerVisibilities worked.
     function openGlobal(panel) {
