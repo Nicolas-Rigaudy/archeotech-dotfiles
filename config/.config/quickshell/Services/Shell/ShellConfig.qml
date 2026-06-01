@@ -14,7 +14,7 @@ QtObject {
                 zones: {
                     left:   ["workspaces", "title", "media"],
                     center: ["clock"],
-                    right:  ["mic", "volume", "network", "bluetooth", "battery", "notifications", "settings", "power"]
+                    right:  ["mic", "volume", "brightness", "network", "bluetooth", "battery", "notifications", "settings", "power"]
                 }
             },
             right:  { type: "strip", size: 10, expanded: 44, icons: ["cc", "nc"] },
