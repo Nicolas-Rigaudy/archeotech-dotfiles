@@ -87,6 +87,46 @@ Item {
     Timer { id: _hideTimer;    interval: 250; onTriggered: bar._popupVisible    = false }
     Timer { id: _calHideTimer; interval: 250; onTriggered: bar._calendarVisible = false }
 
+    // ── Stable ListModels for each zone ────────────────────────────────────────
+    // HyprPanel's preserve-delegates pattern. When shell-config.json changes,
+    // _syncZone() does an in-place add/remove/move diff on the ListModel so
+    // unchanged widgets (e.g. MPRIS marquee mid-scroll) keep their state.
+    // A plain `model: <jsArray>` Repeater would destroy + recreate everything.
+    ListModel { id: _leftModel }
+    ListModel { id: _centerModel }
+    ListModel { id: _rightModel }
+
+    function _syncZone(model, newIds) {
+        // Remove ids no longer present.
+        var newSet = {}
+        for (var j = 0; j < newIds.length; j++) newSet[newIds[j]] = true
+        for (var k = model.count - 1; k >= 0; k--) {
+            if (!newSet[model.get(k).widgetId]) model.remove(k)
+        }
+        // Insert or move so model order matches newIds.
+        for (var m = 0; m < newIds.length; m++) {
+            var id = newIds[m]
+            var currentIdx = -1
+            for (var n = m; n < model.count; n++) {
+                if (model.get(n).widgetId === id) { currentIdx = n; break }
+            }
+            if (currentIdx === -1)     model.insert(m, { widgetId: id })
+            else if (currentIdx !== m) model.move(currentIdx, m, 1)
+        }
+    }
+
+    function _syncAllZones() {
+        _syncZone(_leftModel,   ShellServices.ShellConfig.zoneWidgets(bar.side, "left",   bar._screenName))
+        _syncZone(_centerModel, ShellServices.ShellConfig.zoneWidgets(bar.side, "center", bar._screenName))
+        _syncZone(_rightModel,  ShellServices.ShellConfig.zoneWidgets(bar.side, "right",  bar._screenName))
+    }
+
+    Component.onCompleted: _syncAllZones()
+    Connections {
+        target: ShellServices.ShellConfig
+        function onDataChanged() { bar._syncAllZones() }
+    }
+
     // ── Pill — anchored to the bar's outer edge ────────────────────────────────
     Rectangle {
         id: pill
@@ -122,11 +162,10 @@ Item {
                 spacing: 0
                 Repeater {
                     id: _leftZone
-                    model: ShellServices.ShellConfig.zoneWidgets(bar.side, "left", bar._screenName)
+                    model: _leftModel
                     delegate: BarWidgetLoader {
-                        required property string modelData
+                        required property string widgetId
                         required property int index
-                        widgetId: modelData
                         barRoot: bar
                         isFirst: index === 0
                         isLast:  index === _leftZone.count - 1
@@ -142,11 +181,10 @@ Item {
                 spacing: 0
                 Repeater {
                     id: _rightZone
-                    model: ShellServices.ShellConfig.zoneWidgets(bar.side, "right", bar._screenName)
+                    model: _rightModel
                     delegate: BarWidgetLoader {
-                        required property string modelData
+                        required property string widgetId
                         required property int index
-                        widgetId: modelData
                         barRoot: bar
                         isFirst: index === 0
                         isLast:  index === _rightZone.count - 1
@@ -164,11 +202,10 @@ Item {
             spacing: 0
             Repeater {
                 id: _centerZone
-                model: ShellServices.ShellConfig.zoneWidgets(bar.side, "center", bar._screenName)
+                model: _centerModel
                 delegate: BarWidgetLoader {
-                    required property string modelData
+                    required property string widgetId
                     required property int index
-                    widgetId: modelData
                     barRoot: bar
                     isFirst: index === 0
                     isLast:  index === _centerZone.count - 1
