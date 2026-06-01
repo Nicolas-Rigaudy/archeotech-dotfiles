@@ -7,7 +7,7 @@ import "../../../../Commons" as Commons
 import "../../../../Services/Media" as MediaServices
 import "../../../../Services/Hardware" as HardwareServices
 import "../../../../Services/Networking" as NetworkServices
-import "../../../../Widgets"
+import "../../../../Commons/Primitives"
 import "../../../../Services/System" as SystemServices
 
 // ControlCenter UI. Panel.qml provides chrome (glass, slide anim, focus, Esc,

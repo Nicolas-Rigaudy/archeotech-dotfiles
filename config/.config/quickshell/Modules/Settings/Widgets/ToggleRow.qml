@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import "../../../Commons" as Commons
-import "../../../Widgets"
+import "../../../Commons/Primitives"
 
 Item {
     id: root
