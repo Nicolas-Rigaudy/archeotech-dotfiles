@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 import "../../../Commons" as Commons
-import "../../Drawer" as Drawer
+import "../../../Services/Shell" as ShellServices
 
 Rectangle {
     id: root
@@ -22,7 +22,7 @@ Rectangle {
     function launch(cmd) {
         launchProc.command = ["bash", "-c", "setsid " + cmd + " >/dev/null 2>&1 &"]
         launchProc.running = true
-        Drawer.DrawerVisibilities.dashboardVisible = false
+        ShellServices.ShellState.closeAllAcross()
     }
 
     readonly property string _p: "file:///usr/share/icons/Papirus/32x32/"

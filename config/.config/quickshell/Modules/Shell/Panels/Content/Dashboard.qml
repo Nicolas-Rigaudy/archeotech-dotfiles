@@ -4,14 +4,12 @@ import QtQuick.Layouts
 import "../../../../Commons" as Commons
 import "../../../Dashboard/panels"
 
-// Sprint 17 Stage 5 — Dashboard content extracted from the old
-// Modules/Dashboard/Dashboard.qml wrapper. UX shift: was a centered modal,
-// now a bottom-edge panel (Panel.qml anchors it via side="bottom" in
-// PanelRegistry). Panel.qml owns chrome + slide anim + Esc + click-outside;
-// this file is the inner UI only. `panelRoot` is injected by Loader.onLoaded.
+// Dashboard UI — bottom-edge panel (PanelRegistry side="bottom"). Panel.qml
+// provides chrome + slide anim + Esc + click-outside; this file is the inner
+// content only. `panelRoot` is injected by Loader.onLoaded.
 //
-// Auto-dismiss timer (4s) still fires when Commons.State.dashboardAutoOpen
-// is true, but now closes via panelRoot.close() instead of the global flag.
+// Auto-dismiss timer (4s) fires when `Commons.State.dashboardAutoOpen` is
+// true and closes via `panelRoot.close()`.
 Item {
     id: root
     anchors.fill: parent

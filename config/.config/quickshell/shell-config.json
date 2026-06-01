@@ -18,5 +18,7 @@
 
   "corners": { "radius": 12 },
 
+  "outerGap": 6,
+
   "perScreen": {}
 }

@@ -8,9 +8,10 @@ import "../../Services/Shell" as ShellServices
 // exclusiveZone (it's ExclusionMode.Ignore), so these slim windows do the job.
 //
 // Each side spawns one PanelWindow per screen, conditional on
-// `sides.<name>.type !== "none"`. `exclusiveZone` = collapsed side size, so
-// apps fit around the bar/strip's resting width even when a strip hovers
-// larger (the expansion overlays apps but isn't reserved).
+// `sides.<name>.type !== "none"`. `exclusiveZone = sideSize + outerGap`:
+// the visible bar/strip is `sideSize` wide, the extra `outerGap` is empty
+// space between the side and tiled windows — owned by Quickshell instead of
+// MangoWC's `gappoh/gappov` (which would multiply between tiled windows too).
 Variants {
     model: Quickshell.screens
 
@@ -35,7 +36,7 @@ Variants {
             WlrLayershell.namespace: "archeotech-exclude-top"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: _row._size("top")
+            exclusiveZone: _row._size("top") + ShellServices.ShellConfig.outerGap()
             anchors { top: true; left: true; right: true }
             implicitHeight: _row._size("top")
             mask: Region { x: 0; y: 0; width: 0; height: 0 }
@@ -50,7 +51,7 @@ Variants {
             WlrLayershell.namespace: "archeotech-exclude-bottom"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: _row._size("bottom")
+            exclusiveZone: _row._size("bottom") + ShellServices.ShellConfig.outerGap()
             anchors { bottom: true; left: true; right: true }
             implicitHeight: _row._size("bottom")
             mask: Region { x: 0; y: 0; width: 0; height: 0 }
@@ -65,7 +66,7 @@ Variants {
             WlrLayershell.namespace: "archeotech-exclude-right"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: _row._size("right")
+            exclusiveZone: _row._size("right") + ShellServices.ShellConfig.outerGap()
             anchors { top: true; bottom: true; right: true }
             implicitWidth: _row._size("right")
             mask: Region { x: 0; y: 0; width: 0; height: 0 }
@@ -80,7 +81,7 @@ Variants {
             WlrLayershell.namespace: "archeotech-exclude-left"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: _row._size("left")
+            exclusiveZone: _row._size("left") + ShellServices.ShellConfig.outerGap()
             anchors { top: true; bottom: true; left: true }
             implicitWidth: _row._size("left")
             mask: Region { x: 0; y: 0; width: 0; height: 0 }

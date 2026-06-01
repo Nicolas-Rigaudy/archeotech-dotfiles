@@ -4,11 +4,10 @@ import Quickshell
 import Quickshell.Io
 import "../../../../Commons" as Commons
 
-// Sprint 17 Stage 5 — Launcher content extracted from the old
-// Modules/Launcher/Launcher.qml wrapper. Panel.qml owns chrome + slide anim +
-// click-outside-to-close; this file is the inner UI only. `panelRoot` is
-// injected by Panel.qml's Loader.onLoaded — content calls `panelRoot.close()`
-// to dismiss. Reset on open is wired via the Connections on panelRoot below.
+// Launcher UI. Panel.qml provides chrome + slide anim + click-outside-to-close;
+// this file is the inner content only. `panelRoot` is injected by Panel.qml's
+// Loader.onLoaded — call `panelRoot.close()` to dismiss. Reset on open is
+// wired via the Connections on panelRoot below.
 Item {
     id: root
     anchors.fill: parent

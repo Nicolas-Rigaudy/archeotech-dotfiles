@@ -10,14 +10,10 @@ import "../../../../Services/Networking" as NetworkServices
 import "../../../../Widgets"
 import "../../../../Services/System" as SystemServices
 
-// Sprint 17 Stage 5 — ControlCenter content extracted from the old
-// Modules/ControlCenter/ControlCenter.qml wrapper. Panel.qml owns the glass
-// chrome, slide-from-edge anim, focus + Esc + click-outside-to-close; this
-// file is purely the UI that lives inside the Loader.
-//
-// `panelRoot` is injected by Panel.qml's Loader.onLoaded — content calls
-// `panelRoot.close()` to dismiss (replaces DrawerVisibilities.ccVisible=false).
-// State sync runs on panelRoot.panelOpen → true transitions.
+// ControlCenter UI. Panel.qml provides chrome (glass, slide anim, focus, Esc,
+// click-outside-to-close); this file is the inner content only. `panelRoot` is
+// injected by Panel.qml's Loader.onLoaded — call `panelRoot.close()` to dismiss.
+// State sync runs on `panelRoot.panelOpen` → true transitions.
 Item {
     id: root
     anchors.fill: parent

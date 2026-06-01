@@ -81,8 +81,8 @@ QtObject {
         return false
     }
 
-    // Legacy/IPC convenience: open the same panel on all screens (use until
-    // ShellSurface plumbs per-screen IPC). Mirrors how DrawerVisibilities worked.
+    // Open the same panel on all screens (IPC entry point — no per-screen
+    // routing yet).
     function openGlobal(panel) {
         var screens = Quickshell.screens
         var m = {}

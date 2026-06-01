@@ -154,14 +154,13 @@ ShellRoot {
         function brightness() { shell._osdShow("brightness") }
     }
 
-    // ── Shell surface (Sprint 17) — one full-screen overlay per monitor.
-    //    Hosts bar, edge strips, corner blends, and all 4 panels (CC/NC/
-    //    Launcher/Dashboard) as siblings. Replaces the old per-screen Bar
-    //    PanelWindow, edge-strip Variants blocks, and DrawerSurface.
+    // Full-screen overlay per monitor — hosts the 4 sides (bar/strip/none),
+    // 4 corner blends, and panels (CC/NC/Launcher/Dashboard) as siblings in
+    // one coordinate space.
     Shell.ShellSurface  {}
 
-    // Compositor exclusion zones — thin transparent windows per side per
-    // monitor with exclusiveZone=sideSize, conditional on type !== "none".
+    // Thin compositor-exclusion windows, one per active side per monitor.
+    // exclusiveZone = sideSize + outerGap.
     Shell.ShellExclusions {}
 
     // ── Toast layer ───────────────────────────────────────────────────────────

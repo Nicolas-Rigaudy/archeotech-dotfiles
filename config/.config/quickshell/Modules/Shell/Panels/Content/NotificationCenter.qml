@@ -4,11 +4,10 @@ import QtQuick.Layouts
 import "../../../../Commons" as Commons
 import "../../../../Services/System" as SystemServices
 
-// Sprint 17 Stage 5 — NotificationCenter content extracted from the old
-// Modules/NotificationCenter/NotificationCenter.qml wrapper. Panel.qml owns
-// chrome + slide-from-edge anim + focus/Esc/click-outside; this file is the
-// inner UI only. `panelRoot` is injected by Panel.qml's Loader.onLoaded —
-// content calls `panelRoot.close()` to dismiss.
+// NotificationCenter UI. Panel.qml provides chrome + slide-from-edge anim +
+// focus/Esc/click-outside; this file is the inner content only. `panelRoot`
+// is injected by Panel.qml's Loader.onLoaded — call `panelRoot.close()` to
+// dismiss.
 Item {
     id: root
     anchors.fill: parent

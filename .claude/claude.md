@@ -862,21 +862,22 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-05-28 (Sprint 17 Stage 1 complete — `ShellConfig` + `ShellState` singletons + `shell-config.json` wired and verified)
+**Last Updated:** 2026-06-01 (Sprint 17 complete — Unified Shell Surface fully wired, dead code deleted, mango scroller_structs=0 unblocks flush tiling)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–16 complete. Sprint 17 Stage 1 complete: `Services/Shell/ShellConfig.qml` (FileView watcher on `shell-config.json`, hot-reload) and `Services/Shell/ShellState.qml` (per-screen `stateMap`) live alongside the existing DrawerSurface. Current architecture still has separate PanelWindows for bar + 3 edge strips + DrawerSurface; Stages 2–6 progressively migrate them into ONE full-screen PanelWindow per monitor with bar/strips/panels/corners as sibling Items (Caelestia §15.2). See `.claude/ROADMAP.md` Sprint 17 section for stage breakdown.
-**Next Sprint:** Sprint 17 Stage 2 — Sides as Items (`Sides/Strip.qml`, `Sides/SideLoader.qml`, then full `Sides/Bar.qml` migration).
+**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–17 complete. One ShellSurface PanelWindow per monitor (Caelestia §15.2) hosts bar + strips + corner blends + panels as sibling Items in one coordinate space. ShellExclusions reserves `sideSize + outerGap` per active side. Panels mount inside the Strip card via a single Shape that animates between idle (0) / popup (`_popupExtra`) / panel (`_panelSize`) sizes. ShellConfig + ShellState singletons drive everything from `shell-config.json` (hot-reload). All old wrappers (`Modules/Drawer/*`, `Modules/Bar/Bar.qml`, `Modules/ControlCenter/`, `Modules/Launcher/`, old `Dashboard.qml`/`NotificationCenter.qml`) deleted; Dashboard sub-panels migrated to `ShellState.isOpenAnywhere("dashboard")` / `closeAllAcross()`.
+**Next Sprint:** Sprint 18 — Configurable Sides + Widget Registry (extract bar/strip widgets into `Widgets/Bar/*.qml` + `Widgets/Strip/*.qml`, `WidgetRegistry` singleton, `Repeater + DelegateChooser` mounting from `shell-config.json`).
 **Locked architecture decisions (Sprint 17, do not deviate without re-reading `ANALYSIS.md` §15):**
 - One full-screen PanelWindow per monitor (`Variants { model: Quickshell.screens }`) — Caelestia §15.2
 - Bar, edge strips, panels, corner blends = sibling Items in same coord space
-- 4× 1px dedicated PanelWindows per monitor for `exclusiveZone` reservation (conditional on `sides.*.type !== "none"`)
+- 4× dedicated thin PanelWindows per monitor for `exclusiveZone` reservation; `exclusiveZone = sideSize + outerGap` (visible bar/strip is `sideSize`, extra `outerGap` becomes empty space between shell and tiled windows — owned by Quickshell, not MangoWC's `gappoh/gappov`)
 - Input passthrough = `QsWindow.mask` + `Intersection.Xor` (only reliable API)
 - Per-screen state = `stateMap` dict keyed by `screen.name` — Noctalia §15.3
-- Animation = `offsetScale` single property (Caelestia §15.2 lines 2133–2141)
+- Panel anim = single Shape animating `_perp` + `_axis` via Behaviors (popup-becomes-panel pattern); no separate `Panel.qml` mounted in ShellSurface
 - Corner geometry = `Shape { ShapePath { PathCubic } }` (DMS BarCanvas); SDF shader is Sprint 26 stretch
-- Widget mounting = `Repeater + DelegateChooser` keyed by widget ID (Caelestia §12.1)
-- Config schema = `shell-config.json` with per-side `{ type: "bar"|"strip"|"none" }` + zones/icons + perScreen overrides
+- Widget mounting = `Repeater + DelegateChooser` keyed by widget ID (Caelestia §12.1) — Sprint 18 work
+- Config schema = `shell-config.json` with per-side `{ type: "bar"|"strip"|"none" }` + zones/icons + `outerGap` + perScreen overrides
 - Module Builder uses **click-to-assign** not drag-and-drop (Wayland cross-window drag unreliable — `ANALYSIS.md` line 2092)
+**MangoWC scroller tuning (Sprint 17 finding):** `scroller_structs=0` is required for windows to tile flush — the default of 20 reserves 20px on each side of the scroller area independent of `proportion`/`gappoh`. With structs=0 + `gappoh=0`/`gappov=0`, Quickshell's ShellExclusions is the single source of truth for the side gap.
 **Quickshell version:** 0.2.1-6 (0.3.0 released 2026-05-04, pending Arch packaging). `Quickshell.DWL` is not upstream — stays on mmsg -w.
 **Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = mmsg -w (not DWL — DWL is a custom fork). See `.claude/ANALYSIS.md` §2 for full findings, §15 for architecture decisions.

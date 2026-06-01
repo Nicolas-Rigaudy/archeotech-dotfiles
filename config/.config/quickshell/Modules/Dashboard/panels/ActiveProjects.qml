@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 import "../../../Commons" as Commons
-import "../../Drawer" as Drawer
+import "../../../Services/Shell" as ShellServices
 
 Rectangle {
     id: root
@@ -17,9 +17,9 @@ Rectangle {
     Component.onCompleted: _refresh()
 
     Connections {
-        target: Drawer.DrawerVisibilities
-        function onDashboardVisibleChanged() {
-            if (Drawer.DrawerVisibilities.dashboardVisible) root._refresh()
+        target: ShellServices.ShellState
+        function onStateMapChanged() {
+            if (ShellServices.ShellState.isOpenAnywhere("dashboard")) root._refresh()
         }
     }
 
@@ -42,7 +42,7 @@ Rectangle {
             "setsid kitty --directory " + p + " >/dev/null 2>&1 &"
         ]
         launchProc.running = true
-        Drawer.DrawerVisibilities.dashboardVisible = false
+        ShellServices.ShellState.closeAllAcross()
     }
 
     Process {

@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 import "../../../Commons" as Commons
-import "../../Drawer" as Drawer
+import "../../../Services/Shell" as ShellServices
 
 Rectangle {
     id: root
@@ -20,17 +20,20 @@ Rectangle {
 
     Component.onCompleted: _refresh()
 
+    property bool _dashOpen: false
+
     Connections {
-        target: Drawer.DrawerVisibilities
-        function onDashboardVisibleChanged() {
-            if (Drawer.DrawerVisibilities.dashboardVisible) root._refresh()
+        target: ShellServices.ShellState
+        function onStateMapChanged() {
+            root._dashOpen = ShellServices.ShellState.isOpenAnywhere("dashboard")
+            if (root._dashOpen) root._refresh()
         }
     }
 
     Timer {
         interval: 5000
         repeat: true
-        running: Drawer.DrawerVisibilities.dashboardVisible
+        running: root._dashOpen
         onTriggered: root._refresh()
     }
 

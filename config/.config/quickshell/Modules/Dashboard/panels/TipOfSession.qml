@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 import "../../../Commons" as Commons
-import "../../Drawer" as Drawer
+import "../../../Services/Shell" as ShellServices
 
 Rectangle {
     id: root
@@ -31,9 +31,9 @@ Rectangle {
     }
 
     Connections {
-        target: Drawer.DrawerVisibilities
-        function onDashboardVisibleChanged() {
-            if (Drawer.DrawerVisibilities.dashboardVisible) root._pickTip()
+        target: ShellServices.ShellState
+        function onStateMapChanged() {
+            if (ShellServices.ShellState.isOpenAnywhere("dashboard")) root._pickTip()
         }
     }
 

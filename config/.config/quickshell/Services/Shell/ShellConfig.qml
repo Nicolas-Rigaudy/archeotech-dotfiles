@@ -22,6 +22,7 @@ QtObject {
             left:   { type: "strip", size: 10, expanded: 44, icons: ["launcher"] }
         },
         corners: { radius: 12 },
+        outerGap: 6,
         perScreen: {}
     })
 
@@ -77,6 +78,10 @@ QtObject {
         return (data.corners && data.corners.radius !== undefined) ? data.corners.radius : _defaults.corners.radius
     }
 
+    function outerGap() {
+        return (data.outerGap !== undefined) ? data.outerGap : _defaults.outerGap
+    }
+
     property FileView _file: FileView {
         path: StandardPaths.writableLocation(StandardPaths.HomeLocation) + "/.config/quickshell/shell-config.json"
         watchChanges: true
@@ -95,6 +100,7 @@ QtObject {
                 root.data = {
                     sides:     parsed.sides     || root._defaults.sides,
                     corners:   parsed.corners   || root._defaults.corners,
+                    outerGap:  parsed.outerGap  !== undefined ? parsed.outerGap : root._defaults.outerGap,
                     perScreen: parsed.perScreen || {}
                 }
                 root.ready = true
