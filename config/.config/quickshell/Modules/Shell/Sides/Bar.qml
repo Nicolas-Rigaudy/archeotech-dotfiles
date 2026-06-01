@@ -21,15 +21,15 @@ Item {
     required property string side
     required property var screen
 
-    readonly property bool _horizontal: side === "top" || side === "bottom"
+    readonly property bool horizontal: side === "top" || side === "bottom"
     readonly property bool _isTop:      side === "top"
     readonly property bool _isBottom:   side === "bottom"
     readonly property bool _isLeft:     side === "left"
     readonly property bool _isRight:    side === "right"
     readonly property int  thickness:   Commons.Appearance.bar.height
 
-    implicitWidth:  _horizontal ? 0 : thickness
-    implicitHeight: _horizontal ? thickness : 0
+    implicitWidth:  horizontal ? 0 : thickness
+    implicitHeight: horizontal ? thickness : 0
 
     // ── Shared popup state ─────────────────────────────────────────────────────
     property real    _popupAnchorX:   0
@@ -121,226 +121,28 @@ Item {
 
             // ── Horizontal layout (top/bottom) ─────────────────────────────
             RowLayout {
-                visible: bar._horizontal
+                visible: bar.horizontal
                 anchors.fill: parent
                 anchors.leftMargin:  Commons.Appearance.bar.innerPadding
                 anchors.rightMargin: Commons.Appearance.bar.innerPadding
                 spacing: 0
 
-                // ── LEFT: Tags · title · MPRIS ─────────────────────────────────
+                // ── LEFT: Widgets mounted from shell-config.json zone "left" ─
                 RowLayout {
                     Layout.alignment: Qt.AlignVCenter
                     spacing: 0
 
-                    // Tag dots
-                    Row {
-                        spacing: 4
-                        Layout.alignment: Qt.AlignVCenter
-
-                        Repeater {
-                            model: CompositorServices.MangoWC.tagsFor(bar.screen ? bar.screen.name : "")
-                            delegate: Rectangle {
-                                required property var modelData
-                                property bool sel: modelData.selected
-                                property bool occ: modelData.occupied
-                                property bool urg: modelData.urgent
-                                width:  sel ? 22 : (occ ? 8 : 6)
-                                height: 8
-                                radius: Commons.Appearance.radius.pill
-                                anchors.verticalCenter: parent.verticalCenter
-                                color: (urg && !sel) ? Commons.Appearance.colors.red
-                                     : sel ? Commons.Appearance.colors.accent
-                                     : occ ? Commons.Appearance.colors.surface1
-                                     :       Commons.Appearance.colors.surface0
-                                // OutBack: slight mechanical overshoot on size change
-                                Behavior on width {
-                                    NumberAnimation {
-                                        duration: Commons.Appearance.anim.base
-                                        easing.type: Easing.OutBack
-                                        easing.overshoot: 1.2
-                                    }
-                                }
-                                Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: CompositorServices.MangoWC.switchTag(
-                                        bar.screen ? bar.screen.name : "", modelData.num)
-                                }
-                            }
-                        }
-                    }
-
-                    Item { width: 14 }
-
-                    // Window title
-                    Text {
-                        property string raw: CompositorServices.MangoWC.titleFor(bar.screen ? bar.screen.name : "")
-                        text: {
-                            if (raw.includes("Visual Studio Code")) return "󰨞  " + raw.replace(/ - Visual Studio Code$/, "").replace(/^.*\//, "").trim()
-                            if (raw.includes("Zen Browser"))        return "󰈹  " + raw.replace(/ — Zen Browser$/, "").replace(/^\(\d+\) /, "")
-                            if (raw.includes("kitty"))              return "  " + raw.replace(/ - kitty$/, "")
-                            if (raw.includes("fish"))               return "  " + raw.replace(/ - fish$/, "")
-                            return raw
-                        }
-                        visible: raw.length > 0
-                        color: Commons.Appearance.colors.subtext0
-                        font.pixelSize: Commons.Appearance.font.sizeSm
-                        font.family: Commons.Appearance.font.family
-                        elide: Text.ElideRight
-                        Layout.maximumWidth: 200
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    // MPRIS marquee — appears when something is playing
-                    Item {
-                        id: mprisBarItem
-                        Layout.alignment: Qt.AlignVCenter
-                        visible: Persistence.Config.get("bar.modules.music", true)
-
-                        property bool active: MediaServices.MprisService.playing === true
-                        property string displayText: {
-                            if (!MediaServices.MprisService) return ""
-                            var t = MediaServices.MprisService.title  || ""
-                            var a = MediaServices.MprisService.artist || ""
-                            if (t.length > 0 && a.length > 0) return t + "  ·  " + a
-                            if (t.length > 0) return t
-                            return a
-                        }
-
-                        // Animate width 0 ↔ content so the bar never jumps
-                        Layout.maximumWidth: active ? 200 : 0
-                        opacity: active ? 1 : 0
-                        Behavior on Layout.maximumWidth { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
-                        Behavior on opacity             { NumberAnimation { duration: Commons.Appearance.anim.fast } }
-
-                        width: 200
-                        height: Commons.Appearance.bar.height
-                        clip: true
-
-                        // Separator dot
-                        Text {
-                            id: mprisSep
-                            anchors.left: parent.left
-                            anchors.leftMargin: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: "·"
-                            color: Commons.Appearance.colors.surface1
-                            font.pixelSize: Commons.Appearance.font.sizeSm
-                            font.family: Commons.Appearance.font.family
-                        }
-
-                        // Play state icon
-                        Text {
-                            id: mprisIcon
-                            anchors.left: mprisSep.right
-                            anchors.leftMargin: 8
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: MediaServices.MprisService.playing ? "󰝚" : "󰏤"
-                            color: Commons.Appearance.colors.accent
-                            font.pixelSize: 12
-                            font.family: Commons.Appearance.font.family
-                            MouseArea {
-                                anchors.fill: parent
-                                anchors.margins: -4
-                                onClicked: MediaServices.MprisService.togglePlay()
-                            }
-                        }
-
-                        // Scrolling marquee container
-                        Item {
-                            id: marqueeContainer
-                            anchors.left: mprisIcon.right
-                            anchors.leftMargin: 6
-                            anchors.right: parent.right
-                            anchors.rightMargin: 4
-                            anchors.verticalCenter: parent.verticalCenter
-                            height: Commons.Appearance.font.sizeSm + 4
-                            clip: true
-
-                            property real textWidth: marqueeText1.implicitWidth
-                            property bool needsScroll: textWidth > marqueeContainer.width
-                            property real scrollPos: 0
-
-                            property string displayText: mprisBarItem.displayText
-
-                            // Defer start so Text has rendered and implicitWidth is valid
-                            Timer {
-                                id: marqueeStartTimer
-                                interval: 80; repeat: false
-                                onTriggered: {
-                                    marqueeAnim.stop()
-                                    marqueeContainer.scrollPos = 0
-                                    if (marqueeContainer.needsScroll && mprisBarItem.active)
-                                        marqueeAnim.start()
-                                }
-                            }
-
-                            onDisplayTextChanged: marqueeStartTimer.restart()
-                            onNeedsScrollChanged: {
-                                if (needsScroll) marqueeStartTimer.restart()
-                                else { marqueeAnim.stop(); scrollPos = 0 }
-                            }
-
-                            // Also trigger when the item first becomes active
-                            Connections {
-                                target: mprisBarItem
-                                function onActiveChanged() {
-                                    if (mprisBarItem.active) marqueeStartTimer.restart()
-                                    else { marqueeAnim.stop(); marqueeContainer.scrollPos = 0 }
-                                }
-                            }
-
-                            SequentialAnimation {
-                                id: marqueeAnim
-                                loops: Animation.Infinite
-
-                                NumberAnimation {
-                                    target: marqueeContainer; property: "scrollPos"
-                                    from: 0
-                                    to: marqueeContainer.textWidth + 40
-                                    duration: Math.max(5000, (marqueeContainer.textWidth + 40) * 20)
-                                    easing.type: Easing.Linear
-                                }
-                                PauseAnimation { duration: 600 }
-                                ScriptAction { script: marqueeContainer.scrollPos = 0 }
-                                PauseAnimation { duration: 300 }
-                            }
-
-                            // Primary text (leading)
-                            Text {
-                                id: marqueeText1
-                                x: marqueeContainer.needsScroll ? -marqueeContainer.scrollPos : 0
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: mprisBarItem.displayText
-                                color: Commons.Appearance.colors.subtext1
-                                font.pixelSize: Commons.Appearance.font.sizeSm
-                                font.family: Commons.Appearance.font.family
-                                elide: marqueeContainer.needsScroll ? Text.ElideNone : Text.ElideRight
-                                width: marqueeContainer.needsScroll ? implicitWidth : marqueeContainer.width
-                            }
-
-                            // Ghost copy for seamless loop
-                            Text {
-                                x: marqueeText1.x + marqueeContainer.textWidth + 40
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: marqueeContainer.needsScroll
-                                text: mprisBarItem.displayText
-                                color: Commons.Appearance.colors.subtext1
-                                font.pixelSize: Commons.Appearance.font.sizeSm
-                                font.family: Commons.Appearance.font.family
-                            }
-                        }
-
-                        // Hover-only MA — no buttons consumed, so mprisIcon click still works
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            acceptedButtons: Qt.NoButton
-                            onEntered: bar.showPopup(parent, "NOW PLAYING",
-                                MediaServices.MprisService.title  || "—",
-                                MediaServices.MprisService.artist || "",
-                                "Click icon to play / pause")
-                            onExited: bar.hidePopup(parent)
+                    Repeater {
+                        id: _leftZone
+                        model: ShellServices.ShellConfig.zoneWidgets(bar.side, "left",
+                            bar.screen ? bar.screen.name : "")
+                        delegate: BarWidgetLoader {
+                            required property string modelData
+                            required property int index
+                            widgetId: modelData
+                            barRoot: bar
+                            isFirst: index === 0
+                            isLast:  index === _leftZone.count - 1
                         }
                     }
                 }
@@ -739,7 +541,7 @@ Item {
             // No tags/title/MPRIS/clock — S18 widget extraction will give each
             // widget proper orientation awareness. Hover popups are skipped.
             Column {
-                visible: !bar._horizontal
+                visible: !bar.horizontal
                 anchors.centerIn: parent
                 spacing: 12
 
@@ -862,7 +664,7 @@ Item {
             // Clock absolutely centered in the pill — unaffected by left/right section widths
             Text {
                 id: centerClock
-                visible: bar._horizontal
+                visible: bar.horizontal
                 anchors.centerIn: parent
                 z: 1
                 textFormat: Text.RichText
@@ -886,7 +688,7 @@ Item {
 
             // Transparent hover region over the clock — opens calendar popup
             MouseArea {
-                visible: bar._horizontal
+                visible: bar.horizontal
                 anchors.centerIn: parent
                 width: centerClock.implicitWidth + 24
                 height: parent.height
