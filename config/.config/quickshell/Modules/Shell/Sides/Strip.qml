@@ -108,13 +108,11 @@ Item {
         onTriggered: strip._hov = false
     }
 
-    function _glyph(id) {
-        if (id === "cc")        return "󰒓"
-        if (id === "nc")        return "󰂚"
-        if (id === "launcher")  return "󱓞"
-        if (id === "dashboard") return "󰕮"
-        return "?"
-    }
+    // Called by strip icons via stripRoot — keeps the popup card open
+    // when the cursor crosses from the strip body onto an icon (and
+    // back), even when child MouseAreas shadow the strip-level hover.
+    function _iconHoverEnter() { _iconHoverCount++;                       _updateHover() }
+    function _iconHoverExit()  { _iconHoverCount = Math.max(0, _iconHoverCount - 1); _updateHover() }
 
     // ── Always-visible strip body ─────────────────────────────────────────────
     Rectangle {
@@ -254,18 +252,16 @@ Item {
             Repeater {
                 model: strip._icons
                 delegate: Item {
-                    id: iconItem
+                    id: iconSlot
                     required property string modelData
                     required property int index
-                    readonly property string iconId: modelData
-                    readonly property bool _active: ShellServices.ShellState.isOpen(strip._screenName, iconId)
+
+                    // Cluster icons around the bodyAxis-wide center so they
+                    // stay put when iconArea grows for the panel.
                     readonly property int  _n:       strip._icons.length
                     readonly property real _axisLen: strip._horizontal ? iconArea.width : iconArea.height
-                    // Cluster around the bodyAxis-wide center so icons stay
-                    // put when iconArea grows for the panel.
                     readonly property real _cluster: (_axisLen - strip._bodyAxis) / 2
                     readonly property real _center:  _cluster + strip._bodyAxis * (index + 0.5) / Math.max(1, _n)
-                    property bool _hovered: false
 
                     readonly property int _hitLong:  48
                     readonly property int _hitShort: strip._bodyDepth
@@ -274,44 +270,10 @@ Item {
                     x: strip._horizontal ? _center - width  / 2 : (iconArea.width  - width)  / 2
                     y: strip._horizontal ? (iconArea.height - height) / 2 : _center - height / 2
 
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width:  strip._iconSize + 8
-                            height: strip._iconSize + 8
-                            radius: Commons.Appearance.radius.md
-                            color: iconItem._active  ? Commons.Appearance.colors.accentAlpha
-                                 : iconItem._hovered ? Commons.Appearance.colors.surface0Alpha
-                                 :                     "transparent"
-                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: strip._glyph(iconItem.iconId)
-                            color: iconItem._active || iconItem._hovered
-                                ? Commons.Appearance.colors.accent
-                                : Commons.Appearance.colors.subtext1
-                            font.pixelSize: 22
-                            font.family: Commons.Appearance.font.family
-                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onEntered: {
-                                iconItem._hovered = true
-                                strip._iconHoverCount++
-                                strip._updateHover()
-                            }
-                            onExited: {
-                                iconItem._hovered = false
-                                strip._iconHoverCount = Math.max(0, strip._iconHoverCount - 1)
-                                strip._updateHover()
-                            }
-                            onClicked: ShellServices.ShellState.toggle(strip._screenName, iconItem.iconId)
-                        }
+                    StripWidgetLoader {
+                        anchors.fill: parent
+                        widgetId: iconSlot.modelData
+                        stripRoot: strip
                     }
                 }
             }
