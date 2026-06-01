@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import "../Commons" as Commons
+import ".." as Commons
 
 Item {
     property bool checked: false

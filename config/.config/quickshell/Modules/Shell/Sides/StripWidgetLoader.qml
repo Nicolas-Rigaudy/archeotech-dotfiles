@@ -2,7 +2,7 @@ import QtQuick
 import "../../../Services/Shell" as ShellServices
 
 // Async loader for a single strip icon. Mirrors BarWidgetLoader but routes
-// through WidgetRegistry.stripWidgetSource and injects the strip's stripRoot
+// through WidgetRegistry.stripWidgetFile and injects the strip's stripRoot
 // API into the icon.
 //
 // stripRoot contract (Sprint 18) — every strip icon can read these from
@@ -26,16 +26,24 @@ Loader {
 
     asynchronous: true
     visible: status === Loader.Ready
-    source: ShellServices.WidgetRegistry.stripWidgetSource(widgetId)
+
+    function _resolve() {
+        var file = ShellServices.WidgetRegistry.stripWidgetFile(widgetId)
+        if (!file) {
+            source = ""
+            return
+        }
+        loader.setSource("../../../Widgets/Strip/" + file, {
+            stripRoot: loader.stripRoot,
+            widgetId:  loader.widgetId
+        })
+    }
+
+    onWidgetIdChanged: _resolve()
+    Component.onCompleted: _resolve()
 
     onStatusChanged: {
         if (status === Loader.Error)
-            console.warn("[StripWidgetLoader] failed to load", widgetId, "from", source)
-    }
-
-    onLoaded: {
-        if (!item) return
-        if ("stripRoot" in item) item.stripRoot = loader.stripRoot
-        if ("widgetId"  in item) item.widgetId  = loader.widgetId
+            console.warn("[StripWidgetLoader] failed to load", widgetId)
     }
 }

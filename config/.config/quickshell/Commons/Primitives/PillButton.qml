@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import "../Commons" as Commons
+import ".." as Commons
 
 Button {
     property bool   active: false

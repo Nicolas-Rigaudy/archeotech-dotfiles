@@ -1,5 +1,5 @@
 import QtQuick
-import "../Commons" as Commons
+import ".." as Commons
 
 Text {
     property string label: ""
