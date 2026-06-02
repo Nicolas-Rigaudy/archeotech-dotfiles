@@ -46,5 +46,21 @@
     "border": "#c6a0f6",
     "selected": "#494d64",
     "urgent": "#ed8796"
+  },
+  "gtk": {
+    "theme": "catppuccin-macchiato-mauve-standard+default",
+    "icon":  "Papirus-Dark",
+    "cursor":"catppuccin-macchiato-mauve-cursors"
+  },
+  "vscode": {
+    "theme": "Catppuccin Macchiato",
+    "icon":  "catppuccin-macchiato"
+  },
+  "obsidian": {
+    "css_theme": "AnuPpuccin"
+  },
+  "card": {
+    "display": "Macchiato",
+    "accents": ["#c6a0f6", "#8aadf4", "#a6da95", "#eed49f"]
   }
 }

@@ -46,5 +46,21 @@
     "border": "#88c0d0",
     "selected": "#434c5e",
     "urgent": "#bf616a"
+  },
+  "gtk": {
+    "theme": "Adwaita-dark",
+    "icon":  "Papirus-Dark",
+    "cursor":"catppuccin-macchiato-mauve-cursors"
+  },
+  "vscode": {
+    "theme": "Nord",
+    "icon":  "catppuccin-macchiato"
+  },
+  "obsidian": {
+    "css_theme": "Nord"
+  },
+  "card": {
+    "display": "Nord",
+    "accents": ["#88c0d0", "#5e81ac", "#a3be8c", "#ebcb8b"]
   }
 }

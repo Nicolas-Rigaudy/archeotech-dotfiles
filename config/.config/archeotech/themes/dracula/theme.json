@@ -46,5 +46,21 @@
     "border": "#bd93f9",
     "selected": "#44475a",
     "urgent": "#ff5555"
+  },
+  "gtk": {
+    "theme": "Adwaita-dark",
+    "icon":  "Papirus-Dark",
+    "cursor":"catppuccin-macchiato-mauve-cursors"
+  },
+  "vscode": {
+    "theme": "Dracula Theme Soft",
+    "icon":  "catppuccin-macchiato"
+  },
+  "obsidian": {
+    "css_theme": "Dracula"
+  },
+  "card": {
+    "display": "Dracula",
+    "accents": ["#bd93f9", "#8be9fd", "#50fa7b", "#ff79c6"]
   }
 }

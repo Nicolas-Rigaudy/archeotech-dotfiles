@@ -46,5 +46,21 @@
     "border": "#d8d8d8",
     "selected": "#303030",
     "urgent": "#a0a0a0"
+  },
+  "gtk": {
+    "theme": "Adwaita-dark",
+    "icon":  "Papirus-Dark",
+    "cursor":"catppuccin-macchiato-mauve-cursors"
+  },
+  "vscode": {
+    "theme": "Default Dark Modern",
+    "icon":  "catppuccin-macchiato"
+  },
+  "obsidian": {
+    "css_theme": ""
+  },
+  "card": {
+    "display": "Monochrome",
+    "accents": ["#d8d8d8", "#c8c8c8", "#a8a8a8", "#888888"]
   }
 }

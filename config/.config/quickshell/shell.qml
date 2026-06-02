@@ -96,6 +96,13 @@ ShellRoot {
         }
     }
 
+    IpcHandler {
+        target: "wallpaper"
+        function toggle() { ShellServices.ShellState.toggleGlobal("wallpaper") }
+        function open()   { ShellServices.ShellState.openGlobal("wallpaper")  }
+        function close()  { ShellServices.ShellState.closeAllAcross()         }
+    }
+
     // ── Mutual exclusion: panels ↔ settings ───────────────────────────────────
     Connections {
         target: ShellServices.ShellState

@@ -34,7 +34,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + Shift + N` | Open Navi | Interactive command cheatsheets |
 | `Super + ,` | Open control center (Quickshell) | Display, audio, network, power, wallpaper, bluetooth, disk |
 | `Super + Ctrl + P` | Open project jump (rofi) | Lists git repos in ~/Projects (personal) and ~/Documents/repos (work), opens VSCode + kitty |
-| `Super + W` | Open wallpaper picker (rofi grid) | Thumbnail grid — select wallpaper or toggle logo (arch / rebel / imperial) |
+| `Super + W` | Open wallpaper picker (Quickshell panel) | Bottom-strip panel — horizontal thumbnail carousel + 4 logo tiles + palette icon shortcut to theme picker |
 | `Super + Shift + W` | Toggle logo overlay | Cycles last active logo on/off on current wallpaper |
 
 ---

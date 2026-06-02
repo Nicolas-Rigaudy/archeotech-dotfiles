@@ -1201,4 +1201,39 @@ When documenting new issues, use this format:
 
 ---
 
-**Last Updated:** 2026-05-04
+### Qt 6.11.0 → 6.11.1 system update breaks Quickshell: "Type X unavailable" cascade
+
+**Symptom (2026-06-02, mid-Sprint 19):** After `pacman -Syu` brought Qt to 6.11.1, Quickshell logs:
+
+```
+WARN: Quickshell was built against Qt 6.11.0 but the system has updated to Qt 6.11.1 without rebuilding the package.
+ERROR: Failed to load configuration
+ERROR:   caused by @shell.qml[167:5]: Type Shell.ShellSurface unavailable
+ERROR:   caused by @Modules/Shell/ShellSurface.qml[97:9]: Type Sides.SideLoader unavailable
+ERROR:   caused by @Modules/Shell/Sides/SideLoader.qml[35:9]: Type Strip unavailable
+ERROR:   caused by @Modules/Shell/Sides/Strip.qml[282:1]: Expected token `}'
+```
+
+Bar comes back after fixing Strip.qml's brace, but strip popups stay empty:
+
+```
+WARN scene: @Widgets/Strip/CcIcon.qml[4:1]: StripIconBase is not a type
+WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property widgetId was not initialized
+```
+
+**Cause:** Qt 6.11.1 became stricter on two latent issues that 6.11.0 silently tolerated:
+1. `Strip.qml` was missing the closing `}` for its `Shape { id: card }` block — never caught by the older parser.
+2. ListModel role auto-binding no longer fills *inherited* required properties on a delegate. Bar.qml's pattern `delegate: BarWidgetLoader { required property string widgetId }` (re-declaring the inherited `widgetId`) used to work in 6.11.0; in 6.11.1 the re-declared property shadows the inherited one and only the inherited slot ends up set, so `widgetId` reads empty.
+3. Files loaded dynamically via `Loader.setSource()` (StripWidgetLoader does this for the strip icons) no longer auto-import their own directory. Sprint 18 deleted `qmldir` files relying on directory-as-module resolution, which still worked for static imports. Dynamic-load lost it.
+
+**Fixes:**
+1. Strip.qml: add the missing `}` to close `Shape { id: card }` (between iconArea's close and the outer Item's close).
+2. Bar.qml: change all three Repeater delegates from `required property string widgetId` to `required property var model` + explicit `widgetId: model.widgetId`. Now the inherited slot is set directly via binding.
+3. Restore `Widgets/Strip/qmldir` with `StripIconBase 1.0 StripIconBase.qml` so dynamically-loaded sibling types resolve.
+4. **Also recommended:** `paru -S quickshell` to rebuild the package against current Qt — eliminates the version-mismatch warning at the top of the log.
+
+**Generalised lesson:** Qt point releases (e.g. 6.x.0 → 6.x.1) can tighten QML parsing rules. When you see a cascade of "Type X unavailable" errors, the root cause is usually the *last* line in the cascade — a parse error in a leaf file. Always also rebuild Quickshell against the new Qt version (`paru -S quickshell`); the explicit "must be rebuilt" warning is real.
+
+---
+
+**Last Updated:** 2026-06-02

@@ -1146,5 +1146,80 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
+### [2026-06-02] theme-switch.sh → theme-switch.py (Caelestia pattern)
+
+**Context:** S19 needed to extend the theme switcher from 5 to 8 targets (adding GTK, VSCode, Obsidian) with idempotent atomic writes and stampede prevention (Super+W can be hit repeatedly). The existing bash script had grown awkward — regex substitutions across multiple config files, no locking, no atomic writes (a torn `theme.json` would crash Quickshell mid-read).
+
+**Options Considered:**
+1. **Extend bash + add target-handling case statement** — minimal change, keeps shell-only dependency.
+   - Pros: no new language.
+   - Cons: bash atomic writes are awkward (`mktemp` + `mv`, error handling clunky); `flock` is fine but no per-target failure isolation.
+2. **Python rewrite, Caelestia-style** — temp+rename + `fcntl` lock + template registry + per-target functions.
+   - Pros: per-target `try/except` isolates failures; atomic write helper is 8 lines; `fcntl.flock(LOCK_EX | LOCK_NB)` is idiomatic; template substitution is a one-liner with `re.sub`; readable per-app appliers.
+   - Cons: introduces Python as a dependency (already present on every Arch box).
+3. **Hybrid: bash entry → Python core** (existing pattern in the old script).
+   - Pros: keeps the shebang familiar.
+   - Cons: marginal — just hides the implementation language one layer down.
+
+**Decision:** Option 2. `scripts/theme-switch.py` does the work; `scripts/theme-switch.sh` is a 5-line bash exec into the Python script so the existing `~/.local/bin/theme-switch.sh` symlink keeps working.
+
+**Rationale:** Caelestia's CLI proved this pattern out at scale (~17 app templates, postHook, lock). Lifting the structure to our smaller surface gets us the same robustness for free. `atomic_write` writes through symlinks via `path.resolve()` so the stow-managed `~/.config/starship.toml` doesn't get clobbered. Template files live in `scripts/themes/templates/` with `{{key}}` placeholders substituted from each theme.json — single source of truth (`theme.json`), no per-theme template duplication.
+
+**Trade-offs Accepted:** Python startup overhead (~30 ms) is fine for a manually-triggered switch. The CLI is no longer source-able as a shell function — not needed.
+
+---
+
+### [2026-06-02] Wallpaper picker as first-class strip panel, not Settings pane
+
+**Context:** S19 redesigned the AppearancePane theme picker and needed to decide where the wallpaper selector lives. Research confirmed Noctalia treats the wallpaper picker as its own panel (sibling to CC/NC/Launcher), DMS makes it a Settings tab. Both work; the question is which fits Archeotech's grammar.
+
+**Options Considered:**
+1. **Settings pane** (DMS pattern) — tab in the Settings window.
+2. **Strip-mounted panel** (Noctalia pattern) — strip icon `wallpaper` toggles a sibling panel.
+3. **Launcher mode** (Caelestia pattern) — type a prefix in the launcher to enter wallpaper-pick mode.
+4. **Keep existing rofi script** — `Super+W` keeps invoking `scripts/wallpaper-picker.sh`.
+
+**Decision:** Option 2. New panel registered as `wallpaper` in `PanelRegistry`, mounted on the bottom strip alongside `dashboard`. `Super+W` rebound from the rofi script to `qs ipc call wallpaper toggle`. Rofi script kept on disk (legacy, no longer wired to a keybind).
+
+**Rationale:** Wallpaper picking is a frequent action that wants anchor-to-bar + per-monitor positioning + keyboard grid navigation — Settings is a long-lived window, wrong feel. Logo selector lives in the same panel because it's contextually tied to the wallpaper (already true for the rofi picker). The palette icon in the panel header (`Commons.State.settingsOpenPane = "appearance"`) lets users jump to theme picking when that's what they actually want — gives one-click bridge without merging the surfaces.
+
+**Trade-offs Accepted:** Bottom-strip panel grows to full screen axis when active (Sprint 17 architecture) — visually too imposing for a wallpaper shelf. Sprint 20 addresses this with the `axisSize` field. For now, panel height capped at 380 px keeps it tolerable.
+
+---
+
+### [2026-06-02] Wallpaper picker carousel: horizontal ListView over vertical GridView
+
+**Context:** First wallpaper-panel design was a 2-column `GridView` scrolling vertically — felt like a heavy dialog, not the lightweight shelf the user expected. Caelestia's wallpaper picker uses a vertically-scrolling grid, but their panel is fixed-width 700-ish px (not full-axis). Ours is full-axis bottom strip.
+
+**Options Considered:**
+1. **Vertical GridView** — current Caelestia clone.
+2. **Horizontal ListView** — one row of thumbnails, scroll left/right.
+3. **Adaptive** — vertical when narrow, horizontal when wide.
+
+**Decision:** Option 2. Single horizontal row, 3:2 cells, height-driven sizing (`cellH = height - 14`, `cellW = cellH × 1.5`). Vertical scroll-wheel translated to horizontal flick via `WheelHandler`. Aim: ~5 cells visible at once.
+
+**Rationale:** Full-axis bottom panel + vertical grid = staircase of thumbnails dominating the screen. Horizontal carousel matches the form factor (panel is much wider than tall), feels like a dock/shelf, and stays scannable. `WheelHandler` translation is needed because `ListView.orientation: Horizontal` doesn't natively respond to vertical wheel events.
+
+**Trade-offs Accepted:** Cell sizing is height-driven, so the user-requested "more visible" needs panel-height adjustment, not column count. Sprint 20's `axisSize` field will help — a non-full-axis panel can be narrower, with cells sized accordingly.
+
+---
+
+### [2026-06-02] Reuse original logo SVGs via FileView + in-memory substitution
+
+**Context:** The wallpaper panel's logo selector needs to render previews of the three logo SVGs (`arch-logo.svg` / `rebel-logo.svg` / `imperial-logo.svg`). The originals have `LOGO_COLOR` and `LOGO_OPACITY` placeholders that `wallpaper-set.sh` substitutes at composition time — they're not directly renderable.
+
+**Options Considered:**
+1. **Pre-generate `*-logo-preview.svg`** with hardcoded colors, commit alongside originals.
+2. **Read original SVGs via `FileView`, substitute in-memory in QML, feed Image via `data:image/svg+xml` URI.**
+3. **Reuse the cached PNGs** that `wallpaper-picker.sh` generates at `~/.cache/wallpaper/thumbs/logo-preview-*.png`.
+
+**Decision:** Option 2. Three `FileView`s read the originals; `_svgDataUri(content)` does `replace(/LOGO_COLOR/g, "#cad3f5").replace(/LOGO_OPACITY/g, "1.0")` and returns `data:image/svg+xml;utf8,...`.
+
+**Rationale:** Single source of truth — when the SVG asset is updated, the preview tracks automatically. No commit churn from preview files. The `data:` URI works natively with `qt6-svg`. The cached-PNG approach (option 3) is fast but tied to the rofi script's lifecycle — would break the day we delete that script.
+
+**Trade-offs Accepted:** Each FileView reads ~1-5 KB; the substitution + URI encode runs once per file. Negligible.
+
+---
+
 **Last Updated:** 2026-06-02
-**Total Decisions:** 56
+**Total Decisions:** 60

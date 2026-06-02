@@ -46,5 +46,21 @@
     "border": "#bb9af7",
     "selected": "#3b4261",
     "urgent": "#f7768e"
+  },
+  "gtk": {
+    "theme": "Adwaita-dark",
+    "icon":  "Papirus-Dark",
+    "cursor":"catppuccin-macchiato-mauve-cursors"
+  },
+  "vscode": {
+    "theme": "Tokyo Night",
+    "icon":  "catppuccin-macchiato"
+  },
+  "obsidian": {
+    "css_theme": "Tokyo Night"
+  },
+  "card": {
+    "display": "Tokyo Night",
+    "accents": ["#bb9af7", "#7aa2f7", "#9ece6a", "#e0af68"]
   }
 }

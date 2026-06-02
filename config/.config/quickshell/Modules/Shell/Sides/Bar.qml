@@ -164,11 +164,15 @@ Item {
                     id: _leftZone
                     model: _leftModel
                     delegate: BarWidgetLoader {
-                        required property string widgetId
+                        // Qt 6.11.1 stopped auto-binding ListModel roles to
+                        // a delegate's *inherited* required properties; we
+                        // pass widgetId explicitly via `model.widgetId`.
+                        required property var model
                         required property int index
-                        barRoot: bar
-                        isFirst: index === 0
-                        isLast:  index === _leftZone.count - 1
+                        widgetId: model ? model.widgetId : ""
+                        barRoot:  bar
+                        isFirst:  index === 0
+                        isLast:   index === _leftZone.count - 1
                     }
                 }
             }
@@ -183,11 +187,12 @@ Item {
                     id: _rightZone
                     model: _rightModel
                     delegate: BarWidgetLoader {
-                        required property string widgetId
+                        required property var model
                         required property int index
-                        barRoot: bar
-                        isFirst: index === 0
-                        isLast:  index === _rightZone.count - 1
+                        widgetId: model ? model.widgetId : ""
+                        barRoot:  bar
+                        isFirst:  index === 0
+                        isLast:   index === _rightZone.count - 1
                     }
                 }
             }
@@ -204,11 +209,12 @@ Item {
                 id: _centerZone
                 model: _centerModel
                 delegate: BarWidgetLoader {
-                    required property string widgetId
+                    required property var model
                     required property int index
-                    barRoot: bar
-                    isFirst: index === 0
-                    isLast:  index === _centerZone.count - 1
+                    widgetId: model ? model.widgetId : ""
+                    barRoot:  bar
+                    isFirst:  index === 0
+                    isLast:   index === _centerZone.count - 1
                 }
             }
         }

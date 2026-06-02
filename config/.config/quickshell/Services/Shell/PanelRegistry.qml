@@ -33,6 +33,11 @@ QtObject {
             content: _dashboardComp,
             side:    "bottom",
             size:    600
+        },
+        wallpaper: {
+            content: _wallpaperComp,
+            side:    "bottom",
+            size:    380
         }
     })
 
@@ -62,4 +67,5 @@ QtObject {
     property Component _ncComp:        Component { Content.NotificationCenter {} }
     property Component _launcherComp:  Component { Content.Launcher           {} }
     property Component _dashboardComp: Component { Content.Dashboard          {} }
+    property Component _wallpaperComp: Component { Content.WallpaperPicker     {} }
 }

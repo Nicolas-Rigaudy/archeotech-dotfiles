@@ -29,6 +29,10 @@
 # Logs
 *.log
 
+# Python bytecode caches
+__pycache__/
+*.pyc
+
 # OS-specific
 Thumbs.db
 desktop.ini

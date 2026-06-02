@@ -15,7 +15,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 3. **Visual builder** — drag-and-drop edit mode wires any module to any trigger (edge hover, bar icon, keyboard, desktop widget). Config persists to `DrawerConfig.json`, hot-reloads instantly.
 4. **Compositor abstraction** — `CompositorService` facade means one codebase runs on MangoWC, Hyprland, and Niri.
 
-**Target release:** v1.0 after Sprint 22 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
+**Target release:** v1.0 after Sprint 25 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
 
 ---
 
@@ -42,7 +42,8 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 | 15 | Drawer Surface — DrawerConfig.json (edge→panel mapping); DrawerVisibilities singleton (mutual exclusion); DrawerSurface single PanelWindow (CC/NC/Launcher/Dashboard); offsetScale bidirectional animation; per-screen edge hover zones (right→CC, top-right→NC, bottom→Dashboard); mango blur rule for archeotech-drawer | 2026-05-21 |
 | 16 | Perimeter frame layout — bar flush with top (marginTop:0), edge strips exclusiveZone:10 (equal 4px gaps all sides via gappoh=4/gappov=4), 10→56px dynamic strips with hover+tap, bar radius:0 (flat until Sprint 18 goth corners) | 2026-05-27 |
 | 17 | Unified Shell Surface — one ShellSurface PanelWindow per monitor + ShellExclusions (Caelestia §15.2); ShellConfig/ShellState singletons w/ per-screen stateMap; Sides as Items (Bar/Strip/SideLoader); 4× ShapePath CornerBlends; Panels as content modules (CC/NC/Launcher/Dashboard) mounted inside Strip popup card; popup-becomes-panel animation; outerGap config field (exclusiveZone=sideSize+outerGap); deleted Modules/Drawer + old Bar/CC/NC/Launcher/Dashboard wrappers (-3700 LOC); fixed mango scroller_structs=0 to let windows tile flush | 2026-06-01 |
-| 18 | Configurable Sides + Widget Registry — Noctalia filename-convention registry (drop a file under `Widgets/Bar/` or `Widgets/Strip/`, add id to `shell-config.json` zone, done); async `BarWidgetLoader`/`StripWidgetLoader` with `setSource(path, props)` Noctalia pattern; formalized `barRoot`/`stripRoot` context APIs; primitives moved to `Commons/Primitives/`; HoverCard/CalendarPopup/WifiPopup/BtPopup extracted; ClockWidget + 12 bar widgets + 4 strip icons over `StripIconBase`; stable ListModel diff (HyprPanel preserve-delegates); `plugin:<id>` namespacing reserved for S20; Bar.qml 1537→299 LOC; `docs/WIDGET_API.md` written | 2026-06-02 |
+| 18 | Configurable Sides + Widget Registry — Noctalia filename-convention registry (drop a file under `Widgets/Bar/` or `Widgets/Strip/`, add id to `shell-config.json` zone, done); async `BarWidgetLoader`/`StripWidgetLoader` with `setSource(path, props)` Noctalia pattern; formalized `barRoot`/`stripRoot` context APIs; primitives moved to `Commons/Primitives/`; HoverCard/CalendarPopup/WifiPopup/BtPopup extracted; ClockWidget + 12 bar widgets + 4 strip icons over `StripIconBase`; stable ListModel diff (HyprPanel preserve-delegates); `plugin:<id>` namespacing reserved for S21; Bar.qml 1537→299 LOC; `docs/WIDGET_API.md` written | 2026-06-02 |
+| 19 | System-wide theme switcher + WallpaperPicker — `scripts/theme-switch.py` rewrite (Caelestia pattern: atomic temp+rename, `fcntl` lock, template registry, failure-isolated appliers across 8 targets — Quickshell/kitty/mango/rofi/starship/GTK/VSCode/Obsidian); refresh via SIGUSR1/`gsettings`/`mmsg`/`jq`; `theme.json` schema extended with `gtk`/`vscode`/`obsidian`/`card` blocks across 7 themes; AppearancePane redesigned as DMS-style card grid (display name + 4-color accent swatch row, scale 1.03 hover, accent border on active); new WallpaperPicker first-class panel on bottom strip (replaces rofi picker, `Super+W` rebound to `qs ipc call wallpaper toggle`) — combined header row (title + 4 logo tiles centered + items count + palette button), horizontal-scrolling carousel of 3:2 thumbnails with `OpacityMask` rounded corners and `WheelHandler` for vertical-wheel→horizontal-flick; logo selector reuses existing `scripts/assets/*-logo.svg` via `FileView` + in-memory LOGO_COLOR substitution → data URI (no preview duplicates); rofi `theme.rasi` split to `@import "colors.rasi"`; `docs/THEME_SPEC.md` written; Qt 6.11.1 surfaced two latent issues fixed in passing — missing `}` in Strip.qml (Shape block) and ListModel-role auto-binding to inherited required properties broke (now explicit `widgetId: model.widgetId` + restored `qmldir` for `Widgets/Strip/`) | 2026-06-02 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -54,45 +55,76 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Upcoming Sprints
 
-### Sprint 19 — Full System-Wide Theme Switcher ← NEXT
+### Sprint 20 — Panel Redesign & Polish ← NEXT
 
-**Goal:** One `theme-switch.sh` invocation changes every app simultaneously. Quickshell already hot-reloads; this sprint wires in the rest. Also: redesign the theme picker UI — fluid card/swatch grid with wallpaper thumbnail and avatar logo preview, inspired by caelestia-dots / end-4 style.
+**Goal:** Convert strip-mounted panels from full-axis bars into compact, Caelestia-style popups. Every panel gets a density + hierarchy + empty-state review. Cross-repo source-inspection (Caelestia / Noctalia / DMS / end-4) drives the new patterns.
 
-**Architecture note:** Theme tokens must be **layout-agnostic** — no hardcoded assumptions about which side has a bar or strip. Themes provide colors, fonts, radii; the layout is controlled by `shell-config.json` (S17/S18). The theme picker overlay (`Super+Shift+T`) is an Item inside `ShellSurface`, not a separate PanelWindow.
+**Architectural change** — current behaviour: when a strip icon is active, the strip card grows to the full screen axis (`Strip.qml`'s `_axisTarget = _horizontal ? width : height`). New behaviour: each panel declares its own `axisSize` in `PanelRegistry`, the strip card grows only that far, and the card anchors near the icon rather than centering across the strip.
 
-**Layers to add (MangoWC + Quickshell + Kitty already done in Sprint 12/13):**
+```qml
+// PanelRegistry — new shape (axisSize joins the existing size + side):
+cc:        { content: ..., side: "right",  size: 320, axisSize: 440 }
+nc:        { content: ..., side: "right",  size: 320, axisSize: "auto" }   // dynamic
+launcher:  { content: ..., side: "left",   size: 600, axisSize: 440 }
+dashboard: { content: ..., side: "bottom", size: 600, axisSize: 920 }
+wallpaper: { content: ..., side: "bottom", size: 380, axisSize: 1280 }
+```
 
-| Layer | Mechanism |
-|-------|-----------|
-| Starship | Config symlink swap (`~/.config/starship.toml` → `themes/<name>/starship.toml`) |
-| Rofi | rasi variable file swap (`~/.config/rofi/colors.rasi` → per-theme) |
-| GTK apps | `gsettings set org.gnome.desktop.interface` (gtk-theme + icon-theme + cursor-theme) |
-| VSCode | `jq` patch on `~/.config/Code/User/settings.json` (`workbench.colorTheme`) |
-| Obsidian | `jq` patch on vault `.obsidian/appearance.json` (`cssTheme`, `baseFontSize`) |
-| Zen Browser | CSS file swap (`userChrome.css` → per-theme variant, best effort) |
-| Wallpaper | `awww` transition to theme wallpaper family |
-| swaylock | Config patch (`~/.config/swaylock/config`, bg tint) |
+`Strip.qml`'s `_axisTarget` becomes `Math.max(activeMeta.axisSize, _bodyAxis + 2 * _r)`; card x/y math anchors near the icon's screen position (preserves popup-→-panel continuity).
 
-**Theme picker UI redesign:**
-- Replace the current radio button list with a fluid card grid (2-3 cols) — each card shows: wallpaper thumbnail, theme name, accent color swatch strip
-- Avatar/logo picker: per-theme logo option (raven sigil, mech crosshair, etc.) shown in card; click to override independently
-- Animated transition between selected card (scale + border highlight)
-- Wallpaper picker: file browser row below the cards, or a separate tab in AppearancePane
-- Reference: caelestia-dots AppearancePage, end-4 quickshell theme overlay
+**Per-panel work:**
+
+- **Launcher** — currently spans the full screen height with vast dead space and no shortcuts to most-used apps.
+  - Shrink to ~600×440.
+  - Add a "Recents" / "Most Used" row at the top (frecency already cached in `~/.cache/qs-launcher-usage`).
+  - Tighter app grid; possibly category chips.
+  - Reference: caelestia launcher, end-4 sidebar launcher, Noctalia app grid.
+
+- **Control Center** — currently bloated; mixes fast toggles with long-form settings.
+  - Strip down to quick-access only: WiFi · Bluetooth · audio sink · brightness · volume · MPRIS · battery summary · power actions.
+  - Move long settings out (display layout, night light, power profile, audio profile picker) → Settings → respective panes (Sprint 23 then absorbs them).
+  - Reference: caelestia CC (collapsible sections), Noctalia compact CC.
+
+- **Notifications Center** — currently empty space dominates when only a few notifications are present.
+  - Dynamic height: `axisSize` binds to `headerH + notificationsH + footerH`, capped at a max.
+  - Empty-state component with subtle icon + concise copy.
+  - Group by app, optional collapsibility per group.
+  - Reference: end-4 notifications.
+
+- **Dashboard** — density review; reflow on narrower configurations.
+
+- **Wallpaper Picker** — already compact (Sprint 19). Verify it still behaves with the new `axisSize` field.
+
+**Cross-panel polish:**
+- Animation tokens: ensure consistent enter/exit (200–240 ms, `OutCubic`) across every panel.
+- Spacing tokens applied uniformly via `Commons.Appearance.spacing.*`.
+- Empty-state styling pattern shared between NC + Launcher + future "no devices" cases.
+- Header layout consistency: title-left + actions-right (matches new WallpaperPicker).
 
 **Checklist:**
-- [ ] `scripts/theme-switch.sh` extended — Starship symlink, rofi rasi swap, `gsettings`, VSCode `jq` patch, Obsidian `jq` patch, Zen CSS swap, wallpaper, swaylock
-- [ ] Per-theme starship config stubs in `themes/<name>/starship.toml`
-- [ ] Per-theme rofi colors stub in `themes/<name>/rofi-colors.rasi`
-- [ ] AppearancePane card grid redesign — wallpaper thumbnail + accent swatches per card
-- [ ] Wallpaper picker (file row or sub-tab) wired to `awww`
-- [ ] Per-theme logo/avatar field in `theme.json`, picker in card
-- [ ] `Super+Shift+T` → theme picker overlay as Item inside ShellSurface (not a separate PanelWindow)
-- [ ] `docs/THEME_SPEC.md` — complete theme folder structure, all required + optional fields, preview thumbnail spec (moved from old Sprint 17)
+- [ ] `PanelRegistry` — add `axisSize` field (numeric or `"auto"` for dynamic)
+- [ ] `Strip.qml` — axis target = panel-defined, not full screen
+- [ ] `Strip.qml` — card position math anchors near icon (not centered across strip)
+- [ ] `Launcher` — compact layout + recents/most-used row
+- [ ] `Control Center` — trim to quick-access; migrate long settings to Settings panes
+- [ ] `Notifications Center` — `axisSize: "auto"` bound to notifications count, animated
+- [ ] `Dashboard` — density review pass
+- [ ] Empty-state component (Commons/Primitives or Modules/Shell) — reused by NC, Launcher, etc.
+- [ ] Unified animation timing across all panel enter/exit
+- [ ] Update `.claude/claude.md` "Locked architecture decisions" — sizing model + card-anchor rule
+- [ ] `docs/PANEL_API.md` (new) — contract for panel-content modules (panelRoot API, axisSize semantics)
+- [ ] Visual regression: screenshots before/after for each panel
+
+**References (re-inspect before starting):**
+- `caelestia-dots/shell/modules/controlcenter/` — collapsible sections
+- `caelestia-dots/shell/modules/launcher/` — compact launcher
+- `noctalia-shell/Modules/Panels/Control/` — panel sizing
+- `AvengeMedia/DankMaterialShell/quickshell/Modules/Control/` — quick-toggle density
+- `end-4/dots-hyprland/widgets/sidebars/` — notification grouping + empty state
 
 ---
 
-### Sprint 20 — Module Builder & Community Extension System
+### Sprint 21 — Module Builder & Community Extension System
 
 **Goal:** Visual UI for editing `shell-config.json`. Builds on the Widget Registry (S18). Adds module manifest discovery + desktop widget layer. After this, third parties can publish modules and themes that install by dropping a folder.
 
@@ -132,7 +164,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ---
 
-### Sprint 21 — Lock Screen (Native QML)
+### Sprint 22 — Lock Screen (Native QML)
 
 **Goal:** Replace swaylock with a first-class Quickshell component. Now that the design system (Sprint 12/13) and token system are in place, build it properly.
 
@@ -152,15 +184,15 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Planned Sprints
 
-### Sprint 22 — Settings Depth
+### Sprint 23 — Settings Depth
 Fill out Sprint 11's placeholder panes with full native implementations:
 - Connections pane: WiFi sub-tab (known networks, forget, priority) + BT sub-tab (connected/paired/available per Noctalia model, battery level, signal)
 - Audio pane: PipeWire sinks + sources (once QS 0.3.0 lands), device aliasing, per-device volume limit
 - ColorScheme pane: dark mode toggle, schedule (off/manual/location), wallpaper color extraction toggle
 - Settings search: fuzzy index per registered pane, max 15 results, sidebar search input
-- **Layout pane** (new) — UI for `shell-config.json` side type switcher (top/right/bottom/left = bar/strip/none) + per-zone widget chooser. Bridge between current Settings and full Module Builder UI (Sprint 20). Lets users reconfigure sides from a familiar settings interface without needing the visual edit mode.
+- **Layout pane** (new) — UI for `shell-config.json` side type switcher (top/right/bottom/left = bar/strip/none) + per-zone widget chooser. Bridge between current Settings and full Module Builder UI (Sprint 21). Lets users reconfigure sides from a familiar settings interface without needing the visual edit mode.
 
-### Sprint 23 — Multi-Compositor Support
+### Sprint 24 — Multi-Compositor Support
 
 **Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).
 
@@ -175,7 +207,7 @@ CompositorService.focusedApp            // readable property
 CompositorService.activeWindowTitle     // readable property
 ```
 
-**Architecture validation tasks** (from S17 audit):
+**Architecture validation tasks** (from S17 + S20 audits):
 - Verify 4× 1px ExclusionStrip PanelWindows behave correctly on Hyprland/Niri (layershell anchors with `implicitHeight: 1` — may need compositor-specific tweaks)
 - Per-compositor blur namespace handling — MangoWC `layerrule = blur, namespace:archeotech-shell` vs Hyprland `layerrule = blur, archeotech-*`
 - `Services/Compositor/Blur.qml` — abstraction for compositor-specific blur rules
@@ -192,7 +224,7 @@ CompositorService.activeWindowTitle     // readable property
 
 ---
 
-### Sprint 24 — Distribution & GitHub Release
+### Sprint 25 — Distribution & GitHub Release
 
 **Goal:** Clean, documented, installable by a stranger on a fresh Arch Linux machine. Everything hardcoded to `/home/corvus` is gone. Module + theme APIs are documented. Community can publish extensions. **v1.0 milestone.**
 
@@ -201,7 +233,7 @@ CompositorService.activeWindowTitle     // readable property
 - [ ] `scripts/install-packages.sh` — full `paru -S` list for fresh Arch; split: required vs optional
 - [ ] Rewrite `scripts/install.sh` — prereq check, timestamped backup, stow deploy, service enable, verification
 - [ ] `docs/INSTALL.md` — step-by-step for fresh Arch + MangoWC from zero; also Hyprland path; documents `shell-config.json` per-side configuration
-- [ ] `docs/MODULE_API.md` — finalized (from S20); example module walkthrough
+- [ ] `docs/MODULE_API.md` — finalized (from S21); example module walkthrough
 - [ ] `docs/THEME_SPEC.md` — finalized (from S19); community submission guidelines
 - [ ] `docs/WIDGET_API.md` — finalized (from S18)
 - [ ] README harden — screenshots of bar, OSD, CC, launcher, dashboard, settings, edit mode
@@ -212,19 +244,19 @@ CompositorService.activeWindowTitle     // readable property
 
 ---
 
-### Sprint 25 — Go Daemon
+### Sprint 26 — Go Daemon
 Only for raw Wayland protocols that QML can't reach natively:
 - `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
 - `Services/ArcheotechDaemon.qml` — Quickshell Socket, exponential-backoff reconnect
 - Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
 - Does NOT handle: audio, network, BT, notifications, lock (all native QML)
 
-### Sprint 26 — Dev Personality + Shadow Spear
+### Sprint 27 — Dev Personality + Shadow Spear
 - `themes/shadow-spear/` full theme package (compositor + kitty + starship raven sigil + rofi + wallpaper set)
 - Git branch widget (`Widgets/Bar/GitWidget.qml`) — CWD from focused window, dims when no git context
 - AWS profile widget (`Widgets/Bar/AwsWidget.qml`) — always visible, dims when `$AWS_PROFILE` unset
 - Terraform workspace indicator (`Widgets/Bar/TerraformWidget.qml`) — shows `terraform workspace show`, only in tf repos
-- Per-workspace wallpapers via `CompositorService.onTagSwitched` hook (S23 dependency)
+- Per-workspace wallpapers via `CompositorService.onTagSwitched` hook (S24 dependency)
 - **Stretch:** SDF GLSL shader for corner blob (replaces ShapePath cubic bezier for ultra-smooth corners — Caelestia §15.2 line 2143)
 
 ---
@@ -234,7 +266,7 @@ Only for raw Wayland protocols that QML can't reach natively:
 Well-defined features not yet scheduled into a sprint.
 
 ### Dev Workflow Bar Widgets
-*(sprint 26 covers git + AWS + terraform; these are the rest. All become `Widgets/Bar/*.qml` files per S18 widget registry.)*
+*(sprint 27 covers git + AWS + terraform; these are the rest. All become `Widgets/Bar/*.qml` files per S18 widget registry.)*
 - `DockerWidget` — containers count badge, click to open btop or lazydocker
 - `KeyboardLayoutWidget` — QWERTY/AZERTY indicator, reflected from MangoWC `keyboardLayout` state
 - `CapsLockWidget` — low priority, currently undetected

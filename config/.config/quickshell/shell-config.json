@@ -12,7 +12,7 @@
       }
     },
     "right":  { "type": "strip", "size": 10, "expanded": 240, "icons": ["cc", "nc"] },
-    "bottom": { "type": "strip", "size": 10, "expanded": 240, "icons": ["dashboard"] },
+    "bottom": { "type": "strip", "size": 10, "expanded": 240, "icons": ["dashboard", "wallpaper"] },
     "left":   { "type": "strip", "size": 10, "expanded": 240, "icons": ["launcher"] }
   },
 
