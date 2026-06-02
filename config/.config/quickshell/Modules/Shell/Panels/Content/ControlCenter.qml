@@ -29,6 +29,7 @@ Item {
     property bool wifiExpanded:   false
     property bool btExpanded:     false
     property string wifiAskPwFor: ""
+    property string displayLayout: "extend"
 
     onWifiAskPwForChanged: {
         if (wifiAskPwFor !== "") network.freezeList()
@@ -979,9 +980,23 @@ Item {
                     }
                 }
 
-                // Sprint 20: display layout, night light, power profile,
-                // idle & sleep moved out — they belong in Settings panes
-                // (Sprint 23 absorbs them). CC stays quick-access only.
+                // Sprint 20: night light, power profile, idle & sleep moved
+                // to Settings → Display / Power panes. CC keeps Display Layout
+                // (used often) + DND quick toggle.
+
+                // ── DISPLAY LAYOUT ────────────────────────────────────────────
+                Column {
+                    Layout.fillWidth: true; spacing: 6
+                    Text { text: "󱄅  Display Layout"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family }
+                    Flow {
+                        width: parent.width; spacing: 6
+                        PillButton { label: "Extend";   active: root.displayLayout === "extend";   onClicked: { root.displayLayout = "extend";   run("wlr-randr --output eDP-1 --on --pos 0,0; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 1920,0; done") } }
+                        PillButton { label: "Mirror";   active: root.displayLayout === "mirror";   onClicked: { root.displayLayout = "mirror";   run("wlr-randr --output eDP-1 --on --mode 1920x1200 --pos 0,0; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 0,0; done") } }
+                        PillButton { label: "Laptop";   active: root.displayLayout === "laptop";   onClicked: { root.displayLayout = "laptop";   run("wlr-randr --output eDP-1 --on; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --off; done") } }
+                        PillButton { label: "External"; active: root.displayLayout === "external"; onClicked: { root.displayLayout = "external"; run("wlr-randr --output eDP-1 --off; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 0,0; done") } }
+                        PillButton { label: "Adjust…";  active: false; onClicked: { run("wdisplays &"); if (root.panelRoot) root.panelRoot.close() } }
+                    }
+                }
 
                 // ── QUICK TOGGLES ─────────────────────────────────────────────
                 RowLayout {

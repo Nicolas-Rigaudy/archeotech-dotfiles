@@ -20,9 +20,11 @@ Item {
 
         ColumnLayout {
             Layout.fillWidth: true
+            visible: root.label !== "" || root.description !== ""
             spacing: 2
 
             Text {
+                visible: root.label !== ""
                 text: root.label
                 color: Commons.Appearance.colors.text
                 font.pixelSize: Commons.Appearance.font.sizeBase
