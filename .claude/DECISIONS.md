@@ -1,1225 +1,212 @@
 # Technical Decisions Log
 
-This document tracks all technical decisions made during the project, with rationale and alternatives considered.
-
-**Purpose:** Maintain a clear record of why things are done a certain way, to inform future decisions and help others understand the system.
+Architecturally load-bearing decisions and non-obvious trade-offs. For implementation detail, read the code and its comments. For tactical numbers (radii, paddings, timer durations), see `.claude/claude.md` "Locked architecture decisions". For ephemeral workarounds, see git history.
 
 ---
 
-## Decision Format
+## Format
 
 ```markdown
-## [YYYY-MM-DD] Decision Title
+### [YYYY-MM-DD] Decision title
 
-**Context:** What situation required a decision
+What was decided (1–2 sentences). Why — the non-obvious rationale that wouldn't be derivable from reading the code. Trade-off accepted.
 
-**Options Considered:**
-1. Option A
-   - Pros: ...
-   - Cons: ...
-2. Option B
-   - Pros: ...
-   - Cons: ...
-
-**Decision:** Chose Option X
-
-**Rationale:** Why this was chosen
-
-**Trade-offs Accepted:** What we're giving up
-
-**Review Date:** When to reconsider (if applicable)
+(Optional: a second paragraph for reference links, supersession notes, or review-by date.)
 ```
 
----
-
-## Decisions
-
-### [2025-11-28] Filesystem: btrfs vs ext4
-
-**Context:** Need to choose filesystem for Arch partition during installation.
-
-**Options Considered:**
-1. **ext4**
-   - Pros: Stable, well-tested, slightly faster
-   - Cons: No snapshots, no transparent compression
-2. **btrfs**
-   - Pros: Snapshots, compression, familiar from Fedora
-   - Cons: Slightly more complex, rare corruption issues
-
-**Decision:** btrfs with subvolumes (@, @home, @snapshots, @cache, @log)
-
-**Rationale:**
-- Snapshots provide safety net for system changes
-- Already familiar with btrfs from Fedora
-- Compression saves disk space
-- Separate subvolumes allow selective backups
-
-**Trade-offs Accepted:** Slightly more complexity in initial setup
+Rules:
+- One paragraph per decision is the default. `Options Considered` is only worth listing when the rejected alternatives still illuminate the decision later.
+- A choice that's visible in the code (UI patterns, numeric values, file organisation) doesn't need a decision entry — write a comment in the file instead.
+- A choice that's been superseded by a later sprint architecture should be deleted, not annotated — git history retains the path we took.
+- When in doubt: would someone reading the codebase six months from now understand *why* without this entry? If yes, don't add it.
 
 ---
 
-### [2025-11-28] Bootloader: GRUB vs systemd-boot
+## System & install
 
-**Context:** Need bootloader for dual-boot with Fedora.
+### [2025-11-28] Filesystem: btrfs with subvolumes
 
-**Options Considered:**
-1. **systemd-boot**
-   - Pros: Simpler, faster, native to systemd
-   - Cons: More manual dual-boot setup, less themeable
-2. **GRUB**
-   - Pros: Auto-detects other OSes, highly configurable, themeable
-   - Cons: More complex, occasional issues
+btrfs over ext4. Subvolume layout `@, @home, @snapshots, @cache, @log` lets snapper take per-subvolume snapshots (data only, no caches/logs in the backup). Already familiar from Fedora. Trade-off: slightly more setup ceremony than ext4.
 
-**Decision:** GRUB
+### [2025-11-28] Bootloader: GRUB
 
-**Rationale:**
-- Need dual-boot with Fedora (GRUB auto-detects it)
-- Can apply Catppuccin theme
-- More documentation available
-- Familiar from previous Linux experience
+GRUB over systemd-boot. Originally chosen because it auto-detected Fedora for dual-boot; the dual-boot is now gone (2026-04-20) but GRUB stays — themed (Catppuccin), well-documented, and stable. Trade-off: slower boot, more config surface than systemd-boot.
 
-**Trade-offs Accepted:** Slightly slower boot, more complexity
+### [2025-11-28] AUR helper: paru
 
----
+paru over yay. Faster (Rust), better interactive PKGBUILD review, more informative output. Trade-off: smaller community than yay.
 
-### [2025-11-28] AUR Helper: paru vs yay
+### [2025-12] Compositor: MangoWC primary, Hyprland fallback
 
-**Context:** Need AUR helper for installing packages from Arch User Repository.
+MangoWC over Hyprland. wlroots base aligns with `xdg-desktop-portal-wlr`; scrolling layout suits the workflow; `mmsg -w` streams events cleanly into Quickshell's `Process` + `SplitParser`. Hyprland config retained as a fallback for the rare day MangoWC breaks. Trade-off: smaller community than Hyprland; no `Quickshell.Hyprland` native bindings — custom `Services/Compositor/MangoWC.qml` IPC layer required.
 
-**Options Considered:**
-1. **yay**
-   - Pros: More mature, widely used
-   - Cons: Written in Go, slower
-2. **paru**
-   - Pros: Rust-based (faster), more features, better UI
-   - Cons: Less mature, fewer users
+### [2025-11-28] Display manager: SDDM
 
-**Decision:** paru
+SDDM over LightDM/GDM. Best Wayland support, Qt-native, Catppuccin themes available. Trade-off: fewer themes than LightDM, Qt dependency.
 
-**Rationale:**
-- Performance advantage (Rust)
-- Better interactive review of PKGBUILDs
-- Modern codebase, actively developed
-- More colorful/informative output
+### [2025-11-28] App launcher (system-wide): rofi-wayland
 
-**Trade-offs Accepted:** Smaller community, newer tool
+rofi over wofi/fuzzel for system menus (settings hub, wallpaper-picker legacy, project-jump). Most extensible — custom modi for AWS / SSH / Terraform; large theme ecosystem. The in-shell launcher (`Super+Space`) is now native Quickshell — rofi stays for ad-hoc tools.
 
----
+Trade-off: X11 port, not native Wayland (works correctly under `rofi-wayland`).
 
-### [2025-11-28] Window Manager: Hyprland
+### [2025-11-28] Terminal: kitty
 
-> **Superseded:** MangoWC became the primary compositor by late 2025. See entry below. Hyprland config retained as fallback only.
+GPU-accelerated, image protocol support (yazi previews), good defaults, already familiar. Trade-off: not the fastest pure-text terminal (alacritty wins there) but fast enough and far more capable.
 
-**Context:** Main choice for this project - no alternatives seriously considered.
+### [2025-11-28] Shell: fish
 
-**Decision:** Hyprland (at project start)
+Friendly defaults, syntax highlighting, autosuggestions, already familiar. Trade-off: non-POSIX — bash scripts run via shebang, fish handles the interactive shell only.
 
-**Rationale:**
-- Modern Wayland compositor with smooth animations
-- Active development and community
-- Good documentation
+### [2025-12-08] Screen-sharing portal: xdg-desktop-portal-wlr
 
-**Trade-offs Accepted:**
-- Wayland compatibility issues with some apps
-- Bleeding edge (occasional bugs)
+MangoWC is wlroots-based, **not** Hyprland-based. The portal must be `xdg-desktop-portal-wlr`, not `-hyprland`. User-level config at `~/.config/xdg-desktop-portal/mangowc-portals.conf` so it's stow-managed.
+
+### [2025-12-08] SDDM config in `system/etc/`, deployed by script
+
+SDDM reads `/etc/sddm.conf` (root-owned), so it can't be stowed. We track it at `system/etc/sddm.conf` and deploy via `scripts/update-system-configs.sh`. Trade-off: manual deploy step.
+
+### [2025-12-04] Atuin: Ctrl+R only, not up-arrow
+
+Atuin's `--disable-up-arrow` flag — keep ↑ as simple last-command, get fuzzy search on `Ctrl+R`. Workflow is `apply → test → apply → test`, so simple ↑ is faster than scrolling through fuzzy results.
 
 ---
 
-### [2025-12] Compositor: MangoWC as Primary (Supersedes Hyprland)
+## Theme & aesthetics
 
-**Context:** MangoWC (wlroots-based, scrolling/stacking layout model) was adopted early in the project. Better IPC integration with Quickshell; wlroots backend means `xdg-desktop-portal-wlr` works correctly. Hyprland config kept as fallback.
+### [2025-11-28] Palette: Catppuccin Macchiato, mauve accent
 
-**Decision:** MangoWC as primary compositor. Hyprland retained as fallback.
+Macchiato over Mocha (warmer tones, easier on eyes during long sessions). Mauve accent for the distinctive identity. Mocha shipped as an alternate variant in Sprint 12. Trade-off: less common than Mocha (fewer existing third-party themes).
 
-**Rationale:**
-- MangoWC IPC via `mmsg -w` integrates cleanly with Quickshell `Process` + `SplitParser`
-- wlroots base aligns with xdg-desktop-portal-wlr (vs -hyprland)
-- Scrolling layout model suits the workflow better
+### [2025-11-28] Keybinds: layout-aware (`resolve_binds_by_sym`)
 
-**Trade-offs Accepted:**
-- Smaller community, fewer reference configs
-- Quickshell's built-in Hyprland IPC (`Quickshell.Hyprland`) not usable — custom MangoWC IPC layer required
-- Some tooling is MangoWC-specific (`mmsg`, `mango/config.conf`)
+Position-based bindings would mean "the key labeled Q" runs different actions on AZERTY vs QWERTY. Layout-aware means the *Q action* always lives on the Q key, regardless of which physical position that is. Switching layouts frequently — this is the only model that works. Trade-off: muscle-memory has to relearn positions when switching layouts.
 
----
+### [2026-05-12] Theme system: QML-native tokens, not HyDE bash pipeline
 
-### [2025-11-28] Display Manager: SDDM vs LightDM vs GDM
+Built a `Theme.qml` (now `Commons/Appearance.qml`) singleton with color tokens that every QML component reads from, rather than adopting HyDE's wallbash → .dcol → per-app template pipeline. Our stack is QML-first; binding through a token singleton is the cleanest path. External apps (kitty, rofi, starship, GTK, VSCode, Obsidian) get configured by `scripts/theme-switch.py` writing out files as a side effect — same idea as HyDE, triggered from Python instead of bash. Trade-off: Adding a new external-app target means editing the Python applier table.
 
-**Context:** Need graphical login screen.
+### [2026-06-02] theme-switch: Python with template registry (Caelestia pattern)
 
-**Options Considered:**
-1. **LightDM**
-   - Pros: Lightweight, many themes
-   - Cons: Less modern, X11-focused
-2. **GDM**
-   - Pros: GNOME standard, polished
-   - Cons: Heavy, GNOME-centric
-3. **SDDM**
-   - Pros: Qt-based, works well with Wayland, Catppuccin themes
-   - Cons: Fewer themes than LightDM
-
-**Decision:** SDDM
-
-**Rationale:**
-- Best Wayland support
-- Catppuccin themes available
-- Lightweight enough
-- Good configuration options
-
-**Trade-offs Accepted:** Fewer themes, Qt dependency
+Rewrote `theme-switch.sh` to a thin entrypoint into `theme-switch.py`. The Python script does atomic temp+rename writes, `fcntl.flock(LOCK_EX | LOCK_NB)` to prevent stampedes, per-target `try/except` so one broken applier doesn't break the rest, and `{{key}}` template substitution from `theme.json` for starship and rofi templates in `scripts/themes/templates/`. `atomic_write` calls `path.resolve()` before renaming so writing through a stow symlink (e.g. `~/.config/starship.toml`) preserves the link. Trade-off: ~30ms Python startup vs bash, fine for an interactive switch.
 
 ---
 
-### [2025-11-28] Status Bar: Waybar vs AGS vs Quickshell
+## Shell architecture (Quickshell)
 
-**Context:** Need status bar for Hyprland.
+### [2026-04-21] Desktop shell: build our own Quickshell, not fork
 
-**Options Considered:**
-1. **Waybar**
-   - Pros: Most popular, huge community, CSS styling
-   - Cons: Limited to JSON config, less dynamic
-2. **AGS (Aylur's GTK Shell)**
-   - Pros: JavaScript config, very flexible
-   - Cons: Steep learning curve, complex
-3. **Quickshell**
-   - Pros: QML-based, modern, flexible
-   - Cons: Very new, small community
+Considered forking Noctalia (MangoWC support, polished) or AMBXST (feature-rich, Hyprland-only). Build-own won: Material You aesthetic is incompatible with Archeotech's curated theme identity; AMBXST's Hyprland-only IPC would need to be rewritten anyway; the foundation we have (Appearance singleton, MangoWC IPC layer) is sound; reference projects supply *patterns* without dictating the aesthetic.
 
-**Decision:** Waybar (with option to try Quickshell later)
-
-**Rationale:**
-- Huge community means lots of examples
-- CSS styling is familiar
-- JSON config is simple to understand
-- Can switch to Quickshell once comfortable with basics
-
-**Trade-offs Accepted:** Less flexibility than AGS/Quickshell
-
----
-
-### [2026-04-21] Desktop Shell: Quickshell (full migration planned)
-
-**Context:** Settings hub (rofi dmenu) can't reflect real toggle state or do sliders. The broader goal of a "coherent designed ecosystem" (one visual language for bar + panels + notifications) is unachievable with the current rofi+waybar+swaync patchwork.
-
-**Options Considered:**
-1. **AGS/Astal v2** (TypeScript + GTK4)
-   - Pros: Moderate learning curve, good if you know JS/TS
-   - Cons: No JS/TS knowledge to leverage; would need to learn TS then QML anyway if migrating to Quickshell later
-2. **eww** (Yuck DSL)
-   - Pros: Lightweight, Rust-backed
-   - Cons: Limited UI capabilities, Lisp-like syntax, lower ceiling
-3. **Quickshell** (QML)
-   - Pros: Highest ceiling, single process for everything, what caelestia is built on, hot-reload, Qt animations
-   - Cons: QML learning curve, MangoWC IPC needs custom bridge (not Hyprland-native)
-
-**Decision:** Quickshell — full migration in phases (control center → bar → notifications → overview)
-
-**Rationale:**
-- AGS's main advantage is JS/TS familiarity — not applicable here
-- No reason to learn AGS as a stepping stone if Quickshell is the destination
-- Caelestia (primary visual reference) is Quickshell — its source code is directly useful
-- Single QML process = one theme system, one animation engine, zero inter-process visual seams
-- MangoWC IPC limitation is workable: `mmsg -w` watch mode streams events, Quickshell `Process` component reads stdout
-
-**Trade-offs Accepted:**
-- QML learning investment upfront
-- MangoWC requires custom IPC bridge instead of Quickshell's built-in Hyprland support
-- Migration is multi-month — waybar stays until each phase is complete
-
-**Status (2026-05-19):** Migration complete. Waybar replaced by Quickshell bar (Sprint 2). swaync replaced by native Quickshell notifications (Sprint 6). Quickshell is now the sole shell.
-
----
-
-### [2025-11-28] App Launcher: rofi vs wofi vs fuzzel
-
-**Context:** Need application launcher.
-
-**Options Considered:**
-1. **wofi**
-   - Pros: Native Wayland, simple
-   - Cons: Limited features, less themeable
-2. **fuzzel**
-   - Pros: Fast, minimal
-   - Cons: Very basic, no plugins
-3. **rofi-wayland**
-   - Pros: Most features, extensible, many themes
-   - Cons: Port of X11 app (not native Wayland)
-
-**Decision:** rofi-wayland
-
-**Rationale:**
-- Can extend with custom modi (AWS, SSH, Terraform menus)
-- Huge theme collection
-- Can integrate clipboard history, calculator, etc.
-- Most powerful option
-
-**Trade-offs Accepted:** Not native Wayland (but works well)
-
----
-
-### [2025-11-28] Terminal: kitty vs alacritty vs wezterm
-
-**Context:** Need GPU-accelerated terminal emulator.
-
-**Options Considered:**
-1. **alacritty**
-   - Pros: Very fast, minimal
-   - Cons: Limited features, TOML config
-2. **wezterm**
-   - Pros: Lua config, very flexible
-   - Cons: Complex, more resource intensive
-3. **kitty**
-   - Pros: Fast, image support, extensive features
-   - Cons: Python-based (but still fast)
-
-**Decision:** kitty
-
-**Rationale:**
-- Already using it and familiar
-- Image support (needed for yazi file manager)
-- Good balance of speed and features
-- Excellent documentation
-
-**Trade-offs Accepted:** Not the absolute fastest (but fast enough)
-
----
-
-### [2025-11-28] Shell: fish vs zsh vs bash
-
-**Context:** Need shell for terminal.
-
-**Options Considered:**
-1. **bash**
-   - Pros: Universal, default everywhere
-   - Cons: Less user-friendly, requires more config
-2. **zsh**
-   - Pros: Very customizable, Oh My Zsh
-   - Cons: Requires configuration, complex
-3. **fish**
-   - Pros: Friendly, great defaults, syntax highlighting
-   - Cons: Not POSIX-compliant, different syntax
-
-**Decision:** fish
-
-**Rationale:**
-- Already using it and familiar
-- Great out-of-box experience
-- Excellent autosuggestions
-- Good syntax highlighting
-- Staying consistent with previous setup
-
-**Trade-offs Accepted:** Non-POSIX syntax (some scripts need bash)
-
----
-
-### [2025-11-28] File Manager (GUI): thunar vs nautilus vs dolphin
-
-**Context:** Need lightweight GUI file manager.
-
-**Options Considered:**
-1. **nautilus**
-   - Pros: GNOME standard, simple
-   - Cons: GNOME dependencies, limited features
-2. **dolphin**
-   - Pros: Feature-rich, powerful
-   - Cons: Heavy (KDE dependencies)
-3. **thunar**
-   - Pros: Lightweight, customizable, plugin system
-   - Cons: Less polished than Dolphin
-
-**Decision:** thunar
-
-**Rationale:**
-- 90% of Dolphin's features at 30% of weight
-- No heavy KDE dependencies
-- Good plugin ecosystem
-- Integrates well with XFCE/GTK apps
-
-**Trade-offs Accepted:** Less features than Dolphin (but enough for needs)
-
----
-
-### [2025-11-28] File Manager (TUI): yazi vs ranger vs nnn
-
-**Context:** Need terminal file manager.
-
-**Options Considered:**
-1. **ranger**
-   - Pros: Mature, vim-like, many features
-   - Cons: Python-based (slower), dated
-2. **nnn**
-   - Pros: Very fast, minimal
-   - Cons: Less intuitive, steeper learning curve
-3. **yazi**
-   - Pros: Modern (Rust), fast, beautiful, image preview
-   - Cons: Newer (less mature)
-
-**Decision:** yazi
-
-**Rationale:**
-- Modern and actively developed
-- Beautiful UI with image preview
-- Fast (Rust-based)
-- Intuitive keybindings
-- Integrates well with kitty (image support)
-
-**Trade-offs Accepted:** Newer tool, smaller community
-
----
-
-### [2025-11-28] Theme: Catppuccin Macchiato vs Mocha
-
-**Context:** Which Catppuccin flavor to use as primary theme.
-
-**Options Considered:**
-1. **Mocha** (darker, cooler)
-   - Pros: Popular choice, very dark
-   - Cons: Can feel too dark/cold
-2. **Macchiato** (darker, warmer)
-   - Pros: Warmer tones, good contrast
-   - Cons: Less common than Mocha
-3. **Frappe** (medium dark, cooler)
-   - Pros: Good balance
-   - Cons: Less distinct identity
-4. **Latte** (light theme)
-   - Pros: Good for daytime use
-   - Cons: Not preferred for primary
-
-**Decision:** Catppuccin Macchiato with Mauve accent
-
-**Rationale:**
-- Warmer tones easier on eyes for long work sessions
-- Good contrast while not being extreme
-- Mauve accent color is distinctive
-- Can add Mocha as alternate theme later
-
-**Trade-offs Accepted:** Less common, fewer examples online
-
----
-
-### [2025-11-28] Keybind Philosophy: Layout-aware vs Position-based
-
-**Context:** How should keybinds work with AZERTY/QWERTY switching.
-
-**Options Considered:**
-1. **Position-based (default)**
-   - Pros: Consistent muscle memory across layouts
-   - Cons: Keys labeled differently than what they do
-2. **Layout-aware (resolve_binds_by_sym)**
-   - Pros: Logical (Q key does Q action)
-   - Cons: Different positions in each layout
-
-**Decision:** Layout-aware (resolve_binds_by_sym = true)
-
-**Rationale:**
-- More intuitive (Q key opens terminal on Q key)
-- Switching between AZERTY/QWERTY frequently
-- Can relearn muscle memory if needed
-- Easier to remember "Super+Q = terminal" than positions
-
-**Trade-offs Accepted:** Need to relearn positions when switching layouts
-
----
-
-### [2025-11-28] Dual Boot Strategy: Keep Windows Recovery vs Delete
-
-**Context:** Initial plan had Windows recovery partitions to keep.
-
-**Decision:** Delete Windows recovery partitions (chose more space for Arch)
-
-**Rationale:**
-- Can recover Windows via:
-  - HP Cloud Recovery Tool (downloadable)
-  - Fresh Windows install from Microsoft ISO
-  - Company IT department (work laptop)
-- Extra 33GB valuable for Arch development
-- Recovery partitions rarely needed
-
-**Trade-offs Accepted:** No on-disk Windows recovery (but alternatives exist)
-
----
-
-### [2026-02-19] Wallpaper Picker: waypaper vs rofi custom picker
-
-**Context:** Need a wallpaper switcher UI. waypaper installed but opened fullscreen (ugly, takes whole screen).
-
-**Options Considered:**
-1. **waypaper**
-   - Pros: Ready-made GUI, thumbnail grid, built-in swww support
-   - Cons: Opens fullscreen, can't be easily resized, UI not matching theme
-2. **rofi custom picker (wallpaper-picker.sh)**
-   - Pros: Full control over appearance, integrates with Catppuccin glass theme, floating popup, same tool as app launcher
-   - Cons: Required writing custom script + rasi theme
-
-**Decision:** rofi custom picker (scripts/wallpaper-picker.sh + scripts/assets/wallpaper-picker.rasi)
-
-**Rationale:**
-- Rofi already used for app launcher — consistent UX
-- Can theme it exactly like the rest of the system
-- Floating popup vs fullscreen is a huge UX win
-- Can embed logo toggle as a first entry in the same picker
-- Thumbnails generated via ImageMagick and cached
-
-**Trade-offs Accepted:** Required more implementation work; waypaper kept installed as config backup (backend=custom)
-
----
-
-### [2026-02-19] SVG Renderer: rsvg-convert vs ImageMagick for Arch logo
-
-**Context:** Need to render arch-logo.svg (with transparency) to PNG for compositing onto wallpaper.
-
-**Options Considered:**
-1. **ImageMagick (magick)**
-   - Pros: Already a dependency for color extraction
-   - Cons: Renders SVG with white background — transparency lost
-2. **rsvg-convert (librsvg)**
-   - Pros: Native SVG transparency support, respects fill/opacity, clean output
-   - Cons: Extra package dependency (librsvg)
-
-**Decision:** rsvg-convert for SVG→PNG, ImageMagick for color extraction and compositing
-
-**Rationale:**
-- ImageMagick's SVG renderer doesn't preserve transparency correctly
-- rsvg-convert is the standard Arch SVG renderer and already recommended in the ecosystem
-- librsvg is a small package with no heavy dependencies
-
-**Trade-offs Accepted:** Two tools instead of one; minor extra dependency
-
----
-
-### [2026-02-19] Wallpaper Logo Color Cache: separate LAST_COLOR_FOR file
-
-**Context:** Color extraction from wallpaper was always returning stale color (arasaka color) even after switching wallpapers.
-
-**Root Cause:** `LAST_WALL` was written *before* calling `get_wallpaper_color`, so the cache check inside `get_wallpaper_color` saw the new wallpaper path in `LAST_WALL` but the old color in `LAST_COLOR` — cache never invalidated.
-
-**Decision:** Separate `LAST_COLOR_FOR` file, written only *after* successful color extraction
-
-**Rationale:**
-- `LAST_WALL` must be written before color extraction (it's the authoritative source for --toggle and --restore)
-- `LAST_COLOR_FOR` is only a cache key for the color — written after extraction succeeds
-- Keeps the two concerns properly separated
-
-**Trade-offs Accepted:** One extra cache file in ~/.cache/wallpaper/
-
----
-
-### [2026-02-19] MangoWC Keybind: spawn vs spawn_shell for scripts
-
-**Context:** `binds=SUPER,w,spawn,~/.local/bin/wallpaper-picker.sh` silently failed — script ran but swww socket was unreachable.
-
-**Root Cause:** MangoWC `spawn` runs the process without a shell environment — no `$HOME`, no `$XDG_RUNTIME_DIR`, no swww socket path resolution.
-
-**Decision:** Use `spawn_shell` for all script keybinds
-
-**Rationale:**
-- Scripts rely on environment variables (`$HOME`, etc.)
-- swww socket is found via `$XDG_RUNTIME_DIR/swww/` — needs shell env
-- `spawn_shell` is semantically correct for shell scripts
-
-**Trade-offs Accepted:** Slightly heavier (spawns a shell process) — negligible for keybinds
-
----
-
-### [2025-12-08] Screen Sharing: Portal Backend for MangoWC
-
-**Context:** Teams/Zoom/Discord couldn't share screen on MangoWC.
-
-**Options Considered:**
-1. **xdg-desktop-portal-hyprland** — wrong backend (MangoWC is wlroots, not Hyprland)
-2. **xdg-desktop-portal-wlr** — correct wlroots backend
-
-**Decision:** xdg-desktop-portal-wlr with user-level config at `~/.config/xdg-desktop-portal/mangowc-portals.conf`
-
-**Rationale:**
-- MangoWC uses wlroots, needs wlr backend
-- User-level config managed by stow, tracked in git — avoids root-owned system config
-
-**Trade-offs Accepted:** Extra package dependency; portals must be running (they autostart)
-
----
-
-### [2025-12-08] SDDM Config Location: system/etc vs config/
-
-**Context:** SDDM config lives at `/etc/sddm.conf` — can't be symlinked with stow.
-
-**Decision:** Store in `system/etc/sddm.conf`, deploy via `scripts/update-system-configs.sh`
-
-**Rationale:**
-- System-level config requires root — can't use stow
-- Consistent with other system-level configs (snapper, grub custom entry)
-- Still tracked in git
-
-**Trade-offs Accepted:** Manual deploy step needed (not automatic like stow configs)
-
----
-
-### [2025-12-04] Atuin Up Arrow: Full Integration vs Ctrl+R Only
-
-**Context:** Atuin can take over the up arrow for history search, or just add Ctrl+R fuzzy search while keeping up arrow as simple last-command.
-
-**Decision:** Ctrl+R only — keep up arrow as simple last command (`--disable-up-arrow` flag)
-
-**Rationale:**
-- Workflow involves frequent rerun of the exact last command (apply → test → apply → test)
-- Simple up arrow is faster for that pattern
-- Ctrl+R provides powerful fuzzy search when needed
-
-**Trade-offs Accepted:** Less powerful up-arrow history navigation
-
----
-
-### [2026-04-21] Focus Mode — Dropped
-
-**Context:** Focus mode toggle (dim unfocused windows to 0.5 opacity) was implemented in settings-hub.sh but doesn't apply to already-open windows.
-
-**Root cause:** MangoWC copies `focused_opacity`/`unfocused_opacity` per-client at window creation time (`c->unfocused_opacity = unfocused_opacity` in `createclient()`). `reload_config` updates the global values but never iterates existing clients. There is no `reapply_opacity` IPC dispatch, no mechanism to update open windows.
-
-**Decision:** Remove focus mode from the settings hub entirely. `unfocused_opacity` stays at `0.85` permanently (matches `focused_opacity` — all windows have transparency, no dimming distinction).
-
-**Future revisit:** If MangoWC adds a `set_opacity` or `reapply_window_rules` IPC command, this becomes trivial.
-
----
-
-### [2026-05-04] Shell Architecture: Fork vs Build Own
-
-**Context:** After Phase 2 (bar mostly done), the shell still feels clunky compared to Noctalia/DankMaterialShell/end-4. Considered switching to an established project.
-
-**Options Considered:**
-1. **Fork Noctalia Shell** — has MangoWC support, polished, plugin-based
-   - Pros: Immediate polish, active development, MangoWC IPC solved
-   - Cons: Material You aesthetic incompatible with Archeotech's cyber-monastic identity; plugin marketplace design conflicts with curated theme personalities; upstream conflicts when MangoWC adds features
-2. **Fork AMBXST** — feature-rich, active Discord community
-   - Pros: Breadth of features (OCR, QR, AI, recording)
-   - Cons: Hyprland-only IPC — all `mmsg` integration would need to be rewritten
-3. **Build own, steal patterns from reference projects** ← chosen
-   - Pros: Full ownership of aesthetic; MangoWC IPC layer we built is good; Appearance singleton is right foundation; Archeotech themes (Shadow Spear, Gundam HUD, etc.) can't be achieved by skinning another shell
-   - Cons: More work; slower polish ramp
-
-**Decision:** Build our own. The current shell's foundation is sound. The gaps are specific and fixable (animations, state sync, MPRIS, notifications). The aesthetic identity is the whole point.
-
-**What to steal (patterns, not code):**
-- end-4: JsonAdapter, FileView hot-reload, component lazy loading
-- Noctalia: MangoWC IPC patterns (check their source for MangoWC-specific solutions)
+Steal-from list (source-inspected 2026-05-04):
+- end-4: JsonAdapter, FileView hot-reload, lazy component loading
+- Noctalia: multi-compositor service facade pattern, MangoWC-specific patterns
+- Caelestia: component architecture, theme/wallpaper pipeline, lock-screen QML
+- Qylock: lock screen `WlSessionLock` + `PamContext`
 - HyDE: theme switching multi-target approach
-- Qylock: lock screen QML implementation (PAM auth, blur)
+- DMS: Go daemon scope, template registry
 
-**Rule added:** Before implementing any workaround for a QML/compositor problem, check how the reference projects solve it. Especially Noctalia for MangoWC-specific issues. See `ANALYSIS.md §2`.
+### [2026-05-04] Source-checking rule
 
----
+Before implementing any workaround for a QML / compositor problem, check how the reference projects solve it. These projects have more QML hours than we do; their fixes are tested at scale. Lookup order: MangoWC → Noctalia; QML patterns → end-4; component architecture → Caelestia; lock screen → Qylock; installation → HyDE/JaKooLit. Full catalog in `.claude/ANALYSIS.md §2`.
 
-### [2026-05-04] Source-Checking Rule for QML Problems
+### [2026-05-04] MangoWC IPC: `mmsg -w` subprocess stream
 
-**Context:** We've re-solved problems (blur artifacts, OSD placement, state sync) that established projects have already solved better.
+MangoWC has no QML bindings; `mmsg -w -O -t -l -c` streams events on stdout, parsed line-by-line via Quickshell `Process` + `SplitParser`. Noctalia uses `Quickshell.DWL` for its MangoWC backend, but `Quickshell.DWL` is **not upstream** — it lives in a custom fork. We stay on `mmsg -w` until or unless DWL lands in Quickshell proper.
 
-**Decision:** When encountering a QML or compositor problem, check reference sources **before** implementing a solution.
+Trade-off: subprocess overhead, fragile text parsing, parser re-spec on any `mmsg` output-format change. Worth it for unblocking multi-compositor work without depending on a fork.
 
-**Lookup order:**
-1. **MangoWC-specific problems** → [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) (explicit MangoWC support)
-2. **QML animation/state patterns** → [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland)
-3. **Component architecture** → [caelestia-dots/shell](https://github.com/caelestia-dots/shell)
-4. **Lock screen** → [Qylock](https://github.com/Darkkal44/qylock)
-5. **Installation/distribution** → [HyDE](https://github.com/HyDE-Project/HyDE), [JaKooLit](https://github.com/JaKooLit/Hyprland-Dots)
-6. **Full catalog** → `.claude/ANALYSIS.md §2`
+### [2026-05-04] MPRIS + Notifications: native Quickshell services
 
-**Rationale:** These projects have more QML hours than we do. Their solutions are tested at scale. Our blur artifact issue (the SceneFX halo on glass panels) was solved with a specific alpha value — Noctalia may have a cleaner approach.
+`Quickshell.Services.Mpris` and `Quickshell.Services.Notifications.NotificationServer` instead of `playerctl` polling and `swaync`. Both are first-class D-Bus services, signal-driven, zero subprocess overhead. The reason for using Quickshell at all was one coherent process — external daemons for these undermine that. Confirmed working from end-4 source inspection.
 
----
+### [2026-05-04] Quickshell layer blur disabled (`blur_layer=0`)
 
----
+SceneFX `blur_layer=1` causes a white-fringe halo around rounded-corner layer surfaces (bar, popups, OSD) on Intel Xe — landscape outputs only, portrait unaffected. `layerrule = noblur` per-surface did not reliably suppress it. We disabled layer blur globally and rely on high-opacity translucent panels (`glassBg` at 0.96, `glassBgLight` at 0.93) for the glass feel. Window-content blur (`blur=1`) is unaffected.
 
-## How to Use This Document
+### [2026-05-04] Go daemon scoped to raw Wayland protocols only
 
-**When making a new decision:**
-1. Copy the decision template
-2. List all options seriously considered
-3. Document why the choice was made
-4. Note what you're giving up
-5. Add review date if temporary/experimental
+`archeotech-daemon` (Sprint 26) only handles things Quickshell genuinely can't reach: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot). MPRIS, notifications, audio (Pipewire), battery (UPower), network (nmcli), Bluetooth (org.bluez) all stay native QML — they have working native APIs. DMS confirmed this boundary in source. Trade-off: extra binary to build, Go dependency in the project.
 
-**When reviewing old decisions:**
-- Check if circumstances have changed
-- Evaluate if chosen option still makes sense
-- Update or create new decision entry if changing
+### [2026-05-12] Audio backend: `Quickshell.Services.Pipewire` for devices, pactl for volume
 
-**When someone asks "why did we...":**
-- Point them to this document
-- Rationale should be self-explanatory
-- If not clear, update the entry
+PipeWire native bindings for device listing and switching (the right API for that surface — required by `PwObjectTracker` for reactive volume properties); pactl subprocess for the existing volume control (already working, no migration value). All three reference shells (caelestia, end-4, Noctalia) use the same split. Trade-off: a `PwObjectTracker` instance on the active sink/source is mandatory boilerplate.
 
----
+### [2026-05-12] WiFi radio toggle: `Quickshell.Networking.wifiEnabled`
 
----
+Native property over `nmcli radio wifi on/off`. Same family of decisions as MPRIS/Pipewire — use Quickshell's native APIs when they exist. Noctalia source-confirmed.
 
-## [2026-04-29] Quickshell Bar: Popup via PopupWindow, not PanelWindow
+### [2026-05-12] Settings: standalone window, not CC-embedded
 
-**Context:** Bar hover popups needed to appear outside the 42px-tall bar window. Initial attempt used a child Rectangle inside the bar (clipped). Second attempt used a separate `PanelWindow` with `WlrLayershell.leftMargin`/`topMargin` (don't exist). Third attempt used `PopupWindow` from `Quickshell._Window`.
+CC is for quick toggles; Settings is the long-form panel. Tried caelestia's "CC is settings" model on paper but retrofitting our CC would require gutting it. With deep-linking (`Commons.State.settingsOpenPane = "appearance"; settingsVisible = true`) the two surfaces feel like one system anyway. Trade-off: two QML surfaces to maintain.
 
-**Decision:** `PopupWindow` with `anchor.item` pointing to the hovered icon item.
+### [2026-05-12] Settings persistence: `Config.qml` singleton + JsonAdapter + dotted keys
 
-**Rationale:** `PopupWindow` is the purpose-built type for floating positioned popups in Quickshell. `anchor.item` lets Quickshell handle all coordinate math — no `mapToGlobal` or manual offset calculation needed. Each `Bar` instance owns its own `BarPopup`, keeping state local and avoiding cross-screen contamination.
+Central singleton wraps a single config JSON; components call `Config.get("a.b.c", default)` / `Config.set("a.b.c", val)`. Every setting becomes reactive everywhere with one binding. Write-debounce (50ms) avoids disk thrash on slider drags. end-4 and DMS independently converged on this pattern. Trade-off: keyed by string paths — typos at runtime, not compile-time.
 
-**Trade-offs Accepted:** `PopupWindow` API changed between versions (old: `parentWindow`/`relativeX`/`relativeY`; new: `anchor.*`). Must check qmltypes when upgrading Quickshell.
+### [2026-05-12] Settings navigation: vertical NavRail (sidebar), not horizontal tabs
 
----
+Beyond ~6 items, horizontal tabs wrap or truncate; NavRail scales to 34 tabs cleanly (DMS proof point). Caelestia, DMS, and Noctalia all converged on this. Trade-off: wider minimum window (~200px for the rail).
 
-## [2026-04-29] Quickshell Bar: Service singletons for all system state
+### [2026-05-12] CC compound pills (split toggle + expand)
 
-**Context:** Bar and ControlCenter both need access to audio volume, battery, network, bluetooth state. Could poll in each component, or share state via singletons.
+WiFi and Bluetooth CC rows need both a quick toggle (common) and a details expansion (less common). One full-row click for both is ambiguous. Compound pill = left ~48px tile toggles, right body expands. DMS pattern, independently derived. Trade-off: more complex layout than a single RowLayout.
 
-**Decision:** `pragma Singleton` QML files in `services/` directory, declared in `services/qmldir`. All components import `"../services" as Services` and read `Services.Audio.volume` etc.
+### [2026-05-12] Deep-linking: CC quick actions → Settings pane
 
-**Rationale:** Single source of truth — bar and control center always show the same value. One `pactl subscribe` process total, not one per component. State changes propagate to all consumers instantly via QML property bindings.
+`Commons.State.settingsOpenPane = "<name>"` + `settingsVisible = true` from anywhere in the shell opens the Settings window with the named pane focused. Without this, CC and Settings feel disconnected. With it, the CC is the fast path and Settings is the full path — same system. WallpaperPicker's palette button uses the same mechanism (jumps to Appearance).
 
-**Trade-offs Accepted:** Singletons are process-global — can't have per-screen audio state (not needed). Hot-reload of singletons sometimes requires full restart to pick up property additions/removals.
+### [2026-05-19] Bar popups: native QML, not external apps
+
+Bar WiFi/BT icons used to launch `nm-connection-editor` / `blueman-manager`. Replaced with native Shape popups (top-5 networks + adapter toggle inline). External apps break visual cohesion and require separate window management. "Open Settings" deep-links into CC. Trade-off: bar popup capped at 5 entries; power users go to CC.
+
+### [2026-05-19] busctl monitor fallback: poll on access-denied
+
+`busctl monitor org.bluez` exits with code 1 ("Access denied") in normal user sessions. Original `onExited` unconditionally restarted, creating an infinite crash-loop. Fix: only restart on `code === 0` (clean disconnect); fall back to a 3-second polling `Timer` when monitor is unavailable. Lesson: any auto-restart on subprocess exit must distinguish clean exit from auth/permission failure.
 
 ---
 
-## [2026-04-29] Quickshell Bar: MangoWC IPC via mmsg, not Hyprland IPC
+## Shell architecture (sprint 17 onwards)
 
-**Context:** MangoWC uses its own IPC daemon (`mmsg`), not Hyprland's socket. Most Quickshell examples target Hyprland IPC directly.
+These decisions are locked. Re-read this section + `claude.md` "Locked architecture decisions" + `ANALYSIS.md §15` before changing them.
 
-**Decision:** Shell out to `mmsg -w -O -t -l -c` as a persistent `Process` with `SplitParser`, parse the output in `MangoWC.qml` singleton.
+### [2026-06-02] Widget registry: Noctalia filename convention, not Caelestia DelegateChooser
 
-**Rationale:** MangoWC has no QML bindings. `mmsg -w` streams events on stdout — one line per tag/title/layout change. `SplitParser` handles line buffering. Output format is stable and documented enough from source inspection.
+Caelestia maps widget id → component via a static `DelegateChooser` (type-safe at compile time, pre-instantiated). Noctalia uses `loader.setSource("Widgets/Bar/" + pascalCase(id) + "Widget.qml", props)` — id resolved to filename. Drop a file under `Widgets/Bar/`, add the id to a `shell-config.json` zone, done. We picked Noctalia because the v1.0 release goal is "drop a folder, get a widget" — Caelestia's pattern would require a registry edit per plugin. The S20 plugin namespace (`plugin:<id>`) is a single conditional in `WidgetRegistry`, not a refactor. Trade-off: async first-mount; `setSource(path, props)` is the only reliable way to satisfy `required` properties on a dynamically-loaded widget.
 
-**Trade-offs Accepted:** Can't copy-paste from caelestia or end-4 dotfiles (Hyprland-specific). If mmsg output format changes, parser breaks. Currently hardcoded to specific output format (`<output> tag <num> <sel> <occ> <urg>` etc).
+### [2026-06-02] Widget contract: explicit `barRoot` / `stripRoot` context
 
----
+Bar/strip widgets receive a `required property var barRoot` (or `stripRoot`) injected via `setSource(path, { barRoot, widgetId })`. The exposed API surface (`side`, `horizontal`, `screen`, `showPopup`, `hidePopup`, …) is documented in `docs/WIDGET_API.md`. This is Noctalia's PluginAPI pattern scaled down. Plugin widgets in S21 use the same `barRoot` reference — same surface, manifest-discovered. Documenting the contract before S21 means plugins don't reshape it. Trade-off: a few `_`-prefixed properties remain on `barRoot` for sibling-coordination state (e.g. mutual-exclusion between popups) — documented but underscore-marked "internal-to-bar, reachable when coordinating".
 
-## [2026-05-04] Idle management: configurable via control center
+### [2026-06-02] Wallpaper picker as first-class panel, not Settings pane
 
-**Context:** swayidle was hardcoded with fixed timers. Screen locking felt random (was actually `before-sleep` on lid-close resume). Needed per-action toggles and timer presets without editing config files.
-
-**Decision:** `swayidle/config.sh` sources `~/.cache/swayidle.conf` for DIM/LOCK/SLEEP enable+timeout, builds swayidle args conditionally, kills and restarts itself. ControlCenter IDLE section writes the config file and calls the script on any change.
-
-**Rationale:** No new daemon needed — the script is already the launcher. State persists across reboots via the cache file. `before-sleep` always locks regardless of LOCK_ENABLED (intentional — lock on resume is always correct behavior).
-
-**Trade-offs Accepted:** swayidle restart is ~200ms — brief gap in idle tracking on every settings change.
+WallpaperPicker lives in `PanelRegistry` as a strip panel (bottom strip, sibling to `dashboard`), not as a Settings tab. Noctalia pattern; DMS does it as a tab and it's the wrong feel (Settings is a long-lived window). Wallpaper picking is frequent and wants anchor-to-bar positioning + per-monitor instance. Logo selector lives in the same panel — contextually tied. The palette icon in the panel header deep-links to Settings → Appearance when the user wants theme picking instead. Trade-off: the strip panel still grows to full screen axis (Sprint 17 architecture) — Sprint 20's `axisSize` field fixes this.
 
 ---
 
-## [2026-05-04] Quickshell layer blur disabled (blur_layer=0)
+## Wallpaper / logo system
 
-**Context:** SceneFX `blur_layer=1` caused white halo artifacts around rounded-corner rectangles on layer surfaces (bar, popups, OSD) on Intel Xe — specifically on landscape/laptop outputs, not portrait. Layerrule `noblur` per-surface did not reliably suppress it.
+### [2026-02-19] SVG renderer: rsvg-convert for SVG→PNG, ImageMagick for color extraction
 
-**Decision:** `blur_layer=0` globally. Glass appearance achieved via high-opacity semi-transparent colors (`glassBg` at 0.96, `glassBgLight` at 0.93) instead of blur-behind.
+ImageMagick's SVG renderer fills transparency with white; `rsvg-convert` (librsvg) preserves alpha correctly. Use rsvg for any SVG→PNG conversion; keep ImageMagick for histogram color extraction and final compositing.
 
-**Rationale:** The halo is a SceneFX/Intel compositing artifact at alpha-boundary edges of layer surfaces. No per-surface workaround was reliable. High opacity gives a readable dark panel that still hints at the content behind on dark wallpapers.
+### [2026-04-21] Focus mode dropped permanently
 
-**Trade-offs Accepted:** No true blur-behind on panels. Window content blur (`blur=1`) is unaffected.
+`unfocused_opacity` cannot be re-applied to existing clients on MangoWC `reload_config` — the client opacity is copied per-window at creation time in `createclient()`. There's no IPC dispatch to re-iterate open windows. Until MangoWC adds a `set_opacity` or `reapply_window_rules` IPC, focus mode is impossible. We removed it from the settings hub; `unfocused_opacity` stays at `0.85` (= `focused_opacity`), no dimming distinction. Revisit if/when the upstream IPC lands.
 
----
+### [2026-06-02] Logo previews: in-memory SVG substitution via FileView + data URI
 
-**Last Updated:** 2026-05-19
-
----
-
-### [2026-05-04] MangoWC IPC: DWL native protocol vs mmsg subprocess stream
-
-**Context:** Current `MangoWC.qml` runs `mmsg -w -O -t -l -c` as a persistent `Process` with `SplitParser`, parsing text output line-by-line. After source-inspecting Noctalia Shell (which has MangoWC support), a better approach was found.
-
-**Options Considered:**
-1. **Keep mmsg -w stream** (current)
-   - Pros: Already working, familiar
-   - Cons: Subprocess overhead, fragile text parsing, reconnect on crash, mmsg output format could change
-2. **Quickshell.DWL native protocol** (`DwlIpc` + `DwlIpcOutput`)
-   - Pros: Native Wayland DWL protocol, signal-driven, no text parsing, Quickshell handles reconnect
-   - Cons: Migration work; `mmsg` still needed for 2 edge cases (display scale queries, some switching fallbacks)
-
-**Decision:** Migrate to `Quickshell.DWL` (`DwlIpc` + `DwlIpcOutput`) in Sprint 2. Keep `mmsg` only for operations the DWL protocol can't provide.
-
-**Rationale:** Noctalia source (the only other multi-compositor Quickshell shell with MangoWC support) confirmed this is the right approach — they use DWL protocol as primary, mmsg only as fallback. Native protocol is more reliable and avoids subprocess management.
-
-**Trade-offs Accepted:** Migration effort. Requires testing DWL protocol actually surfaces all needed state (tags, title, appId, layout, selmon). If any field is missing, mmsg fallback is still available.
+The original `arch-logo.svg` / `rebel-logo.svg` / `imperial-logo.svg` have `LOGO_COLOR` / `LOGO_OPACITY` placeholders that `wallpaper-set.sh` substitutes at composition time. For the QML preview tiles, three `FileView`s read the originals and `_svgDataUri(text())` does the substitution in-memory, returning `data:image/svg+xml;utf8,...` for `Image.source`. Single source of truth — no committed preview duplicates. Trade-off: tiny per-mount substitution + URI encode; negligible.
 
 ---
 
-### [2026-05-04] MPRIS and Notifications: native Quickshell APIs, not external processes
+## Process & methodology
 
-**Context:** Sprint 4 (MPRIS) and Sprint 6 (notifications) were planned. Before implementing, checked all reference projects for how they solve these.
+### [2025-11-28] Dual-boot to Arch-only
 
-**Options Considered:**
-1. **MPRIS via playerctl subprocess** — `playerctl -F status` + `playerctl metadata` polling
-   - Pros: Simple, familiar
-   - Cons: Subprocess overhead, polling latency, process management
-2. **Notifications via swaync** — external daemon (current approach)
-   - Pros: Already working
-   - Cons: Separate process, separate CSS, never visually unified with shell
-3. **Native Quickshell.Services APIs** — `Quickshell.Services.Mpris` and `Quickshell.Services.Notifications.NotificationServer`
-   - Pros: Native D-Bus, signal-driven, zero subprocess overhead, fully integrated into QML, single process
-
-**Decision:** Use `Quickshell.Services.Mpris` for MPRIS (Sprint 4). Use `Quickshell.Services.Notifications.NotificationServer` for notifications (Sprint 6). Both confirmed working from end-4/dots-hyprland source inspection.
-
-**Rationale:** Both APIs are first-class Quickshell services, not workarounds. end-4 runs 46 service singletons with zero external polling processes for MPRIS and notifications. The entire rationale for Quickshell was one coherent process — using external daemons for these undermines that.
-
-**Trade-offs Accepted:** Learning the Quickshell.Services.Notifications API (D-Bus server registration). Must handle notification action callbacks, persistence, and grouping in QML/JS.
-
----
-
-### [2026-05-04] Go daemon: scoped to raw Wayland protocols only, Sprint 9+
-
-**Context:** Go was considered as a backend for various services. After source-inspecting DankMaterialShell (the reference for Go+QML architecture), the correct scope was determined.
-
-**Options Considered:**
-1. **Go daemon for everything** — MPRIS, notifications, audio, battery, network, BT, display, night light
-   - Pros: Consistent backend layer
-   - Cons: Massive over-engineering; Quickshell already has native APIs for MPRIS, notifications, PipeWire audio, UPower battery — rewriting these in Go provides zero benefit
-2. **No Go daemon** — pure QML for everything, use shell commands for display/gamma
-   - Pros: Simpler
-   - Cons: `wlr-randr` and `wlsunset` shell calls are fragile; no access to wlr-screencopy for integrated screenshots
-3. **Go daemon scoped to raw Wayland protocols only** ← chosen
-   - Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
-   - Does NOT handle: MPRIS (Quickshell native), notifications (Quickshell native), audio (Quickshell PipeWire), battery (UPower D-Bus), network (nmcli), BT (org.bluez D-Bus)
-
-**Decision:** `archeotech-daemon` Go binary, Sprint 9+. Unix socket at `$XDG_RUNTIME_DIR/archeotech.sock`, newline-JSON RPC. Namespaced methods: `display.extend`, `display.mirror`, `display.laptop-only`, `gamma.set`, `screenshot.region`. QML side: `Services/ArcheotechDaemon.qml` singleton using Quickshell `Socket` type.
-
-**Rationale:** Go earns its place only where Quickshell genuinely can't reach: raw Wayland protocol socket clients (wlr-output-management, wlr-gamma-control, wlr-screencopy). Everything else is native QML APIs. DankMaterialShell confirmed this boundary — their Go daemon handles evdev, udev, wlr protocols, persistent clipboard; their QML handles workspace/window state, MPRIS, notifications.
-
-**Trade-offs Accepted:** One additional binary to build and install. Go dependency in the project. Sprint 9 is non-trivial — display/gamma management without the daemon continues to work (via wlr-randr/wlsunset shell calls), so the daemon is additive not blocking.
-
----
-
-### [2026-05-11] Bar: Popup rendered inside PanelWindow, not as separate surface
-
-**Context:** Initial popup implementation (pre-sprint 6) used a `Loader` + `PanelWindow` as a separate layer-shell surface. This caused: grey-block rendering artifact when the Loader destroyed the surface, no smooth slide animation between icons (surface was recreated on every hover), and extra compositor round-trips for each popup show/hide.
-
-**Decision:** Popup card lives as a persistent `Shape` child of the bar's own `PanelWindow`. The bar window is extended to 220px tall; a `Region`-based input mask limits pointer events to the bar strip + popup footprint. The card is never destroyed — opacity/scale animate between visible and hidden.
-
-**Rationale:**
-- Persistent card means switching between icons slides x with no destroy/recreate; animation is smooth
-- Single surface avoids the grey-block artifact (Quickshell bug: layer surface destruction leaves a 1-frame grey fill)
-- Input mask on the PanelWindow restricts events correctly without needing a separate surface for hit-testing
-- `pill` stays at `z: 1` so it renders on top of the popup card's top edge, keeping visual layering clean
-
-**Trade-offs Accepted:** Bar PanelWindow is now 220px tall (taller than the visible bar). The `exclusiveZone` is still set to bar height only — the extra height is transparent and below the bar. If a future popup content exceeds 220px the card will clip; adjust the constant if needed.
-
----
-
-### [2026-05-11] Bar: Popup card shape — concave funnel top via QtQuick.Shapes
-
-**Context:** Original popup card was a `Rectangle` with `radius` and a 1px accent border. Needed a shape that visually connects the popup to the bar — wider at the top (aligned to bar bottom), narrowing to a body width via concave arcs.
-
-**Decision:** `QtQuick.Shapes.Shape` with a hand-drawn `ShapePath`: flat wide top edge → CCW concave arcs narrowing to body width → straight sides → CW rounded bottom corners. Fill is `glassBgLight`; no stroke. Shape item width is `bodyWidth + 2*_r` so the funnel ears (which extend `_r` past the body on each side) are within the item's bounding box. `layer.enabled: true; layer.samples: 8` for 8× MSAA on all edges.
-
-**Rationale:**
-- The funnel visually anchors the popup to the triggering icon — "this popup came from here"
-- `Shape` is the only way to draw non-rectangular filled paths in QML without C++ plugins
-- `layer.samples: 8` is the standard fix for pixelated Shape edges in Qt Quick (software antialiasing on Shape is unreliable; MSAA via layer is the correct approach)
-- Shape item must be wide enough to contain all path coordinates: funnel ears extend `_r` on each side, so `width = bodyWidth + 2*_r`. Without this, `layer.enabled` clips the ears (layer texture = item bounding box)
-
-**Trade-offs Accepted:** Shape rendering is slightly more expensive than a Rectangle. The persistent card (never destroyed) means this cost is always paid — acceptable given it's one card per screen.
-
----
-
-### [2026-05-11] Bar: Popup hide — timer grace period + owner tracking
-
-**Context:** Original `hidePopup()` set `_popupVisible = false` immediately. Two bugs resulted:
-1. Moving directly between icons caused a flicker (hide + show in quick succession, animation briefly reversed)
-2. A QML race where `onEntered(B)` fires before `onExited(A)` (observed in Quickshell/Wayland event delivery) caused the second popup to disappear 250ms after appearing: `onEntered(B)` stopped a timer that wasn't running; then `onExited(A)` started it with nothing to cancel it
-
-**Decision:** `hidePopup()` starts a 250ms `Timer` instead of hiding immediately. `showPopup()` stops the timer, stamps `_lastShowTime`, and records `_popupOwner = item`. `hidePopup(caller)` ignores the call if `caller !== _popupOwner` — stale `onExited` from the previous icon is silently dropped. Popup card's `onExited` has its own `Date.now() - _lastShowTime > 200` guard (prevents hide when popup repositions under the cursor on icon switch).
-
-**Rationale:**
-- 250ms grace lets the cursor cross gaps between icons without the popup flashing off
-- `_popupOwner` check is timing-independent — works regardless of how many milliseconds separate `onEntered(B)` and `onExited(A)`, which varies with compositor event batching
-- Time-based guards (tried: 50ms, then `> 0`) were too coarse: 50ms blocked legitimate quick exits (popup stayed open); `> 0` failed when events fired 1ms apart
-
-**Trade-offs Accepted:** A stale `onExited` from a non-owner icon is silently ignored even if legitimately fired. In practice this is correct behaviour — if `_popupOwner` has already changed, we don't want the old icon to hide the new popup.
-
----
-
-### [2026-05-11] Bar: Clock absolutely centered, not in RowLayout
-
-**Context:** Clock was a child of the RowLayout's center fill `Item`. If the left section (tags + title + MPRIS) grew wider than the right section (tray icons), the "center" item shifted and the clock was visually off-center in the pill.
-
-**Decision:** Clock (`centerClock`) is a direct child of the `pill` Rectangle with `anchors.centerIn: parent` and `z: 1`. The RowLayout center slot is now a plain `Layout.fillWidth` spacer.
-
-**Rationale:** True visual center of the pill, independent of left/right section widths. `z: 1` ensures the clock renders above the popup card's top edge if they ever overlap.
-
-**Trade-offs Accepted:** Clock can overlap long window titles or MPRIS marquee if both are maximally wide simultaneously. Acceptable — clock is always readable on a dark pill background.
-
----
-
-### [2026-05-11] Bar: Tray icon hit areas — Item wrappers with fixed bar height
-
-**Context:** Tray icons were bare `Text` elements with `MouseArea` children. The hit area was exactly the glyph bounding box — too small for comfortable clicking, and `parent.color` on the MouseArea targeted the Text's parent Item rather than the icon Text itself, causing color changes to fail silently.
-
-**Decision:** Each icon is wrapped in an `Item` with `height: bar.height; width: icon.implicitWidth + 10`. The `MouseArea` fills the Item. Color changes target the named icon Text id directly (`volIcon.color`, `btIcon.color`, etc.). Live-updating icons (mic, volume, brightness) additionally have `Connections` blocks to update popup content while hovering.
-
-**Rationale:**
-- Full bar height hit area is consistent with standard bar UX (the whole strip height is clickable)
-- Named icon targets eliminate the `parent.color` ambiguity
-- Connections blocks let the popup reflect real-time state changes (e.g. scrolling volume while popup is open) without re-calling `showPopup`
-
-**Trade-offs Accepted:** More verbose per-icon code. Accepted — clarity is worth it.
-
----
-
-### [2026-05-11] Bar: Notification bell — icon color instead of badge pill
-
-**Context:** Unread notifications were indicated by a small red pill badge (count or "9+") overlaid on the bell icon. The pill style was visually inconsistent with the rest of the bar (the only element with a child overlay shape) and added noise to an already dense tray.
-
-**Decision:** Remove badge pill entirely. Bell icon color encodes state: `subtext1` (no notifications) → `red` (unread notifications) → `accent` (notification center open / hover). The count is available in the notification center panel itself.
-
-**Rationale:** Icon color is the existing pattern for state in the tray (mic red when muted, BT mauve when connected). A count badge is useful when glanceable count matters — for notifications the actionable signal is "there are some" not "there are exactly N". Color conveys that with less visual weight.
-
-**Trade-offs Accepted:** Exact unread count not visible from the bar. Acceptable — count is one click away in the notification center.
-
----
-
-### [2026-05-12] WiFi Radio Toggle: Quickshell.Networking vs nmcli
-
-**Context:** Sprint 9 WiFi native — need to toggle the WiFi adapter on/off.
-
-**Options Considered:**
-1. `nmcli radio wifi on/off` subprocess
-2. `Quickshell.Networking.wifiEnabled = true/false` (native property)
-
-**Decision:** `Quickshell.Networking.wifiEnabled`
-
-**Rationale:** Noctalia source-confirmed. Readable+writable boolean property — no subprocess needed. Consistent with our policy of using native Quickshell APIs wherever available (same reason we use Quickshell.Services.Mpris over playerctl, etc.).
-
-**Trade-offs Accepted:** Requires Quickshell 0.2+ (we're on 0.2.1-6, fine).
-
----
-
-### [2026-05-12] WiFi Network Parsing: Colon-Escape Trick
-
-**Context:** nmcli uses `:` as field separator in `-g` mode, but SSIDs can contain literal `:`. Naive `split(":")` corrupts SSID values.
-
-**Options Considered:**
-1. Use `nmcli -t` terse mode — same separator problem
-2. Parse via Python3 subprocess — adds dependency
-3. Use placeholder replacement: `\:` → placeholder before split, placeholder → `:` after
-
-**Decision:** Placeholder replacement (caelestia's approach)
-
-**Rationale:** Source-confirmed to work. No extra dependencies. The escape sequence `\:` is stable nmcli behavior. Caelestia uses `"STRINGWHICHHOPEFULLYWONTBEUSED"` as the placeholder; we'll use something shorter like `"\x00"` (null char, can't appear in SSID).
-
-**Trade-offs Accepted:** Slightly odd-looking parsing code, but it's isolated to one function.
-
----
-
-### [2026-05-12] WiFi Password UI: Inline Expansion vs Modal
-
-**Context:** User taps "Connect" on a secured unsaved network — need to collect a password.
-
-**Options Considered:**
-1. Modal dialog (separate window / overlay)
-2. Dedicated password row at bottom of network list
-3. Inline expansion inside the network row itself
-
-**Decision:** Inline expansion inside the network row
-
-**Rationale:** Both end-4 and Noctalia independently arrived at this pattern. Keeps the user's eye on the network they're connecting to. Consistent with the CC's design language (no popups, everything in-panel). The card grows to reveal `TextInput { echoMode: Password }`, shrinks on cancel.
-
-**Trade-offs Accepted:** Card height animation must not fight with list scroll position. List model must be frozen while password field is open (prevent reorder under user's finger). Enterprise (802-1x) deferred to post-Sprint 9.
-
----
-
-### [2026-05-12] WiFi Forget-on-Failure Pattern
-
-**Context:** When a connect attempt fails (wrong password, timeout), NetworkManager writes a partial connection profile. Leaving it causes all subsequent connect attempts to also fail because NM tries to use the stale profile.
-
-**Options Considered:**
-1. Let NM manage profile cleanup
-2. Explicitly call `nmcli connection delete <ssid>` on any auth failure before retry
-
-**Decision:** Always forget on failure (option 2)
-
-**Rationale:** Caelestia and DMS both independently implement this. NM does not clean up partial profiles automatically. The delete is safe — the user will re-enter the password on the next attempt.
-
-**Trade-offs Accepted:** User must re-enter password on every failed attempt (not automatically retried with different credentials).
-
----
-
-### [2026-05-12] Audio Backend: Quickshell.Services.Pipewire vs pactl subprocess
-
-**Context:** Sprint 10 audio sink selection — need to list and switch audio output/input devices.
-
-**Options Considered:**
-1. `pactl list sinks` subprocess + `pactl set-default-sink` (current approach for volume)
-2. `Quickshell.Services.Pipewire` native bindings
-
-**Decision:** `Quickshell.Services.Pipewire` for device listing and switching; keep pactl for volume (existing, working)
-
-**Rationale:** All three Quickshell repos (caelestia, end-4, Noctalia) use native PipeWire bindings for device management. `PwObjectTracker` is required for reactive volume bindings — without it, `sink.audio.volume` doesn't update. `Pipewire.preferredDefaultAudioSink` is the correct API for setting default device.
-
-**Trade-offs Accepted:** Requires `PwObjectTracker` on the active sink/source — extra boilerplate but mandatory. Volume control can stay on pactl until a full migration is warranted.
-
----
-
-### [2026-05-12] CC WiFi/BT Row Pattern: CompoundPill (Split Toggle + Expand)
-
-**Context:** WiFi and BT rows in the CC need both a quick toggle (common action) and a details expansion (less common). Combining them in one click area is ambiguous UX.
-
-**Options Considered:**
-1. Full-row click = expand, toggle is a separate switch widget on the right
-2. Full-row click = toggle, expand via a separate chevron button
-3. CompoundPill: left tile = toggle, right body = expand (DMS pattern)
-
-**Decision:** CompoundPill — left ~48px tile toggles, right body expands
-
-**Rationale:** DMS independently derived this pattern. It resolves the ambiguity cleanly: left = power, right = details. Both actions are large touch targets. The visual split (tile vs. body background) communicates the dual nature without labels.
-
-**Trade-offs Accepted:** Slightly more complex layout than a single RowLayout. BT section (Sprint 8) needs to be refactored to this pattern for consistency.
-
----
-
----
-
-### [2026-05-12] Settings App: Standalone Window vs CC-Embedded (Wave 2)
-
-**Context:** Wave 2 research confirmed all three QML shells (caelestia, end-4, DMS) provide a dedicated settings app/panel separate from their CC quick-settings.
-
-**Options Considered:**
-1. Keep everything in CC, keep growing it with more sections
-2. Separate settings app launched from CC gear icon (end-4 model: `qs -p settings.qml`)
-3. Expandable CC that becomes the settings panel (caelestia model)
-
-**Decision:** Separate settings window (option 2), launched from CC gear button via IPC. CC stays as quick-access. Sprint 12.
-
-**Rationale:** Caelestia's "CC is settings" model only works because they built it from day one for that purpose — retrofitting ours would require gutting it. End-4 and DMS have proper separation. With deep linking (`openSettingsWithTab(name)`) the two feel seamless anyway. Our CC will eventually have 8+ sections; a separate window with NavRail scales to that.
-
-**Trade-offs Accepted:** Two QML surfaces to maintain. IPC bridge required between CC and settings window. Worth it for the cleaner architecture.
-
----
-
-### [2026-05-12] Settings Persistence: Config Singleton + JSON + setNestedValue
-
-**Context:** All three QML shells use a config singleton that reads/writes a JSON file. The pattern is convergent enough to adopt directly.
-
-**Options Considered:**
-1. Individual QML Settings properties scattered across service files
-2. Central `Config.qml` singleton with JSON adapter, dotted key API
-
-**Decision:** Central `Config.qml` singleton (option 2), modeled on end-4's implementation
-
-**Rationale:** Config.qml with `setNestedValue("a.b.c", val)` + JsonAdapter makes every setting instantly reactive throughout the shell. DMS and end-4 independently converged on this. Write debounce (50ms) prevents disk thrashing on slider drags.
-
-**Trade-offs Accepted:** All settings must be keyed by dotted path strings — potential for typos. Mitigated by using typed constants for keys rather than raw strings.
-
----
-
-### [2026-05-12] Settings Navigation: NavRail (Sidebar) vs Horizontal Tabs
-
-**Context:** Settings panels with 8–34 items. caelestia, DMS, and Noctalia all chose a sidebar/NavRail model over horizontal tabs.
-
-**Options Considered:**
-1. Horizontal tab bar at top of settings window
-2. Vertical icon+label sidebar (NavRail) with collapsible category groups
-
-**Decision:** NavRail with collapsible categories (option 2)
-
-**Rationale:** Beyond ~6 items, horizontal tabs truncate or wrap. NavRail supports categories, icons, and selection state clearly at any item count. DMS shows it scales to 34 tabs with 10 category groups. Caelestia shows wheel-scroll navigation is a nice bonus.
-
-**Trade-offs Accepted:** Wider minimum window (NavRail takes ~200px). Worth the clarity.
-
----
-
-### [2026-05-12] Deep Linking: CC Quick Toggle → Settings Pane
-
-**Context:** DMS's `PopoutService.openSettingsWithTab("network")` enables CC quick toggles to deep-link into the full settings panel. Noctalia uses a similar SettingsPanelService pattern.
-
-**Decision:** Implement deep linking from day one in settings architecture. CC gear button and section "more" buttons will call a global `SettingsService.openPane("appearance")` function.
-
-**Rationale:** Without deep linking, settings and CC feel disconnected. With deep linking, CC is the fast path and settings is the full path — they feel like one system.
-
-**Trade-offs Accepted:** Requires IPC or a shared singleton that both CC and settings window can reach. Use Quickshell `IpcHandler` or a `pragma Singleton`.
-
----
-
-### [2026-05-12] Bluetooth Settings Depth: Three-Category Panel (Noctalia Model)
-
-**Context:** Current Sprint 8 BT implementation shows only paired devices. Noctalia's BluetoothSubTab has three categories (connected, paired, available) with battery + signal + per-category actions.
-
-**Decision:** Future BT settings pane (Sprint 13) will follow Noctalia's three-category model. CC BT section stays as paired-only quick-access.
-
-**Rationale:** The three-category model is the right UX — users need available devices to pair new ones. Battery and signal are valuable for headphone/speaker management. CC stays minimal; settings pane goes deep.
-
-**Trade-offs Accepted:** Requires active BT scanning when panel is open. Scanning is gated behind panel visibility (debounced start/stop) per Noctalia's approach.
-
----
-
-### [2026-05-12] Theme System: QML-Native Tokens vs HyDE Shell Pipeline
-
-**Context:** HyDE uses a full bash pipeline (wallbash.sh → .dcol files → template substitution per app) for cross-app color cohesion. Requires ImageMagick, swww, and bash expertise.
-
-**Decision:** Build a QML-native token system (`Theme.qml` singleton) for the shell first (Sprint 12+), then add wallpaper color extraction as an enhancement (Sprint 15). Do NOT adopt HyDE's bash pipeline as primary approach.
-
-**Rationale:** Our stack is QML-first. A `Theme.qml` singleton with color tokens that all QML components read from is the right architecture. External app theming (kitty, dunst) can write config files as a side effect — similar to HyDE's template system but triggered from QML.
-
-**Trade-offs Accepted:** External apps won't match shell colors until Sprint 15.
-
----
-
----
-
-### [2026-05-19] Bar Popups: Native QML Panels vs External App Launch
-
-**Context:** Bar network and BT icons previously launched `nm-connection-editor` and `blueman-manager`. Sprint 9 goal was to bring these inline as compact popups — same ear+arc Shape geometry as the calendar card.
-
-**Decision:** Replace external app launches with native Shape popups in Bar.qml. WiFi popup shows top-5 networks with connect/disconnect inline; BT popup shows paired device list. Both have adapter toggle headers. "Open Settings" deeplinks into CC via `State.controlCenterOpenSection`.
-
-**Rationale:** External apps break visual cohesion and require separate window management. Native popups give immediate status at a glance and keep the shell self-contained. CC remains the full settings surface for edge cases (password entry, forget, full device list).
-
-**Trade-offs Accepted:** Bar popup capped at 5 networks — power users use CC. Password entry stays in CC only (bar popup triggers deeplink).
-
----
-
-### [2026-05-19] busctl monitor Fallback: Polling on Access Denied
-
-**Context:** `busctl monitor org.bluez` exits with code 1 (Access denied) in normal user sessions. The original `onExited` handler unconditionally restarted the process, causing an infinite crash loop.
-
-**Decision:** Only restart the monitor on `code === 0` (clean disconnect). Add a 3-second polling `Timer` as fallback when monitor is not running. Timer declared as `property var _pollTimer: Timer {}` — required because `QtObject` has no default property.
-
-**Rationale:** Polling at 3s is sufficient for BT state changes. The monitor approach is best-effort; crashing in a tight loop burns CPU and spams logs with no benefit.
-
-**Trade-offs Accepted:** 3s polling lag for BT state updates when busctl monitor is unavailable.
-
----
-
----
-
-### [2026-05-27] Perimeter Frame: bar marginTop 6→0
-
-**Decision:** Move bar flush with screen top edge (`marginTop: 0`), making the bar part of a continuous glass frame rather than a floating pill.
-
-**Rationale:** Enables wrapping the screen with strips on all four sides (Caelestia-style perimeter frame). With marginTop=0, the bar's exclusive zone shrinks from 42→36px, and side strips can start immediately below the bar at y=36.
-
-**Trade-offs Accepted:** Bar corners now fully flat at top (radius already 0 at top). Bottom corners also set to radius:0 for Sprint 16 to avoid corner gap artefacts; Sprint 18 (goth corners) re-introduces curves with proper concave connectors.
-
----
-
-### [2026-05-27] Edge Strip Exclusive Zones for Equal Gaps
-
-**Decision:** Edge strips use `exclusiveZone: 10` (replacing `exclusionMode: ExclusionMode.Ignore`). MangoWC gaps set to `gappoh=4`, `gappov=4`.
-
-**Rationale:** With Ignore, the gap from bar-bottom to window-top was 12px while left/right gaps (strip-edge to window) were 4px — visually unequal. Exclusive zones let MangoWC's gappoh/gappov apply symmetrically: each side reserves 10px for its strip then adds 4px gap, giving equal 4px breathing room on all four sides.
-
-**Trade-offs Accepted:** Wayland layer-shell exclusive zones from adjacent panels constrain each other geometrically — the right and bottom strips leave a 10×10px uncovered corner at bottom-right (and similarly other corners). Deferred to Sprint 18 (goth corner connectors). Bar width is also reduced by left/right strip exclusive zones, but since the strips carry the same glass color the visual boundary is seamless.
-
----
-
-### [2026-05-27] Bar radius:0 Pending Goth Corners
-
-**Decision:** Set `radius: 0` on the bar pill. Previously `bottomLeftRadius: xl (18)`, `bottomRightRadius: xl (18)`.
-
-**Rationale:** The 18px bottom-corner radius creates a concave notch at the bar/strip junction — the bar curves inward while the strip runs straight, leaving an unfilled gap. Flat corners eliminate this. Sprint 18 will re-introduce curves alongside concave ShapePath connectors (DankMaterialShell BarCanvas.qml pattern) that fill the junction properly.
-
-**Trade-offs Accepted:** Bar looks boxy until Sprint 18. Acceptable since the frame aesthetic (flush bar + full-height strips) is already a significant visual improvement.
-
----
-
-### [2026-06-02] Widget Registry: Noctalia filename convention over Caelestia DelegateChooser
-
-**Context:** Sprint 18 needs a way to map widget ids in `shell-config.json` to QML components for the bar and edge strips. The reference projects offer two patterns:
-
-**Options Considered:**
-1. **Caelestia DelegateChooser** — `Bar.qml` has a static `DelegateChooser` with one `DelegateChoice` per widget id, each pointing to a QML file.
-   - Pros: Type-safe at compile time, slightly faster mount (pre-instantiated `Component`s).
-   - Cons: Adding a built-in widget requires editing two places (the chooser + the new QML file). No path forward for user-installed plugins without rewriting the chooser.
-2. **Noctalia filename convention** — `BarWidgetLoader.qml` does `loader.setSource("Widgets/Bar/" + pascalCase(id) + "Widget.qml", props)`. No central registry table to maintain for built-ins.
-   - Pros: Drop a file under `Widgets/Bar/` to add a widget. `plugin:<id>` namespacing branch reserves the path for Sprint 20's plugin manifest scanning without any S18 refactor. The most successful community-extensible shells (Noctalia 150+, DMS 100+) both ship this pattern.
-   - Cons: Slightly more code in the loader (Noctalia's `setSource(path, props)` is the only reliable way to satisfy `required` properties on the widget — declarative bindings on `Loader.source` don't work for required props).
-
-**Decision:** Noctalia filename convention. `Services/Shell/WidgetRegistry.qml` is a thin id → filename mapper; `BarWidgetLoader`/`StripWidgetLoader` own the directory prefix and `setSource` call.
-
-**Rationale:** The whole project vision (per ROADMAP.md) is a "fully composable, community-extensible" shell. Caelestia's pattern works for a strictly built-in shell but every plugin would need a registry edit — incompatible with the v1.0 release goal of "drop a folder, get a widget". Adopting the Noctalia pattern now means S20's plugin scanning is purely additive (add a `plugin:<id>` branch to the loader) instead of a refactor.
-
-**Trade-offs Accepted:** Components are loaded asynchronously on first mount instead of being pre-instantiated; first paint of a heavy widget may take a frame. Acceptable — `asynchronous: true` on the `Loader` plus a `Component.onCompleted` `_resolve()` call keeps the bar responsive.
-
-**Reviewed:** When Sprint 20 lands plugin discovery, verify the `plugin:` prefix branch in `WidgetRegistry` extends cleanly to manifest-driven plugins without touching the bar/strip code.
-
----
-
-### [2026-06-02] barRoot context API over implicit `bar.*` references
-
-**Context:** Bar widgets used to live inline in `Bar.qml` and freely reached into the bar's properties (`bar._popupVisible`, `bar.showPopup(parent, ...)`). After Sprint 18 extracts widgets to their own files, they need an explicit contract — both for code organisation and to prepare for plugin widgets (S20) that should be sandboxed against shell internals.
-
-**Decision:** Every bar widget receives a `required property var barRoot` injected by `BarWidgetLoader` via `setSource(path, { barRoot, widgetId })`. Documented API surface: `side`, `horizontal`, `screen`, `showPopup(...)`, `hidePopup(caller)`, `hideCalendar(caller)`, `keepPopupsAlive()`, plus the popup-state properties (`_wifiPopupVisible`, `_wifiAnchorX`, etc.) used by mutually-exclusive popups. Strip icons get the symmetric `stripRoot`.
-
-**Rationale:** This is Noctalia's PluginAPI pattern, scaled down. Plugin widgets in S20 will use the same `barRoot` reference — same surface, same behaviour. Documenting it now (in `docs/WIDGET_API.md`) means S20 doesn't have to re-spec the contract.
-
-**Trade-offs Accepted:** Widgets that need to coordinate state (NetworkWidget toggling `_wifiPopupVisible` so other popups dismiss) reach into `_`-prefixed properties on barRoot. Acceptable — these are documented; the underscore signals "internal to bar, but reachable when coordinating with a sibling widget".
-
----
-
-### [2026-06-02] theme-switch.sh → theme-switch.py (Caelestia pattern)
-
-**Context:** S19 needed to extend the theme switcher from 5 to 8 targets (adding GTK, VSCode, Obsidian) with idempotent atomic writes and stampede prevention (Super+W can be hit repeatedly). The existing bash script had grown awkward — regex substitutions across multiple config files, no locking, no atomic writes (a torn `theme.json` would crash Quickshell mid-read).
-
-**Options Considered:**
-1. **Extend bash + add target-handling case statement** — minimal change, keeps shell-only dependency.
-   - Pros: no new language.
-   - Cons: bash atomic writes are awkward (`mktemp` + `mv`, error handling clunky); `flock` is fine but no per-target failure isolation.
-2. **Python rewrite, Caelestia-style** — temp+rename + `fcntl` lock + template registry + per-target functions.
-   - Pros: per-target `try/except` isolates failures; atomic write helper is 8 lines; `fcntl.flock(LOCK_EX | LOCK_NB)` is idiomatic; template substitution is a one-liner with `re.sub`; readable per-app appliers.
-   - Cons: introduces Python as a dependency (already present on every Arch box).
-3. **Hybrid: bash entry → Python core** (existing pattern in the old script).
-   - Pros: keeps the shebang familiar.
-   - Cons: marginal — just hides the implementation language one layer down.
-
-**Decision:** Option 2. `scripts/theme-switch.py` does the work; `scripts/theme-switch.sh` is a 5-line bash exec into the Python script so the existing `~/.local/bin/theme-switch.sh` symlink keeps working.
-
-**Rationale:** Caelestia's CLI proved this pattern out at scale (~17 app templates, postHook, lock). Lifting the structure to our smaller surface gets us the same robustness for free. `atomic_write` writes through symlinks via `path.resolve()` so the stow-managed `~/.config/starship.toml` doesn't get clobbered. Template files live in `scripts/themes/templates/` with `{{key}}` placeholders substituted from each theme.json — single source of truth (`theme.json`), no per-theme template duplication.
-
-**Trade-offs Accepted:** Python startup overhead (~30 ms) is fine for a manually-triggered switch. The CLI is no longer source-able as a shell function — not needed.
-
----
-
-### [2026-06-02] Wallpaper picker as first-class strip panel, not Settings pane
-
-**Context:** S19 redesigned the AppearancePane theme picker and needed to decide where the wallpaper selector lives. Research confirmed Noctalia treats the wallpaper picker as its own panel (sibling to CC/NC/Launcher), DMS makes it a Settings tab. Both work; the question is which fits Archeotech's grammar.
-
-**Options Considered:**
-1. **Settings pane** (DMS pattern) — tab in the Settings window.
-2. **Strip-mounted panel** (Noctalia pattern) — strip icon `wallpaper` toggles a sibling panel.
-3. **Launcher mode** (Caelestia pattern) — type a prefix in the launcher to enter wallpaper-pick mode.
-4. **Keep existing rofi script** — `Super+W` keeps invoking `scripts/wallpaper-picker.sh`.
-
-**Decision:** Option 2. New panel registered as `wallpaper` in `PanelRegistry`, mounted on the bottom strip alongside `dashboard`. `Super+W` rebound from the rofi script to `qs ipc call wallpaper toggle`. Rofi script kept on disk (legacy, no longer wired to a keybind).
-
-**Rationale:** Wallpaper picking is a frequent action that wants anchor-to-bar + per-monitor positioning + keyboard grid navigation — Settings is a long-lived window, wrong feel. Logo selector lives in the same panel because it's contextually tied to the wallpaper (already true for the rofi picker). The palette icon in the panel header (`Commons.State.settingsOpenPane = "appearance"`) lets users jump to theme picking when that's what they actually want — gives one-click bridge without merging the surfaces.
-
-**Trade-offs Accepted:** Bottom-strip panel grows to full screen axis when active (Sprint 17 architecture) — visually too imposing for a wallpaper shelf. Sprint 20 addresses this with the `axisSize` field. For now, panel height capped at 380 px keeps it tolerable.
-
----
-
-### [2026-06-02] Wallpaper picker carousel: horizontal ListView over vertical GridView
-
-**Context:** First wallpaper-panel design was a 2-column `GridView` scrolling vertically — felt like a heavy dialog, not the lightweight shelf the user expected. Caelestia's wallpaper picker uses a vertically-scrolling grid, but their panel is fixed-width 700-ish px (not full-axis). Ours is full-axis bottom strip.
-
-**Options Considered:**
-1. **Vertical GridView** — current Caelestia clone.
-2. **Horizontal ListView** — one row of thumbnails, scroll left/right.
-3. **Adaptive** — vertical when narrow, horizontal when wide.
-
-**Decision:** Option 2. Single horizontal row, 3:2 cells, height-driven sizing (`cellH = height - 14`, `cellW = cellH × 1.5`). Vertical scroll-wheel translated to horizontal flick via `WheelHandler`. Aim: ~5 cells visible at once.
-
-**Rationale:** Full-axis bottom panel + vertical grid = staircase of thumbnails dominating the screen. Horizontal carousel matches the form factor (panel is much wider than tall), feels like a dock/shelf, and stays scannable. `WheelHandler` translation is needed because `ListView.orientation: Horizontal` doesn't natively respond to vertical wheel events.
-
-**Trade-offs Accepted:** Cell sizing is height-driven, so the user-requested "more visible" needs panel-height adjustment, not column count. Sprint 20's `axisSize` field will help — a non-full-axis panel can be narrower, with cells sized accordingly.
-
----
-
-### [2026-06-02] Reuse original logo SVGs via FileView + in-memory substitution
-
-**Context:** The wallpaper panel's logo selector needs to render previews of the three logo SVGs (`arch-logo.svg` / `rebel-logo.svg` / `imperial-logo.svg`). The originals have `LOGO_COLOR` and `LOGO_OPACITY` placeholders that `wallpaper-set.sh` substitutes at composition time — they're not directly renderable.
-
-**Options Considered:**
-1. **Pre-generate `*-logo-preview.svg`** with hardcoded colors, commit alongside originals.
-2. **Read original SVGs via `FileView`, substitute in-memory in QML, feed Image via `data:image/svg+xml` URI.**
-3. **Reuse the cached PNGs** that `wallpaper-picker.sh` generates at `~/.cache/wallpaper/thumbs/logo-preview-*.png`.
-
-**Decision:** Option 2. Three `FileView`s read the originals; `_svgDataUri(content)` does `replace(/LOGO_COLOR/g, "#cad3f5").replace(/LOGO_OPACITY/g, "1.0")` and returns `data:image/svg+xml;utf8,...`.
-
-**Rationale:** Single source of truth — when the SVG asset is updated, the preview tracks automatically. No commit churn from preview files. The `data:` URI works natively with `qt6-svg`. The cached-PNG approach (option 3) is fast but tied to the rofi script's lifecycle — would break the day we delete that script.
-
-**Trade-offs Accepted:** Each FileView reads ~1-5 KB; the substitution + URI encode runs once per file. Negligible.
+(Historical — Fedora removed 2026-04-20.) The previous setup kept Fedora alongside Arch for system recovery. Decision was to remove it once Arch had snapshot-based recovery (snapper + snap-pac + grub-btrfs). Recovered an extra 265GB for games (now nvme0n1p7). Recovery falls back to Arch live USB if needed.
 
 ---
 
 **Last Updated:** 2026-06-02
-**Total Decisions:** 60
+**Total Decisions:** 36 (post-cleanup; previous file held 60 entries, dropped tactical/superseded/in-code items)
