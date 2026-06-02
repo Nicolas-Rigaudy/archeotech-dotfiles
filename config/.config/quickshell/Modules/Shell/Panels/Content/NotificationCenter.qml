@@ -2,17 +2,28 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../../../../Commons" as Commons
+import "../../../../Commons/Primitives"
 import "../../../../Services/System" as SystemServices
 
 // NotificationCenter UI. Panel.qml provides chrome + slide-from-edge anim +
 // focus/Esc/click-outside; this file is the inner content only. `panelRoot`
 // is injected by Panel.qml's Loader.onLoaded — call `panelRoot.close()` to
 // dismiss.
+//
+// Sprint 20: exposes `implicitAxis` (used by Strip when axisSize == "auto")
+// so the panel sizes to actual content height + chrome instead of growing
+// to the full screen.
 Item {
     id: root
     anchors.fill: parent
 
     property var panelRoot
+
+    // Strip.qml reads this to drive axisSize:"auto". Floor keeps the empty
+    // state visible without collapsing to header-only; cap is enforced by
+    // Strip against the screen axis.
+    readonly property real implicitAxis:
+        Math.max(220, contentColumn.implicitHeight + Commons.Appearance.spacing.xl * 2)
 
     Item {
         id: panel
@@ -91,27 +102,11 @@ Item {
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
                 // ── Empty state ───────────────────────────────────────────────
-                Item {
+                EmptyState {
                     Layout.fillWidth: true
                     visible: SystemServices.Notifications.count === 0
-                    height: 90
-                    ColumnLayout {
-                        anchors.centerIn: parent
-                        spacing: 8
-                        Text {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: "󰂚"
-                            color: Commons.Appearance.colors.surface1
-                            font.pixelSize: 30; font.family: Commons.Appearance.font.family
-                        }
-                        Text {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: "No notifications"
-                            color: Commons.Appearance.colors.overlay0
-                            font.pixelSize: Commons.Appearance.font.sizeBase
-                            font.family: Commons.Appearance.font.family
-                        }
-                    }
+                    icon:  "󰂚"
+                    title: "No notifications"
                 }
 
                 // ── Notification list ─────────────────────────────────────────

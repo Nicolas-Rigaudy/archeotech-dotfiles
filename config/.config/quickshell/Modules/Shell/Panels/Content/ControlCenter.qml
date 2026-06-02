@@ -25,16 +25,10 @@ Item {
     property var network: NetworkServices.Network
     property var bt:      NetworkServices.Bluetooth
     property var vpn:     NetworkServices.VPN
-    property string nightLightMode: "off"
-    property string powerProfile:   "balanced"
-    property string displayLayout:  "extend"
 
-    property bool displayExpanded:    false
-    property bool nightLightExpanded: false
-    property bool idleExpanded:       false
-    property bool wifiExpanded:       false
-    property bool btExpanded:         false
-    property string wifiAskPwFor:    ""
+    property bool wifiExpanded:   false
+    property bool btExpanded:     false
+    property string wifiAskPwFor: ""
 
     onWifiAskPwForChanged: {
         if (wifiAskPwFor !== "") network.freezeList()
@@ -45,14 +39,11 @@ Item {
     readonly property var _wifiSaved:      network.displayNetworks.filter(function(n) { return n.saved && !n.active })
     readonly property var _wifiAvailable:  network.displayNetworks.filter(function(n) { return !n.saved && !n.active })
 
-    Component.onCompleted: _syncState()
-
     Connections {
         target: root.panelRoot
         enabled: root.panelRoot !== null
         function onPanelOpenChanged() {
             if (root.panelRoot && root.panelRoot.panelOpen) {
-                root._syncState()
                 if (Commons.State.controlCenterOpenSection === "wifi") {
                     root.wifiExpanded = true
                     Commons.State.controlCenterOpenSection = ""
@@ -62,83 +53,6 @@ Item {
                 }
             }
         }
-    }
-
-    function _syncState() {
-        profileReader.running    = true
-        nightLightReader.running = true
-        idleConfigReader.running = true
-    }
-
-    // ── State readers ──────────────────────────────────────────────────────────
-
-    Process {
-        id: profileReader
-        command: ["bash", "-c", "powerprofilesctl get"]
-        running: false
-        stdout: SplitParser {
-            onRead: data => {
-                var p = data.trim()
-                if (p === "performance" || p === "balanced" || p === "power-saver")
-                    root.powerProfile = p
-            }
-        }
-    }
-
-    Process {
-        id: nightLightReader
-        command: ["bash", "-c",
-            "[ -f $HOME/.cache/wlsunset.pid ] && kill -0 $(cat $HOME/.cache/wlsunset.pid) 2>/dev/null " +
-            "&& grep -oP '(?<=-t )\\d+' /proc/$(cat $HOME/.cache/wlsunset.pid)/cmdline 2>/dev/null " +
-            "|| echo off"]
-        running: false
-        stdout: SplitParser {
-            onRead: data => {
-                var t = data.trim()
-                root.nightLightMode = (t === "4500" || t === "3500" || t === "2700") ? t : "off"
-            }
-        }
-    }
-
-
-    property bool   dimEnabled:   true
-    property int    dimTimeout:   600
-    property bool   lockEnabled:  true
-    property int    lockTimeout:  1200
-    property bool   sleepEnabled: true
-    property int    sleepTimeout: 1800
-
-    Process {
-        id: idleConfigReader
-        command: ["bash", "-c",
-            "f=$HOME/.cache/swayidle.conf; " +
-            "[ -f \"$f\" ] && cat \"$f\" || " +
-            "echo 'DIM_ENABLED=true\nDIM_TIMEOUT=600\nLOCK_ENABLED=true\nLOCK_TIMEOUT=1200\nSLEEP_ENABLED=true\nSLEEP_TIMEOUT=1800'"]
-        running: false
-        stdout: SplitParser {
-            onRead: data => {
-                var m
-                if ((m = data.match(/^DIM_ENABLED=(true|false)/)))   root.dimEnabled   = m[1] === "true"
-                if ((m = data.match(/^DIM_TIMEOUT=(\d+)/)))           root.dimTimeout   = parseInt(m[1])
-                if ((m = data.match(/^LOCK_ENABLED=(true|false)/)))  root.lockEnabled  = m[1] === "true"
-                if ((m = data.match(/^LOCK_TIMEOUT=(\d+)/)))          root.lockTimeout  = parseInt(m[1])
-                if ((m = data.match(/^SLEEP_ENABLED=(true|false)/))) root.sleepEnabled = m[1] === "true"
-                if ((m = data.match(/^SLEEP_TIMEOUT=(\d+)/)))         root.sleepTimeout = parseInt(m[1])
-            }
-        }
-    }
-
-    function applyIdleConfig() {
-        var lines = [
-            "DIM_ENABLED="   + root.dimEnabled,
-            "DIM_TIMEOUT="   + root.dimTimeout,
-            "LOCK_ENABLED="  + root.lockEnabled,
-            "LOCK_TIMEOUT="  + root.lockTimeout,
-            "SLEEP_ENABLED=" + root.sleepEnabled,
-            "SLEEP_TIMEOUT=" + root.sleepTimeout,
-        ]
-        run("printf '%s\\n' " + lines.map(l => "'" + l + "'").join(" ") +
-            " > $HOME/.cache/swayidle.conf && ~/.config/swayidle/config.sh &")
     }
 
     Process {
@@ -1065,86 +979,11 @@ Item {
                     }
                 }
 
-                // ── DISPLAY ───────────────────────────────────────────────────
-                Item {
-                    Layout.fillWidth: true; height: 32
-                    Rectangle {
-                        anchors.fill: parent; radius: Commons.Appearance.radius.sm
-                        color: _dspHdrArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                    }
-                    RowLayout {
-                        anchors { fill: parent; leftMargin: 2; rightMargin: 4 }
-                        Text { text: "󱄅  Display Layout"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family; Layout.fillWidth: true }
-                        Text { text: root.displayExpanded ? "󰅃" : "󰅀"; color: Commons.Appearance.colors.overlay0; font.pixelSize: Commons.Appearance.font.sizeIcon; font.family: Commons.Appearance.font.family }
-                    }
-                    MouseArea { id: _dspHdrArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.displayExpanded = !root.displayExpanded }
-                }
+                // Sprint 20: display layout, night light, power profile,
+                // idle & sleep moved out — they belong in Settings panes
+                // (Sprint 23 absorbs them). CC stays quick-access only.
 
-                Item {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: root.displayExpanded ? _dspBody.implicitHeight : 0
-                    clip: true
-                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
-                    Flow {
-                        id: _dspBody
-                        width: parent.width; spacing: 6
-                        PillButton { label: "Extend";   active: root.displayLayout === "extend";   onClicked: { root.displayLayout = "extend";   run("wlr-randr --output eDP-1 --on --pos 0,0; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 1920,0; done") } }
-                        PillButton { label: "Mirror";   active: root.displayLayout === "mirror";   onClicked: { root.displayLayout = "mirror";   run("wlr-randr --output eDP-1 --on --mode 1920x1200 --pos 0,0; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 0,0; done") } }
-                        PillButton { label: "Laptop";   active: root.displayLayout === "laptop";   onClicked: { root.displayLayout = "laptop";   run("wlr-randr --output eDP-1 --on; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --off; done") } }
-                        PillButton { label: "External"; active: root.displayLayout === "external"; onClicked: { root.displayLayout = "external"; run("wlr-randr --output eDP-1 --off; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 0,0; done") } }
-                        PillButton { label: "Adjust…";  active: false; onClicked: { run("wdisplays &"); if (root.panelRoot) root.panelRoot.close() } }
-                    }
-                }
-
-                Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
-
-                // ── SYSTEM ────────────────────────────────────────────────────
-                SectionHeader { label: "SYSTEM" }
-
-                Column {
-                    Layout.fillWidth: true; spacing: 6
-                    Item {
-                        width: parent.width; height: 32
-                        Rectangle {
-                            anchors.fill: parent; radius: Commons.Appearance.radius.sm
-                            color: _nlHdrArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
-                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                        }
-                        RowLayout {
-                            anchors { fill: parent; leftMargin: 2; rightMargin: 4 }
-                            Text { text: "󰛨  Night Light"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family; Layout.fillWidth: true }
-                            Text { text: root.nightLightExpanded ? "󰅃" : "󰅀"; color: Commons.Appearance.colors.overlay0; font.pixelSize: Commons.Appearance.font.sizeIcon; font.family: Commons.Appearance.font.family }
-                        }
-                        MouseArea { id: _nlHdrArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.nightLightExpanded = !root.nightLightExpanded }
-                    }
-                    Item {
-                        width: parent.width
-                        height: root.nightLightExpanded ? _nlBody.implicitHeight : 0
-                        clip: true
-                        Behavior on height { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
-                        Flow {
-                            id: _nlBody
-                            width: parent.width; spacing: 4
-                            PillButton { label: "Off";   active: root.nightLightMode === "off";  onClicked: { root.nightLightMode = "off";  run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid || true") } }
-                            PillButton { label: "4500K"; active: root.nightLightMode === "4500"; onClicked: { root.nightLightMode = "4500"; run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 6500 -t 4500 & echo $! > $HOME/.cache/wlsunset.pid") } }
-                            PillButton { label: "3500K"; active: root.nightLightMode === "3500"; onClicked: { root.nightLightMode = "3500"; run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 6500 -t 3500 & echo $! > $HOME/.cache/wlsunset.pid") } }
-                            PillButton { label: "2700K"; active: root.nightLightMode === "2700"; onClicked: { root.nightLightMode = "2700"; run("pkill -x wlsunset 2>/dev/null; rm -f $HOME/.cache/wlsunset.pid; wlsunset -T 6500 -t 2700 & echo $! > $HOME/.cache/wlsunset.pid") } }
-                        }
-                    }
-                }
-
-                Column {
-                    Layout.fillWidth: true; spacing: 6
-                    Text { text: "󱐋  Power Profile"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family }
-                    Flow {
-                        width: parent.width; spacing: 4
-                        PillButton { label: "Balanced";    active: root.powerProfile === "balanced";    onClicked: { root.powerProfile = "balanced";    run("powerprofilesctl set balanced") } }
-                        PillButton { label: "Performance"; active: root.powerProfile === "performance"; onClicked: { root.powerProfile = "performance"; run("powerprofilesctl set performance") } }
-                        PillButton { label: "Power Saver"; active: root.powerProfile === "power-saver"; onClicked: { root.powerProfile = "power-saver"; run("powerprofilesctl set power-saver") } }
-                    }
-                }
-
+                // ── QUICK TOGGLES ─────────────────────────────────────────────
                 RowLayout {
                     Layout.fillWidth: true
                     Text { text: "󰂛  Do Not Disturb"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family; Layout.fillWidth: true }
@@ -1156,96 +995,13 @@ Item {
 
                 Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
 
-                // ── IDLE ──────────────────────────────────────────────────────
-                Item {
-                    Layout.fillWidth: true; height: 32
-                    Rectangle {
-                        anchors.fill: parent; radius: Commons.Appearance.radius.sm
-                        color: _idleHdrArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                    }
-                    RowLayout {
-                        anchors { fill: parent; leftMargin: 2; rightMargin: 4 }
-                        Text { text: "󰒲  Idle & Sleep"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family; Layout.fillWidth: true }
-                        Text { text: root.idleExpanded ? "󰅃" : "󰅀"; color: Commons.Appearance.colors.overlay0; font.pixelSize: Commons.Appearance.font.sizeIcon; font.family: Commons.Appearance.font.family }
-                    }
-                    MouseArea { id: _idleHdrArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.idleExpanded = !root.idleExpanded }
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: root.idleExpanded ? _idleBody.implicitHeight : 0
-                    clip: true
-                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
-
-                    Column {
-                        id: _idleBody
-                        width: parent.width
-                        spacing: Commons.Appearance.spacing.lg
-
-                        Column {
-                            width: parent.width; spacing: 6
-                            RowLayout {
-                                width: parent.width
-                                Text { text: "󰃞  Dim screen"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family; Layout.fillWidth: true }
-                                ToggleSwitch { checked: root.dimEnabled; onToggled: state => { root.dimEnabled = state; root.applyIdleConfig() } }
-                            }
-                            Flow {
-                                width: parent.width; spacing: 4; visible: root.dimEnabled
-                                PillButton { label: "5 min";  active: root.dimTimeout === 300;  onClicked: { root.dimTimeout = 300;  root.applyIdleConfig() } }
-                                PillButton { label: "10 min"; active: root.dimTimeout === 600;  onClicked: { root.dimTimeout = 600;  root.applyIdleConfig() } }
-                                PillButton { label: "15 min"; active: root.dimTimeout === 900;  onClicked: { root.dimTimeout = 900;  root.applyIdleConfig() } }
-                                PillButton { label: "30 min"; active: root.dimTimeout === 1800; onClicked: { root.dimTimeout = 1800; root.applyIdleConfig() } }
-                            }
-                        }
-
-                        Column {
-                            width: parent.width; spacing: 6
-                            RowLayout {
-                                width: parent.width
-                                Text { text: "󰌾  Lock screen"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family; Layout.fillWidth: true }
-                                ToggleSwitch { checked: root.lockEnabled; onToggled: state => { root.lockEnabled = state; root.applyIdleConfig() } }
-                            }
-                            Flow {
-                                width: parent.width; spacing: 4; visible: root.lockEnabled
-                                PillButton { label: "10 min"; active: root.lockTimeout === 600;  onClicked: { root.lockTimeout = 600;  root.applyIdleConfig() } }
-                                PillButton { label: "20 min"; active: root.lockTimeout === 1200; onClicked: { root.lockTimeout = 1200; root.applyIdleConfig() } }
-                                PillButton { label: "30 min"; active: root.lockTimeout === 1800; onClicked: { root.lockTimeout = 1800; root.applyIdleConfig() } }
-                                PillButton { label: "1 hr";   active: root.lockTimeout === 3600; onClicked: { root.lockTimeout = 3600; root.applyIdleConfig() } }
-                            }
-                        }
-
-                        Column {
-                            width: parent.width; spacing: 6
-                            RowLayout {
-                                width: parent.width
-                                Text { text: "󰒲  Sleep displays"; color: Commons.Appearance.colors.text; font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family; Layout.fillWidth: true }
-                                ToggleSwitch { checked: root.sleepEnabled; onToggled: state => { root.sleepEnabled = state; root.applyIdleConfig() } }
-                            }
-                            Flow {
-                                width: parent.width; spacing: 4; visible: root.sleepEnabled
-                                PillButton { label: "20 min"; active: root.sleepTimeout === 1200; onClicked: { root.sleepTimeout = 1200; root.applyIdleConfig() } }
-                                PillButton { label: "30 min"; active: root.sleepTimeout === 1800; onClicked: { root.sleepTimeout = 1800; root.applyIdleConfig() } }
-                                PillButton { label: "1 hr";   active: root.sleepTimeout === 3600; onClicked: { root.sleepTimeout = 3600; root.applyIdleConfig() } }
-                                PillButton { label: "2 hr";   active: root.sleepTimeout === 7200; onClicked: { root.sleepTimeout = 7200; root.applyIdleConfig() } }
-                            }
-                        }
-                    }
-                }
-
-                Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0 }
-
-                // ── TOOLS ─────────────────────────────────────────────────────
-                SectionHeader { label: "TOOLS" }
+                // ── POWER ─────────────────────────────────────────────────────
+                SectionHeader { label: "POWER" }
 
                 Flow {
                     Layout.fillWidth: true; spacing: 8
-                    ActionButton { iconName: "󰕾"; label: "Audio";     onClicked: { run("pavucontrol &");          if (root.panelRoot) root.panelRoot.close() } }
-                    ActionButton { iconName: "󰤨"; label: "Network";   onClicked: { run("nm-connection-editor &"); if (root.panelRoot) root.panelRoot.close() } }
-                    ActionButton { iconName: "󰸉"; label: "Wallpaper"; onClicked: { run("wallpaper-picker.sh &");   if (root.panelRoot) root.panelRoot.close() } }
-                    ActionButton { iconName: "󱛟"; label: "Disk";      onClicked: { run("kitty --title 'Disk Usage' -e duf &"); if (root.panelRoot) root.panelRoot.close() } }
-                    ActionButton { iconName: "󰐥"; label: "Power";     onClicked: { run("wlogout-launch.sh &");    if (root.panelRoot) root.panelRoot.close() } }
-                    ActionButton { iconName: "󰌾"; label: "Lock";      onClicked: { run("swaylock-launch.sh &");   if (root.panelRoot) root.panelRoot.close() } }
+                    ActionButton { iconName: "󰐥"; label: "Power"; onClicked: { run("wlogout-launch.sh &");  if (root.panelRoot) root.panelRoot.close() } }
+                    ActionButton { iconName: "󰌾"; label: "Lock";  onClicked: { run("swaylock-launch.sh &"); if (root.panelRoot) root.panelRoot.close() } }
                 }
 
                 Item { height: 2 }

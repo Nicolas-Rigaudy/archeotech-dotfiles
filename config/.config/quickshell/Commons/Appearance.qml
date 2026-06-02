@@ -140,5 +140,7 @@ QtObject {
         readonly property int base:   200
         readonly property int slow:   300
         readonly property int spring: 400
+        // Strip popup → panel transitions (perp + axis growth).
+        readonly property int panel:  240
     }
 }

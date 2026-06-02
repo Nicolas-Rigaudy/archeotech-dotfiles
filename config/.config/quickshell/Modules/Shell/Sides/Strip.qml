@@ -36,6 +36,12 @@ Item {
     readonly property bool   _showCard:    _hov || _panelOpen
     readonly property var    _activeMeta:  _panelOpen ? ShellServices.PanelRegistry.panelFor(_activePanel) : null
     readonly property int    _panelSize:   _activeMeta ? _activeMeta.size : 0
+    readonly property var    _axisSizeRaw: _activeMeta && _activeMeta.axisSize !== undefined
+                                           ? _activeMeta.axisSize : "full"
+    // Panel content may expose `implicitAxis` (numeric) to drive axisSize:"auto".
+    readonly property real   _contentImplicitAxis: (_panelOpen && contentLoader.item
+                                                    && contentLoader.item.implicitAxis !== undefined)
+                                                   ? contentLoader.item.implicitAxis : 0
 
     property bool _hov: false
     // Defensive: child MouseAreas can shadow the strip-level MA's hover in Qt 6.
@@ -72,13 +78,28 @@ Item {
 
     // Animated values — bound to targets so they animate on state changes.
     property real _perp: _perpTarget
-    Behavior on _perp { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
+    Behavior on _perp { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
 
-    readonly property real _axisTarget: _panelOpen
-        ? (_horizontal ? width : height)
-        : (_bodyAxis + 2 * _r)
+    // Along-strip extent. Floor at the icon cluster width; ceil at the screen
+    // axis. axisSize "full" = legacy (entire screen edge), "auto" = follow
+    // content's implicitAxis, numeric = exact pixels (still clamped).
+    readonly property int _screenAxis: _horizontal ? width : height
+    readonly property int _axisFloor:  _bodyAxis + 2 * _r
+    readonly property real _axisTarget: !_panelOpen
+        ? _axisFloor
+        : _axisSizeRaw === "full" ? _screenAxis
+        : _axisSizeRaw === "auto" ? Math.min(_screenAxis, Math.max(_axisFloor, _contentImplicitAxis + 2 * _r))
+        :                            Math.min(_screenAxis, Math.max(_axisFloor, _axisSizeRaw))
     property real _axis: _axisTarget
-    Behavior on _axis { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
+    Behavior on _axis { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+
+    // Card position along the strip axis: always centered on the screen.
+    // Icons cluster around the card's center via iconArea, so a centered
+    // card means icons stay glued to their idle screen position regardless
+    // of card width or which icon is active. (An earlier draft anchored the
+    // card on the active icon — that pulled the whole card sideways when
+    // switching panels, since the icon row clusters and isn't spread out.)
+    readonly property real _cardAxis: (_screenAxis - _axis) / 2
 
     // Item grows perpendicular to the strip so the popup/panel falls inside
     // ShellSurface's input mask.
@@ -139,13 +160,15 @@ Item {
         width:  strip._horizontal ? strip._axis : strip._perp
         height: strip._horizontal ? strip._perp : strip._axis
 
-        // Attach edge sits at the strip body's inner edge regardless of size.
+        // Perpendicular: attach edge sits at the strip body's inner edge.
+        // Along-axis: anchored on the active icon's screen center
+        // (preserves popup→panel continuity), clamped to screen bounds.
         x: strip.side === "right" ? parent.width  - strip.collapsedSize - card.width
          : strip.side === "left"  ? strip.collapsedSize
-         : (parent.width - card.width) / 2
+         : strip._cardAxis
         y: strip.side === "bottom" ? parent.height - strip.collapsedSize - card.height
          : strip.side === "top"    ? strip.collapsedSize
-         : (parent.height - card.height) / 2
+         : strip._cardAxis
 
         layer.enabled: true
         layer.samples: 8

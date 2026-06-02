@@ -2,42 +2,46 @@ pragma Singleton
 import QtQuick
 import "../../Modules/Shell/Panels/Content" as Content
 
-// Sprint 17 Stage 5 — registry mapping panelId → { content, side, size }.
-// Adding a panel = one entry here + one file in Modules/Shell/Panels/Content/.
-// ShellSurface mounts every entry via Repeater; Panel.qml reads `content`
-// and renders it inside the uniform glass chrome with offsetScale anim.
-//
-// Sprint 18 makes this hot-loadable from `shell-config.json` (alongside
-// widget registry); for Stage 5 it stays in QML so the four built-in panels
-// can be migrated incrementally without a config-schema change.
+// Sprint 17 Stage 5 — registry mapping panelId → { content, side, size, axisSize }.
+//   size      — perpendicular dim (away from the strip).
+//   axisSize  — along-strip dim. Numeric (px), "auto" (panel reports
+//               implicitAxis), or "full" (legacy: occupy entire screen edge).
+// Sprint 20 added axisSize so panels can be compact popups instead of
+// always growing to the full screen axis. All panels start "full" and are
+// migrated to numeric/auto one at a time.
 QtObject {
     id: root
 
     readonly property var panels: ({
         cc: {
-            content: _ccComp,
-            side:    "right",
-            size:    320
+            content:  _ccComp,
+            side:     "right",
+            size:     320,
+            axisSize: 440
         },
         nc: {
-            content: _ncComp,
-            side:    "right",
-            size:    320
+            content:  _ncComp,
+            side:     "right",
+            size:     320,
+            axisSize: "auto"
         },
         launcher: {
-            content: _launcherComp,
-            side:    "left",
-            size:    600
+            content:  _launcherComp,
+            side:     "left",
+            size:     600,
+            axisSize: 440
         },
         dashboard: {
-            content: _dashboardComp,
-            side:    "bottom",
-            size:    600
+            content:  _dashboardComp,
+            side:     "bottom",
+            size:     600,
+            axisSize: 920
         },
         wallpaper: {
-            content: _wallpaperComp,
-            side:    "bottom",
-            size:    380
+            content:  _wallpaperComp,
+            side:     "bottom",
+            size:     380,
+            axisSize: 1280
         }
     })
 
