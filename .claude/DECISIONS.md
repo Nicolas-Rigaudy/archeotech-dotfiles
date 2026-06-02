@@ -1112,5 +1112,39 @@ This document tracks all technical decisions made during the project, with ratio
 
 ---
 
-**Last Updated:** 2026-05-27
-**Total Decisions:** 54
+### [2026-06-02] Widget Registry: Noctalia filename convention over Caelestia DelegateChooser
+
+**Context:** Sprint 18 needs a way to map widget ids in `shell-config.json` to QML components for the bar and edge strips. The reference projects offer two patterns:
+
+**Options Considered:**
+1. **Caelestia DelegateChooser** — `Bar.qml` has a static `DelegateChooser` with one `DelegateChoice` per widget id, each pointing to a QML file.
+   - Pros: Type-safe at compile time, slightly faster mount (pre-instantiated `Component`s).
+   - Cons: Adding a built-in widget requires editing two places (the chooser + the new QML file). No path forward for user-installed plugins without rewriting the chooser.
+2. **Noctalia filename convention** — `BarWidgetLoader.qml` does `loader.setSource("Widgets/Bar/" + pascalCase(id) + "Widget.qml", props)`. No central registry table to maintain for built-ins.
+   - Pros: Drop a file under `Widgets/Bar/` to add a widget. `plugin:<id>` namespacing branch reserves the path for Sprint 20's plugin manifest scanning without any S18 refactor. The most successful community-extensible shells (Noctalia 150+, DMS 100+) both ship this pattern.
+   - Cons: Slightly more code in the loader (Noctalia's `setSource(path, props)` is the only reliable way to satisfy `required` properties on the widget — declarative bindings on `Loader.source` don't work for required props).
+
+**Decision:** Noctalia filename convention. `Services/Shell/WidgetRegistry.qml` is a thin id → filename mapper; `BarWidgetLoader`/`StripWidgetLoader` own the directory prefix and `setSource` call.
+
+**Rationale:** The whole project vision (per ROADMAP.md) is a "fully composable, community-extensible" shell. Caelestia's pattern works for a strictly built-in shell but every plugin would need a registry edit — incompatible with the v1.0 release goal of "drop a folder, get a widget". Adopting the Noctalia pattern now means S20's plugin scanning is purely additive (add a `plugin:<id>` branch to the loader) instead of a refactor.
+
+**Trade-offs Accepted:** Components are loaded asynchronously on first mount instead of being pre-instantiated; first paint of a heavy widget may take a frame. Acceptable — `asynchronous: true` on the `Loader` plus a `Component.onCompleted` `_resolve()` call keeps the bar responsive.
+
+**Reviewed:** When Sprint 20 lands plugin discovery, verify the `plugin:` prefix branch in `WidgetRegistry` extends cleanly to manifest-driven plugins without touching the bar/strip code.
+
+---
+
+### [2026-06-02] barRoot context API over implicit `bar.*` references
+
+**Context:** Bar widgets used to live inline in `Bar.qml` and freely reached into the bar's properties (`bar._popupVisible`, `bar.showPopup(parent, ...)`). After Sprint 18 extracts widgets to their own files, they need an explicit contract — both for code organisation and to prepare for plugin widgets (S20) that should be sandboxed against shell internals.
+
+**Decision:** Every bar widget receives a `required property var barRoot` injected by `BarWidgetLoader` via `setSource(path, { barRoot, widgetId })`. Documented API surface: `side`, `horizontal`, `screen`, `showPopup(...)`, `hidePopup(caller)`, `hideCalendar(caller)`, `keepPopupsAlive()`, plus the popup-state properties (`_wifiPopupVisible`, `_wifiAnchorX`, etc.) used by mutually-exclusive popups. Strip icons get the symmetric `stripRoot`.
+
+**Rationale:** This is Noctalia's PluginAPI pattern, scaled down. Plugin widgets in S20 will use the same `barRoot` reference — same surface, same behaviour. Documenting it now (in `docs/WIDGET_API.md`) means S20 doesn't have to re-spec the contract.
+
+**Trade-offs Accepted:** Widgets that need to coordinate state (NetworkWidget toggling `_wifiPopupVisible` so other popups dismiss) reach into `_`-prefixed properties on barRoot. Acceptable — these are documented; the underscore signals "internal to bar, but reachable when coordinating with a sibling widget".
+
+---
+
+**Last Updated:** 2026-06-02
+**Total Decisions:** 56

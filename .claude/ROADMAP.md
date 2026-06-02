@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last Updated:** 2026-05-28  
+**Last Updated:** 2026-06-02  
 **See also:** `ANALYSIS.md` — research, reference projects, confirmed QML APIs, settings ecosystem deep-dives.
 
 ---
@@ -42,6 +42,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 | 15 | Drawer Surface — DrawerConfig.json (edge→panel mapping); DrawerVisibilities singleton (mutual exclusion); DrawerSurface single PanelWindow (CC/NC/Launcher/Dashboard); offsetScale bidirectional animation; per-screen edge hover zones (right→CC, top-right→NC, bottom→Dashboard); mango blur rule for archeotech-drawer | 2026-05-21 |
 | 16 | Perimeter frame layout — bar flush with top (marginTop:0), edge strips exclusiveZone:10 (equal 4px gaps all sides via gappoh=4/gappov=4), 10→56px dynamic strips with hover+tap, bar radius:0 (flat until Sprint 18 goth corners) | 2026-05-27 |
 | 17 | Unified Shell Surface — one ShellSurface PanelWindow per monitor + ShellExclusions (Caelestia §15.2); ShellConfig/ShellState singletons w/ per-screen stateMap; Sides as Items (Bar/Strip/SideLoader); 4× ShapePath CornerBlends; Panels as content modules (CC/NC/Launcher/Dashboard) mounted inside Strip popup card; popup-becomes-panel animation; outerGap config field (exclusiveZone=sideSize+outerGap); deleted Modules/Drawer + old Bar/CC/NC/Launcher/Dashboard wrappers (-3700 LOC); fixed mango scroller_structs=0 to let windows tile flush | 2026-06-01 |
+| 18 | Configurable Sides + Widget Registry — Noctalia filename-convention registry (drop a file under `Widgets/Bar/` or `Widgets/Strip/`, add id to `shell-config.json` zone, done); async `BarWidgetLoader`/`StripWidgetLoader` with `setSource(path, props)` Noctalia pattern; formalized `barRoot`/`stripRoot` context APIs; primitives moved to `Commons/Primitives/`; HoverCard/CalendarPopup/WifiPopup/BtPopup extracted; ClockWidget + 12 bar widgets + 4 strip icons over `StripIconBase`; stable ListModel diff (HyprPanel preserve-delegates); `plugin:<id>` namespacing reserved for S20; Bar.qml 1537→299 LOC; `docs/WIDGET_API.md` written | 2026-06-02 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -53,27 +54,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Upcoming Sprints
 
-### Sprint 18 — Configurable Sides + Widget Registry ← NEXT
-
-**Goal:** Make the bar/strip widgets fully composable via JSON config. Extract each widget into its own QML file. A `WidgetRegistry` singleton maps widget IDs to QML paths. `Bar.qml` and `Strip.qml` use `Repeater` + `DelegateChooser` to mount widgets from config. Per-screen overrides supported. Editing `shell-config.json` instantly reconfigures the bar without restart. This is the bridge between the foundational architecture (S17) and the visual Module Builder UI (S20).
-
-**Reference:** Caelestia §12.1 (DelegateChooser + `Config.bar.entries` pattern, `ANALYSIS.md` lines 1365–1422), Caelestia `WrappedLoader` (async + adaptive margins), HyprPanel `syncWidgetModel()` (preserve-delegates pattern, §12 line 1712).
-
-**Checklist:**
-- [ ] `Services/Shell/WidgetRegistry.qml` — singleton: `{ id: { source: "path.qml", category: "bar-zone"|"strip-icon"|"panel-content" } }`
-- [ ] Extract all bar modules into `Widgets/Bar/*.qml` — `TagsWidget`, `TitleWidget`, `MediaWidget`, `ClockWidget`, `MicWidget`, `VolumeWidget`, `BrightnessWidget`, `NetworkWidget`, `BluetoothWidget`, `BatteryWidget`, `BellWidget`, `SettingsWidget`, `PowerWidget` — each self-contained with a `module.json`
-- [ ] Extract strip icons into `Widgets/Strip/*.qml` — `CcIcon`, `NcIcon`, `LauncherIcon`, `DashboardIcon`
-- [ ] `Modules/Shell/Widgets/Loader.qml` — async `WrappedLoader` (Caelestia pattern): `asynchronous: true`, adaptive left/right margins on first/last in zone
-- [ ] `Bar.qml` rewritten with `Repeater { model: ShellConfig.zoneWidgets(side, zone) } DelegateChooser { ... }` — widget IDs map to components at runtime
-- [ ] `Strip.qml` rewritten with same Repeater + DelegateChooser for icon stack
-- [ ] Per-side conditional mounting — any side can be set to bar/strip/none via config without code edits
-- [ ] Per-screen overrides — `ShellConfig.sides(screen.name)` merges base + per-screen
-- [ ] Hot-reload: editing `shell-config.json` updates bar/strip composition live (HyprPanel-style ListModel diff — only add/remove changed widgets, don't destroy+recreate the rest)
-- [ ] `docs/WIDGET_API.md` — widget QML contract (props, signals, category), `module.json` schema
-
----
-
-### Sprint 19 — Full System-Wide Theme Switcher
+### Sprint 19 — Full System-Wide Theme Switcher ← NEXT
 
 **Goal:** One `theme-switch.sh` invocation changes every app simultaneously. Quickshell already hot-reloads; this sprint wires in the rest. Also: redesign the theme picker UI — fluid card/swatch grid with wallpaper thumbnail and avatar logo preview, inspired by caelestia-dots / end-4 style.
 

@@ -862,12 +862,12 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 
 ---
 
-**Last Updated:** 2026-06-01 (Sprint 17 complete — Unified Shell Surface fully wired, dead code deleted, mango scroller_structs=0 unblocks flush tiling)
+**Last Updated:** 2026-06-02 (Sprint 18 complete — Widget Registry + per-zone Repeater + ListModel diff; Bar.qml 1537→299 LOC)
 **System Status:** ✅ Fully Functional — Daily Driver
 **Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–17 complete. One ShellSurface PanelWindow per monitor (Caelestia §15.2) hosts bar + strips + corner blends + panels as sibling Items in one coordinate space. ShellExclusions reserves `sideSize + outerGap` per active side. Panels mount inside the Strip card via a single Shape that animates between idle (0) / popup (`_popupExtra`) / panel (`_panelSize`) sizes. ShellConfig + ShellState singletons drive everything from `shell-config.json` (hot-reload). All old wrappers (`Modules/Drawer/*`, `Modules/Bar/Bar.qml`, `Modules/ControlCenter/`, `Modules/Launcher/`, old `Dashboard.qml`/`NotificationCenter.qml`) deleted; Dashboard sub-panels migrated to `ShellState.isOpenAnywhere("dashboard")` / `closeAllAcross()`.
-**Next Sprint:** Sprint 18 — Configurable Sides + Widget Registry (extract bar/strip widgets into `Widgets/Bar/*.qml` + `Widgets/Strip/*.qml`, `WidgetRegistry` singleton, `Repeater + DelegateChooser` mounting from `shell-config.json`).
-**Locked architecture decisions (Sprint 17, do not deviate without re-reading `ANALYSIS.md` §15):**
+**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–18 complete. One ShellSurface PanelWindow per monitor (Caelestia §15.2) hosts bar + strips + corner blends + panels as sibling Items in one coordinate space. ShellExclusions reserves `sideSize + outerGap` per active side. Panels mount inside the Strip card via a single Shape that animates between idle (0) / popup (`_popupExtra`) / panel (`_panelSize`) sizes. ShellConfig + ShellState singletons drive everything from `shell-config.json` (hot-reload). **Bar/strip composition is data-driven**: zones in `shell-config.json` map to widget ids; `BarWidgetLoader`/`StripWidgetLoader` resolve ids to QML files via filename convention (Noctalia pattern). Built-in primitives now in `Commons/Primitives/`; functional widgets in `Widgets/Bar/` + `Widgets/Strip/`. Stable `ListModel` per zone diffs config changes so stateful widgets (MPRIS marquee) survive hot-reload.
+**Next Sprint:** Sprint 19 — Full System-Wide Theme Switcher (extend `theme-switch.sh` to Starship/rofi/GTK/VSCode/Obsidian/Zen; redesign AppearancePane card grid with wallpaper thumbnails + accent swatches).
+**Locked architecture decisions (Sprints 17–18, do not deviate without re-reading `ANALYSIS.md` §15 + `DECISIONS.md`):**
 - One full-screen PanelWindow per monitor (`Variants { model: Quickshell.screens }`) — Caelestia §15.2
 - Bar, edge strips, panels, corner blends = sibling Items in same coord space
 - 4× dedicated thin PanelWindows per monitor for `exclusiveZone` reservation; `exclusiveZone = sideSize + outerGap` (visible bar/strip is `sideSize`, extra `outerGap` becomes empty space between shell and tiled windows — owned by Quickshell, not MangoWC's `gappoh/gappov`)
@@ -875,7 +875,8 @@ Then prepare a commit message following the Git Commit Messages format. Present 
 - Per-screen state = `stateMap` dict keyed by `screen.name` — Noctalia §15.3
 - Panel anim = single Shape animating `_perp` + `_axis` via Behaviors (popup-becomes-panel pattern); no separate `Panel.qml` mounted in ShellSurface
 - Corner geometry = `Shape { ShapePath { PathCubic } }` (DMS BarCanvas); SDF shader is Sprint 26 stretch
-- Widget mounting = `Repeater + DelegateChooser` keyed by widget ID (Caelestia §12.1) — Sprint 18 work
+- **Widget mounting = filename convention** (Noctalia pattern, S18): `Widgets/Bar/<PascalId>Widget.qml` + `Widgets/Strip/<PascalId>Icon.qml`. `BarWidgetLoader`/`StripWidgetLoader` use `setSource(path, props)` for async load + required-property injection. Stable `ListModel` per zone preserves delegates on `shell-config.json` hot-reload (HyprPanel pattern).
+- **Widget contract** (`docs/WIDGET_API.md`): every widget gets a `barRoot`/`stripRoot` context property exposing `side`, `horizontal`, `screen`, and popup/state API. Plugin widgets (`plugin:<id>` namespace) reserved for Sprint 20 — same API surface, manifest-discovered.
 - Config schema = `shell-config.json` with per-side `{ type: "bar"|"strip"|"none" }` + zones/icons + `outerGap` + perScreen overrides
 - Module Builder uses **click-to-assign** not drag-and-drop (Wayland cross-window drag unreliable — `ANALYSIS.md` line 2092)
 **MangoWC scroller tuning (Sprint 17 finding):** `scroller_structs=0` is required for windows to tile flush — the default of 20 reserves 20px on each side of the scroller area independent of `proportion`/`gappoh`. With structs=0 + `gappoh=0`/`gappov=0`, Quickshell's ShellExclusions is the single source of truth for the side gap.
