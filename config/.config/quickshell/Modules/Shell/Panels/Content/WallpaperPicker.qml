@@ -97,15 +97,27 @@ Item {
     }
 
     // ── Apply functions ───────────────────────────────────────────────────
+    // `applying` is true while wallpaper-set.sh is still running. The UI uses
+    // it to (a) block re-clicks so a second invocation can't race the first
+    // (which was causing the "did it work?" double-click bug), and (b) dim
+    // inactive tiles so the user has visible feedback. currentPath / currentLogo
+    // are flipped optimistically on click so the active tile updates instantly;
+    // the readers reaffirm the value once the script exits.
+    readonly property bool applying: applyProc.running || logoProc.running
+
     function _apply(path) {
+        if (applying) return
+        root.currentPath = path
         applyProc.command = [Commons.Paths.wallpaperSet, path]
         applyProc.running = true
-        root.currentPath = path
     }
     function _applyLogo(id) {
+        if (applying) return
         // Empty id OR clicking the active chip toggles off (matches
         // wallpaper-set.sh's --toggle-logo semantics).
-        if (id === "" || id === root.currentLogo)
+        var toggleOff = (id === "" || id === root.currentLogo)
+        root.currentLogo = toggleOff ? "" : id
+        if (toggleOff)
             logoProc.command = [Commons.Paths.wallpaperSet, "--toggle-logo"]
         else
             logoProc.command = [Commons.Paths.wallpaperSet, "--toggle-logo", id]
@@ -266,10 +278,14 @@ Item {
                             }
                         }
 
+                        opacity: root.applying && !logoChip._active ? 0.45 : 1.0
+                        Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
+                            enabled: !root.applying
+                            cursorShape: root.applying ? Qt.BusyCursor : Qt.PointingHandCursor
                             onEntered: logoChip._hovered = true
                             onExited:  logoChip._hovered = false
                             onClicked: root._applyLogo(logoChip.modelData.id)
@@ -382,8 +398,11 @@ Item {
                 readonly property bool _active:  root.currentPath === modelData.path
                 property bool _hovered: false
 
-                scale: cell._hovered && !cell._active ? 1.03 : 1.0
+                scale: cell._hovered && !cell._active && !root.applying ? 1.03 : 1.0
                 Behavior on scale { NumberAnimation { duration: Commons.Appearance.anim.fast; easing.type: Easing.OutCubic } }
+
+                opacity: root.applying && !cell._active ? 0.5 : 1.0
+                Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
 
                 // Rounded image clipped via OpacityMask. The Rectangle
                 // overlay above gives us the visible border on hover/active.
@@ -443,7 +462,8 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
+                    enabled: !root.applying
+                    cursorShape: root.applying ? Qt.BusyCursor : Qt.PointingHandCursor
                     onEntered: cell._hovered = true
                     onExited:  cell._hovered = false
                     onClicked: root._apply(cell.modelData.path)

@@ -7,6 +7,7 @@
 #   wallpaper-set.sh --toggle-logo          Turn off active logo (legacy toggle for keybind)
 #   wallpaper-set.sh --restore              Reapply last wallpaper (used at startup)
 #   wallpaper-set.sh --status              Show current wallpaper and logo state
+#   wallpaper-set.sh --warm-all [DIR]       Pre-render all (wallpaper × logo) composites
 #
 # Logo names (defined in LOGOS array below):
 #   arch     - Arch Linux crystal (adaptive color)
@@ -18,15 +19,28 @@ set -e
 # ── Paths ────────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)"
 CACHE_DIR="$HOME/.cache/wallpaper"
-COMPOSED_IMG="$CACHE_DIR/composed.png"
-COMPOSED_PORTRAIT_IMG="$CACHE_DIR/composed-portrait.png"
+COMPOSED_DIR="$CACHE_DIR/composed"          # per-(wallpaper,logo) keyed cache
 PLAIN_PORTRAIT_IMG="$CACHE_DIR/plain-portrait.png"
-COMPOSED_CACHE="$CACHE_DIR/composed-for"   # stores "<logo>:<wallpaper>" for cache key
-LOGO_STATE="$CACHE_DIR/logo-active"        # contains active logo name, or empty/absent = no logo
-LAST_LOGO="$CACHE_DIR/logo-last"           # remembers last active logo for keybind restore
+LOGO_STATE="$CACHE_DIR/logo-active"         # active logo name, empty/absent = none
+LAST_LOGO="$CACHE_DIR/logo-last"            # last active logo for keybind restore
 LAST_WALL="$CACHE_DIR/last-wallpaper"
 LAST_COLOR="$CACHE_DIR/last-color"
 LAST_COLOR_FOR="$CACHE_DIR/last-color-for"
+
+# Backwards-compat: old code wrote these. Used as fallback names by --status etc.
+COMPOSED_IMG="$CACHE_DIR/composed.png"
+COMPOSED_PORTRAIT_IMG="$CACHE_DIR/composed-portrait.png"
+
+# ── Cache key helpers ────────────────────────────────────────────────────────
+# Compose path per (wallpaper, logo, orientation). The hash keeps filenames
+# short and stable; sha1 is fast and good enough for cache identity.
+_wall_hash() {
+    printf "%s" "$1" | sha1sum | head -c 12
+}
+composed_path() {
+    local wallpaper="$1" logo="$2" orientation="${3:-l}"
+    echo "$COMPOSED_DIR/$(_wall_hash "$wallpaper")-${logo}-${orientation}.png"
+}
 
 # ── Logo definitions ─────────────────────────────────────────────────────────
 # Format: "name:path:type"   type = svg | png
@@ -46,10 +60,10 @@ LOGO_OPACITY=60         # 0-100
 TRANSITION="grow"
 TRANSITION_POS="center"
 TRANSITION_FPS=60
-TRANSITION_DURATION=1.5
+TRANSITION_DURATION=0.5
 
 # ── Setup ────────────────────────────────────────────────────────────────────
-mkdir -p "$CACHE_DIR"
+mkdir -p "$CACHE_DIR" "$COMPOSED_DIR"
 
 # ── Helper: get active logo name (empty string if none) ──────────────────────
 active_logo() {
@@ -71,8 +85,13 @@ get_wallpaper_color() {
         fi
     fi
 
+    # Use the cached thumbnail when present (faster magick analysis on a
+    # smaller image), otherwise fall back to the original wallpaper. The
+    # previous `${thumb:-$img}` was wrong — bash's ${var:-} checks if the
+    # variable is empty, not if the file exists, so it always picked thumb.
     local thumb="$HOME/.cache/wallpaper/thumbs/$(basename "$img").jpg"
-    local src="${thumb:-$img}"
+    local src="$img"
+    [ -f "$thumb" ] && src="$thumb"
 
     local avg_brightness
     avg_brightness=$(magick "$src" -resize 1x1! -format "%[fx:int(255*(r+g+b)/3)]" info: 2>/dev/null)
@@ -267,45 +286,63 @@ _compose_at_size() {
     fi
 }
 
-# ── Helper: composite logo onto wallpaper (cached per logo+wallpaper combo) ──
+# ── Helper: composite logo onto wallpaper (per-combo cached) ─────────────────
+# Writes to keyed cache files so every (wallpaper, logo) pair is preserved.
+# Switching logos on a previously-seen wallpaper hits the cache instantly.
 # Also creates a portrait variant if a portrait output is detected.
 composite_logo() {
     local wallpaper="$1"
     local logo_name="$2"
 
-    local cache_key="${logo_name}:${wallpaper}"
-    if [ -f "$COMPOSED_IMG" ] && [ -f "$COMPOSED_CACHE" ]; then
-        if [ "$(cat "$COMPOSED_CACHE")" = "$cache_key" ]; then
-            echo "  Using cached composite" >&2
-            return
-        fi
-    fi
+    local land_out portrait_out
+    land_out=$(composed_path "$wallpaper" "$logo_name" l)
+    portrait_out=$(composed_path "$wallpaper" "$logo_name" p)
 
-    local color
-    color=$(get_wallpaper_color "$wallpaper")
-    echo "  Logo color: $color" >&2
-
-    # Build landscape composite (default 1920x1080)
-    _compose_at_size "$wallpaper" "$logo_name" "$color" 1920 1080 "$COMPOSED_IMG"
-
-    # Build portrait composite for any portrait outputs (e.g. DP-3 at 1080x1920)
+    # Detect portrait output once — needed both for cache validity and for the
+    # build step below.
+    local pw="" ph="" portrait_res=""
     if command -v awww >/dev/null 2>&1; then
-        local portrait_res
         portrait_res=$(awww query 2>/dev/null \
             | grep -oP '\d+x\d+' \
             | awk -F'x' '$2 > $1 {print; exit}')
         if [ -n "$portrait_res" ]; then
-            local pw ph
             pw=$(echo "$portrait_res" | cut -dx -f1)
             ph=$(echo "$portrait_res" | cut -dx -f2)
-            echo "  Portrait output detected (${pw}x${ph}), compositing portrait variant" >&2
-            _compose_at_size "$wallpaper" "$logo_name" "$color" "$pw" "$ph" "$COMPOSED_PORTRAIT_IMG"
-        else
-            rm -f "$COMPOSED_PORTRAIT_IMG"
         fi
     fi
 
-    echo "$cache_key" > "$COMPOSED_CACHE"
+    # Cache hit when landscape exists AND (no portrait output OR portrait cached too)
+    if [ -f "$land_out" ] && { [ -z "$portrait_res" ] || [ -f "$portrait_out" ]; }; then
+        return
+    fi
+
+    local color
+    color=$(get_wallpaper_color "$wallpaper")
+
+    # Build landscape composite (1920x1080 — used by all landscape outputs)
+    if [ ! -f "$land_out" ]; then
+        _compose_at_size "$wallpaper" "$logo_name" "$color" 1920 1080 "$land_out"
+    fi
+
+    # Build portrait composite for any portrait output detected
+    if [ -n "$portrait_res" ] && [ ! -f "$portrait_out" ]; then
+        _compose_at_size "$wallpaper" "$logo_name" "$color" "$pw" "$ph" "$portrait_out"
+    fi
+}
+
+# ── Background warm: precompute composites for current wallpaper × other ─────
+# logos. After applying any wallpaper, kicks off a detached subshell that
+# generates the missing combos so the next logo switch is cache-hit.
+warm_other_logos() {
+    local wallpaper="$1"
+    local skip_logo="${2:-}"
+    (
+        for lg in "${!LOGO_PATH[@]}"; do
+            [ "$lg" = "$skip_logo" ] && continue
+            composite_logo "$wallpaper" "$lg" 2>/dev/null
+        done
+    ) >/dev/null 2>&1 &
+    disown 2>/dev/null || true
 }
 
 # ── Helper: build a portrait-adapted plain wallpaper (no logo) ───────────────
@@ -415,13 +452,17 @@ case "${1:-}" in
             rm -f "$LOGO_STATE"
             echo "Logo: OFF" >&2
             apply_wallpaper "$ORIGINAL"
+            warm_other_logos "$ORIGINAL"
         else
             # Activate logo, remember it as last used
             echo "$REQUESTED" > "$LOGO_STATE"
             echo "$REQUESTED" > "$LAST_LOGO"
             echo "Logo: $REQUESTED ON" >&2
             composite_logo "$ORIGINAL" "$REQUESTED"
-            apply_wallpaper "$COMPOSED_IMG" "$( [ -f "$COMPOSED_PORTRAIT_IMG" ] && echo "$COMPOSED_PORTRAIT_IMG" )"
+            land_img=$(composed_path "$ORIGINAL" "$REQUESTED" l)
+            portrait_img=$(composed_path "$ORIGINAL" "$REQUESTED" p)
+            apply_wallpaper "$land_img" "$( [ -f "$portrait_img" ] && echo "$portrait_img" )"
+            warm_other_logos "$ORIGINAL" "$REQUESTED"
         fi
         ;;
 
@@ -432,6 +473,34 @@ case "${1:-}" in
             echo "No previous wallpaper saved." >&2
             exit 1
         fi
+        ;;
+
+    --warm-all)
+        # Pre-render every (wallpaper, logo) composite into the keyed cache.
+        # Doesn't apply anything — purely fills the cache so future picks are
+        # cache-hits. Optional 2nd arg: wallpaper directory to scan.
+        WALL_DIR="${2:-$HOME/Projects/archeotech-dotfiles/wallpapers}"
+        if [ ! -d "$WALL_DIR" ]; then
+            echo "Directory not found: $WALL_DIR" >&2
+            exit 1
+        fi
+        # Collect wallpapers
+        mapfile -t WALLS < <(find "$WALL_DIR" -maxdepth 1 -type f \
+            -regextype posix-extended -iregex '.*\.(jpe?g|png|webp)$' | sort)
+        TOTAL=$(( ${#WALLS[@]} * ${#LOGO_PATH[@]} ))
+        I=0
+        for wall in "${WALLS[@]}"; do
+            for lg in "${!LOGO_PATH[@]}"; do
+                I=$(( I + 1 ))
+                printf '[%2d/%2d] %s × %s … ' "$I" "$TOTAL" "$(basename "$wall")" "$lg"
+                if composite_logo "$wall" "$lg" 2>/dev/null; then
+                    echo "done"
+                else
+                    echo "FAILED"
+                fi
+            done
+        done
+        echo "Cache: $(du -sh "$COMPOSED_DIR" 2>/dev/null | cut -f1)"
         ;;
 
     --status)
@@ -465,9 +534,13 @@ case "${1:-}" in
         CURRENT="$(active_logo)"
         if [ -n "$CURRENT" ]; then
             composite_logo "$WALLPAPER" "$CURRENT"
-            apply_wallpaper "$COMPOSED_IMG" "$( [ -f "$COMPOSED_PORTRAIT_IMG" ] && echo "$COMPOSED_PORTRAIT_IMG" )"
+            land_img=$(composed_path "$WALLPAPER" "$CURRENT" l)
+            portrait_img=$(composed_path "$WALLPAPER" "$CURRENT" p)
+            apply_wallpaper "$land_img" "$( [ -f "$portrait_img" ] && echo "$portrait_img" )"
         else
             apply_wallpaper "$WALLPAPER"
         fi
+        # Warm other logos in the background so the next logo switch is instant
+        warm_other_logos "$WALLPAPER" "$CURRENT"
         ;;
 esac
