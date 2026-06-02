@@ -447,6 +447,29 @@ scroll_method=1   # 1=two-finger, 2=edge, 4=button
 
 ---
 
+### Wallpaper logos render with no color (uniform grey/black)
+
+**Symptoms:**
+- After running `wallpaper-set.sh --warm-all` or applying an unseen wallpaper, the logo overlay renders without its adaptive tint.
+- Affects wallpapers that don't have a cached thumbnail under `~/.cache/wallpaper/thumbs/`.
+
+**Cause:**
+A bug in `get_wallpaper_color` used `${thumb:-$img}` — bash's `${var:-default}` checks whether the *variable* is empty, not whether the *file* exists. The variable is always set (it's a constructed path), so magick always tried to read the thumb. If the thumb didn't exist, magick failed silently and the function returned an empty color string, which got substituted into the SVG as `fill=""`.
+
+**Solution:**
+Fixed in `scripts/wallpaper-set.sh` — now explicitly checks file existence:
+```bash
+local src="$img"
+[ -f "$thumb" ] && src="$thumb"
+```
+If you have a cache that pre-dates the fix, clear it and re-warm:
+```bash
+rm -rf ~/.cache/wallpaper/composed
+~/.local/bin/wallpaper-set.sh --warm-all
+```
+
+---
+
 ### Script Keybind Silently Fails (swww socket, $HOME not found)
 
 **Symptoms:**
@@ -864,6 +887,24 @@ nmcli device wifi connect "SSID" password "PASSWORD" hidden yes
 ---
 
 ## Package Management Issues
+
+### Dashboard "Pending updates" stuck at 0
+
+**Symptoms:**
+- Dashboard SystemNotes row shows `0 packages` / `up to date` even though `paru -Syu` finds updates.
+- Count only refreshes after a real sync.
+
+**Cause:**
+`pacman -Qu` reads the *local cached* sync DB at `/var/lib/pacman/sync/`. That DB only gets refreshed when something runs `pacman -Sy` (with root). Between syncs the count is correct but useless.
+
+**Solution:**
+Install `pacman-contrib` and use `checkupdates`, which syncs to a private temp DB without touching the real one:
+```bash
+sudo pacman -S pacman-contrib
+```
+`SystemNotes.qml` auto-detects `checkupdates` and falls back to `pacman -Qu` if not installed. Also queries `paru -Qua` for AUR updates (no sync needed — paru hits the AUR RPC directly). Display formats: `up to date`, `N packages`, `N AUR`, `N + M AUR`.
+
+---
 
 ### AUR Package Build Fails
 

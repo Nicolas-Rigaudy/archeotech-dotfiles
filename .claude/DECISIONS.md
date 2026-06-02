@@ -182,6 +182,14 @@ Bar/strip widgets receive a `required property var barRoot` (or `stripRoot`) inj
 
 WallpaperPicker lives in `PanelRegistry` as a strip panel (bottom strip, sibling to `dashboard`), not as a Settings tab. Noctalia pattern; DMS does it as a tab and it's the wrong feel (Settings is a long-lived window). Wallpaper picking is frequent and wants anchor-to-bar positioning + per-monitor instance. Logo selector lives in the same panel — contextually tied. The palette icon in the panel header deep-links to Settings → Appearance when the user wants theme picking instead. Trade-off: the strip panel still grows to full screen axis (Sprint 17 architecture) — Sprint 20's `axisSize` field fixes this.
 
+### [2026-06-02] CC = quick-access only; long settings live in Settings panes
+
+After the S20 trim, ControlCenter holds: Status strip, MEDIA, AUDIO, CONNECTIVITY (WiFi/BT/VPN), Display Layout (kept after user feedback — used often), DND toggle, Power/Lock. Night Light, Power Profile, Idle & Sleep moved to new `DisplayPane` + `PowerPane` (anticipating Sprint 23). The principle: a CC item earns its slot if it's a fast quick-toggle the user reaches for repeatedly; anything that's a multi-step configuration belongs in Settings. Display Layout sits on the line — kept in CC because docking/undocking happens often enough that an extra two clicks would hurt. Trade-off: CC's `displayLayout` and DisplayPane's `displayLayout` are independent caches (neither reads compositor state) so they can drift visually; cheap to fix later with a shared singleton if it matters.
+
+### [2026-06-02] Launcher pinned apps live in Persistence.Config, not shell-config.json
+
+User-editable UI state (pins, toggles, sliders) belongs in `Persistence.Config` (`~/.config/archeotech/config.json`) so the UI can write to it directly. `shell-config.json` is for *architectural* config (side types, widget zones, layout). The launcher first stored pins in `shell-config.json` — wrong layer, since editing JSON from QML risks corrupting the structural config. Moved to `Persistence.Config` with a defaults seed (`["kitty", "zen", "code", "obsidian"]`) returned by `get()` when nothing's persisted yet. Pin/unpin buttons in the list rows + recents tiles write through `Persistence.Config.set()`. Same rule will apply to future per-user state (favourites, custom shortcuts, etc.).
+
 ---
 
 ## Wallpaper / logo system
@@ -197,6 +205,10 @@ ImageMagick's SVG renderer fills transparency with white; `rsvg-convert` (librsv
 ### [2026-06-02] Logo previews: in-memory SVG substitution via FileView + data URI
 
 The original `arch-logo.svg` / `rebel-logo.svg` / `imperial-logo.svg` have `LOGO_COLOR` / `LOGO_OPACITY` placeholders that `wallpaper-set.sh` substitutes at composition time. For the QML preview tiles, three `FileView`s read the originals and `_svgDataUri(text())` does the substitution in-memory, returning `data:image/svg+xml;utf8,...` for `Image.source`. Single source of truth — no committed preview duplicates. Trade-off: tiny per-mount substitution + URI encode; negligible.
+
+### [2026-06-02] Composite cache: per-(wallpaper, logo, orientation), keyed by sha1 of wallpaper path
+
+The original cache was single-slot — one `$COMPOSED_IMG` file + a `$COMPOSED_CACHE` flag storing `<logo>:<wallpaper>`. Switching anything invalidated it and forced a 2-4s re-render. Replaced with `$CACHE_DIR/composed/<sha1>-<logo>-{l,p}.png` files; cache hits are O(1) file existence checks. Background-warm subshell composites the *other* logos for the current wallpaper after every apply, so the next logo switch is cache-hit. `--warm-all` subcommand pre-renders every combination (~167 MB for 16 wallpapers × 3 logos × 2 orientations). Trade-off: disk grows with usage; no automatic cleanup yet (cheap enough on 512 GB).
 
 ---
 

@@ -44,6 +44,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 | 17 | Unified Shell Surface — one ShellSurface PanelWindow per monitor + ShellExclusions (Caelestia §15.2); ShellConfig/ShellState singletons w/ per-screen stateMap; Sides as Items (Bar/Strip/SideLoader); 4× ShapePath CornerBlends; Panels as content modules (CC/NC/Launcher/Dashboard) mounted inside Strip popup card; popup-becomes-panel animation; outerGap config field (exclusiveZone=sideSize+outerGap); deleted Modules/Drawer + old Bar/CC/NC/Launcher/Dashboard wrappers (-3700 LOC); fixed mango scroller_structs=0 to let windows tile flush | 2026-06-01 |
 | 18 | Configurable Sides + Widget Registry — Noctalia filename-convention registry (drop a file under `Widgets/Bar/` or `Widgets/Strip/`, add id to `shell-config.json` zone, done); async `BarWidgetLoader`/`StripWidgetLoader` with `setSource(path, props)` Noctalia pattern; formalized `barRoot`/`stripRoot` context APIs; primitives moved to `Commons/Primitives/`; HoverCard/CalendarPopup/WifiPopup/BtPopup extracted; ClockWidget + 12 bar widgets + 4 strip icons over `StripIconBase`; stable ListModel diff (HyprPanel preserve-delegates); `plugin:<id>` namespacing reserved for S21; Bar.qml 1537→299 LOC; `docs/WIDGET_API.md` written | 2026-06-02 |
 | 19 | System-wide theme switcher + WallpaperPicker — `scripts/theme-switch.py` rewrite (Caelestia pattern: atomic temp+rename, `fcntl` lock, template registry, failure-isolated appliers across 8 targets — Quickshell/kitty/mango/rofi/starship/GTK/VSCode/Obsidian); refresh via SIGUSR1/`gsettings`/`mmsg`/`jq`; `theme.json` schema extended with `gtk`/`vscode`/`obsidian`/`card` blocks across 7 themes; AppearancePane redesigned as DMS-style card grid (display name + 4-color accent swatch row, scale 1.03 hover, accent border on active); new WallpaperPicker first-class panel on bottom strip (replaces rofi picker, `Super+W` rebound to `qs ipc call wallpaper toggle`) — combined header row (title + 4 logo tiles centered + items count + palette button), horizontal-scrolling carousel of 3:2 thumbnails with `OpacityMask` rounded corners and `WheelHandler` for vertical-wheel→horizontal-flick; logo selector reuses existing `scripts/assets/*-logo.svg` via `FileView` + in-memory LOGO_COLOR substitution → data URI (no preview duplicates); rofi `theme.rasi` split to `@import "colors.rasi"`; `docs/THEME_SPEC.md` written; Qt 6.11.1 surfaced two latent issues fixed in passing — missing `}` in Strip.qml (Shape block) and ListModel-role auto-binding to inherited required properties broke (now explicit `widgetId: model.widgetId` + restored `qmldir` for `Widgets/Strip/`) | 2026-06-02 |
+| 20 | Panel Redesign & Polish — `PanelRegistry` gained `axisSize` (numeric / `"auto"` / `"full"`); `Strip.qml` `_axisTarget` branches on the value, floors at icon-row width, clamps to screen; card stays centered (an icon-anchored variant was tried and reverted — clustered icons pulled the card sideways when switching). Panels migrated: WallpaperPicker 1280, Dashboard 920, Launcher 440 + Recents row, CC 440 trimmed 1264→1020 LOC (DND + Power/Lock kept; DISPLAY restored after the user flagged it's used often; Night Light/Power Profile/Idle relocated), NC went `axisSize: "auto"` via new `implicitAxis` property. New: `Commons/Primitives/EmptyState.qml`, `Commons.Appearance.anim.panel` (240 ms), `docs/PANEL_API.md`. **Follow-ups same day:** new Settings panes `DisplayPane` (monitor layout + night light) + `PowerPane` (profile + idle/sleep) absorb what CC dropped — required fixing `SettingsContent.qml` (carousel was hardcoded, order had to match `PaneRegistry` exactly — a real navigation bug the user hit) + `ButtonGroupRow` (now hides label area when both label/description empty). Launcher pin/unpin from list rows + recents tiles (filled `󰐃` pinned / outline `󰤱` unpinned), pinned list moved from `shell-config.json` → `Persistence.Config` (per-user state, writeable from UI), defaults seed to kitty/zen/code/obsidian. Dashboard SystemNotes pending-updates now uses `checkupdates` (pacman-contrib) for fresh repo counts + `paru -Qua` for AUR — display "5 + 2 AUR" / "up to date". Wallpaper performance overhaul: single-slot `$COMPOSED_IMG` cache replaced by per-(wallpaper, logo, orientation) keyed cache under `~/.cache/wallpaper/composed/<hash>-<logo>-{l,p}.png`; awww transition 1.5s→0.5s; picker shows optimistic UI + dims non-active tiles + blocks re-clicks via `applying` flag; `--warm-all` subcommand pre-renders every combo (16 wallpapers × 3 logos × 2 orientations = 96 files, ~167 MB). Caught and fixed an old bug in `get_wallpaper_color` — `${thumb:-$img}` was wrong (`${var:-x}` checks variable empty, not file exists), so wallpapers without thumbnails rendered logos with no color | 2026-06-02 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -55,76 +56,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Upcoming Sprints
 
-### Sprint 20 — Panel Redesign & Polish ← NEXT
-
-**Goal:** Convert strip-mounted panels from full-axis bars into compact, Caelestia-style popups. Every panel gets a density + hierarchy + empty-state review. Cross-repo source-inspection (Caelestia / Noctalia / DMS / end-4) drives the new patterns.
-
-**Architectural change** — current behaviour: when a strip icon is active, the strip card grows to the full screen axis (`Strip.qml`'s `_axisTarget = _horizontal ? width : height`). New behaviour: each panel declares its own `axisSize` in `PanelRegistry`, the strip card grows only that far, and the card anchors near the icon rather than centering across the strip.
-
-```qml
-// PanelRegistry — new shape (axisSize joins the existing size + side):
-cc:        { content: ..., side: "right",  size: 320, axisSize: 440 }
-nc:        { content: ..., side: "right",  size: 320, axisSize: "auto" }   // dynamic
-launcher:  { content: ..., side: "left",   size: 600, axisSize: 440 }
-dashboard: { content: ..., side: "bottom", size: 600, axisSize: 920 }
-wallpaper: { content: ..., side: "bottom", size: 380, axisSize: 1280 }
-```
-
-`Strip.qml`'s `_axisTarget` becomes `Math.max(activeMeta.axisSize, _bodyAxis + 2 * _r)`; card x/y math anchors near the icon's screen position (preserves popup-→-panel continuity).
-
-**Per-panel work:**
-
-- **Launcher** — currently spans the full screen height with vast dead space and no shortcuts to most-used apps.
-  - Shrink to ~600×440.
-  - Add a "Recents" / "Most Used" row at the top (frecency already cached in `~/.cache/qs-launcher-usage`).
-  - Tighter app grid; possibly category chips.
-  - Reference: caelestia launcher, end-4 sidebar launcher, Noctalia app grid.
-
-- **Control Center** — currently bloated; mixes fast toggles with long-form settings.
-  - Strip down to quick-access only: WiFi · Bluetooth · audio sink · brightness · volume · MPRIS · battery summary · power actions.
-  - Move long settings out (display layout, night light, power profile, audio profile picker) → Settings → respective panes (Sprint 23 then absorbs them).
-  - Reference: caelestia CC (collapsible sections), Noctalia compact CC.
-
-- **Notifications Center** — currently empty space dominates when only a few notifications are present.
-  - Dynamic height: `axisSize` binds to `headerH + notificationsH + footerH`, capped at a max.
-  - Empty-state component with subtle icon + concise copy.
-  - Group by app, optional collapsibility per group.
-  - Reference: end-4 notifications.
-
-- **Dashboard** — density review; reflow on narrower configurations.
-
-- **Wallpaper Picker** — already compact (Sprint 19). Verify it still behaves with the new `axisSize` field.
-
-**Cross-panel polish:**
-- Animation tokens: ensure consistent enter/exit (200–240 ms, `OutCubic`) across every panel.
-- Spacing tokens applied uniformly via `Commons.Appearance.spacing.*`.
-- Empty-state styling pattern shared between NC + Launcher + future "no devices" cases.
-- Header layout consistency: title-left + actions-right (matches new WallpaperPicker).
-
-**Checklist:**
-- [ ] `PanelRegistry` — add `axisSize` field (numeric or `"auto"` for dynamic)
-- [ ] `Strip.qml` — axis target = panel-defined, not full screen
-- [ ] `Strip.qml` — card position math anchors near icon (not centered across strip)
-- [ ] `Launcher` — compact layout + recents/most-used row
-- [ ] `Control Center` — trim to quick-access; migrate long settings to Settings panes
-- [ ] `Notifications Center` — `axisSize: "auto"` bound to notifications count, animated
-- [ ] `Dashboard` — density review pass
-- [ ] Empty-state component (Commons/Primitives or Modules/Shell) — reused by NC, Launcher, etc.
-- [ ] Unified animation timing across all panel enter/exit
-- [ ] Update `.claude/claude.md` "Locked architecture decisions" — sizing model + card-anchor rule
-- [ ] `docs/PANEL_API.md` (new) — contract for panel-content modules (panelRoot API, axisSize semantics)
-- [ ] Visual regression: screenshots before/after for each panel
-
-**References (re-inspect before starting):**
-- `caelestia-dots/shell/modules/controlcenter/` — collapsible sections
-- `caelestia-dots/shell/modules/launcher/` — compact launcher
-- `noctalia-shell/Modules/Panels/Control/` — panel sizing
-- `AvengeMedia/DankMaterialShell/quickshell/Modules/Control/` — quick-toggle density
-- `end-4/dots-hyprland/widgets/sidebars/` — notification grouping + empty state
-
----
-
-### Sprint 21 — Module Builder & Community Extension System
+### Sprint 21 — Module Builder & Community Extension System ← NEXT
 
 **Goal:** Visual UI for editing `shell-config.json`. Builds on the Widget Registry (S18). Adds module manifest discovery + desktop widget layer. After this, third parties can publish modules and themes that install by dropping a folder.
 
