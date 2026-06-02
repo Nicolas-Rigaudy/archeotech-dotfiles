@@ -3,6 +3,7 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import "../../../../Commons" as Commons
+import "../../../../Services/Persistence" as Persistence
 
 // Launcher UI. Panel.qml provides chrome + slide anim + click-outside-to-close;
 // this file is the inner content only. `panelRoot` is injected by Panel.qml's
@@ -21,6 +22,75 @@ Item {
     property int    selectedIdx:  0
     property var    _depIds:      ({})
     property var    _usageCounts: ({})
+
+    // Pinned apps come first in the Recents row, in user-chosen order;
+    // frecency from launches-via-launcher fills any remaining slots up to 4.
+    // Pinned list lives in Persistence.Config (writeable from this UI via
+    // the pin/unpin buttons on each list row). Matched against entry.id
+    // first, then entry.name (case-insensitive).
+    readonly property var _pinnedDefaults: ["kitty", "zen", "code", "obsidian"]
+    readonly property var pinnedIds:
+        Persistence.Config.get("launcher.pinned", root._pinnedDefaults)
+
+    property var topRecents: []
+
+    function _findApp(needle) {
+        var n = (needle || "").toLowerCase()
+        for (var i = 0; i < allApps.length; i++) {
+            var a = allApps[i]
+            if ((a.id   || "").toLowerCase() === n) return a
+            if ((a.name || "").toLowerCase() === n) return a
+        }
+        return null
+    }
+
+    function isPinned(entry) {
+        if (!entry) return false
+        var ids = root.pinnedIds || []
+        for (var i = 0; i < ids.length; i++) {
+            var n = (ids[i] || "").toLowerCase()
+            if ((entry.id   || "").toLowerCase() === n) return true
+            if ((entry.name || "").toLowerCase() === n) return true
+        }
+        return false
+    }
+
+    function togglePin(entry) {
+        if (!entry || !entry.id) return
+        var pins = (root.pinnedIds || []).slice()
+        // Remove any matching variant (id or name) — keeps the list clean.
+        var key = entry.id.toLowerCase()
+        var nameKey = (entry.name || "").toLowerCase()
+        var removed = false
+        for (var i = pins.length - 1; i >= 0; i--) {
+            var p = (pins[i] || "").toLowerCase()
+            if (p === key || p === nameKey) { pins.splice(i, 1); removed = true }
+        }
+        if (!removed) pins.push(entry.id)
+        Persistence.Config.set("launcher.pinned", pins)
+        root._refreshRecents()
+    }
+
+    function _refreshRecents() {
+        var seen = {}
+        var out  = []
+        var pinned = root.pinnedIds || []
+        for (var i = 0; i < pinned.length && out.length < 4; i++) {
+            var a = _findApp(pinned[i])
+            if (a && !seen[a.id]) { out.push(a); seen[a.id] = true }
+        }
+        if (out.length < 4) {
+            var rest = allApps.slice().filter(function(a) {
+                return !seen[a.id] && (root._usageCounts[a.name] || 0) > 0
+            })
+            rest.sort(function(a, b) {
+                return (root._usageCounts[b.name] || 0) - (root._usageCounts[a.name] || 0)
+            })
+            for (var j = 0; j < rest.length && out.length < 4; j++) out.push(rest[j])
+        }
+        root.topRecents = out
+    }
+    onPinnedIdsChanged: _refreshRecents()
 
     // usage → dep → _loadApps chain on startup
     Component.onCompleted: usageReader.running = true
@@ -45,6 +115,7 @@ Item {
         }
         root.allApps = buf
         root._filter()
+        root._refreshRecents()
     }
 
     // ── Usage reader ───────────────────────────────────────────────────────────
@@ -78,6 +149,7 @@ Item {
 
     function _bumpUsage(name) {
         root._usageCounts[name] = (root._usageCounts[name] || 0) + 1
+        root._refreshRecents()
         if (usageWriter.running) return
         var lines = []
         for (var k in root._usageCounts) {
@@ -184,6 +256,7 @@ Item {
             root.query = ""
             searchInput.text = ""
             root._filter()
+            root._refreshRecents()
             searchInput.forceActiveFocus()
         }
     }
@@ -203,6 +276,125 @@ Item {
                 right: parent.right; rightMargin: Commons.Appearance.spacing.lg
             }
             spacing: Commons.Appearance.spacing.sm
+
+            // ── Recents row (most-used, frecency-sorted) ───────────────────────
+            // Hidden when typing; tap launches without losing the search field.
+            Item {
+                id: recentsRow
+                width:   parent.width
+                visible: root.query.length === 0 && root.topRecents.length > 0
+                height:  visible ? (recentsLbl.height + tilesRow.height + 4) : 0
+
+                Text {
+                    id: recentsLbl
+                    text:  "RECENTS"
+                    color: Commons.Appearance.colors.subtext0
+                    font { family: Commons.Appearance.font.family; pixelSize: Commons.Appearance.font.sizeSm; letterSpacing: 1.5 }
+                    opacity: 0.7
+                    anchors { top: parent.top; left: parent.left }
+                }
+
+                Row {
+                    id: tilesRow
+                    spacing: Commons.Appearance.spacing.base
+                    anchors { left: parent.left; right: parent.right; top: recentsLbl.bottom; topMargin: 4 }
+
+                    Repeater {
+                        model: root.topRecents
+                        delegate: Rectangle {
+                            required property var modelData
+                            // 4 tiles, share the row evenly minus spacing.
+                            width:  (tilesRow.width - Commons.Appearance.spacing.base * (root.topRecents.length - 1)) / Math.max(1, root.topRecents.length)
+                            height: 64
+                            radius: Commons.Appearance.radius.base
+                            color:  tileHov.hovered ? Commons.Appearance.colors.accentAlpha : Commons.Appearance.colors.surface0Alpha
+                            border.color: tileHov.hovered ? Commons.Appearance.colors.accentBorder : "transparent"
+                            border.width: 1
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+
+                            Item {
+                                id: tileIconWrapper
+                                anchors { top: parent.top; topMargin: 8; horizontalCenter: parent.horizontalCenter }
+                                width: 26; height: 26
+                                property int _idx: 0
+                                property var _cands: {
+                                    var n = modelData.icon || "", id = modelData.id || "", c = []
+                                    if (n) {
+                                        c.push(n.startsWith("/") ? n : "image://icon/" + n)
+                                        if (n !== n.toLowerCase()) c.push("image://icon/" + n.toLowerCase())
+                                    }
+                                    if (id && id !== n && id !== n.toLowerCase())
+                                        c.push("image://icon/" + id)
+                                    return c
+                                }
+                                Image {
+                                    id: tileIcon
+                                    anchors.fill: parent
+                                    source: tileIconWrapper._cands[tileIconWrapper._idx] || ""
+                                    fillMode: Image.PreserveAspectFit
+                                    smooth: true
+                                    onStatusChanged: {
+                                        if (status === Image.Error
+                                                && tileIconWrapper._idx < tileIconWrapper._cands.length - 1)
+                                            tileIconWrapper._idx++
+                                    }
+                                }
+                                Text {
+                                    anchors.centerIn: parent
+                                    visible: tileIcon.status !== Image.Ready
+                                    text: ""
+                                    font { family: Commons.Appearance.font.family; pixelSize: 16 }
+                                    color: Commons.Appearance.colors.overlay1
+                                }
+                            }
+
+                            Text {
+                                anchors { bottom: parent.bottom; bottomMargin: 6; left: parent.left; right: parent.right }
+                                text:  modelData.name || ""
+                                color: Commons.Appearance.colors.subtext1
+                                font { family: Commons.Appearance.font.family; pixelSize: Commons.Appearance.font.sizeSm }
+                                horizontalAlignment: Text.AlignHCenter
+                                elide: Text.ElideRight
+                            }
+
+                            // Unpin overlay — top-right corner, fades in on
+                            // tile hover. Pinned-tile-only since recents
+                            // entries are either pinned or frecency-only;
+                            // frecency entries can be re-pinned from the list.
+                            Rectangle {
+                                id: tileUnpin
+                                readonly property bool _pinned: root.isPinned(modelData)
+                                visible: _pinned
+                                anchors { top: parent.top; right: parent.right; margins: 4 }
+                                width: 20; height: 20
+                                radius: Commons.Appearance.radius.sm
+                                color:   _tileUnpinArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
+                                opacity: tileHov.hovered || _tileUnpinArea.containsMouse ? 1.0 : 0.0
+                                Behavior on opacity { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+                                Behavior on color   { ColorAnimation  { duration: Commons.Appearance.anim.fast } }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text:  "󰐃"
+                                    color: Commons.Appearance.colors.accent
+                                    font { family: Commons.Appearance.font.family; pixelSize: 12 }
+                                }
+
+                                MouseArea {
+                                    id: _tileUnpinArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.togglePin(modelData)
+                                }
+                            }
+
+                            HoverHandler { id: tileHov }
+                            TapHandler   { onTapped: root._launch(modelData) }
+                        }
+                    }
+                }
+            }
 
             // ── Search box ─────────────────────────────────────────────────────
             Rectangle {
@@ -248,7 +440,11 @@ Item {
             ListView {
                 id:             resultList
                 width:          parent.width
-                height:         Math.min(contentHeight, 8 * 40)
+                // Shrink the cap when recents row is visible so the compact
+                // (axisSize:440) panel fits without overflow. When typing,
+                // recents hides and the list can grow back.
+                height:         recentsRow.visible ? Math.min(contentHeight, 6 * 40)
+                                                   : Math.min(contentHeight, 8 * 40)
                 implicitHeight: height
                 clip:           true
                 model:          root.filtered
@@ -314,7 +510,7 @@ Item {
                     Text {
                         anchors {
                             left:  iconWrapper.right; leftMargin:  10
-                            right: parent.right;      rightMargin: 10
+                            right: pinBtn.left;       rightMargin: 6
                             verticalCenter: parent.verticalCenter
                         }
                         text:  modelData.name || ""
@@ -323,6 +519,38 @@ Item {
                                    : Commons.Appearance.colors.subtext1
                         font { family: Commons.Appearance.font.family; pixelSize: Commons.Appearance.font.sizeBase }
                         elide: Text.ElideRight
+                    }
+
+                    // Pin/unpin toggle. Visible when the row is selected OR
+                    // the app is already pinned (so pinned items stay tagged).
+                    Rectangle {
+                        id: pinBtn
+                        readonly property bool _pinned: root.isPinned(modelData)
+                        anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
+                        width: 22; height: 22
+                        radius: Commons.Appearance.radius.sm
+                        visible: _pinned || root.selectedIdx === index
+                        color:   _pinArea.containsMouse ? Commons.Appearance.colors.surface0Alpha : "transparent"
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text:  pinBtn._pinned ? "󰐃" : "󰤱"
+                            color: pinBtn._pinned ? Commons.Appearance.colors.accent
+                                                  : Commons.Appearance.colors.overlay0
+                            font { family: Commons.Appearance.font.family; pixelSize: 14 }
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        }
+
+                        MouseArea {
+                            id: _pinArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            // MouseArea is on top of the row's TapHandler, so the
+                            // click is consumed and doesn't trigger launch.
+                            onClicked: root.togglePin(modelData)
+                        }
                     }
 
                     HoverHandler { onHoveredChanged: if (hovered) root.selectedIdx = index }
