@@ -324,6 +324,7 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `snap-pac` | Pacman hook | Auto snapshots on pacman operations |
 | `grub-btrfs` | GRUB integration | Boot from snapshots in GRUB menu |
 | `snapper-gui-git` (AUR) | Snapshot GUI | Wayland-compatible GUI for snapper |
+| `pacman-contrib` | Pacman extras | Provides `checkupdates` — dashboard SystemNotes uses it for an accurate "pending updates" count without needing root sync |
 
 ---
 

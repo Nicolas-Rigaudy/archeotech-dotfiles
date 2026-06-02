@@ -14,6 +14,7 @@ Rectangle {
 
     property string snap:    "…"
     property string updates: "…"
+    property string aur:     "0"
     property string vpn:     "…"
     property string aws:     "…"
 
@@ -33,11 +34,23 @@ Rectangle {
     Process {
         id: notesProc
         running: false
+        // checkupdates (pacman-contrib) syncs to a temp DB without touching
+        // /var/lib/pacman/sync, so the count is always fresh — unlike plain
+        // `pacman -Qu` which only sees updates after a real `pacman -Sy`.
+        // `paru -Qua` queries AUR directly (no sync needed).
+        // Both fall back to `pacman -Qu` if their helper isn't installed.
         command: ["bash", "-c",
             "snap=$(snapper -c root list 2>/dev/null | awk -F'│' " +
             "'NR>2 && NF>1 && length($4)>4 {gsub(/^[[:space:]]+|[[:space:]]+$/,\"\",$(4)); last=$(4)} " +
             "END{print length(last)>0 ? last : \"N/A\"}'); echo snap:${snap:-N/A}; " +
-            "upd=$(pacman -Qu 2>/dev/null | wc -l | tr -d ' '); echo updates:${upd:-0}; " +
+            "if command -v checkupdates >/dev/null 2>&1; then " +
+            "  upd=$(checkupdates 2>/dev/null | wc -l | tr -d ' '); " +
+            "else " +
+            "  upd=$(pacman -Qu 2>/dev/null | wc -l | tr -d ' '); " +
+            "fi; echo updates:${upd:-0}; " +
+            "if command -v paru >/dev/null 2>&1; then " +
+            "  aur=$(paru -Qua 2>/dev/null | wc -l | tr -d ' '); " +
+            "else aur=0; fi; echo aur:${aur:-0}; " +
             "vpn=$(nmcli con show --active 2>/dev/null | awk '/vpn/{print $1;exit}'); " +
             "echo vpn:${vpn:-inactive}; " +
             "echo aws:${AWS_PROFILE:-unset}"
@@ -49,6 +62,7 @@ Rectangle {
                 var key = line.slice(0, sep), val = line.slice(sep + 1)
                 if (key === "snap")    root.snap    = val
                 if (key === "updates") root.updates = val
+                if (key === "aur")     root.aur     = val
                 if (key === "vpn")     root.vpn     = val
                 if (key === "aws")     root.aws     = val
             }
@@ -102,8 +116,17 @@ Rectangle {
         }
         NoteRow {
             label: "Pending updates"
-            value: root.updates === "0" ? "up to date" : root.updates + " packages"
-            valueColor: root.updates === "0" ? Commons.Appearance.colors.green : Commons.Appearance.colors.yellow
+            value: {
+                var u = parseInt(root.updates) || 0
+                var a = parseInt(root.aur)     || 0
+                if (u === 0 && a === 0) return "up to date"
+                if (u === 0)            return a + " AUR"
+                if (a === 0)            return u + " packages"
+                return u + " + " + a + " AUR"
+            }
+            valueColor: (root.updates === "0" && root.aur === "0")
+                ? Commons.Appearance.colors.green
+                : Commons.Appearance.colors.yellow
         }
         NoteRow {
             label: "VPN"
