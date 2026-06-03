@@ -15,7 +15,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 3. **Visual builder** — drag-and-drop edit mode wires any module to any trigger (edge hover, bar icon, keyboard, desktop widget). Config persists to `DrawerConfig.json`, hot-reloads instantly.
 4. **Compositor abstraction** — `CompositorService` facade means one codebase runs on MangoWC, Hyprland, and Niri.
 
-**Target release:** v1.0 after Sprint 25 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
+**Target release:** v1.0 after Sprint 26 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
 
 ---
 
@@ -80,23 +80,47 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 }
 ```
 
+**Chunked delivery:** 0 (config write-back) + 1 (visual builder) shipped 2026-06-03; 2 (module manifest) + 3 (desktop widgets) remain.
+
 **Checklist:**
-- [ ] `module.json` spec finalized; `docs/MODULE_API.md` written
-- [ ] `Modules/ModuleRegistry.qml` — singleton scanning `Modules/*/module.json` + `~/.local/share/archeotech/modules/*/module.json`, FileView watcher for hot-discovery
-- [ ] Edit mode overlay (`Modules/Builder/EditOverlay.qml`) — full-screen glass surface inside ShellSurface, exit on `Escape` or `Super+Shift+E`
-- [ ] **Click-to-assign** flow: click slot → palette opens → click module → assigned. Click occupied slot → unassign or open settings.
-- [ ] Side type switcher (per-side: bar / strip / none) — toggles in edit overlay
-- [ ] Bar configurator — Left / Center / Right zone slots per side, click-to-assign chips
-- [ ] Strip icon configurator — Column of icon slots, click-to-assign
-- [ ] Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom` — separate PanelWindow, independent of ShellSurface
-- [ ] `Modules/DesktopWidgets/DraggableWidget.qml` — intra-window drag (works on Wayland), grid snap, boundary clamp, persist x/y to config (Noctalia pattern)
-- [ ] At least 3 desktop widgets: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
-- [ ] `~/.local/share/archeotech/modules/` — user module install path, scanned alongside built-in modules
-- [ ] All edits write to `shell-config.json` → `ShellConfig` hot-reloads → shell reconfigures instantly
+- [x] **(Chunk 0)** `ShellConfig` write-back — `setSideType`/`setZoneWidgets`/`setStripIcons` deep-clone→reassign→write `shell-config.json`, `$schema` preserved, no write-loop
+- [x] **(Chunk 1)** Edit mode overlay (`Modules/Shell/Builder/EditOverlay.qml`) — full-surface glass inside ShellSurface, exit on `Escape` / Done / `Super+Shift+E` (IPC `editmode`)
+- [x] **(Chunk 1)** **Click-to-assign** flow (`WidgetPalette.qml`): click `+` slot → palette → click widget → assigned; chips have remove `×` + reorder `‹ ›`
+- [x] **(Chunk 1)** Side type switcher (per-side: bar / strip / **holder** / none) — holder = hidden-at-rest, hover-reveal, gap-0, flush popups
+- [x] **(Chunk 1)** Bar configurator — Left / Center / Right zone chip rows; Strip/holder icon configurator — icon chip list
+- [x] **(Chunk 1)** All edits write `shell-config.json` → `ShellConfig` hot-reloads → live shell re-syncs (Bar `onDataChanged`)
+- [x] **(Chunk 1)** Palette catalogue seam — `WidgetRegistry.availableBarWidgets`/`availableStripIcons` (Chunk 2 swaps for manifest discovery)
+- [ ] **(Chunk 2)** `module.json` spec finalized; `docs/MODULE_API.md` written
+- [ ] **(Chunk 2)** `Modules/ModuleRegistry.qml` — singleton scanning `Modules/*/module.json` + `~/.local/share/archeotech/modules/*/module.json`, FileView watcher for hot-discovery
+- [ ] **(Chunk 2)** `~/.local/share/archeotech/modules/` — user module install path, scanned alongside built-in modules
+- [ ] **(Chunk 3)** Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom` — separate PanelWindow, independent of ShellSurface + a "peek desktop" access (mango corner action / keybind)
+- [ ] **(Chunk 3)** `Modules/DesktopWidgets/DraggableWidget.qml` — intra-window drag (works on Wayland), grid snap, boundary clamp, persist x/y to config (Noctalia pattern)
+- [ ] **(Chunk 3)** At least 3 desktop widgets: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
 
 ---
 
-### Sprint 22 — Lock Screen (Native QML)
+### Sprint 22 — Adaptive Shell Frame
+
+**Goal:** The bar/strip frame adapts its corners to whichever sides are active, so any mix of bar/strip/holder/none reads as one continuous, properly-finished frame. Pulled up right after S21 because side-type switching is now trivial — today `holder`/`none` leave the adjacent bar/strip with a square end and drop the corner blend entirely. *(User-requested during S21: "a dynamic frame that connects all the bars and strips together; if it's an empty holder, adapt the corners of the 2 adjacent sides to finish off smoothly.")*
+
+**Corner mode — decided per screen corner from the two adjacent sides' types:**
+- both active (bar/strip) → **concave blend** (current `CornerBlend` — smooth inner join)
+- one active, neighbour empty (holder/none) → **convex rounded cap** on the active side's terminating end
+- neither active → nothing
+
+**Pill mode:** a bar/strip with no active adjacent sides rounds *both* ends → freestanding pill (the pre-S16 single-pill look). Toggle via `shell-config.json` `corners.isolatedPill: true|false` + an edit-mode control, so users can force flat or pill.
+
+**Checklist:**
+- [ ] `CornerBlend` gains `mode: "concave" | "convex"` (or a sibling `CornerCap.qml`) — convex draws a rounded outer cap instead of a carved inner arc
+- [ ] `ShellSurface` computes each corner's mode from the two adjacent `sideGap`/`sideType` values; renders blend / cap / nothing
+- [ ] Bar/Strip end-cap radius applied when a perpendicular neighbour is empty, so cap geometry lines up with the body
+- [ ] `corners.isolatedPill` flag + edit-mode toggle; isolated bar → both ends rounded
+- [ ] Holder reveal must not re-introduce a corner (holder stays gap-0 / hidden) — verify against S21 holder
+- [ ] Animate cap↔blend transitions when a side type changes live
+
+---
+
+### Sprint 23 — Lock Screen (Native QML)
 
 **Goal:** Replace swaylock with a first-class Quickshell component. Now that the design system (Sprint 12/13) and token system are in place, build it properly.
 
@@ -116,7 +140,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Planned Sprints
 
-### Sprint 23 — Settings Depth
+### Sprint 24 — Settings Depth
 Fill out Sprint 11's placeholder panes with full native implementations:
 - Connections pane: WiFi sub-tab (known networks, forget, priority) + BT sub-tab (connected/paired/available per Noctalia model, battery level, signal)
 - Audio pane: PipeWire sinks + sources (once QS 0.3.0 lands), device aliasing, per-device volume limit
@@ -124,7 +148,7 @@ Fill out Sprint 11's placeholder panes with full native implementations:
 - Settings search: fuzzy index per registered pane, max 15 results, sidebar search input
 - **Layout pane** (new) — UI for `shell-config.json` side type switcher (top/right/bottom/left = bar/strip/none) + per-zone widget chooser. Bridge between current Settings and full Module Builder UI (Sprint 21). Lets users reconfigure sides from a familiar settings interface without needing the visual edit mode.
 
-### Sprint 24 — Multi-Compositor Support
+### Sprint 25 — Multi-Compositor Support
 
 **Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).
 
@@ -156,7 +180,7 @@ CompositorService.activeWindowTitle     // readable property
 
 ---
 
-### Sprint 25 — Distribution & GitHub Release
+### Sprint 26 — Distribution & GitHub Release
 
 **Goal:** Clean, documented, installable by a stranger on a fresh Arch Linux machine. Everything hardcoded to `/home/corvus` is gone. Module + theme APIs are documented. Community can publish extensions. **v1.0 milestone.**
 
@@ -176,19 +200,19 @@ CompositorService.activeWindowTitle     // readable property
 
 ---
 
-### Sprint 26 — Go Daemon
+### Sprint 27 — Go Daemon
 Only for raw Wayland protocols that QML can't reach natively:
 - `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
 - `Services/ArcheotechDaemon.qml` — Quickshell Socket, exponential-backoff reconnect
 - Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
 - Does NOT handle: audio, network, BT, notifications, lock (all native QML)
 
-### Sprint 27 — Dev Personality + Shadow Spear
+### Sprint 28 — Dev Personality + Shadow Spear
 - `themes/shadow-spear/` full theme package (compositor + kitty + starship raven sigil + rofi + wallpaper set)
 - Git branch widget (`Widgets/Bar/GitWidget.qml`) — CWD from focused window, dims when no git context
 - AWS profile widget (`Widgets/Bar/AwsWidget.qml`) — always visible, dims when `$AWS_PROFILE` unset
 - Terraform workspace indicator (`Widgets/Bar/TerraformWidget.qml`) — shows `terraform workspace show`, only in tf repos
-- Per-workspace wallpapers via `CompositorService.onTagSwitched` hook (S24 dependency)
+- Per-workspace wallpapers via `CompositorService.onTagSwitched` hook (S25 dependency)
 - **Stretch:** SDF GLSL shader for corner blob (replaces ShapePath cubic bezier for ultra-smooth corners — Caelestia §15.2 line 2143)
 
 ---
@@ -197,8 +221,13 @@ Only for raw Wayland protocols that QML can't reach natively:
 
 Well-defined features not yet scheduled into a sprint.
 
+### Visual Builder enhancements (extends Sprint 21 edit mode)
+*(User-requested during S21: "in the end I'd like a more visual representation of what is in each, to really drag and drop all the widgets where I want them.")*
+- **Drag-and-drop arrangement** — replace the S21 `‹ ›` reorder arrows with true drag-and-drop of widget chips within and between zones. Intra-window drag is reliable on Wayland (same basis as the S21 desktop `DraggableWidget`, `ANALYSIS.md` line 2092); the edit overlay is a single window, so cross-zone drag works. Drop order persists via `ShellConfig.setZoneWidgets` / `setStripIcons`.
+- **Spatial zone representation** — render each bar zone / strip as a to-scale mock of the real side (icons shown in place) instead of a chip list, so arranging widgets maps 1:1 to what appears on screen.
+
 ### Dev Workflow Bar Widgets
-*(sprint 27 covers git + AWS + terraform; these are the rest. All become `Widgets/Bar/*.qml` files per S18 widget registry.)*
+*(sprint 28 covers git + AWS + terraform; these are the rest. All become `Widgets/Bar/*.qml` files per S18 widget registry.)*
 - `DockerWidget` — containers count badge, click to open btop or lazydocker
 - `KeyboardLayoutWidget` — QWERTY/AZERTY indicator, reflected from MangoWC `keyboardLayout` state
 - `CapsLockWidget` — low priority, currently undetected

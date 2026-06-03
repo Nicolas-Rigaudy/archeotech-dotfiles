@@ -4,6 +4,8 @@ import QtQuick
 import "Sides" as Sides
 import "Corners" as Corners
 import "Panels" as Panels
+import "Builder" as Builder
+import "../../Commons" as Commons
 import "../../Services/Shell" as ShellServices
 
 // Sprint 17 Stage 4 — one full-screen overlay PanelWindow per monitor.
@@ -30,13 +32,16 @@ Variants {
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "archeotech-shell"
-        WlrLayershell.keyboardFocus: ShellServices.ShellState.anyOpen(_screenName)
+        // Exclusive focus when a panel is open OR edit mode is active (so the
+        // EditOverlay receives Escape and the palette is interactive).
+        WlrLayershell.keyboardFocus: (ShellServices.ShellState.anyOpen(_screenName) || Commons.State.editMode)
             ? WlrKeyboardFocus.Exclusive
             : WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true; right: true }
 
         // Mask = union of the 4 side regions + 4 corner blends + (when any
-        // panel is open) a full-surface region for click-outside-to-close.
+        // panel is open) a full-surface region for click-outside-to-close +
+        // (in edit mode) a full-surface region so the editor is interactive.
         // Inactive sides collapse to 0×0 so they contribute nothing.
         mask: Region {
             Region { item: _topSide }
@@ -48,6 +53,16 @@ Variants {
             Region { item: _cBL }
             Region { item: _cBR }
             Region { item: _panelOpenMask }
+            Region { item: _editMask }
+        }
+
+        // Full-surface mask while editing so all of EditOverlay is clickable;
+        // collapses to 0×0 otherwise.
+        Item {
+            id: _editMask
+            x: 0; y: 0
+            width:  Commons.State.editMode ? _surface.width  : 0
+            height: Commons.State.editMode ? _surface.height : 0
         }
 
         // When any panel is open on this screen, _panelOpenMask covers the
@@ -193,5 +208,13 @@ Variants {
         // the strip-attached edge so the user can switch between panels (e.g.
         // CC ↔ NC) without losing them. Panels.Panel is no longer instantiated
         // here; PanelRegistry remains the source of truth for content + size.
+
+        // ── Edit mode (Sprint 21) ──────────────────────────────────────────────
+        // Full-surface visual builder, above everything. Visible only when
+        // State.editMode; reads/writes ShellConfig (live shell hot-reloads).
+        Builder.EditOverlay {
+            z: 30
+            anchors.fill: parent
+        }
     }
 }

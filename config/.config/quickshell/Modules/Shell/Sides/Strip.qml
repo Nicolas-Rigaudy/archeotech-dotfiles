@@ -21,6 +21,12 @@ Item {
     required property string side
     required property var screen
 
+    // Holder mode (Sprint 21): the resting strip body is hidden and reserves
+    // no space — only an invisible edge-width hover zone remains, so the card
+    // reveals on hover/shortcut and floats over tiled windows. Card + icons +
+    // panel behaviour are otherwise identical to a strip.
+    property bool holderMode: false
+
     // panelRoot interface for content modules (mirrors Panel.qml).
     function close() { ShellServices.ShellState.close(_screenName) }
     readonly property bool panelOpen: _panelOpen
@@ -101,10 +107,18 @@ Item {
     // switching panels, since the icon row clusters and isn't spread out.)
     readonly property real _cardAxis: (_screenAxis - _axis) / 2
 
+    // Perpendicular offset of the card from the screen edge. A strip insets
+    // the card by its (visible) collapsed body; a holder has no resting body,
+    // so the card sits flush against the screen edge (no gap).
+    readonly property real _edgeInset:  holderMode ? 0 : collapsedSize
+    // At rest a holder still needs a thin hover-catch even though _perp is 0.
+    readonly property real _perpExtent: holderMode ? Math.max(collapsedSize, _perp)
+                                                   : (collapsedSize + _perp)
+
     // Item grows perpendicular to the strip so the popup/panel falls inside
     // ShellSurface's input mask.
-    implicitWidth:  _horizontal ? 0 : (collapsedSize + _perp)
-    implicitHeight: _horizontal ? (collapsedSize + _perp) : 0
+    implicitWidth:  _horizontal ? 0 : _perpExtent
+    implicitHeight: _horizontal ? _perpExtent : 0
 
     // Keyboard focus + Esc-to-close when panel is open.
     focus: _panelOpen
@@ -139,6 +153,7 @@ Item {
     Rectangle {
         id: stripBody
         z: 1
+        visible: !strip.holderMode
         color: Commons.Appearance.colors.glassBgLight
 
         anchors.left:   (strip._horizontal || strip.side === "left")    ? parent.left   : undefined
@@ -163,11 +178,11 @@ Item {
         // Perpendicular: attach edge sits at the strip body's inner edge.
         // Along-axis: anchored on the active icon's screen center
         // (preserves popup→panel continuity), clamped to screen bounds.
-        x: strip.side === "right" ? parent.width  - strip.collapsedSize - card.width
-         : strip.side === "left"  ? strip.collapsedSize
+        x: strip.side === "right" ? parent.width  - strip._edgeInset - card.width
+         : strip.side === "left"  ? strip._edgeInset
          : strip._cardAxis
-        y: strip.side === "bottom" ? parent.height - strip.collapsedSize - card.height
-         : strip.side === "top"    ? strip.collapsedSize
+        y: strip.side === "bottom" ? parent.height - strip._edgeInset - card.height
+         : strip.side === "top"    ? strip._edgeInset
          : strip._cardAxis
 
         layer.enabled: true

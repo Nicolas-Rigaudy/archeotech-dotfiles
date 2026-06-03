@@ -190,6 +190,18 @@ After the S20 trim, ControlCenter holds: Status strip, MEDIA, AUDIO, CONNECTIVIT
 
 User-editable UI state (pins, toggles, sliders) belongs in `Persistence.Config` (`~/.config/archeotech/config.json`) so the UI can write to it directly. `shell-config.json` is for *architectural* config (side types, widget zones, layout). The launcher first stored pins in `shell-config.json` — wrong layer, since editing JSON from QML risks corrupting the structural config. Moved to `Persistence.Config` with a defaults seed (`["kitty", "zen", "code", "obsidian"]`) returned by `get()` when nothing's persisted yet. Pin/unpin buttons in the list rows + recents tiles write through `Persistence.Config.set()`. Same rule will apply to future per-user state (favourites, custom shortcuts, etc.).
 
+### [2026-06-03] Edit mode writes `shell-config.json` from QML (refines the rule above)
+
+Sprint 21's visual builder makes `ShellConfig` writeable — `setSideType`/`setZoneWidgets`/`setStripIcons`. This is not a contradiction of the launcher-pins decision: the distinction isn't "QML must never write structural config", it's *which* surface owns it. The edit-mode builder is the deliberate, sole owner of side/zone structure, so it's the right place to write it. Corruption risk is avoided by always full-rewriting from a deep clone of `ShellConfig.data` (mirroring `Persistence.Config`'s clone→reassign→serialize), never partial-mutating the file. The write path reuses the existing hot-reload: the FileView watch re-parses our own write and the live `Bar`/`Strip` re-sync via `onDataChanged` — so the editor never touches live widget items. Ad-hoc per-user state (pins, toggles) still belongs in `Persistence.Config`, not here.
+
+### [2026-06-03] Edit overlay edits an abstract config map, not live Bar/Strip items
+
+`EditOverlay` reads `ShellConfig` and renders its own abstract representation of the four edges (type switcher + zone chip rows). It deliberately does **not** reach into the live `Bar`/`Strip` instances to manipulate them. Rationale: the live-reconfigure machinery already exists (write config → hot-reload → re-sync), so the editor only needs to write the file and watch the real shell update underneath the dimmed overlay. Decoupling the editor from rendering internals keeps it robust to Bar/Strip refactors and avoids cross-window drag (unreliable on Wayland — `ANALYSIS.md` line 2092); intra-window drag-and-drop is a later enhancement (backlog).
+
+### [2026-06-03] `holder` side type = `Strip` in holderMode, not a new component
+
+A fourth side type, `holder` (hidden widget container, revealed on hover/shortcut), reuses `Strip` with a `holderMode` flag rather than a bespoke component. In holder mode the resting body is `visible: false` and `sideGap` returns 0 (no `exclusiveZone`, no `CornerBlend`), leaving only a thin edge-width hover-catch; the popup card attaches flush to the screen edge (`_edgeInset: 0`) instead of inset by the collapsed strip body. Trade-off: `Strip.qml` carries a little extra conditional logic, but the card/icon/panel behaviour is otherwise identical so there's no duplicated geometry to keep in sync.
+
 ---
 
 ## Wallpaper / logo system

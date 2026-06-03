@@ -14,6 +14,42 @@ import QtQuick
 QtObject {
     id: root
 
+    // ── Palette catalogue (Sprint 21) ──────────────────────────────────────────
+    // The edit-mode palette lists these as assignable. For now this is the
+    // hand-maintained built-in set; Sprint 22 (Module Builder) replaces these
+    // arrays with manifest discovery (module.json under Modules/ + user dir),
+    // keeping the same { id, name, icon } shape so the palette UI is unchanged.
+    readonly property var availableBarWidgets: [
+        { id: "workspaces",    name: "Workspaces",    icon: "󰧨" },
+        { id: "title",         name: "Window Title",  icon: "󰖯" },
+        { id: "media",         name: "Media",         icon: "󰝚" },
+        { id: "clock",         name: "Clock",         icon: "󰥔" },
+        { id: "mic",           name: "Microphone",    icon: "󰍬" },
+        { id: "volume",        name: "Volume",        icon: "󰕾" },
+        { id: "brightness",    name: "Brightness",    icon: "󰃟" },
+        { id: "network",       name: "Network",       icon: "󰤨" },
+        { id: "bluetooth",     name: "Bluetooth",     icon: "󰂯" },
+        { id: "battery",       name: "Battery",       icon: "󰁹" },
+        { id: "notifications", name: "Notifications", icon: "󰂚" },
+        { id: "settings",      name: "Settings",      icon: "󰒓" },
+        { id: "power",         name: "Power",         icon: "󰐥" }
+    ]
+
+    readonly property var availableStripIcons: [
+        { id: "cc",        name: "Control Center",      icon: "󰕮" },
+        { id: "nc",        name: "Notification Center", icon: "󰂚" },
+        { id: "dashboard", name: "Dashboard",           icon: "󰨇" },
+        { id: "launcher",  name: "Launcher",            icon: "󱓞" },
+        { id: "wallpaper", name: "Wallpaper",           icon: "󰸉" }
+    ]
+
+    function _metaFor(list, id) {
+        for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]
+        return { id: id, name: id, icon: "" }
+    }
+    function barWidgetMeta(id) { return _metaFor(availableBarWidgets, id) }
+    function stripIconMeta(id) { return _metaFor(availableStripIcons, id) }
+
     // "active-window" → "ActiveWindow". PascalCase from kebab/snake input.
     function _pascalCase(id) {
         var parts = id.split(/[-_]/)

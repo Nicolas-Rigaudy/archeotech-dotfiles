@@ -2,9 +2,10 @@ import QtQuick
 import "../../../Services/Shell" as ShellServices
 
 // Picks a side's content based on shell-config.json:
-//   "bar"   → Bar
-//   "strip" → Strip
-//   "none"  → nothing (Loader inactive)
+//   "bar"    → Bar
+//   "strip"  → Strip
+//   "holder" → Strip in holderMode (hidden at rest, hover/shortcut reveal)
+//   "none"   → nothing (Loader inactive)
 //
 // Hosted inside ShellSurface (Sprint 17 Stage 4) as a sibling Item, anchored
 // to one side of the surface. Re-evaluates live when ShellConfig hot-reloads.
@@ -17,9 +18,9 @@ Loader {
     readonly property string _screenName: screen ? screen.name : ""
     readonly property string _type: ShellServices.ShellConfig.sideType(side, _screenName)
 
-    active: _type === "bar" || _type === "strip"
-    sourceComponent: _type === "bar"   ? _barComp
-                   : _type === "strip" ? _stripComp
+    active: _type === "bar" || _type === "strip" || _type === "holder"
+    sourceComponent: _type === "bar"                          ? _barComp
+                   : (_type === "strip" || _type === "holder") ? _stripComp
                    : null
 
     Component {
@@ -35,6 +36,7 @@ Loader {
         Strip {
             side: loader.side
             screen: loader.screen
+            holderMode: loader._type === "holder"
         }
     }
 }

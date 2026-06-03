@@ -199,6 +199,7 @@ Portrait monitors (e.g. DP-3) get their own correctly-sized composite automatica
 | `Super + K` | Show keybinds | Display this keybind reference |
 | `Super + ;` | Toggle notification panel | Open/close swaync notification center |
 | `Super + ,` | Open control center | Quickshell panel — display, audio, network, power, etc. |
+| `Super + Shift + E` | Toggle shell edit mode | Visual builder — click-to-assign bar/strip/holder widgets per screen edge |
 | `Super + Shift + R` | Reload config | Runs `mango-reload.sh` — reloads config then re-applies monitor layout via wlr-randr |
 | `Alt + Shift` | Toggle keyboard layout | US ↔ FR (QWERTY ↔ AZERTY) |
 

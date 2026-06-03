@@ -20,8 +20,11 @@ Variants {
         required property var modelData
         readonly property string _name: modelData ? modelData.name : ""
 
+        // "holder" reserves no compositor space (hidden at rest, floats over
+        // tiled windows on reveal) — so only bar/strip claim an exclusiveZone.
         function _active(side) {
-            return ShellServices.ShellConfig.sideType(side, _name) !== "none"
+            var t = ShellServices.ShellConfig.sideType(side, _name)
+            return t !== "none" && t !== "holder"
         }
         function _size(side) {
             return ShellServices.ShellConfig.sideSize(side, _name)

@@ -103,6 +103,20 @@ ShellRoot {
         function close()  { ShellServices.ShellState.closeAllAcross()         }
     }
 
+    // Sprint 21 — visual builder edit mode (Super+Shift+E). Closes any open
+    // panel when entering so the editor has the surface to itself.
+    IpcHandler {
+        target: "editmode"
+        function toggle() { shell._setEditMode(!Commons.State.editMode) }
+        function open()   { shell._setEditMode(true)  }
+        function close()  { shell._setEditMode(false) }
+    }
+
+    function _setEditMode(on) {
+        if (on) ShellServices.ShellState.closeAllAcross()
+        Commons.State.editMode = on
+    }
+
     // ── Mutual exclusion: panels ↔ settings ───────────────────────────────────
     Connections {
         target: ShellServices.ShellState
