@@ -62,6 +62,8 @@ QtObject {
     }
 
     function _isPlugin(id) { return typeof id === "string" && id.indexOf("plugin:") === 0 }
+    // Public alias — loaders branch on this to route plugin ids to ModuleRegistry.
+    function isPlugin(id) { return _isPlugin(id) }
 
     // Bar widget filename: <PascalId>Widget.qml ("clock" → "ClockWidget.qml")
     function barWidgetFile(id) {

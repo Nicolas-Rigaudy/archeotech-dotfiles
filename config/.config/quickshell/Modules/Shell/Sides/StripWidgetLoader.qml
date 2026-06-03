@@ -28,6 +28,28 @@ Loader {
     visible: status === Loader.Ready
 
     function _resolve() {
+        // Plugin module (Sprint 21 Chunk 2):
+        //   panel-content → render a generic opener icon (StripIconBase with
+        //     the module's glyph) that toggles a panel id == widgetId;
+        //     PanelRegistry resolves the panel content from ModuleRegistry.
+        //   strip-icon    → load the module's entry QML directly as the icon.
+        if (ShellServices.WidgetRegistry.isPlugin(widgetId)) {
+            var m = ShellServices.ModuleRegistry.moduleFor(widgetId)
+            if (!m) { source = ""; return }
+            var cl = m.canLiveIn || []
+            if (cl.indexOf("panel-content") !== -1) {
+                loader.setSource("../../../Widgets/Strip/StripIconBase.qml", {
+                    stripRoot: loader.stripRoot,
+                    widgetId:  loader.widgetId,
+                    glyph:     m.icon || "󰏗"
+                })
+            } else {
+                var url = ShellServices.ModuleRegistry.entryUrl(widgetId)
+                if (!url) { source = ""; return }
+                loader.setSource(url, { stripRoot: loader.stripRoot, widgetId: loader.widgetId })
+            }
+            return
+        }
         var file = ShellServices.WidgetRegistry.stripWidgetFile(widgetId)
         if (!file) {
             source = ""

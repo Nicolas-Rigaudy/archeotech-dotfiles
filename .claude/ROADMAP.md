@@ -80,7 +80,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 }
 ```
 
-**Chunked delivery:** 0 (config write-back) + 1 (visual builder) shipped 2026-06-03; 2 (module manifest) + 3 (desktop widgets) remain.
+**Chunked delivery:** 0 (config write-back) + 1 (visual builder) + 2 (module manifest) shipped 2026-06-03; **3 (desktop widgets) scheduled after Sprint 22** (per user — adaptive frame polish first, then the desktop layer + peek access).
 
 **Checklist:**
 - [x] **(Chunk 0)** `ShellConfig` write-back — `setSideType`/`setZoneWidgets`/`setStripIcons` deep-clone→reassign→write `shell-config.json`, `$schema` preserved, no write-loop
@@ -90,9 +90,11 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 - [x] **(Chunk 1)** Bar configurator — Left / Center / Right zone chip rows; Strip/holder icon configurator — icon chip list
 - [x] **(Chunk 1)** All edits write `shell-config.json` → `ShellConfig` hot-reloads → live shell re-syncs (Bar `onDataChanged`)
 - [x] **(Chunk 1)** Palette catalogue seam — `WidgetRegistry.availableBarWidgets`/`availableStripIcons` (Chunk 2 swaps for manifest discovery)
-- [ ] **(Chunk 2)** `module.json` spec finalized; `docs/MODULE_API.md` written
-- [ ] **(Chunk 2)** `Modules/ModuleRegistry.qml` — singleton scanning `Modules/*/module.json` + `~/.local/share/archeotech/modules/*/module.json`, FileView watcher for hot-discovery
-- [ ] **(Chunk 2)** `~/.local/share/archeotech/modules/` — user module install path, scanned alongside built-in modules
+- [x] **(Chunk 2)** `module.json` spec finalized; `docs/MODULE_API.md` written
+- [x] **(Chunk 2)** `Services/Shell/ModuleRegistry.qml` — singleton scanning `~/.config/quickshell/modules/*/module.json` + `~/.local/share/archeotech/modules/*/module.json` via Process+jq; rescans on edit-mode open (dir-watch isn't available — rescan-on-open instead of a FileView watcher)
+- [x] **(Chunk 2)** `~/.local/share/archeotech/modules/` — user install path scanned alongside the repo-tracked `~/.config/quickshell/modules/`
+- [x] **(Chunk 2)** `plugin:<id>` routing in `BarWidgetLoader`/`StripWidgetLoader` (entry by absolute `file://`); `panel-content` → auto opener icon (`StripIconBase`) + `Strip._metaFor` plugin fallback + two-loader content area; palette lists discovered modules per slot; 2 example modules (`hello`, `notes`)
+- [ ] *(deferred)* `panel-content` via `PanelRegistry` proper + `desktop-widget` target → Chunk 3 (post-S22)
 - [ ] **(Chunk 3)** Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom` — separate PanelWindow, independent of ShellSurface + a "peek desktop" access (mango corner action / keybind)
 - [ ] **(Chunk 3)** `Modules/DesktopWidgets/DraggableWidget.qml` — intra-window drag (works on Wayland), grid snap, boundary clamp, persist x/y to config (Noctalia pattern)
 - [ ] **(Chunk 3)** At least 3 desktop widgets: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`

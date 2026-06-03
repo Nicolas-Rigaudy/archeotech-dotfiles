@@ -23,8 +23,13 @@ Item {
     focus: visible
     Keys.onEscapePressed: Commons.State.editMode = false
 
-    readonly property var _cfg: ShellServices.ShellConfig
-    readonly property var _reg: ShellServices.WidgetRegistry
+    // Re-scan installed modules each time the editor opens so freshly-dropped
+    // folders appear in the palette without a shell restart.
+    onVisibleChanged: if (visible) ShellServices.ModuleRegistry.rescan()
+
+    readonly property var _cfg:  ShellServices.ShellConfig
+    readonly property var _reg:  ShellServices.WidgetRegistry
+    readonly property var _mods: ShellServices.ModuleRegistry
 
     readonly property int _pad: Commons.Appearance.spacing.lg
 
@@ -63,10 +68,21 @@ Item {
     // ── Palette state ───────────────────────────────────────────────────────────
     property string _palSide: ""
     property string _palZone: ""
+    // Discovered modules accepting any of `targets`, as palette tiles.
+    function _pluginTiles(targets) {
+        var mods = _mods.modulesFor(targets)
+        var out = []
+        for (var i = 0; i < mods.length; i++)
+            out.push({ id: "plugin:" + mods[i].id, name: mods[i].name || mods[i].id, icon: mods[i].icon || "󰏗" })
+        return out
+    }
     function openPalette(side, zone) {
         _palSide = side
         _palZone = zone
-        palette.items = zone !== "" ? _reg.availableBarWidgets : _reg.availableStripIcons
+        // Bar zones take bar-zone modules; strips take strip-icon + panel-content.
+        var base    = zone !== "" ? _reg.availableBarWidgets : _reg.availableStripIcons
+        var plugins = _pluginTiles(zone !== "" ? ["bar-zone"] : ["strip-icon", "panel-content"])
+        palette.items = base.concat(plugins)
         palette.title = "Add to " + _label(side) + (zone !== "" ? " · " + zone : "")
         palette.visible = true
     }

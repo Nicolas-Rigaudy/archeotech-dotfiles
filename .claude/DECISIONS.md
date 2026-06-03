@@ -202,6 +202,14 @@ Sprint 21's visual builder makes `ShellConfig` writeable — `setSideType`/`setZ
 
 A fourth side type, `holder` (hidden widget container, revealed on hover/shortcut), reuses `Strip` with a `holderMode` flag rather than a bespoke component. In holder mode the resting body is `visible: false` and `sideGap` returns 0 (no `exclusiveZone`, no `CornerBlend`), leaving only a thin edge-width hover-catch; the popup card attaches flush to the screen edge (`_edgeInset: 0`) instead of inset by the collapsed strip body. Trade-off: `Strip.qml` carries a little extra conditional logic, but the card/icon/panel behaviour is otherwise identical so there's no duplicated geometry to keep in sync.
 
+### [2026-06-03] Module discovery: Process+jq scan, rescan-on-open; lowercase `modules/` dir
+
+`ModuleRegistry` (Sprint 21 Chunk 2) discovers community modules with the codebase's standard `Process`+`jq` scan idiom (one compact JSON object per `module.json`, each tagged with its absolute dir) rather than `FolderListModel` — consistent with `ActiveProjects` and avoids an extra QML import surface. Two roots: repo-tracked `~/.config/quickshell/modules/` and user `~/.local/share/archeotech/modules/`. Note the **lowercase** `modules/` — deliberately distinct from the PascalCase `Modules/` (the shell's internal QML tree post-S17) so "installable extension" and "app internals" never blur. Directory-change watching isn't readily available, so discovery re-runs on edit-mode open (cheap, and the only moment freshness matters) instead of a live FileView watcher. Built-in widgets/panels stay in WidgetRegistry/PanelRegistry — modules are strictly the third-party layer.
+
+### [2026-06-03] Plugin panel resolution lives in `Strip`, not `PanelRegistry`
+
+A `panel-content` module's metadata is resolved by `Strip._metaFor` (falls back to `ModuleRegistry` when `PanelRegistry.panelFor` returns undefined) rather than by extending `PanelRegistry`. Reason: `PanelRegistry` would need to import its sibling singleton `ModuleRegistry`, and singleton-to-singleton imports within `Services/Shell` are fragile; `Strip` already imports the services namespace, so the fallback is a no-cost addition there. Plugin panels carry a `contentUrl` (absolute `file://`) instead of a `content` Component, so the strip's content area is split into two mutually-exclusive `Loader`s (one `sourceComponent`, one `source`) — binding both on a single Loader races because Qt treats them as exclusive. A plugin panel is opened by an auto-generated `StripIconBase` icon (the module's glyph), so a module needs no bespoke icon QML.
+
 ---
 
 ## Wallpaper / logo system

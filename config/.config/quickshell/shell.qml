@@ -33,6 +33,7 @@ ShellRoot {
     property var _shellConfig:   ShellServices.ShellConfig
     property var _shellState:    ShellServices.ShellState
     property var _panelRegistry: ShellServices.PanelRegistry
+    property var _moduleRegistry: ShellServices.ModuleRegistry
 
     Component.onCompleted: {
         console.log("[Sprint 17] shellConfig.ready =", _shellConfig.ready,

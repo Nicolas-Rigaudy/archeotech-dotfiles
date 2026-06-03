@@ -39,6 +39,14 @@ Loader {
     visible: status === Loader.Ready
 
     function _resolve() {
+        // Plugin module (Sprint 21 Chunk 2): entry QML lives outside the
+        // convention dir — load it by absolute file:// URL from ModuleRegistry.
+        if (ShellServices.WidgetRegistry.isPlugin(widgetId)) {
+            var url = ShellServices.ModuleRegistry.entryUrl(widgetId)
+            if (!url) { source = ""; return }
+            loader.setSource(url, { barRoot: loader.barRoot, widgetId: loader.widgetId })
+            return
+        }
         var file = ShellServices.WidgetRegistry.barWidgetFile(widgetId)
         if (!file) {
             source = ""

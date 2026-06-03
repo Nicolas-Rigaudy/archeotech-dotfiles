@@ -40,14 +40,37 @@ Item {
     readonly property string _activePanel: ShellServices.ShellState.activePanel(_screenName)
     readonly property bool   _panelOpen:   _activePanel !== "" && _icons.indexOf(_activePanel) !== -1
     readonly property bool   _showCard:    _hov || _panelOpen
-    readonly property var    _activeMeta:  _panelOpen ? ShellServices.PanelRegistry.panelFor(_activePanel) : null
+
+    // Panel metadata: built-in panels come from PanelRegistry; an unknown
+    // plugin id falls back to a panel-content module (Sprint 21 Chunk 2).
+    // Plugin panels carry `contentUrl` (absolute QML) instead of `content`.
+    function _metaFor(id) {
+        var m = ShellServices.PanelRegistry.panelFor(id)
+        if (m) return m
+        if (ShellServices.WidgetRegistry.isPlugin(id)) {
+            var mod = ShellServices.ModuleRegistry.moduleFor(id)
+            if (mod && (mod.canLiveIn || []).indexOf("panel-content") !== -1) {
+                var p = mod.panel || {}
+                return {
+                    contentUrl: ShellServices.ModuleRegistry.entryUrl(id),
+                    content:    null,
+                    size:       p.size || (mod.defaultSize && mod.defaultSize.width) || 380,
+                    axisSize:   p.axisSize !== undefined ? p.axisSize : "auto"
+                }
+            }
+        }
+        return null
+    }
+    readonly property var    _activeMeta:  _panelOpen ? _metaFor(_activePanel) : null
     readonly property int    _panelSize:   _activeMeta ? _activeMeta.size : 0
     readonly property var    _axisSizeRaw: _activeMeta && _activeMeta.axisSize !== undefined
                                            ? _activeMeta.axisSize : "full"
     // Panel content may expose `implicitAxis` (numeric) to drive axisSize:"auto".
-    readonly property real   _contentImplicitAxis: (_panelOpen && contentLoader.item
-                                                    && contentLoader.item.implicitAxis !== undefined)
-                                                   ? contentLoader.item.implicitAxis : 0
+    // Either the built-in or the plugin loader holds the live item.
+    readonly property var    _contentItem: contentLoader.item || pluginContentLoader.item
+    readonly property real   _contentImplicitAxis: (_panelOpen && _contentItem
+                                                    && _contentItem.implicitAxis !== undefined)
+                                                   ? _contentItem.implicitAxis : 0
 
     property bool _hov: false
     // Defensive: child MouseAreas can shadow the strip-level MA's hover in Qt 6.
@@ -246,8 +269,13 @@ Item {
         }
 
         // ── Content area: active panel content ────────────────────────────────
-        Loader {
-            id: contentLoader
+        // Content area: built-in panels load via `sourceComponent` (a Component
+        // from PanelRegistry); plugin panel modules load via `source` (an
+        // absolute file:// URL). They're split into two mutually-exclusive
+        // Loaders because binding both `source` and `sourceComponent` on one
+        // Loader races (Qt treats them as exclusive). `active` gates each.
+        Item {
+            id: contentArea
 
             anchors.left:   strip.side === "left"   ? iconArea.right  : parent.left
             anchors.right:  strip.side === "right"  ? iconArea.left   : parent.right
@@ -258,12 +286,24 @@ Item {
             anchors.topMargin:    strip.side === "top"    ? 4 : strip._r
             anchors.bottomMargin: strip.side === "bottom" ? 4 : strip._r
 
-            active: strip._panelOpen
             opacity: strip._panelOpen ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
-            sourceComponent: strip._activeMeta ? strip._activeMeta.content : null
-            onLoaded: { if (item && 'panelRoot' in item) item.panelRoot = strip }
+            Loader {
+                id: contentLoader
+                anchors.fill: parent
+                active: strip._panelOpen && !!strip._activeMeta && !strip._activeMeta.contentUrl
+                sourceComponent: (strip._activeMeta && !strip._activeMeta.contentUrl) ? strip._activeMeta.content : null
+                onLoaded: { if (item && 'panelRoot' in item) item.panelRoot = strip }
+            }
+
+            Loader {
+                id: pluginContentLoader
+                anchors.fill: parent
+                active: strip._panelOpen && !!strip._activeMeta && !!strip._activeMeta.contentUrl
+                source: (strip._activeMeta && strip._activeMeta.contentUrl) ? strip._activeMeta.contentUrl : ""
+                onLoaded: { if (item && 'panelRoot' in item) item.panelRoot = strip }
+            }
         }
 
         // ── Icon area: anchored to the card's strip-attached edge with a r/2
