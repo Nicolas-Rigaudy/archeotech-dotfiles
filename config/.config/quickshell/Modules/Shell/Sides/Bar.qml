@@ -131,7 +131,10 @@ Item {
     Rectangle {
         id: pill
         z: 1
-        color: Commons.Appearance.colors.glassBgLight
+        // Transparent — the unified FrameBackground (ShellSurface) draws the
+        // resting glass for every side + the shared rounded/capped corners (S22).
+        // This pill only positions/hosts the bar widgets.
+        color: "transparent"
 
         anchors.top:    bar._isBottom ? undefined : parent.top
         anchors.bottom: bar._isTop    ? undefined : parent.bottom

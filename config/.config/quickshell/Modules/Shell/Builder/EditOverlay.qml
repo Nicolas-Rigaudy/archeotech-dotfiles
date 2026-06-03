@@ -126,6 +126,29 @@ Item {
                 font.family: Commons.Appearance.font.family
                 font.pixelSize: Commons.Appearance.font.sizeSm
             }
+            // Frame style (S22): framed (hugs screen) ↔ pill (floating, rounded).
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                readonly property bool on: editOverlay._cfg.pillMode()
+                width: _pillTxt.implicitWidth + 18; height: 26
+                radius: Commons.Appearance.radius.sm
+                color: on ? Commons.Appearance.colors.accentAlpha : Commons.Appearance.colors.surface0
+                border.width: 1
+                border.color: on ? Commons.Appearance.colors.accentBorder : Commons.Appearance.colors.glassBorder
+                Text {
+                    id: _pillTxt
+                    anchors.centerIn: parent
+                    text: parent.on ? "󰗖  Pill frame" : "󰝤  Framed"
+                    color: parent.on ? Commons.Appearance.colors.accent : Commons.Appearance.colors.subtext0
+                    font.family: Commons.Appearance.font.family
+                    font.pixelSize: Commons.Appearance.font.sizeSm
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: editOverlay._cfg.setPillMode(!editOverlay._cfg.pillMode())
+                }
+            }
             Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: doneTxt.implicitWidth + 18; height: 26

@@ -21,7 +21,7 @@ QtObject {
             bottom: { type: "strip", size: 10, expanded: 44, icons: ["dashboard"] },
             left:   { type: "strip", size: 10, expanded: 44, icons: ["launcher"] }
         },
-        corners: { radius: 12 },
+        corners: { radius: 12, pillMode: false, pillGap: 6 },
         outerGap: 6,
         perScreen: {}
     })
@@ -71,7 +71,7 @@ QtObject {
     }
 
     // 0 for "none" sides, collapsed size otherwise. Drives ShellSurface side
-    // margins, Panel cross-axis offsets, CornerBlend gap geometry — anywhere
+    // margins, Panel cross-axis offsets, FrameBackground band geometry — anywhere
     // we need "how much room does this side reserve when at rest".
     //
     // A "holder" (Sprint 21) is hidden at rest — it reserves no space and
@@ -84,6 +84,24 @@ QtObject {
 
     function cornerRadius() {
         return (data.corners && data.corners.radius !== undefined) ? data.corners.radius : _defaults.corners.radius
+    }
+
+    // Sprint 22 — global frame style. false = framed (sides hug the screen
+    // edges; an end with no active neighbour rounds only its content-facing
+    // corner; active neighbours join via concave blend). true = pill (every
+    // side floats off the edge by a small gap and fully rounds all four corners;
+    // no blends).
+    function pillMode() {
+        return (data.corners && data.corners.pillMode !== undefined)
+            ? data.corners.pillMode : _defaults.corners.pillMode
+    }
+
+    // Gap between a floating pill-mode side and its screen edge. Also added to
+    // the exclusion zone in pill mode so tiled windows keep matching clearance
+    // on the side's inner edge.
+    function pillGap() {
+        return (data.corners && data.corners.pillGap !== undefined)
+            ? data.corners.pillGap : _defaults.corners.pillGap
     }
 
     function outerGap() {
@@ -121,12 +139,15 @@ QtObject {
         _mutate(function(d) {
             var s = d.sides[sideName] || {}
             s.type = type
+            // Reset thickness to the new type's default so a strip↔bar switch
+            // actually changes geometry (a bar must be bar-height thick, a strip
+            // thin). Zones/icons are preserved so toggling back is non-destructive.
             if (type === "bar") {
                 if (!s.zones) s.zones = { left: [], center: [], right: [] }
-                if (s.size === undefined) s.size = 30
+                s.size = 30
             } else if (type === "strip" || type === "holder") {
                 if (!s.icons) s.icons = []
-                if (s.size === undefined)     s.size = 10
+                s.size = 10
                 if (s.expanded === undefined) s.expanded = 240
             }
             d.sides[sideName] = s
@@ -140,6 +161,14 @@ QtObject {
             if (!s.zones) s.zones = { left: [], center: [], right: [] }
             s.zones[zone] = ids.slice()
             d.sides[sideName] = s
+        })
+    }
+
+    // Toggle the global pill/framed frame style (S22).
+    function setPillMode(v) {
+        _mutate(function(d) {
+            if (!d.corners) d.corners = { radius: _defaults.corners.radius }
+            d.corners.pillMode = v
         })
     }
 

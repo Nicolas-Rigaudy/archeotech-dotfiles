@@ -2,15 +2,14 @@ import Quickshell
 import Quickshell.Wayland
 import QtQuick
 import "Sides" as Sides
-import "Corners" as Corners
 import "Panels" as Panels
 import "Builder" as Builder
 import "../../Commons" as Commons
 import "../../Services/Shell" as ShellServices
 
 // Sprint 17 Stage 4 — one full-screen overlay PanelWindow per monitor.
-// Hosts the 4 sides (Bar/Strip/none via SideLoader) + 4 CornerBlends, all as
-// siblings in a single coordinate space so corner geometry stays in sync.
+// Hosts the 4 sides (Bar/Strip/none via SideLoader) + a single FrameBackground
+// that draws the resting glass for every side and their shared rounded corners.
 //
 // Input passthrough = QsWindow.mask covering only the side/corner regions
 // (the only reliable API — see ANALYSIS.md §15). Keyboard focus is Exclusive
@@ -39,19 +38,16 @@ Variants {
             : WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true; right: true }
 
-        // Mask = union of the 4 side regions + 4 corner blends + (when any
-        // panel is open) a full-surface region for click-outside-to-close +
-        // (in edit mode) a full-surface region so the editor is interactive.
-        // Inactive sides collapse to 0×0 so they contribute nothing.
+        // Mask = union of the 4 side regions + (when any panel is open) a
+        // full-surface region for click-outside-to-close + (in edit mode) a
+        // full-surface region so the editor is interactive. Inactive sides
+        // collapse to 0×0 so they contribute nothing. The FrameBackground corner
+        // fills are decorative (not masked → clicks there pass through).
         mask: Region {
             Region { item: _topSide }
             Region { item: _bottomSide }
             Region { item: _rightSide }
             Region { item: _leftSide }
-            Region { item: _cTL }
-            Region { item: _cTR }
-            Region { item: _cBL }
-            Region { item: _cBR }
             Region { item: _panelOpenMask }
             Region { item: _editMask }
         }
@@ -104,11 +100,28 @@ Variants {
         // span from the bar's edge to the strip's edge with smooth tangents.
         readonly property int _r: ShellServices.ShellConfig.cornerRadius()
 
+        // Pill mode (S22): the whole frame floats inward by `_pillGap`.
+        readonly property bool _pillMode: ShellServices.ShellConfig.pillMode()
+        readonly property int  _pillGap:  ShellServices.ShellConfig.pillGap()
+        readonly property int  _off:      _pillMode ? _pillGap : 0
+
+        // ── Frame background (S22) ──────────────────────────────────────────────
+        // Single Shape drawing the glass for all active sides + their shared
+        // dynamic rounded inner corners. The Bar/Strip Items above are transparent
+        // and only host widgets; this owns the resting frame fill. z:0 — under the
+        // sides (z:10) so widgets/icons sit on top.
+        FrameBackground {
+            z: 0
+            anchors.fill: parent
+            screenName: _surface._screenName
+        }
+
         // ── Sides ─────────────────────────────────────────────────────────────
-        // Horizontal sides own the corners visually (they span beyond the strip
-        // edges with leftMargin/rightMargin = strip collapsed size, leaving a
-        // gap that CornerBlend fills).
-        // z: 10 — above panels (z:5) so strips stay visible and interactive when a panel is open.
+        // Transparent containers anchored to each edge; they position widgets/
+        // icons over the FrameBackground glass. Inset by `neighbourGap + _r` at a
+        // joined end (keeps content off the strip column / corner) and by `_off`
+        // at the outer edge. z: 10 — above panels (z:5) so strips stay visible and
+        // interactive when a panel is open. Margins animate so switches glide.
         Sides.SideLoader {
             id: _topSide
             z: 10
@@ -118,9 +131,13 @@ Variants {
                 top:   parent.top
                 left:  parent.left
                 right: parent.right
-                leftMargin:  _surface._leftGap  + _surface._r
-                rightMargin: _surface._rightGap + _surface._r
+                topMargin:   _surface._off
+                leftMargin:  _surface._off + (_surface._leftGap  > 0 ? _surface._leftGap  + _surface._r : 0)
+                rightMargin: _surface._off + (_surface._rightGap > 0 ? _surface._rightGap + _surface._r : 0)
             }
+            Behavior on anchors.topMargin   { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+            Behavior on anchors.leftMargin  { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+            Behavior on anchors.rightMargin { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
         }
 
         Sides.SideLoader {
@@ -132,9 +149,13 @@ Variants {
                 bottom: parent.bottom
                 left:   parent.left
                 right:  parent.right
-                leftMargin:  _surface._leftGap  + _surface._r
-                rightMargin: _surface._rightGap + _surface._r
+                bottomMargin: _surface._off
+                leftMargin:   _surface._off + (_surface._leftGap  > 0 ? _surface._leftGap  + _surface._r : 0)
+                rightMargin:  _surface._off + (_surface._rightGap > 0 ? _surface._rightGap + _surface._r : 0)
             }
+            Behavior on anchors.bottomMargin { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+            Behavior on anchors.leftMargin   { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+            Behavior on anchors.rightMargin  { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
         }
 
         Sides.SideLoader {
@@ -146,9 +167,13 @@ Variants {
                 top:    parent.top
                 bottom: parent.bottom
                 right:  parent.right
-                topMargin:    _surface._topGap    + _surface._r
-                bottomMargin: _surface._bottomGap + _surface._r
+                rightMargin:  _surface._off
+                topMargin:    _surface._off + (_surface._topGap    > 0 ? _surface._topGap    + _surface._r : 0)
+                bottomMargin: _surface._off + (_surface._bottomGap > 0 ? _surface._bottomGap + _surface._r : 0)
             }
+            Behavior on anchors.rightMargin  { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+            Behavior on anchors.topMargin    { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+            Behavior on anchors.bottomMargin { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
         }
 
         Sides.SideLoader {
@@ -160,46 +185,17 @@ Variants {
                 top:    parent.top
                 bottom: parent.bottom
                 left:   parent.left
-                topMargin:    _surface._topGap    + _surface._r
-                bottomMargin: _surface._bottomGap + _surface._r
+                leftMargin:   _surface._off
+                topMargin:    _surface._off + (_surface._topGap    > 0 ? _surface._topGap    + _surface._r : 0)
+                bottomMargin: _surface._off + (_surface._bottomGap > 0 ? _surface._bottomGap + _surface._r : 0)
             }
+            Behavior on anchors.leftMargin   { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+            Behavior on anchors.topMargin    { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
+            Behavior on anchors.bottomMargin { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
         }
 
-        // ── Corner blends ─────────────────────────────────────────────────────
-        // Render only when both adjacent sides are active. Sized by the
-        // collapsed gaps so the geometry stays stable during strip hover.
-        Corners.CornerBlend {
-            id: _cTL
-            corner: "top-left"
-            hSize: _surface._topGap    + _surface._r
-            vSize: _surface._leftGap   + _surface._r
-            visible: _surface._topGap > 0 && _surface._leftGap > 0
-            anchors { top: parent.top; left: parent.left }
-        }
-        Corners.CornerBlend {
-            id: _cTR
-            corner: "top-right"
-            hSize: _surface._topGap    + _surface._r
-            vSize: _surface._rightGap  + _surface._r
-            visible: _surface._topGap > 0 && _surface._rightGap > 0
-            anchors { top: parent.top; right: parent.right }
-        }
-        Corners.CornerBlend {
-            id: _cBL
-            corner: "bottom-left"
-            hSize: _surface._bottomGap + _surface._r
-            vSize: _surface._leftGap   + _surface._r
-            visible: _surface._bottomGap > 0 && _surface._leftGap > 0
-            anchors { bottom: parent.bottom; left: parent.left }
-        }
-        Corners.CornerBlend {
-            id: _cBR
-            corner: "bottom-right"
-            hSize: _surface._bottomGap + _surface._r
-            vSize: _surface._rightGap  + _surface._r
-            visible: _surface._bottomGap > 0 && _surface._rightGap > 0
-            anchors { bottom: parent.bottom; right: parent.right }
-        }
+        // Corner blends removed (S22) — the FrameBackground above now draws all
+        // junctions as one continuous fill with dynamic rounded inner corners.
 
         // ── Panels ────────────────────────────────────────────────────────────
         // Sprint 17 → S5 update: panels are now rendered INSIDE the Strip

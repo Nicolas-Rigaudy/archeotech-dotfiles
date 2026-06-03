@@ -176,8 +176,12 @@ Item {
     Rectangle {
         id: stripBody
         z: 1
+        // Transparent — the unified FrameBackground (ShellSurface) draws the
+        // resting strip glass + shared rounded corners (S22). Kept (non-holder)
+        // only so the hover MouseArea / geometry stays as before; the popup card
+        // below still draws its own glass.
         visible: !strip.holderMode
-        color: Commons.Appearance.colors.glassBgLight
+        color: "transparent"
 
         anchors.left:   (strip._horizontal || strip.side === "left")    ? parent.left   : undefined
         anchors.right:  (strip._horizontal || strip.side === "right")   ? parent.right  : undefined

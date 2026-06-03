@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last Updated:** 2026-06-02  
+**Last Updated:** 2026-06-03  
 **See also:** `ANALYSIS.md` — research, reference projects, confirmed QML APIs, settings ecosystem deep-dives.
 
 ---
@@ -45,6 +45,8 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 | 18 | Configurable Sides + Widget Registry — Noctalia filename-convention registry (drop a file under `Widgets/Bar/` or `Widgets/Strip/`, add id to `shell-config.json` zone, done); async `BarWidgetLoader`/`StripWidgetLoader` with `setSource(path, props)` Noctalia pattern; formalized `barRoot`/`stripRoot` context APIs; primitives moved to `Commons/Primitives/`; HoverCard/CalendarPopup/WifiPopup/BtPopup extracted; ClockWidget + 12 bar widgets + 4 strip icons over `StripIconBase`; stable ListModel diff (HyprPanel preserve-delegates); `plugin:<id>` namespacing reserved for S21; Bar.qml 1537→299 LOC; `docs/WIDGET_API.md` written | 2026-06-02 |
 | 19 | System-wide theme switcher + WallpaperPicker — `scripts/theme-switch.py` rewrite (Caelestia pattern: atomic temp+rename, `fcntl` lock, template registry, failure-isolated appliers across 8 targets — Quickshell/kitty/mango/rofi/starship/GTK/VSCode/Obsidian); refresh via SIGUSR1/`gsettings`/`mmsg`/`jq`; `theme.json` schema extended with `gtk`/`vscode`/`obsidian`/`card` blocks across 7 themes; AppearancePane redesigned as DMS-style card grid (display name + 4-color accent swatch row, scale 1.03 hover, accent border on active); new WallpaperPicker first-class panel on bottom strip (replaces rofi picker, `Super+W` rebound to `qs ipc call wallpaper toggle`) — combined header row (title + 4 logo tiles centered + items count + palette button), horizontal-scrolling carousel of 3:2 thumbnails with `OpacityMask` rounded corners and `WheelHandler` for vertical-wheel→horizontal-flick; logo selector reuses existing `scripts/assets/*-logo.svg` via `FileView` + in-memory LOGO_COLOR substitution → data URI (no preview duplicates); rofi `theme.rasi` split to `@import "colors.rasi"`; `docs/THEME_SPEC.md` written; Qt 6.11.1 surfaced two latent issues fixed in passing — missing `}` in Strip.qml (Shape block) and ListModel-role auto-binding to inherited required properties broke (now explicit `widgetId: model.widgetId` + restored `qmldir` for `Widgets/Strip/`) | 2026-06-02 |
 | 20 | Panel Redesign & Polish — `PanelRegistry` gained `axisSize` (numeric / `"auto"` / `"full"`); `Strip.qml` `_axisTarget` branches on the value, floors at icon-row width, clamps to screen; card stays centered (an icon-anchored variant was tried and reverted — clustered icons pulled the card sideways when switching). Panels migrated: WallpaperPicker 1280, Dashboard 920, Launcher 440 + Recents row, CC 440 trimmed 1264→1020 LOC (DND + Power/Lock kept; DISPLAY restored after the user flagged it's used often; Night Light/Power Profile/Idle relocated), NC went `axisSize: "auto"` via new `implicitAxis` property. New: `Commons/Primitives/EmptyState.qml`, `Commons.Appearance.anim.panel` (240 ms), `docs/PANEL_API.md`. **Follow-ups same day:** new Settings panes `DisplayPane` (monitor layout + night light) + `PowerPane` (profile + idle/sleep) absorb what CC dropped — required fixing `SettingsContent.qml` (carousel was hardcoded, order had to match `PaneRegistry` exactly — a real navigation bug the user hit) + `ButtonGroupRow` (now hides label area when both label/description empty). Launcher pin/unpin from list rows + recents tiles (filled `󰐃` pinned / outline `󰤱` unpinned), pinned list moved from `shell-config.json` → `Persistence.Config` (per-user state, writeable from UI), defaults seed to kitty/zen/code/obsidian. Dashboard SystemNotes pending-updates now uses `checkupdates` (pacman-contrib) for fresh repo counts + `paru -Qua` for AUR — display "5 + 2 AUR" / "up to date". Wallpaper performance overhaul: single-slot `$COMPOSED_IMG` cache replaced by per-(wallpaper, logo, orientation) keyed cache under `~/.cache/wallpaper/composed/<hash>-<logo>-{l,p}.png`; awww transition 1.5s→0.5s; picker shows optimistic UI + dims non-active tiles + blocks re-clicks via `applying` flag; `--warm-all` subcommand pre-renders every combo (16 wallpapers × 3 logos × 2 orientations = 96 files, ~167 MB). Caught and fixed an old bug in `get_wallpaper_color` — `${thumb:-$img}` was wrong (`${var:-x}` checks variable empty, not file exists), so wallpapers without thumbnails rendered logos with no color | 2026-06-02 |
+| 21 | Module Builder & Community Extension (Chunks 0–2; Chunk 3 desktop widgets deferred) — `ShellConfig` write-back mutators (`setSideType`/`setZoneWidgets`/`setStripIcons`, deep-clone→reassign→write, `$schema` preserved, no write-loop); edit mode `Modules/Shell/Builder/EditOverlay.qml`+`WidgetPalette.qml` (full-surface glass, `Super+Shift+E`/`editmode` IPC, click-to-assign + chip remove/reorder, per-side type switcher); `holder` side type (hidden-at-rest hover-reveal, gap-0, flush popups); `Services/Shell/ModuleRegistry.qml` (Process+jq scan of `~/.config/quickshell/modules/` + `~/.local/share/archeotech/modules/`, rescan-on-open); `plugin:<id>` routing in Bar/Strip loaders (abs `file://` entry) + `panel-content` auto opener icon + `Strip._metaFor` fallback; example modules `hello`+`notes`; `docs/MODULE_API.md` | 2026-06-03 |
+| 22 | Adaptive Shell Frame — replaced 4 separate `CornerBlend` Items with one `Modules/Shell/FrameBackground.qml` per screen (single `Shape`/`PathSvg`, WindingFill): full-width horizontal bands + between-them vertical bands (no overlap → one clean translucent fill, no seams) + concave fillet wedges at active junctions = dynamic rounded inner corners independent of side thickness. Bar/Strip bodies transparent (host widgets only). `corners.pillMode`+`corners.pillGap` config + edit-mode "Framed ↔ Pill frame" banner toggle. Framed = hugs screen, sharp outer corners, rounded inner junctions, inner-only termination caps. Pill = whole frame floats by `pillGap` (added to `ShellExclusions` too), rounded outer corners + pill-shaped (both-corner) termination caps; cap radii clamped to half band thickness. `ShellExclusions` reserves the breathing gap on off/holder edges too. Fixed `setSideType` to reset `size` to the type default so strip↔bar actually changes geometry | 2026-06-03 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -56,73 +58,17 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 
 ## Upcoming Sprints
 
-### Sprint 21 — Module Builder & Community Extension System ← NEXT
+### Sprint 21 Chunk 3 — Desktop Widget Layer (deferred)
 
-**Goal:** Visual UI for editing `shell-config.json`. Builds on the Widget Registry (S18). Adds module manifest discovery + desktop widget layer. After this, third parties can publish modules and themes that install by dropping a folder.
-
-**Changes from original spec** (was old Sprint 17 — adjusted for new architecture):
-- 🔁 **Click-to-assign** instead of drag-and-drop — cross-window drag is unreliable on Wayland (`ANALYSIS.md` line 2092). Workflow: click an empty slot, then click a module from the palette → assigned.
-- 🔁 `DrawerConfig.json` → `shell-config.json` everywhere (matches S17 architecture)
-- 🔁 `canLiveIn` enum is more granular: `["bar-zone:top.left", "bar-zone:top.center", "bar-zone:top.right", "strip-icon:right", "strip-icon:left", "strip-icon:bottom", "panel-content", "desktop-widget"]`
-- ✅ Module manifest, ModuleRegistry, ~/.local/share/archeotech/modules/, DraggableWidget for desktop layer — unchanged (intra-window drag works fine on Wayland)
-
-**Module manifest spec** (`module.json`):
-```json
-{
-  "id": "control-center",
-  "name": "Control Center",
-  "author": "archeotech",
-  "version": "1.0.0",
-  "canLiveIn": ["panel-content", "desktop-widget"],
-  "defaultSize": { "width": 340, "height": "auto" },
-  "configSchema": {},
-  "entry": "ControlCenter.qml"
-}
-```
-
-**Chunked delivery:** 0 (config write-back) + 1 (visual builder) + 2 (module manifest) shipped 2026-06-03; **3 (desktop widgets) scheduled after Sprint 22** (per user — adaptive frame polish first, then the desktop layer + peek access).
-
-**Checklist:**
-- [x] **(Chunk 0)** `ShellConfig` write-back — `setSideType`/`setZoneWidgets`/`setStripIcons` deep-clone→reassign→write `shell-config.json`, `$schema` preserved, no write-loop
-- [x] **(Chunk 1)** Edit mode overlay (`Modules/Shell/Builder/EditOverlay.qml`) — full-surface glass inside ShellSurface, exit on `Escape` / Done / `Super+Shift+E` (IPC `editmode`)
-- [x] **(Chunk 1)** **Click-to-assign** flow (`WidgetPalette.qml`): click `+` slot → palette → click widget → assigned; chips have remove `×` + reorder `‹ ›`
-- [x] **(Chunk 1)** Side type switcher (per-side: bar / strip / **holder** / none) — holder = hidden-at-rest, hover-reveal, gap-0, flush popups
-- [x] **(Chunk 1)** Bar configurator — Left / Center / Right zone chip rows; Strip/holder icon configurator — icon chip list
-- [x] **(Chunk 1)** All edits write `shell-config.json` → `ShellConfig` hot-reloads → live shell re-syncs (Bar `onDataChanged`)
-- [x] **(Chunk 1)** Palette catalogue seam — `WidgetRegistry.availableBarWidgets`/`availableStripIcons` (Chunk 2 swaps for manifest discovery)
-- [x] **(Chunk 2)** `module.json` spec finalized; `docs/MODULE_API.md` written
-- [x] **(Chunk 2)** `Services/Shell/ModuleRegistry.qml` — singleton scanning `~/.config/quickshell/modules/*/module.json` + `~/.local/share/archeotech/modules/*/module.json` via Process+jq; rescans on edit-mode open (dir-watch isn't available — rescan-on-open instead of a FileView watcher)
-- [x] **(Chunk 2)** `~/.local/share/archeotech/modules/` — user install path scanned alongside the repo-tracked `~/.config/quickshell/modules/`
-- [x] **(Chunk 2)** `plugin:<id>` routing in `BarWidgetLoader`/`StripWidgetLoader` (entry by absolute `file://`); `panel-content` → auto opener icon (`StripIconBase`) + `Strip._metaFor` plugin fallback + two-loader content area; palette lists discovered modules per slot; 2 example modules (`hello`, `notes`)
-- [ ] *(deferred)* `panel-content` via `PanelRegistry` proper + `desktop-widget` target → Chunk 3 (post-S22)
-- [ ] **(Chunk 3)** Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom` — separate PanelWindow, independent of ShellSurface + a "peek desktop" access (mango corner action / keybind)
-- [ ] **(Chunk 3)** `Modules/DesktopWidgets/DraggableWidget.qml` — intra-window drag (works on Wayland), grid snap, boundary clamp, persist x/y to config (Noctalia pattern)
-- [ ] **(Chunk 3)** At least 3 desktop widgets: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
+Chunks 0–2 of Sprint 21 shipped (see history table). Chunk 3 remains, scheduled after the lock screen:
+- [ ] Desktop widget layer (`Modules/DesktopWidgets/WidgetLayer.qml`) on `WlrLayer.Bottom` — separate PanelWindow, independent of ShellSurface + a "peek desktop" access (mango corner action / keybind)
+- [ ] `Modules/DesktopWidgets/DraggableWidget.qml` — intra-window drag (works on Wayland), grid snap, boundary clamp, persist x/y to config (Noctalia pattern)
+- [ ] At least 3 desktop widgets: `DesktopClock`, `DesktopSystemStats`, `DesktopMediaPlayer`
+- [ ] `panel-content` via `PanelRegistry` proper + `desktop-widget` `canLiveIn` target wired through the builder palette
 
 ---
 
-### Sprint 22 — Adaptive Shell Frame
-
-**Goal:** The bar/strip frame adapts its corners to whichever sides are active, so any mix of bar/strip/holder/none reads as one continuous, properly-finished frame. Pulled up right after S21 because side-type switching is now trivial — today `holder`/`none` leave the adjacent bar/strip with a square end and drop the corner blend entirely. *(User-requested during S21: "a dynamic frame that connects all the bars and strips together; if it's an empty holder, adapt the corners of the 2 adjacent sides to finish off smoothly.")*
-
-**Corner mode — decided per screen corner from the two adjacent sides' types:**
-- both active (bar/strip) → **concave blend** (current `CornerBlend` — smooth inner join)
-- one active, neighbour empty (holder/none) → **convex rounded cap** on the active side's terminating end
-- neither active → nothing
-
-**Pill mode:** a bar/strip with no active adjacent sides rounds *both* ends → freestanding pill (the pre-S16 single-pill look). Toggle via `shell-config.json` `corners.isolatedPill: true|false` + an edit-mode control, so users can force flat or pill.
-
-**Checklist:**
-- [ ] `CornerBlend` gains `mode: "concave" | "convex"` (or a sibling `CornerCap.qml`) — convex draws a rounded outer cap instead of a carved inner arc
-- [ ] `ShellSurface` computes each corner's mode from the two adjacent `sideGap`/`sideType` values; renders blend / cap / nothing
-- [ ] Bar/Strip end-cap radius applied when a perpendicular neighbour is empty, so cap geometry lines up with the body
-- [ ] `corners.isolatedPill` flag + edit-mode toggle; isolated bar → both ends rounded
-- [ ] Holder reveal must not re-introduce a corner (holder stays gap-0 / hidden) — verify against S21 holder
-- [ ] Animate cap↔blend transitions when a side type changes live
-
----
-
-### Sprint 23 — Lock Screen (Native QML)
+### Sprint 23 — Lock Screen (Native QML) ← NEXT
 
 **Goal:** Replace swaylock with a first-class Quickshell component. Now that the design system (Sprint 12/13) and token system are in place, build it properly.
 
