@@ -220,6 +220,12 @@ Switching a side strip↔bar resets its `size` (bar→30, strip→10) instead of
 
 ---
 
+### [2026-06-10] Keep swaylock + make it theme-aware; do NOT build a native lock (Sprint 23 cancelled)
+
+Sprint 23 was scoped as "replace swaylock with a native `WlSessionLock` + `PamContext` QML lock." Built it, then cancelled it before shipping: swaylock is battle-tested and the user is happy with it, and the *only* real gap was that its colors didn't follow theme switches. That gap is closed far more cheaply by adding swaylock as a `theme-switch.py` target (template + stripped-hex applier) than by owning a compositor-level lock surface. A broken `WlSessionLock` locks you out of the session with no in-session recovery (swaylock can't help once ext-session-lock engages) — not worth the risk for theming alone. The native lock's only remaining edges (live widgets on the lock surface, "pure-Quickshell" distribution story) don't justify it. Trade-off: lock UI is still a separate stack (swaylock config) rather than sharing the shell's QML components. The native-lock QML was deleted (recoverable from git/this session if ever wanted). `WlSessionLock` + `PamContext` remain confirmed-working APIs on QS 0.3.0 if revisited.
+
+---
+
 ## Wallpaper / logo system
 
 ### [2026-02-19] SVG renderer: rsvg-convert for SVG→PNG, ImageMagick for color extraction

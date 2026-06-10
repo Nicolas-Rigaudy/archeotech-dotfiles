@@ -1,24 +1,77 @@
 {
-  "$schema": "Sprint 17 — Unified Shell Surface. See .claude/ROADMAP.md §17 for the locked architecture.",
-
   "sides": {
     "top": {
       "type": "bar",
       "size": 30,
       "zones": {
-        "left":   ["workspaces", "title", "media"],
-        "center": ["clock"],
-        "right":  ["mic", "volume", "brightness", "network", "bluetooth", "battery", "notifications", "settings", "power"]
+        "left": [
+          "workspaces",
+          "title",
+          "media"
+        ],
+        "center": [
+          "clock"
+        ],
+        "right": [
+          "mic",
+          "volume",
+          "brightness",
+          "network",
+          "bluetooth",
+          "battery",
+          "notifications",
+          "settings",
+          "power"
+        ]
       }
     },
-    "right":  { "type": "strip", "size": 10, "expanded": 240, "icons": ["cc", "nc"] },
-    "bottom": { "type": "strip", "size": 10, "expanded": 240, "icons": ["dashboard", "wallpaper"] },
-    "left":   { "type": "strip", "size": 10, "expanded": 240, "icons": ["launcher"] }
+    "right": {
+      "type": "strip",
+      "size": 10,
+      "expanded": 240,
+      "icons": [
+        "cc",
+        "nc"
+      ],
+      "zones": {
+        "left": [],
+        "center": [],
+        "right": []
+      }
+    },
+    "bottom": {
+      "type": "strip",
+      "size": 10,
+      "expanded": 240,
+      "icons": [
+        "dashboard",
+        "wallpaper"
+      ],
+      "zones": {
+        "left": [],
+        "center": [],
+        "right": []
+      }
+    },
+    "left": {
+      "type": "strip",
+      "size": 10,
+      "expanded": 240,
+      "icons": [
+        "launcher"
+      ],
+      "zones": {
+        "left": [],
+        "center": [],
+        "right": []
+      }
+    }
   },
-
-  "corners": { "radius": 12 },
-
+  "corners": {
+    "radius": 12,
+    "pillMode": false
+  },
   "outerGap": 6,
-
-  "perScreen": {}
+  "perScreen": {},
+  "$schema": "Sprint 17 — Unified Shell Surface. See .claude/ROADMAP.md §17 for the locked architecture."
 }
