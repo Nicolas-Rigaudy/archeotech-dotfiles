@@ -138,6 +138,15 @@ def apply_starship(theme: dict, vars: Dict[str, str]) -> None:
     atomic_write(out, render("starship.toml.tmpl", vars))
 
 
+def apply_swaylock(theme: dict, vars: Dict[str, str]) -> None:
+    """Render swaylock/config from the template. swaylock colors are hex
+    WITHOUT the leading '#', so feed render() a stripped-hex var map. No reload
+    needed — swaylock re-reads its config on the next lock."""
+    sl_vars = {k: v.lstrip("#") for k, v in theme.get("colors", {}).items()}
+    out = HOME / ".config" / "swaylock" / "config"
+    atomic_write(out, render("swaylock.config.tmpl", sl_vars))
+
+
 def apply_gtk(theme: dict, vars: Dict[str, str]) -> None:
     """Update gtk-3.0/4.0 settings.ini AND gsettings (gtk-3 ini is for apps
     that read it directly; gsettings drives GNOME/Adwaita apps live)."""
@@ -220,6 +229,7 @@ REGISTRY: List[tuple[str, Applier]] = [
     ("mango",      apply_mango),
     ("rofi",       apply_rofi),
     ("starship",   apply_starship),
+    ("swaylock",   apply_swaylock),
     ("gtk",        apply_gtk),
     ("vscode",     apply_vscode),
     ("obsidian",   apply_obsidian),

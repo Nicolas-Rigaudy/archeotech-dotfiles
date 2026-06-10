@@ -228,8 +228,11 @@ Item {
     onQueryChanged: _filter()
 
     // ── Launch ─────────────────────────────────────────────────────────────────
-    property var appProc: Process { running: false }
-
+    // Use Quickshell.execDetached, NOT a child Process: closing the panel
+    // unloads this item, and a child Process would be torn down (killing the
+    // app) before it finishes spawning. execDetached double-forks so the app
+    // reparents to init and survives. (Regression surfaced on QS 0.3.0, which
+    // tightened Process child cleanup.)
     function _launch(entry) {
         if (!entry) return
         root._bumpUsage(entry.name || "")
@@ -242,8 +245,8 @@ Item {
             if (!raw) return
             cmd = ["bash", "-c", raw]
         }
-        appProc.command = entry.runInTerminal ? ["kitty", "-e"].concat(cmd) : cmd
-        appProc.running = true
+        if (entry.runInTerminal) cmd = ["kitty", "-e"].concat(cmd)
+        Quickshell.execDetached(cmd)
         if (root.panelRoot) root.panelRoot.close()
     }
 
@@ -450,8 +453,9 @@ Item {
                 model:          root.filtered
                 currentIndex:   root.selectedIdx
 
-                // animated sliding highlight bar
-                highlightMoveDuration: 120
+                // Instant highlight — hover sets selectedIdx, so any slide
+                // animation just lags the bar behind the cursor.
+                highlightMoveDuration: 0
                 highlightMoveVelocity: -1
                 highlight: Rectangle {
                     width:  resultList.width
