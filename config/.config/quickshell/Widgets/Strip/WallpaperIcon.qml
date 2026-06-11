@@ -1,7 +1,7 @@
 import QtQuick
 import "."
 
-// Wallpaper picker strip icon. Toggles the WallpaperPicker panel.
+// Appearance quick-switcher strip icon (theme + wallpaper + logo).
 StripIconBase {
-    glyph: "󰸉"
+    glyph: "󰏘"
 }

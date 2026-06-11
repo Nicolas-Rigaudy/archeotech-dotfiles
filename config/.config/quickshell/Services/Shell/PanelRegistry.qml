@@ -13,17 +13,17 @@ QtObject {
     id: root
 
     readonly property var panels: ({
-        cc: {
-            content:  _ccComp,
-            side:     "right",
-            size:     320,
-            axisSize: 440
-        },
         nc: {
             content:  _ncComp,
             side:     "right",
             size:     320,
             axisSize: "auto"
+        },
+        settings: {
+            content:  _settingsComp,
+            side:     "right",
+            size:     900,
+            axisSize: "full"
         },
         launcher: {
             content:  _launcherComp,
@@ -37,10 +37,16 @@ QtObject {
             size:     600,
             axisSize: 920
         },
+        media: {
+            content:  _mediaComp,
+            side:     "bottom",
+            size:     220,
+            axisSize: "auto"
+        },
         wallpaper: {
             content:  _wallpaperComp,
             side:     "bottom",
-            size:     380,
+            size:     480,
             axisSize: 1280
         }
     })
@@ -67,9 +73,10 @@ QtObject {
     }
 
     // Extracted panel content components — one per migrated panel.
-    property Component _ccComp:        Component { Content.ControlCenter      {} }
     property Component _ncComp:        Component { Content.NotificationCenter {} }
     property Component _launcherComp:  Component { Content.Launcher           {} }
     property Component _dashboardComp: Component { Content.Dashboard          {} }
+    property Component _mediaComp:     Component { Content.MediaPanel          {} }
     property Component _wallpaperComp: Component { Content.WallpaperPicker     {} }
+    property Component _settingsComp:  Component { Content.SettingsPanel       {} }
 }

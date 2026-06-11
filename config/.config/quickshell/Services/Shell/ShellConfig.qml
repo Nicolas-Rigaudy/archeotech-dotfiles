@@ -17,8 +17,8 @@ QtObject {
                     right:  ["mic", "volume", "brightness", "network", "bluetooth", "battery", "notifications", "settings", "power"]
                 }
             },
-            right:  { type: "strip", size: 10, expanded: 44, icons: ["cc", "nc"] },
-            bottom: { type: "strip", size: 10, expanded: 44, icons: ["dashboard"] },
+            right:  { type: "strip", size: 10, expanded: 44, icons: ["settings", "nc"] },
+            bottom: { type: "strip", size: 10, expanded: 44, icons: ["dashboard", "media", "wallpaper"] },
             left:   { type: "strip", size: 10, expanded: 44, icons: ["launcher"] }
         },
         corners: { radius: 12, pillMode: false, pillGap: 6 },

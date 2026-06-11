@@ -165,8 +165,8 @@ Shape {
                                     if (modelData.active) {
                                         NetworkServices.Network.disconnect()
                                     } else if (_needsPw) {
-                                        Commons.State.controlCenterOpenSection = "wifi"
-                                        ShellServices.ShellState.openGlobal("cc")
+                                        Commons.State.settingsOpenPane = "connections"
+                                        ShellServices.ShellState.openGlobal("settings")
                                         if (card.barRoot) card.barRoot._wifiPopupVisible = false
                                     } else {
                                         NetworkServices.Network.connect(modelData.ssid)

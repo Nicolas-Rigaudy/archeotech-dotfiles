@@ -1,7 +1,7 @@
 import QtQuick
 import "."
 
-// Control Center toggle.
+// Settings panel toggle.
 StripIconBase {
     glyph: "󰒓"
 }

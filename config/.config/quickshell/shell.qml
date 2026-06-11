@@ -11,7 +11,6 @@ import "Services/System" as SystemServices
 import "Services/Persistence" as Persistence
 import "Services/Shell" as ShellServices
 import "Modules/OSD"
-import "Modules/Settings"
 import "Modules/Shell" as Shell
 import "Modules/NotificationCenter"
 
@@ -48,13 +47,6 @@ ShellRoot {
     }
 
     IpcHandler {
-        target: "main"
-        function toggle() { ShellServices.ShellState.toggleGlobal("cc") }
-        function open()   { ShellServices.ShellState.openGlobal("cc")  }
-        function close()  { ShellServices.ShellState.closeAllAcross()  }
-    }
-
-    IpcHandler {
         target: "notifications"
         function toggle() {
             if (ShellServices.ShellState.isOpenAnywhere("nc")) {
@@ -80,10 +72,10 @@ ShellRoot {
 
     IpcHandler {
         target: "settings"
-        function toggle()               { Commons.State.settingsVisible = !Commons.State.settingsVisible }
-        function open()                 { Commons.State.settingsVisible = true  }
-        function close()                { Commons.State.settingsVisible = false }
-        function openPane(pane: string) { Commons.State.settingsOpenPane = pane; Commons.State.settingsVisible = true }
+        function toggle()               { ShellServices.ShellState.toggleGlobal("settings") }
+        function open()                 { ShellServices.ShellState.openGlobal("settings")  }
+        function close()                { ShellServices.ShellState.closeAllAcross()         }
+        function openPane(pane: string) { Commons.State.settingsOpenPane = pane; ShellServices.ShellState.openGlobal("settings") }
     }
 
     IpcHandler {
@@ -104,6 +96,13 @@ ShellRoot {
         function close()  { ShellServices.ShellState.closeAllAcross()         }
     }
 
+    IpcHandler {
+        target: "media"
+        function toggle() { ShellServices.ShellState.toggleGlobal("media") }
+        function open()   { ShellServices.ShellState.openGlobal("media")  }
+        function close()  { ShellServices.ShellState.closeAllAcross()     }
+    }
+
     // Sprint 21 — visual builder edit mode (Super+Shift+E). Closes any open
     // panel when entering so the editor has the surface to itself.
     IpcHandler {
@@ -118,22 +117,9 @@ ShellRoot {
         Commons.State.editMode = on
     }
 
-    // ── Mutual exclusion: panels ↔ settings ───────────────────────────────────
-    Connections {
-        target: ShellServices.ShellState
-        function onStateMapChanged() {
-            if (ShellServices.ShellState.anyOpenAnywhere())
-                Commons.State.settingsVisible = false
-        }
-    }
-
-    Connections {
-        target: Commons.State
-        function onSettingsVisibleChanged() {
-            if (Commons.State.settingsVisible)
-                ShellServices.ShellState.closeAllAcross()
-        }
-    }
+    // Settings is now a ShellState panel (Sprint 24), so single-open exclusion
+    // is handled by ShellState itself — the old settings↔panels mutual-exclusion
+    // Connections were removed.
 
     // ── Toast queue ────────────────────────────────────────────────────────────
     property var _toastQueue: []
@@ -177,8 +163,8 @@ ShellRoot {
     }
 
     // Full-screen overlay per monitor — hosts the 4 sides (bar/strip/none),
-    // 4 corner blends, and panels (CC/NC/Launcher/Dashboard) as siblings in
-    // one coordinate space.
+    // the frame background, and panels (NC/Launcher/Dashboard/Wallpaper/
+    // Settings) as siblings in one coordinate space.
     Shell.ShellSurface  {}
 
     // Thin compositor-exclusion windows, one per active side per monitor.
@@ -239,6 +225,4 @@ ShellRoot {
         }
     }
 
-    // ── Settings window ────────────────────────────────────────────────────────
-    Settings {}
 }

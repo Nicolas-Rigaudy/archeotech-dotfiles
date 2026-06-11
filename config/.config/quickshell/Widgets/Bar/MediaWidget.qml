@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import "../../Commons" as Commons
 import "../../Services/Media" as MediaServices
 import "../../Services/Persistence" as Persistence
+import "../../Services/Shell" as ShellServices
 
 // MPRIS marquee — separator dot, play/pause toggle, scrolling title·artist.
 // Collapses to zero width when nothing is playing so it doesn't push the
@@ -25,11 +26,15 @@ Item {
         return a
     }
 
-    Layout.maximumWidth: active ? 200 : 0
+    // Reserve real layout width (the loader sizes to implicitWidth). Without
+    // this the root Item reports 0 and the 200px content floats over the clock.
+    // Collapses to 0 when idle so it doesn't push the title/clock around.
+    implicitWidth:  active ? 200 : 0
+    implicitHeight: Commons.Appearance.bar.height
     Layout.alignment: Qt.AlignVCenter
     opacity: active ? 1 : 0
-    Behavior on Layout.maximumWidth { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
-    Behavior on opacity             { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+    Behavior on implicitWidth { NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic } }
+    Behavior on opacity       { NumberAnimation { duration: Commons.Appearance.anim.fast } }
 
     width: 200
     height: Commons.Appearance.bar.height
@@ -139,6 +144,14 @@ Item {
             color: Commons.Appearance.colors.subtext1
             font.pixelSize: Commons.Appearance.font.sizeSm
             font.family: Commons.Appearance.font.family
+        }
+
+        // Click the title/artist → open the Media panel (play/pause stays on
+        // the icon to the left).
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: ShellServices.ShellState.toggleGlobal("media")
         }
     }
 

@@ -136,10 +136,6 @@ PipeWire native bindings for device listing and switching (the right API for tha
 
 Native property over `nmcli radio wifi on/off`. Same family of decisions as MPRIS/Pipewire — use Quickshell's native APIs when they exist. Noctalia source-confirmed.
 
-### [2026-05-12] Settings: standalone window, not CC-embedded
-
-CC is for quick toggles; Settings is the long-form panel. Tried caelestia's "CC is settings" model on paper but retrofitting our CC would require gutting it. With deep-linking (`Commons.State.settingsOpenPane = "appearance"; settingsVisible = true`) the two surfaces feel like one system anyway. Trade-off: two QML surfaces to maintain.
-
 ### [2026-05-12] Settings persistence: `Config.qml` singleton + JsonAdapter + dotted keys
 
 Central singleton wraps a single config JSON; components call `Config.get("a.b.c", default)` / `Config.set("a.b.c", val)`. Every setting becomes reactive everywhere with one binding. Write-debounce (50ms) avoids disk thrash on slider drags. end-4 and DMS independently converged on this pattern. Trade-off: keyed by string paths — typos at runtime, not compile-time.
@@ -148,17 +144,13 @@ Central singleton wraps a single config JSON; components call `Config.get("a.b.c
 
 Beyond ~6 items, horizontal tabs wrap or truncate; NavRail scales to 34 tabs cleanly (DMS proof point). Caelestia, DMS, and Noctalia all converged on this. Trade-off: wider minimum window (~200px for the rail).
 
-### [2026-05-12] CC compound pills (split toggle + expand)
+### [2026-05-12] Deep-linking: bar/panel quick actions → Settings pane
 
-WiFi and Bluetooth CC rows need both a quick toggle (common) and a details expansion (less common). One full-row click for both is ambiguous. Compound pill = left ~48px tile toggles, right body expands. DMS pattern, independently derived. Trade-off: more complex layout than a single RowLayout.
-
-### [2026-05-12] Deep-linking: CC quick actions → Settings pane
-
-`Commons.State.settingsOpenPane = "<name>"` + `settingsVisible = true` from anywhere in the shell opens the Settings window with the named pane focused. Without this, CC and Settings feel disconnected. With it, the CC is the fast path and Settings is the full path — same system. WallpaperPicker's palette button uses the same mechanism (jumps to Appearance).
+`Commons.State.settingsOpenPane = "<name>"` then open the Settings panel (`ShellState.openGlobal("settings")`) from anywhere in the shell focuses the named pane. The bar is the fast path; Settings is the full path — same system. The WiFi popup's "needs password" jumps to Connections; the Appearance switcher's "More" jumps to Appearance.
 
 ### [2026-05-19] Bar popups: native QML, not external apps
 
-Bar WiFi/BT icons used to launch `nm-connection-editor` / `blueman-manager`. Replaced with native Shape popups (top-5 networks + adapter toggle inline). External apps break visual cohesion and require separate window management. "Open Settings" deep-links into CC. Trade-off: bar popup capped at 5 entries; power users go to CC.
+Bar WiFi/BT icons used to launch `nm-connection-editor` / `blueman-manager`. Replaced with native Shape popups (top-5 networks + adapter toggle inline). External apps break visual cohesion and require separate window management. The popup's full-management action deep-links to Settings → Connections. Trade-off: bar popup capped at 5 entries; power users go to Settings.
 
 ### [2026-05-19] busctl monitor fallback: poll on access-denied
 
@@ -178,13 +170,13 @@ Caelestia maps widget id → component via a static `DelegateChooser` (type-safe
 
 Bar/strip widgets receive a `required property var barRoot` (or `stripRoot`) injected via `setSource(path, { barRoot, widgetId })`. The exposed API surface (`side`, `horizontal`, `screen`, `showPopup`, `hidePopup`, …) is documented in `docs/WIDGET_API.md`. This is Noctalia's PluginAPI pattern scaled down. Plugin widgets in S21 use the same `barRoot` reference — same surface, manifest-discovered. Documenting the contract before S21 means plugins don't reshape it. Trade-off: a few `_`-prefixed properties remain on `barRoot` for sibling-coordination state (e.g. mutual-exclusion between popups) — documented but underscore-marked "internal-to-bar, reachable when coordinating".
 
-### [2026-06-02] Wallpaper picker as first-class panel, not Settings pane
+### [2026-06-11] Dissolve Control Center; Settings is a unified side panel
 
-WallpaperPicker lives in `PanelRegistry` as a strip panel (bottom strip, sibling to `dashboard`), not as a Settings tab. Noctalia pattern; DMS does it as a tab and it's the wrong feel (Settings is a long-lived window). Wallpaper picking is frequent and wants anchor-to-bar positioning + per-monitor instance. Logo selector lives in the same panel — contextually tied. The palette icon in the panel header deep-links to Settings → Appearance when the user wants theme picking instead. Trade-off: the strip panel still grows to full screen axis (Sprint 17 architecture) — Sprint 20's `axisSize` field fixes this.
+Removed the catch-all Control Center entirely and distributed its functions to where they already half-lived: the **bar** is the quick-action surface (volume/mic/brightness/network/BT/battery/power each already have icons + popups), **Settings** is the deep-config surface, and focused tools get their own panels. The WiFi network list was implemented in *three* places (bar `WifiPopup`, CC, `ConnectionsPane`) — CC was pure redundancy. Settings stops being a `FloatingWindow` and becomes a `PanelRegistry` panel on the **right** strip (where CC was; spatially matches the top-right gear), sharing the glass/animation/`ShellState` single-open model with every other panel. The media player became a standalone bottom-strip `MediaPanel`; DND moved into the Notifications header. Trade-off: opening Settings is now a large right-edge drawer rather than a movable/resizable window — accepted for full coherence with the locked one-ShellSurface architecture. Supersedes the prior "Settings: standalone window" and "CC = quick-access only" decisions.
 
-### [2026-06-02] CC = quick-access only; long settings live in Settings panes
+### [2026-06-11] One Appearance home; bottom panel = compact Appearance switcher
 
-After the S20 trim, ControlCenter holds: Status strip, MEDIA, AUDIO, CONNECTIVITY (WiFi/BT/VPN), Display Layout (kept after user feedback — used often), DND toggle, Power/Lock. Night Light, Power Profile, Idle & Sleep moved to new `DisplayPane` + `PowerPane` (anticipating Sprint 23). The principle: a CC item earns its slot if it's a fast quick-toggle the user reaches for repeatedly; anything that's a multi-step configuration belongs in Settings. Display Layout sits on the line — kept in CC because docking/undocking happens often enough that an extra two clicks would hurt. Trade-off: CC's `displayLayout` and DisplayPane's `displayLayout` are independent caches (neither reads compositor state) so they can drift visually; cheap to fix later with a shared singleton if it matters.
+Theme + wallpaper + logo were split across surfaces (theme in a Settings pane, wallpaper in a standalone bottom panel) and couldn't reach each other. Unified into one canonical **Settings → Appearance** pane (theme cards + wallpaper carousel + logos + typography + geometry). The bottom `Super+W` panel is now a compact **Appearance quick-switcher** (theme + wallpaper + logo) rather than wallpaper-only, so both surfaces show the same thing and the quick panel isn't missing colors. No duplicated logic: the theme grid and wallpaper/logo UI are extracted into shared `Widgets/Appearance/ThemeGridBody.qml` + `WallpaperPickerBody.qml`, hosted by both the pane (`embedded: true`, fixed-height carousel) and the panel (full chrome, fill-height carousel). The panel id stays `wallpaper` (keeps the `Super+W` keybind + IPC) but the strip icon reads "Appearance" (palette glyph). Supersedes "Wallpaper picker as first-class panel, not Settings pane".
 
 ### [2026-06-02] Launcher pinned apps live in Persistence.Config, not shell-config.json
 

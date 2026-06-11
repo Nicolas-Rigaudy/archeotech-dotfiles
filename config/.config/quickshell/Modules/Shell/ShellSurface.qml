@@ -50,6 +50,23 @@ Variants {
             Region { item: _leftSide }
             Region { item: _panelOpenMask }
             Region { item: _editMask }
+            Region { item: _topBarPopupMask }
+        }
+
+        // Bar popups (BT / WiFi / calendar / hover) float below the top bar,
+        // outside the SideLoader's masked rect — mirror their union bounds here
+        // so clicks land on them instead of passing through. Collapses to 0×0
+        // when no popup is open (and for non-bar top sides, which lack these
+        // properties → _open stays false).
+        Item {
+            id: _topBarPopupMask
+            readonly property var  _bar:  _topSide.item
+            readonly property bool _open: _bar && _bar._anyPopupOpen === true
+            readonly property rect _b:    _open ? _bar._popupBounds : Qt.rect(0, 0, 0, 0)
+            x: _topSide.x + _b.x
+            y: _topSide.y + _b.y
+            width:  _open ? _b.width  : 0
+            height: _open ? _b.height : 0
         }
 
         // Full-surface mask while editing so all of EditOverlay is clickable;
@@ -132,8 +149,12 @@ Variants {
                 left:  parent.left
                 right: parent.right
                 topMargin:   _surface._off
-                leftMargin:  _surface._off + (_surface._leftGap  > 0 ? _surface._leftGap  + _surface._r : 0)
-                rightMargin: _surface._off + (_surface._rightGap > 0 ? _surface._rightGap + _surface._r : 0)
+                // Bar widgets only need to clear the neighbour strip column, not
+                // the corner-radius fillet (they're vertically centred, well clear
+                // of the curve) — so no `+ _r` here. Lets the icons sit close to the
+                // corners while the FrameBackground glass/corners stay untouched.
+                leftMargin:  _surface._off + (_surface._leftGap  > 0 ? _surface._leftGap  : 0)
+                rightMargin: _surface._off + (_surface._rightGap > 0 ? _surface._rightGap : 0)
             }
             Behavior on anchors.topMargin   { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }
             Behavior on anchors.leftMargin  { NumberAnimation { duration: Commons.Appearance.anim.panel; easing.type: Easing.OutCubic } }

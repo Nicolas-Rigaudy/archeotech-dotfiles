@@ -38,6 +38,19 @@ Item {
     implicitWidth:  horizontal ? 0 : thickness
     implicitHeight: horizontal ? thickness : 0
 
+    // Live widths of the non-title left-zone widgets, reported by their loaders
+    // (see the left Repeater delegate). Used to size the title so the left
+    // cluster can't slide under the centered clock.
+    property real _wsWidth:    0
+    property real _mediaWidth: 0
+
+    // Max width the title may take before the left cluster (workspaces + title
+    // + media) would reach the centered clock. The title caps its own implicit
+    // width to this and elides — no Layout clamps (those stretched the zone).
+    readonly property real _titleMaxWidth: Math.max(60,
+        pill.width / 2 - _centerRow.width / 2
+        - Commons.Appearance.bar.innerPadding - _wsWidth - _mediaWidth - 16)
+
     // ── Popup state (read/written by widgets via barRoot) ──────────────────────
     property real    _popupAnchorX:   0
     property string  _popupLabel:     ""
@@ -57,8 +70,45 @@ Item {
     property real _wifiAnchorX:      0
     property real _btAnchorX:        0
 
+    // Pinned hover card (Sprint ② increment 2): a click "pins" the status card
+    // open with inline controls (e.g. a volume slider) so it can be interacted
+    // with — unlike a hover peek, which auto-hides on mouse-leave. `_popupId`
+    // selects which inline control the card renders. Opening a WiFi/BT/calendar
+    // popup clears the pin (handlers below) so only one popup is ever live.
+    property bool   _popupPinned: false
+    property string _popupId:     ""
+    on_wifiPopupVisibleChanged: if (_wifiPopupVisible) _popupPinned = false
+    on_btPopupVisibleChanged:   if (_btPopupVisible)   _popupPinned = false
+    on_calendarVisibleChanged:  if (_calendarVisible)  _popupPinned = false
+
+    // ── Bar-popup input region (consumed by ShellSurface's input mask) ──────────
+    // The popup cards float BELOW the bar, outside the SideLoader rect that the
+    // surface mask covers — without this, clicks on them pass straight through to
+    // the windows behind. We expose the union bounding box (bar-local coords) of
+    // every visible popup; ShellSurface mirrors it into a mask region. Ids are
+    // resolved at component scope, so referencing the popups declared further
+    // down is fine.
+    readonly property bool _anyPopupOpen:
+        _hoverCardPopup.visible || _calendarPopup.visible
+        || _wifiPopup.visible   || _btPopup.visible
+    readonly property rect _popupBounds: {
+        var ps = [_hoverCardPopup, _calendarPopup, _wifiPopup, _btPopup]
+        var l = 1e9, t = 1e9, r = -1e9, b = -1e9, any = false
+        for (var i = 0; i < ps.length; i++) {
+            if (!ps[i].visible) continue
+            any = true
+            l = Math.min(l, ps[i].x); t = Math.min(t, ps[i].y)
+            r = Math.max(r, ps[i].x + ps[i].width); b = Math.max(b, ps[i].y + ps[i].height)
+        }
+        return any ? Qt.rect(l, t, r - l, b - t) : Qt.rect(0, 0, 0, 0)
+    }
+
     // ── barRoot API surface ─────────────────────────────────────────────────────
     function showPopup(item, label, primary, secondary, hint) {
+        // A pinned control popup (WiFi/BT) owns the screen — never raise a hover
+        // status card while one is open (it would render behind it). This makes
+        // the hover card and the click popups mutually exclusive: one slot only.
+        if (_wifiPopupVisible || _btPopupVisible) return
         _hideTimer.stop()
         _calHideTimer.stop()
         _calendarVisible = false
@@ -176,6 +226,12 @@ Item {
                         barRoot:  bar
                         isFirst:  index === 0
                         isLast:   index === _leftZone.count - 1
+                        // Report the non-title widths up so the title can size
+                        // itself to never reach the clock (see bar._titleMaxWidth).
+                        onWidthChanged: {
+                            if (widgetId === "workspaces") bar._wsWidth    = width
+                            else if (widgetId === "media")  bar._mediaWidth = width
+                        }
                     }
                 }
             }
@@ -204,6 +260,7 @@ Item {
         // CENTER zone — overlay, absolutely centered. z above the RowLayout
         // so the clock isn't pushed when the left/right zone widths change.
         Row {
+            id: _centerRow
             visible: bar.horizontal
             anchors.centerIn: parent
             z: 2
@@ -312,10 +369,10 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: "󰒓"
-                    color: ShellServices.ShellState.isOpenAnywhere("cc") ? Commons.Appearance.colors.accent : Commons.Appearance.colors.subtext1
+                    color: ShellServices.ShellState.isOpenAnywhere("settings") ? Commons.Appearance.colors.accent : Commons.Appearance.colors.subtext1
                     font.pixelSize: 16; font.family: Commons.Appearance.font.family
                 }
-                TapHandler { onTapped: ShellServices.ShellState.toggleGlobal("cc") }
+                TapHandler { onTapped: ShellServices.ShellState.toggleGlobal("settings") }
             }
             Item {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -332,10 +389,10 @@ Item {
     }
 
     // ── Popup overlays — single instance, persistent ───────────────────────────
-    BarWidgets.HoverCard     { barRoot: bar }
-    BarWidgets.CalendarPopup { barRoot: bar }
-    BarWidgets.WifiPopup     { barRoot: bar }
-    BarWidgets.BtPopup       { barRoot: bar }
+    BarWidgets.HoverCard     { id: _hoverCardPopup; barRoot: bar }
+    BarWidgets.CalendarPopup { id: _calendarPopup;  barRoot: bar }
+    BarWidgets.WifiPopup     { id: _wifiPopup;       barRoot: bar }
+    BarWidgets.BtPopup       { id: _btPopup;         barRoot: bar }
 
     Process { id: powerCmd; command: ["bash", "-c", "wlogout-launch.sh &"]; running: false }
 }

@@ -4,7 +4,7 @@ import QtQuick
 // Sprint 18 — convention-based widget id → filename resolution.
 //
 //   Built-in bar widget id   "clock"        → "ClockWidget.qml"
-//   Built-in strip icon  id  "cc"           → "CcIcon.qml"
+//   Built-in strip icon  id  "nc"           → "NcIcon.qml"
 //   Plugin widget id         "plugin:foo"   → "" (S20 work)
 //
 // The loader (BarWidgetLoader / StripWidgetLoader) owns the directory
@@ -36,11 +36,12 @@ QtObject {
     ]
 
     readonly property var availableStripIcons: [
-        { id: "cc",        name: "Control Center",      icon: "󰕮" },
         { id: "nc",        name: "Notification Center", icon: "󰂚" },
         { id: "dashboard", name: "Dashboard",           icon: "󰨇" },
+        { id: "media",     name: "Media",               icon: "󰝚" },
         { id: "launcher",  name: "Launcher",            icon: "󱓞" },
-        { id: "wallpaper", name: "Wallpaper",           icon: "󰸉" }
+        { id: "wallpaper", name: "Appearance",           icon: "󰏘" },
+        { id: "settings",  name: "Settings",            icon: "󰒓" }
     ]
 
     function _metaFor(list, id) {
@@ -76,7 +77,7 @@ QtObject {
         return _pascalCase(id) + "Widget.qml"
     }
 
-    // Strip icon filename: <PascalId>Icon.qml ("cc" → "CcIcon.qml")
+    // Strip icon filename: <PascalId>Icon.qml ("nc" → "NcIcon.qml")
     function stripWidgetFile(id) {
         if (!id) return ""
         if (_isPlugin(id)) return ""

@@ -30,7 +30,7 @@
       "size": 10,
       "expanded": 240,
       "icons": [
-        "cc",
+        "settings",
         "nc"
       ],
       "zones": {
@@ -45,6 +45,7 @@
       "expanded": 240,
       "icons": [
         "dashboard",
+        "media",
         "wallpaper"
       ],
       "zones": {

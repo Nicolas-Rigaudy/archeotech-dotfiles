@@ -53,17 +53,21 @@ Item {
                 // ── Header ────────────────────────────────────────────────────
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: 6
                     Text {
                         text: "󰂚  Notifications"
                         color: Commons.Appearance.colors.text
                         font.pixelSize: Commons.Appearance.font.sizeLg
                         font.family: Commons.Appearance.font.family
                         font.weight: Font.Medium
+                        elide: Text.ElideRight
                         Layout.fillWidth: true
                     }
+                    // Clear all (text pill) — only when there are notifications.
                     Rectangle {
                         visible: SystemServices.Notifications.count > 0
-                        width:  _clearLabel.implicitWidth + 16; height: 28
+                        Layout.preferredWidth:  _clearLabel.implicitWidth + 16
+                        Layout.preferredHeight: 28
                         radius: Commons.Appearance.radius.base
                         color:  _clearArea.containsMouse ? Commons.Appearance.colors.surface0 : Commons.Appearance.colors.base
                         Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
@@ -80,8 +84,36 @@ Item {
                             onClicked: SystemServices.Notifications.clearAll()
                         }
                     }
+                    // Do Not Disturb — compact icon toggle (moved here from the old CC).
                     Rectangle {
-                        width: 28; height: 28
+                        Layout.preferredWidth: 28
+                        Layout.preferredHeight: 28
+                        radius: Commons.Appearance.radius.base
+                        color: SystemServices.Notifications.dndEnabled
+                            ? Commons.Appearance.colors.accentAlpha
+                            : (_dndArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent")
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: SystemServices.Notifications.dndEnabled ? "󰂛" : "󰂚"
+                            color: SystemServices.Notifications.dndEnabled
+                                ? Commons.Appearance.colors.accent
+                                : (_dndArea.containsMouse ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0)
+                            font.pixelSize: 15; font.family: Commons.Appearance.font.family
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        }
+                        MouseArea {
+                            id: _dndArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: SystemServices.Notifications.dndEnabled = !SystemServices.Notifications.dndEnabled
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.preferredWidth: 28
+                        Layout.preferredHeight: 28
                         radius: Commons.Appearance.radius.base
                         color: _closeArea.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
                         Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
