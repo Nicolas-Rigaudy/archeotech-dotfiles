@@ -140,22 +140,93 @@ Item {
                     Layout.fillWidth: true
                     color: Commons.Appearance.colors.surface0
                     radius: Commons.Appearance.radius.md
-                    implicitHeight: inputCol.implicitHeight
+                    implicitHeight: sourcesCol.implicitHeight
 
                     ColumnLayout {
-                        id: inputCol
-                        anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 16; rightMargin: 16 }
+                        id: sourcesCol
+                        anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 12; rightMargin: 12 }
                         spacing: 0
-                        Item { implicitHeight: 10; Layout.fillWidth: true }
+
+                        Item { implicitHeight: 6; Layout.fillWidth: true }
+
                         Text {
-                            text: "󰋽  Full source management will be available once Quickshell.Services.Pipewire lands (QS 0.3.0)."
+                            visible: MediaServices.Audio.sources.length === 0
+                            text: "No audio input devices found."
                             color: Commons.Appearance.colors.overlay0
-                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.pixelSize: Commons.Appearance.font.sizeBase
                             font.family: Commons.Appearance.font.family
-                            wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                         }
-                        Item { implicitHeight: 10; Layout.fillWidth: true }
+
+                        Repeater {
+                            model: MediaServices.Audio.sources
+                            delegate: Item {
+                                required property var modelData
+                                required property int index
+                                Layout.fillWidth: true
+                                implicitHeight: 44
+
+                                readonly property bool isDefault: modelData.name === MediaServices.Audio.defaultSource
+
+                                Rectangle {
+                                    visible: index > 0
+                                    anchors { left: parent.left; right: parent.right; top: parent.top }
+                                    height: 1; color: Commons.Appearance.colors.base
+                                }
+
+                                Rectangle {
+                                    anchors { fill: parent; topMargin: index > 0 ? 1 : 0 }
+                                    radius: index === 0
+                                        ? Commons.Appearance.radius.md
+                                        : (index === MediaServices.Audio.sources.length - 1 ? Commons.Appearance.radius.md : 0)
+                                    color: isDefault
+                                        ? Commons.Appearance.colors.accentAlpha
+                                        : (sourceMa.containsMouse ? Commons.Appearance.colors.surface1 : "transparent")
+                                    Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+
+                                    RowLayout {
+                                        anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
+                                        spacing: 10
+
+                                        Text {
+                                            text: isDefault ? "󰍬" : "󰍭"
+                                            color: isDefault ? Commons.Appearance.colors.accent : Commons.Appearance.colors.overlay0
+                                            font.pixelSize: 16; font.family: Commons.Appearance.font.family
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                        }
+
+                                        Text {
+                                            text: modelData.description || modelData.name
+                                            color: isDefault ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext1
+                                            font.pixelSize: Commons.Appearance.font.sizeBase
+                                            font.family: Commons.Appearance.font.family
+                                            elide: Text.ElideRight
+                                            Layout.fillWidth: true
+                                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                        }
+
+                                        Text {
+                                            visible: isDefault
+                                            text: "default"
+                                            color: Commons.Appearance.colors.accent
+                                            font.pixelSize: Commons.Appearance.font.sizeSm
+                                            font.family: Commons.Appearance.font.family
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: sourceMa
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: if (!isDefault) MediaServices.Audio.setDefaultSource(modelData.name)
+                                    }
+                                }
+                            }
+                        }
+
+                        Item { implicitHeight: 6; Layout.fillWidth: true }
                     }
                 }
 
