@@ -91,6 +91,44 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 - Settings search: fuzzy index per registered pane, max 15 results, sidebar search input
 - **Layout pane** (new) — UI for `shell-config.json` side type switcher (top/right/bottom/left = bar/strip/none) + per-zone widget chooser. Bridge between current Settings and full Module Builder UI (Sprint 21). Lets users reconfigure sides from a familiar settings interface without needing the visual edit mode.
 
+### Sprint X — Hierarchical Theming System (family → flavor → accent) ← high priority, deferred from S24
+
+**Why deferred:** Raised during the S24 ColorScheme discussion. The current theme system is a **flat list of full `theme.json` variants** (one card per variant). That doesn't scale — Catppuccin alone is 4 flavors × 14 accents = 56 combinations, and adding light variants bloats the flat card grid. The right model is hierarchical, and it cleanly subsumes the original S24 "ColorScheme depth" goals (dark/light + schedule).
+
+**Model:** `family → flavor → accent`
+- **Family** = a theme identity (Catppuccin, Dracula, Gruvbox, Tokyo Night, Nord, Monochrome).
+- **Flavor** = a palette within the family. **The flavor axis IS the light/dark axis** — light flavors (Catppuccin Latte, Tokyo Night Day, Gruvbox Light, Dracula Alucard) are "light mode"; the rest are dark. Per-family flavors:
+  - Catppuccin: Latte (light) / Frappé / Macchiato / Mocha
+  - Tokyo Night: Day (light) / Storm / Night / Moon
+  - Gruvbox: Light / Dark (× hard/medium/soft contrast, optional)
+  - Dracula: Alucard (light) / Dracula (dark)
+  - Nord: Dark (+ a hand-built light, no canonical one)
+  - Monochrome: Light / Dark
+- **Accent** = which palette color drives `accent` (Catppuccin: 14 named colors). Accent customization is the hard part — see below.
+
+**UI** (replaces the flat `ThemeGridBody` cards): family cards → on select, reveal a **flavor selector** (segmented/pills) + an **accent swatch row**. Lives in a dedicated **ColorScheme** Settings pane; the bottom Appearance switcher shows a compact version.
+
+**Light/dark + day-night cycle** (the original S24 ColorScheme depth, folded in here):
+- Mode: Dark / Light / Auto. Dark/Light pick which flavor of the chosen family to use.
+- Auto = day-night schedule: off / manual (light-start + dark-start times) / location (sunrise-sunset). A `ColorScheme` service singleton ticks a `Timer` and applies the right flavor on transition.
+
+**Config model** (`Persistence.Config`): `colorScheme.family`, `colorScheme.flavorDark`, `colorScheme.flavorLight`, `colorScheme.accent`, `colorScheme.mode` (dark|light|auto), `colorScheme.schedule` ({mode, lightStart, darkStart}). Keep `theme.variant` as the resolved/applied variant the rest of the shell reads.
+
+**The accent challenge (why it's a chunk, not a checkbox):** changing accent isn't only QML recolor. GTK and VSCode ship **per-accent theme packages** (`catppuccin-macchiato-mauve-standard` vs `…-blue-…`, VSCode `Catppuccin Macchiato` is accent-agnostic but icon themes/others vary). So `theme-switch.py` must template the chosen accent into each app target: mango `focuscolor`/`bordercolor`, rofi `border`, GTK theme name, VSCode where applicable, plus the QML `accent` token. Families without 14-accent packages (Gruvbox/Nord/Mono) expose a smaller accent set or none.
+
+**theme.json restructure:** group by family — either a `family.json` listing `flavors[]` (each with its palette + `mode`) and `accents[]`, or keep per-variant files but add `family` / `flavor` / `mode` / `accent-capable` metadata + a resolver. Migration: the 7 current flat variants map onto families (Macchiato/Mocha → Catppuccin; the rest are single-flavor families today).
+
+**Checklist:**
+- [ ] `theme.json` schema v2 (family/flavor/accent metadata) + migration of the 7 existing variants
+- [ ] Author light flavors: Catppuccin Latte, Tokyo Night Day, Gruvbox Light, Dracula Alucard (+ hand-built Nord/Mono light)
+- [ ] `Services/Theming/ColorScheme.qml` — resolves family+flavor+accent+mode+schedule → active variant; applies via `theme-switch.py`; `Timer` for auto/day-night
+- [ ] `theme-switch.py` — accept `--accent`; template accent into mango/rofi/gtk/vscode/qml targets
+- [ ] `ColorSchemePane` (Settings) — family cards + flavor selector + accent swatches + mode + schedule
+- [ ] Refactor `ThemeGridBody` → family/flavor/accent aware (or new `ThemeFamilyGrid`); update Appearance pane + bottom switcher
+- [ ] `docs/THEME_SPEC.md` — document the family/flavor/accent schema for community themes
+
+---
+
 ### Sprint 25 — Multi-Compositor Support
 
 **Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).

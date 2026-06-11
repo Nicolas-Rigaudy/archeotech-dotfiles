@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import "../../Commons" as Commons
 
@@ -6,6 +7,18 @@ Item {
     id: root
     property int activeIndex: 0
     signal paneSelected(int index)
+
+    // Settings search (Sprint 24) — non-empty query swaps the nav list for a
+    // ranked results list; picking a result jumps to that pane.
+    property string query: ""
+    readonly property var _results: query !== "" ? PaneRegistry.search(query) : []
+
+    function _go(paneId) {
+        var idx = PaneRegistry.indexFor(paneId)
+        root.activeIndex = idx
+        root.paneSelected(idx)
+        root.query = ""
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -51,9 +64,124 @@ Item {
 
             Item { implicitHeight: 8; Layout.fillWidth: true }
 
-            // ── Nav items ─────────────────────────────────────────────────────
+            // ── Search field ──────────────────────────────────────────────────
+            Item {
+                Layout.fillWidth: true
+                implicitHeight: 42
+
+                Rectangle {
+                    anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
+                    radius: Commons.Appearance.radius.base
+                    color: Commons.Appearance.colors.surface0
+                    border.color: searchField.activeFocus
+                        ? Commons.Appearance.colors.accentBorder : "transparent"
+                    border.width: 1
+
+                    RowLayout {
+                        anchors { fill: parent; leftMargin: 10; rightMargin: 8 }
+                        spacing: 6
+
+                        Text {
+                            text: "󰍉"
+                            color: Commons.Appearance.colors.overlay0
+                            font.pixelSize: 13; font.family: Commons.Appearance.font.family
+                        }
+                        TextField {
+                            id: searchField
+                            Layout.fillWidth: true
+                            text: root.query
+                            onTextChanged: root.query = text
+                            placeholderText: "Search settings…"
+                            color: Commons.Appearance.colors.text
+                            placeholderTextColor: Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.family: Commons.Appearance.font.family
+                            background: null
+                            Keys.onEscapePressed: root.query = ""
+                        }
+                        Text {
+                            visible: root.query !== ""
+                            text: "✕"
+                            color: clearMa.containsMouse ? Commons.Appearance.colors.text : Commons.Appearance.colors.overlay0
+                            font.pixelSize: 12; font.family: Commons.Appearance.font.family
+                            MouseArea {
+                                id: clearMa; anchors.fill: parent; anchors.margins: -4
+                                hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                onClicked: root.query = ""
+                            }
+                        }
+                    }
+                }
+            }
+
+            Item { implicitHeight: 4; Layout.fillWidth: true }
+
+            // ── Search results (shown while querying) ─────────────────────────
+            Text {
+                visible: root.query !== "" && root._results.length === 0
+                text: "No matches"
+                color: Commons.Appearance.colors.overlay0
+                font.pixelSize: Commons.Appearance.font.sizeSm
+                font.family: Commons.Appearance.font.family
+                Layout.leftMargin: 20; Layout.topMargin: 6
+            }
+
             Repeater {
-                model: PaneRegistry.panes
+                model: root._results
+                delegate: Item {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    implicitHeight: 40
+
+                    Rectangle {
+                        anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
+                        radius: Commons.Appearance.radius.base
+                        color: resMa.containsMouse ? Commons.Appearance.colors.surface0 : "transparent"
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                    }
+
+                    RowLayout {
+                        anchors { fill: parent; leftMargin: 20; rightMargin: 16 }
+                        spacing: 10
+                        Text {
+                            text: modelData.paneIcon
+                            color: Commons.Appearance.colors.subtext0
+                            font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 0
+                            Text {
+                                text: modelData.label
+                                color: Commons.Appearance.colors.text
+                                font.pixelSize: Commons.Appearance.font.sizeSm
+                                font.family: Commons.Appearance.font.family
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+                            Text {
+                                text: modelData.paneLabel
+                                color: Commons.Appearance.colors.overlay0
+                                font.pixelSize: Commons.Appearance.font.sizeSm - 1
+                                font.family: Commons.Appearance.font.family
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        id: resMa
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root._go(modelData.pane)
+                    }
+                }
+            }
+
+            // ── Nav items (hidden while searching) ─────────────────────────────
+            Repeater {
+                model: root.query === "" ? PaneRegistry.panes : []
                 delegate: Item {
                     id: navItem
                     required property var modelData
