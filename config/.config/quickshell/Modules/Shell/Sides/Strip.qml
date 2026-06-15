@@ -27,8 +27,9 @@ Item {
     // panel behaviour are otherwise identical to a strip.
     property bool holderMode: false
 
-    // panelRoot interface for content modules (mirrors Panel.qml).
-    function close() { ShellServices.ShellState.close(_screenName) }
+    // panelRoot interface for content modules (mirrors Panel.qml). Closing is
+    // global — exiting a panel on one screen closes every screen's instance.
+    function close() { ShellServices.ShellState.closeAllAcross() }
     readonly property bool panelOpen: _panelOpen
 
     readonly property string _screenName: screen ? screen.name : ""

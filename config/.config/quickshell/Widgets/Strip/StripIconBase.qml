@@ -17,7 +17,9 @@ Item {
     property string panelId: widgetId   // override if different from widgetId
 
     readonly property string _screenName: stripRoot && stripRoot.screen ? stripRoot.screen.name : ""
-    readonly property bool   _active:     ShellServices.ShellState.isOpen(_screenName, panelId)
+    // Panels are global: open on every screen or none. The icon reflects "open
+    // anywhere" and the click toggles all screens (matches the bar gear).
+    readonly property bool   _active:     ShellServices.ShellState.isOpenAnywhere(panelId)
     property bool _hovered: false
 
     anchors.fill: parent
@@ -57,6 +59,6 @@ Item {
             root._hovered = false
             if (root.stripRoot) root.stripRoot._iconHoverExit()
         }
-        onClicked: ShellServices.ShellState.toggle(root._screenName, root.panelId)
+        onClicked: ShellServices.ShellState.toggleGlobal(root.panelId)
     }
 }

@@ -1,30 +1,31 @@
 import QtQuick
+import QtQuick.Layouts
 import "./Panes"
-import "../../Commons" as Commons
 
+// Shows the active settings pane. Uses a StackLayout (shows only currentIndex)
+// rather than a translated carousel — the old `y: -activeIndex * height`
+// approach flashed Appearance (index 0) on open because `height` is 0 on the
+// first layout pass, and it slid between panes. StackLayout has no position
+// state to get wrong: the correct pane is shown on the first frame, switching
+// is instant.
 Item {
     id: root
     property int activeIndex: 0
     clip: true
 
-    Column {
-        id: carousel
-        width: root.width
-        y: -root.activeIndex * root.height
+    StackLayout {
+        anchors.fill: parent
+        currentIndex: root.activeIndex
 
-        Behavior on y {
-            NumberAnimation { duration: Commons.Appearance.anim.base; easing.type: Easing.OutCubic }
-        }
-
-        // Order must match PaneRegistry.panes exactly (activeIndex scrolls
-        // the carousel by index; mismatched order = wrong pane on click).
-        AppearancePane    { width: root.width; height: root.height }
-        BarPane           { width: root.width; height: root.height }
-        DisplayPane       { width: root.width; height: root.height }
-        NotificationsPane { width: root.width; height: root.height }
-        ConnectionsPane   { width: root.width; height: root.height }
-        AudioPane         { width: root.width; height: root.height }
-        PowerPane         { width: root.width; height: root.height }
-        AboutPane         { width: root.width; height: root.height }
+        // Order must match PaneRegistry.panes exactly (activeIndex selects the
+        // child by index; mismatched order = wrong pane).
+        AppearancePane    {}
+        ShellPane         {}
+        DisplayPane       {}
+        NotificationsPane {}
+        ConnectionsPane   {}
+        AudioPane         {}
+        PowerPane         {}
+        AboutPane         {}
     }
 }

@@ -27,26 +27,16 @@ Item {
         return false
     }
 
-    Component.onCompleted: {
-        if (!_applyDeepLink())
-            sidebar.activeIndex = Persistence.Persistent.settingsActivePaneIndex
-    }
+    // The content is recreated on every open (Loader gated by panelOpen), so
+    // a deep-link pending at construction wins immediately; otherwise the
+    // sidebar's initial binding (below) already starts on the remembered pane —
+    // no post-paint jump, so no Appearance flash on reopen.
+    Component.onCompleted: _applyDeepLink()
 
     // Deep-link request arriving while the panel is already mounted.
     Connections {
         target: Commons.State
         function onSettingsOpenPaneChanged() { root._applyDeepLink() }
-    }
-
-    // Re-sync to the last-used pane each time the panel reopens (unless a
-    // deep-link is pending).
-    Connections {
-        target: root.panelRoot
-        ignoreUnknownSignals: true
-        function onPanelOpenChanged() {
-            if (root.panelRoot && root.panelRoot.panelOpen && !root._applyDeepLink())
-                sidebar.activeIndex = Persistence.Persistent.settingsActivePaneIndex
-        }
     }
 
     RowLayout {
@@ -57,6 +47,9 @@ Item {
             id: sidebar
             Layout.preferredWidth: 200
             Layout.fillHeight: true
+            // Initial value at construction = the remembered pane, so the first
+            // painted frame is already correct (fixes the reopen flash).
+            activeIndex: Persistence.Persistent.settingsActivePaneIndex
             onActiveIndexChanged: Persistence.Persistent.settingsActivePaneIndex = activeIndex
         }
 
