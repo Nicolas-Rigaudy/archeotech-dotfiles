@@ -10,6 +10,7 @@ import "Services/Compositor" as CompositorServices
 import "Services/System" as SystemServices
 import "Services/Persistence" as Persistence
 import "Services/Shell" as ShellServices
+import "Services/Theming" as ThemeServices
 import "Modules/OSD"
 import "Modules/Shell" as Shell
 import "Modules/NotificationCenter"
@@ -33,6 +34,7 @@ ShellRoot {
     property var _shellState:    ShellServices.ShellState
     property var _panelRegistry: ShellServices.PanelRegistry
     property var _moduleRegistry: ShellServices.ModuleRegistry
+    property var _colorScheme:   ThemeServices.ColorScheme
 
     Component.onCompleted: {
         console.log("[Sprint 17] shellConfig.ready =", _shellConfig.ready,
