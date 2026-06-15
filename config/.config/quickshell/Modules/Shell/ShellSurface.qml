@@ -97,7 +97,9 @@ Variants {
                     }
                     if (!inside(_topSide) && !inside(_bottomSide)
                         && !inside(_leftSide) && !inside(_rightSide)) {
-                        ShellServices.ShellState.close(_surface._screenName)
+                        // Global close — clicking outside on one screen dismisses
+                        // the panel on every screen.
+                        ShellServices.ShellState.closeAllAcross()
                     }
                 }
             }

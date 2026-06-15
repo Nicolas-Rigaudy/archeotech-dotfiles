@@ -70,17 +70,6 @@ Item {
     property real _wifiAnchorX:      0
     property real _btAnchorX:        0
 
-    // Pinned hover card (Sprint ② increment 2): a click "pins" the status card
-    // open with inline controls (e.g. a volume slider) so it can be interacted
-    // with — unlike a hover peek, which auto-hides on mouse-leave. `_popupId`
-    // selects which inline control the card renders. Opening a WiFi/BT/calendar
-    // popup clears the pin (handlers below) so only one popup is ever live.
-    property bool   _popupPinned: false
-    property string _popupId:     ""
-    on_wifiPopupVisibleChanged: if (_wifiPopupVisible) _popupPinned = false
-    on_btPopupVisibleChanged:   if (_btPopupVisible)   _popupPinned = false
-    on_calendarVisibleChanged:  if (_calendarVisible)  _popupPinned = false
-
     // ── Bar-popup input region (consumed by ShellSurface's input mask) ──────────
     // The popup cards float BELOW the bar, outside the SideLoader rect that the
     // surface mask covers — without this, clicks on them pass straight through to

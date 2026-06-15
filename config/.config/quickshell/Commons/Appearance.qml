@@ -131,7 +131,7 @@ QtObject {
         readonly property int height:      30
         readonly property int marginTop:    0
         readonly property int marginSide:   0
-        readonly property int innerPadding: 10
+        readonly property int innerPadding: 4
     }
 
     // ── Animation ─────────────────────────────────────────────────────────────
