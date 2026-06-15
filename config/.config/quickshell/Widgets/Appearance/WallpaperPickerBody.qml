@@ -148,10 +148,10 @@ Item {
                 var dot   = p.lastIndexOf(".")
                 var stem  = p.substring(slash + 1, dot >= 0 ? dot : p.length)
                 var name  = stem.replace(/[_-]/g, " ")
-                scanProc._buf = scanProc._buf.concat([{ path: p, name: name }])
+                scanProc._buf = (scanProc._buf || []).concat([{ path: p, name: name }])
             }
         }
-        onExited: root.wallpapers = scanProc._buf
+        onExited: root.wallpapers = scanProc._buf || []
     }
 
     Process {
@@ -294,7 +294,7 @@ Item {
                 spacing: 8
 
                 Text {
-                    text: root.wallpapers.length + " items"
+                    text: (root.wallpapers ? root.wallpapers.length : 0) + " items"
                     color: Commons.Appearance.colors.subtext0
                     font.pixelSize: Commons.Appearance.font.sizeSm
                     font.family: Commons.Appearance.font.family
