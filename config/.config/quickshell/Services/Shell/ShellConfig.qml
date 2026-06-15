@@ -172,6 +172,20 @@ QtObject {
         })
     }
 
+    // Inner-corner radius of the frame (S24 — Shell settings). Routes through
+    // shell-config so FrameBackground re-reads it and redraws consistently.
+    function setCornerRadius(r) {
+        _mutate(function(d) {
+            if (!d.corners) d.corners = {}
+            d.corners.radius = Math.round(r)
+        })
+    }
+
+    // Breathing gap between the shell and tiled windows (drives exclusionZone).
+    function setOuterGap(g) {
+        _mutate(function(d) { d.outerGap = Math.round(g) })
+    }
+
     // Assign / reorder / clear the icon list of a strip or holder side.
     function setStripIcons(sideName, ids) {
         _mutate(function(d) {

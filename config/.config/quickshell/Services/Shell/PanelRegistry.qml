@@ -22,8 +22,8 @@ QtObject {
         settings: {
             content:  _settingsComp,
             side:     "right",
-            size:     900,
-            axisSize: "full"
+            size:     760,
+            axisSize: 880
         },
         launcher: {
             content:  _launcherComp,

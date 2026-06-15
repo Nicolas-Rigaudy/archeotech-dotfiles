@@ -109,6 +109,13 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: SystemServices.Notifications.dndEnabled = !SystemServices.Notifications.dndEnabled
                         }
+
+                        ToolTip {
+                            visible: _dndArea.containsMouse
+                            delay: 400
+                            text: SystemServices.Notifications.dndEnabled
+                                ? "Do Not Disturb: on" : "Do Not Disturb: off"
+                        }
                     }
 
                     Rectangle {

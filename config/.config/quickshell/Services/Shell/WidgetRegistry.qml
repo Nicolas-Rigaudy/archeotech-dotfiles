@@ -37,7 +37,7 @@ QtObject {
 
     readonly property var availableStripIcons: [
         { id: "nc",        name: "Notification Center", icon: "󰂚" },
-        { id: "dashboard", name: "Dashboard",           icon: "󰨇" },
+        { id: "dashboard", name: "Dashboard",           icon: "󰕮" },
         { id: "media",     name: "Media",               icon: "󰝚" },
         { id: "launcher",  name: "Launcher",            icon: "󱓞" },
         { id: "wallpaper", name: "Appearance",           icon: "󰏘" },

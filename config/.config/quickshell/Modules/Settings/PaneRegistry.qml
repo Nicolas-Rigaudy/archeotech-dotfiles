@@ -4,7 +4,7 @@ import QtQuick
 QtObject {
     readonly property var panes: [
         { id: "appearance",    label: "Appearance",    icon: "󰔯", source: "./Panes/AppearancePane.qml"    },
-        { id: "bar",           label: "Bar",           icon: "󰘧", source: "./Panes/BarPane.qml"           },
+        { id: "shell",         label: "Shell",         icon: "󰍹", source: "./Panes/ShellPane.qml"         },
         { id: "display",       label: "Display",       icon: "󱄅", source: "./Panes/DisplayPane.qml"       },
         { id: "notifications", label: "Notifications", icon: "󰂚", source: "./Panes/NotificationsPane.qml" },
         { id: "connections",   label: "Connections",   icon: "󰤨", source: "./Panes/ConnectionsPane.qml"   },
@@ -37,7 +37,8 @@ QtObject {
         { pane: "appearance",    label: "Font size scale",       keywords: "typography text size scale" },
         { pane: "appearance",    label: "Corner rounding",       keywords: "geometry radius rounded" },
         { pane: "appearance",    label: "Padding scale",         keywords: "geometry spacing density" },
-        { pane: "bar",           label: "Bar layout",            keywords: "modules widgets position zones panel" },
+        { pane: "shell",         label: "Edit layout",           keywords: "visual builder customize edit mode bar strips widgets arrange position" },
+        { pane: "shell",         label: "Bar height & modules",  keywords: "bar height clock format modules music wifi bluetooth battery toggle" },
         { pane: "display",       label: "Brightness",            keywords: "screen backlight dim" },
         { pane: "display",       label: "Night light",           keywords: "blue light warmth gamma wlsunset temperature" },
         { pane: "display",       label: "Display layout",        keywords: "monitor resolution extend mirror scale arrangement" },

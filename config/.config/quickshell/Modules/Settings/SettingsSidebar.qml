@@ -28,41 +28,7 @@ Item {
             anchors.fill: parent
             spacing: 0
 
-            // ── Brand header ──────────────────────────────────────────────────
-            Item {
-                Layout.fillWidth: true
-                implicitHeight: 70
-
-                ColumnLayout {
-                    anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 20 }
-                    spacing: 2
-
-                    Text {
-                        text: "ARCHEOTECH"
-                        color: Commons.Appearance.colors.overlay0
-                        font.pixelSize: 9
-                        font.family: Commons.Appearance.font.family
-                        font.weight: Font.Medium
-                        font.letterSpacing: 2
-                    }
-
-                    Text {
-                        text: "Settings"
-                        color: Commons.Appearance.colors.accent
-                        font.pixelSize: 18
-                        font.family: Commons.Appearance.font.family
-                        font.weight: Font.Bold
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color: Commons.Appearance.colors.surface0
-            }
-
-            Item { implicitHeight: 8; Layout.fillWidth: true }
+            Item { implicitHeight: 12; Layout.fillWidth: true }
 
             // ── Search field ──────────────────────────────────────────────────
             Item {
@@ -98,6 +64,7 @@ Item {
                             font.family: Commons.Appearance.font.family
                             background: null
                             Keys.onEscapePressed: root.query = ""
+                            onAccepted: if (root._results.length > 0) root._go(root._results[0].pane)
                         }
                         Text {
                             visible: root.query !== ""
@@ -251,26 +218,6 @@ Item {
             }
 
             Item { Layout.fillWidth: true; Layout.fillHeight: true }
-
-            // ── Version footer ────────────────────────────────────────────────
-            Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color: Commons.Appearance.colors.surface0
-            }
-
-            Item {
-                Layout.fillWidth: true
-                implicitHeight: 40
-
-                Text {
-                    anchors { left: parent.left; leftMargin: 20; verticalCenter: parent.verticalCenter }
-                    text: "Quickshell 0.2.1"
-                    color: Commons.Appearance.colors.overlay0
-                    font.pixelSize: Commons.Appearance.font.sizeSm
-                    font.family: Commons.Appearance.font.family
-                }
-            }
         }
 
         // Wheel scroll
