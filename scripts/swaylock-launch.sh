@@ -7,6 +7,10 @@
 
 CACHE_FILE="$HOME/.cache/wallpaper/last-wallpaper"
 
+# Trigger label passed by the caller (swayidle passes "idle-timeout" /
+# "before-sleep"; the Super+L keybind passes nothing → "keybind").
+TRIGGER="${1:-keybind}"
+
 # ── Trigger diagnostics (temporary) ──────────────────────────────────────────
 # Records who/why on every lock so a "random" lock is diagnosable from one
 # occurrence. Read with: cat ~/.cache/swaylock-trigger.log
@@ -19,6 +23,7 @@ CACHE_FILE="$HOME/.cache/wallpaper/last-wallpaper"
 # launches immediately while this writes the log asynchronously.
 {
     echo "── $(date '+%Y-%m-%d %H:%M:%S') ──"
+    echo "trigger: $TRIGGER"
     echo "caller chain (pid/ppid/cmd, walking up from this script):"
     pid=$PPID
     for _ in 1 2 3 4 5; do

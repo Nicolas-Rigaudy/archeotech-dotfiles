@@ -33,13 +33,22 @@ sleep 0.2
 # Build args array conditionally
 ARGS=(-w)
 
+# ── Idle-reset canary (temporary diagnostic) ─────────────────────────────────
+# A short 90s idle timeout that ONLY logs — never dims/locks. If "idle-90s"
+# lines appear in the canary log while you're actively using the machine, the
+# compositor is NOT resetting swayidle's idle timer on input (root cause of the
+# "random lock while working"). If the timer resets correctly, you'll only ever
+# see it after a genuine 90s pause. Read: cat ~/.cache/swayidle-canary.log
+ARGS+=(timeout 90 'printf "%s  idle-90s\n" "$(date "+%F %T")" >> "$HOME/.cache/swayidle-canary.log"'
+       resume 'printf "%s  resumed\n"  "$(date "+%F %T")" >> "$HOME/.cache/swayidle-canary.log"')
+
 if [ "$DIM_ENABLED" = "true" ]; then
     ARGS+=(timeout "$DIM_TIMEOUT" 'brightnessctl -s set 10'
            resume 'brightnessctl -r')
 fi
 
 if [ "$LOCK_ENABLED" = "true" ]; then
-    ARGS+=(timeout "$LOCK_TIMEOUT" 'swaylock-launch.sh')
+    ARGS+=(timeout "$LOCK_TIMEOUT" 'swaylock-launch.sh idle-timeout')
 fi
 
 if [ "$SLEEP_ENABLED" = "true" ]; then
@@ -47,6 +56,6 @@ if [ "$SLEEP_ENABLED" = "true" ]; then
            resume 'wlopm --on \*')
 fi
 
-ARGS+=(before-sleep 'swaylock-launch.sh')
+ARGS+=(before-sleep 'swaylock-launch.sh before-sleep')
 
 exec swayidle "${ARGS[@]}"
