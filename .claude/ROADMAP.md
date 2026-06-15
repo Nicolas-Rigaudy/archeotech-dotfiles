@@ -15,7 +15,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 3. **Visual builder** — drag-and-drop edit mode wires any module to any trigger (edge hover, bar icon, keyboard, desktop widget). Config persists to `DrawerConfig.json`, hot-reloads instantly.
 4. **Compositor abstraction** — `CompositorService` facade means one codebase runs on MangoWC, Hyprland, and Niri.
 
-**Target release:** v1.0 after Sprint 26 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
+**Target release:** v1.0 after Sprint 27 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
 
 ---
 
@@ -80,7 +80,7 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ## Planned Sprints
 
-### Sprint 25 (theming) — Hierarchical Theming System (family → flavor → accent) ← NEXT
+### Sprint 25 — Hierarchical Theming System (family → flavor → accent) ← NEXT
 
 *(Sprint 24 — Settings Depth — shipped 2026-06-15; see Sprint History. Remaining deferred items: full Pipewire audio-service migration is a Sprint 3 backlog item; a shared `WifiList`/`BtList` extraction for the bar popups + Connections is a nice-to-have cleanup, not blocking.)*
 
@@ -120,7 +120,7 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ---
 
-### Sprint 25 — Multi-Compositor Support
+### Sprint 26 — Multi-Compositor Support
 
 **Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).
 
@@ -152,7 +152,7 @@ CompositorService.activeWindowTitle     // readable property
 
 ---
 
-### Sprint 26 — Distribution & GitHub Release
+### Sprint 27 — Distribution & GitHub Release
 
 **Goal:** Clean, documented, installable by a stranger on a fresh Arch Linux machine. Everything hardcoded to `/home/corvus` is gone. Module + theme APIs are documented. Community can publish extensions. **v1.0 milestone.**
 
@@ -172,19 +172,19 @@ CompositorService.activeWindowTitle     // readable property
 
 ---
 
-### Sprint 27 — Go Daemon
+### Sprint 28 — Go Daemon
 Only for raw Wayland protocols that QML can't reach natively:
 - `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
 - `Services/ArcheotechDaemon.qml` — Quickshell Socket, exponential-backoff reconnect
 - Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
 - Does NOT handle: audio, network, BT, notifications, lock (all native QML)
 
-### Sprint 28 — Dev Personality + Shadow Spear
+### Sprint 29 — Dev Personality + Shadow Spear
 - `themes/shadow-spear/` full theme package (compositor + kitty + starship raven sigil + rofi + wallpaper set)
 - Git branch widget (`Widgets/Bar/GitWidget.qml`) — CWD from focused window, dims when no git context
 - AWS profile widget (`Widgets/Bar/AwsWidget.qml`) — always visible, dims when `$AWS_PROFILE` unset
 - Terraform workspace indicator (`Widgets/Bar/TerraformWidget.qml`) — shows `terraform workspace show`, only in tf repos
-- Per-workspace wallpapers via `CompositorService.onTagSwitched` hook (S25 dependency)
+- Per-workspace wallpapers via `CompositorService.onTagSwitched` hook (S26 dependency)
 - **Stretch:** SDF GLSL shader for corner blob (replaces ShapePath cubic bezier for ultra-smooth corners — Caelestia §15.2 line 2143)
 
 ---
