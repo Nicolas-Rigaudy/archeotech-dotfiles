@@ -1,5 +1,8 @@
 {
   "name": "archeotech-macchiato",
+  "family": "catppuccin",
+  "flavor": "macchiato",
+  "mode": "dark",
   "colors": {
     "base": "#24273a",
     "mantle": "#1e2030",

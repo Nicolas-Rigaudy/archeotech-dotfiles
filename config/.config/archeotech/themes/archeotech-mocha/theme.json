@@ -1,5 +1,8 @@
 {
   "name": "archeotech-mocha",
+  "family": "catppuccin",
+  "flavor": "mocha",
+  "mode": "dark",
   "colors": {
     "base": "#1e1e2e",
     "mantle": "#181825",
