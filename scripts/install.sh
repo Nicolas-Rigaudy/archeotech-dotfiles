@@ -170,6 +170,7 @@ install_local_scripts() {
         "mango-reload.sh"
         "project-jump.sh"
         "list-desktop-apps.sh"
+        "bt-agent.py"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do

@@ -146,22 +146,42 @@ Shape {
                         font.pixelSize: Commons.Appearance.font.sizeSm; font.family: Commons.Appearance.font.family
                         Layout.fillWidth: true; elide: Text.ElideRight
                     }
-                    Rectangle {
-                        width: _btDevLbl.implicitWidth + 16; height: 22
-                        radius: Commons.Appearance.radius.sm
-                        color: _btDevMA.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
-                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                    Item {
+                        property bool _busy: NetworkServices.Bluetooth.connectingTo === modelData.address
+                                          || NetworkServices.Bluetooth.disconnectingFrom === modelData.address
+                        Layout.alignment: Qt.AlignVCenter
+                        implicitWidth:  _busy ? 20 : _btDevBtn.width
+                        implicitHeight: 22
+                        Behavior on implicitWidth { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+
                         Text {
-                            id: _btDevLbl; anchors.centerIn: parent
-                            text: modelData.connected ? "Disconnect" : "Connect"
-                            color: modelData.connected ? Commons.Appearance.colors.red : Commons.Appearance.colors.mauve
-                            font.pixelSize: Commons.Appearance.font.sizeSm - 1; font.family: Commons.Appearance.font.family
+                            id: _btDevSpinner
+                            visible: parent._busy
+                            anchors.centerIn: parent
+                            text: "󰑙"; color: Commons.Appearance.colors.accent
+                            font.pixelSize: 12; font.family: Commons.Appearance.font.family
+                            RotationAnimator { target: _btDevSpinner; running: _btDevSpinner.visible; loops: Animation.Infinite; from: 0; to: 360; duration: 900 }
                         }
-                        MouseArea {
-                            id: _btDevMA; anchors.fill: parent; hoverEnabled: true
-                            onClicked: modelData.connected
-                                ? NetworkServices.Bluetooth.disconnectDevice(modelData.address)
-                                : NetworkServices.Bluetooth.connectDevice(modelData.address)
+
+                        Rectangle {
+                            id: _btDevBtn
+                            visible: !parent._busy
+                            width: _btDevLbl.implicitWidth + 16; height: 22
+                            radius: Commons.Appearance.radius.sm
+                            color: _btDevMA.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            Text {
+                                id: _btDevLbl; anchors.centerIn: parent
+                                text: modelData.connected ? "Disconnect" : "Connect"
+                                color: modelData.connected ? Commons.Appearance.colors.red : Commons.Appearance.colors.mauve
+                                font.pixelSize: Commons.Appearance.font.sizeSm - 1; font.family: Commons.Appearance.font.family
+                            }
+                            MouseArea {
+                                id: _btDevMA; anchors.fill: parent; hoverEnabled: true
+                                onClicked: modelData.connected
+                                    ? NetworkServices.Bluetooth.disconnectDevice(modelData.address)
+                                    : NetworkServices.Bluetooth.connectDevice(modelData.address)
+                            }
                         }
                     }
                 }

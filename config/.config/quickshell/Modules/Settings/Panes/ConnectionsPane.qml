@@ -164,7 +164,44 @@ Item {
 
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: 8
                     SectionLabel { text: "BLUETOOTH"; Layout.fillWidth: true }
+
+                    // Scan for new devices — toggles discovery (bt-agent.py --scan).
+                    Rectangle {
+                        visible: NetworkServices.Bluetooth.enabled
+                        height: 22; width: scanRow.implicitWidth + 16
+                        radius: 11
+                        color: (scanMa.containsMouse || NetworkServices.Bluetooth.discovering)
+                            ? Commons.Appearance.colors.accentAlpha : Commons.Appearance.colors.surface0
+                        border.color: NetworkServices.Bluetooth.discovering ? Commons.Appearance.colors.accentBorder : "transparent"
+                        border.width: 1
+                        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                        RowLayout {
+                            id: scanRow
+                            anchors.centerIn: parent
+                            spacing: 5
+                            Text {
+                                id: scanIco
+                                text: NetworkServices.Bluetooth.discovering ? "󰑙" : "󰂰"
+                                color: Commons.Appearance.colors.accent
+                                font.pixelSize: 11; font.family: Commons.Appearance.font.family
+                                RotationAnimator { target: scanIco; running: NetworkServices.Bluetooth.discovering; loops: Animation.Infinite; from: 0; to: 360; duration: 900 }
+                            }
+                            Text {
+                                text: NetworkServices.Bluetooth.discovering ? "Scanning…" : "Scan"
+                                color: Commons.Appearance.colors.accent
+                                font.pixelSize: 11; font.family: Commons.Appearance.font.family
+                            }
+                        }
+                        MouseArea {
+                            id: scanMa; anchors.fill: parent; hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: NetworkServices.Bluetooth.discovering
+                                ? NetworkServices.Bluetooth.stopScan()
+                                : NetworkServices.Bluetooth.startScan()
+                        }
+                    }
 
                     Rectangle {
                         height: 22; width: btToggleRow.implicitWidth + 16
@@ -198,7 +235,7 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: NetworkServices.Bluetooth.toggleBluetooth()
+                            onClicked: NetworkServices.Bluetooth.toggle()
                         }
                     }
                 }
@@ -218,7 +255,7 @@ Item {
                         Item { implicitHeight: 6; Layout.fillWidth: true }
 
                         Text {
-                            visible: NetworkServices.Bluetooth.devices.length === 0
+                            visible: NetworkServices.Bluetooth.devices.filter(function(d){ return d.paired }).length === 0
                             text: "No paired devices"
                             color: Commons.Appearance.colors.overlay0
                             font.pixelSize: Commons.Appearance.font.sizeBase
@@ -227,7 +264,7 @@ Item {
                         }
 
                         Repeater {
-                            model: NetworkServices.Bluetooth.devices
+                            model: NetworkServices.Bluetooth.devices.filter(function(d){ return d.paired })
                             delegate: Item {
                                 required property var modelData
                                 required property int index
@@ -274,31 +311,184 @@ Item {
                                         }
                                     }
 
+                                    // Trust toggle — authorises audio profiles +
+                                    // auto-reconnect. Star fills when trusted.
                                     Rectangle {
-                                        height: 26; width: btActionTxt.implicitWidth + 16
-                                        radius: Commons.Appearance.radius.sm
-                                        color: btActionMa.containsMouse
-                                            ? Commons.Appearance.colors.surface1
-                                            : Commons.Appearance.colors.base
+                                        Layout.alignment: Qt.AlignVCenter
+                                        width: 26; height: 26; radius: Commons.Appearance.radius.sm
+                                        color: _btTrustMa.containsMouse ? Commons.Appearance.colors.surface1 : "transparent"
                                         Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData.trusted ? "󰓎" : "󰓒"
+                                            color: modelData.trusted ? Commons.Appearance.colors.yellow : Commons.Appearance.colors.overlay0
+                                            font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                                        }
+                                        MouseArea {
+                                            id: _btTrustMa; anchors.fill: parent; hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: NetworkServices.Bluetooth.setTrusted(modelData.address, !modelData.trusted)
+                                        }
+                                    }
+
+                                    // Spinner while (dis)connecting, else the action button.
+                                    Item {
+                                        property bool _busy: NetworkServices.Bluetooth.connectingTo === modelData.address
+                                                          || NetworkServices.Bluetooth.disconnectingFrom === modelData.address
+                                        Layout.alignment: Qt.AlignVCenter
+                                        implicitWidth:  _busy ? 20 : btActionBtn.width
+                                        implicitHeight: 26
+                                        Behavior on implicitWidth { NumberAnimation { duration: Commons.Appearance.anim.fast } }
 
                                         Text {
-                                            id: btActionTxt
+                                            id: btSpinner
+                                            visible: parent._busy
                                             anchors.centerIn: parent
-                                            text: modelData.connected ? "Disconnect" : "Connect"
-                                            color: modelData.connected ? Commons.Appearance.colors.red : Commons.Appearance.colors.mauve
-                                            font.pixelSize: Commons.Appearance.font.sizeSm
-                                            font.family: Commons.Appearance.font.family
+                                            text: "󰑙"; color: Commons.Appearance.colors.accent
+                                            font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                                            RotationAnimator { target: btSpinner; running: btSpinner.visible; loops: Animation.Infinite; from: 0; to: 360; duration: 900 }
                                         }
 
-                                        MouseArea {
-                                            id: btActionMa
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: modelData.connected
-                                                ? NetworkServices.Bluetooth.disconnectDevice(modelData.address)
-                                                : NetworkServices.Bluetooth.connectDevice(modelData.address)
+                                        Rectangle {
+                                            id: btActionBtn
+                                            visible: !parent._busy
+                                            height: 26; width: btActionTxt.implicitWidth + 16
+                                            radius: Commons.Appearance.radius.sm
+                                            color: btActionMa.containsMouse
+                                                ? Commons.Appearance.colors.surface1
+                                                : Commons.Appearance.colors.base
+                                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+
+                                            Text {
+                                                id: btActionTxt
+                                                anchors.centerIn: parent
+                                                text: modelData.connected ? "Disconnect" : "Connect"
+                                                color: modelData.connected ? Commons.Appearance.colors.red : Commons.Appearance.colors.mauve
+                                                font.pixelSize: Commons.Appearance.font.sizeSm
+                                                font.family: Commons.Appearance.font.family
+                                            }
+
+                                            MouseArea {
+                                                id: btActionMa
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: modelData.connected
+                                                    ? NetworkServices.Bluetooth.disconnectDevice(modelData.address)
+                                                    : NetworkServices.Bluetooth.connectDevice(modelData.address)
+                                            }
+                                        }
+                                    }
+
+                                    // Remove / unpair (spinner while removing).
+                                    Item {
+                                        property bool _busy: NetworkServices.Bluetooth.removingFrom === modelData.address
+                                        Layout.alignment: Qt.AlignVCenter
+                                        implicitWidth: 26; implicitHeight: 26
+
+                                        Text {
+                                            id: btRmSpin
+                                            visible: parent._busy; anchors.centerIn: parent
+                                            text: "󰑙"; color: Commons.Appearance.colors.red
+                                            font.pixelSize: 13; font.family: Commons.Appearance.font.family
+                                            RotationAnimator { target: btRmSpin; running: btRmSpin.visible; loops: Animation.Infinite; from: 0; to: 360; duration: 900 }
+                                        }
+                                        Rectangle {
+                                            visible: !parent._busy
+                                            anchors.fill: parent; radius: Commons.Appearance.radius.sm
+                                            color: btRmMa.containsMouse ? Commons.Appearance.colors.surface1 : "transparent"
+                                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "󰩺"
+                                                color: btRmMa.containsMouse ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay0
+                                                font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                                            }
+                                            MouseArea {
+                                                id: btRmMa; anchors.fill: parent; hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: NetworkServices.Bluetooth.removeDevice(modelData.address)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // ── Discovered (unpaired) devices — appear during a scan ───
+                        Rectangle {
+                            visible: NetworkServices.Bluetooth.discovering
+                                  || NetworkServices.Bluetooth.devices.filter(function(d){ return !d.paired }).length > 0
+                            Layout.fillWidth: true; Layout.topMargin: 6
+                            height: 1; color: Commons.Appearance.colors.base
+                        }
+                        Text {
+                            visible: NetworkServices.Bluetooth.discovering
+                                  || NetworkServices.Bluetooth.devices.filter(function(d){ return !d.paired }).length > 0
+                            text: "AVAILABLE"
+                            color: Commons.Appearance.colors.overlay0
+                            font.pixelSize: 9; font.family: Commons.Appearance.font.family
+                            font.weight: Font.Medium; font.letterSpacing: 1.5
+                            Layout.fillWidth: true; Layout.topMargin: 6; Layout.bottomMargin: 2
+                        }
+                        Text {
+                            visible: NetworkServices.Bluetooth.discovering
+                                  && NetworkServices.Bluetooth.devices.filter(function(d){ return !d.paired }).length === 0
+                            text: "Searching…"
+                            color: Commons.Appearance.colors.overlay0
+                            font.pixelSize: Commons.Appearance.font.sizeSm
+                            font.family: Commons.Appearance.font.family
+                            Layout.fillWidth: true; Layout.bottomMargin: 2
+                        }
+                        Repeater {
+                            model: NetworkServices.Bluetooth.devices.filter(function(d){ return !d.paired })
+                            delegate: Item {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                implicitHeight: 36
+                                RowLayout {
+                                    anchors.fill: parent; spacing: 10
+                                    Text {
+                                        text: "󰂯"; color: Commons.Appearance.colors.overlay0
+                                        font.pixelSize: 16; font.family: Commons.Appearance.font.family
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Text {
+                                        text: modelData.name
+                                        color: Commons.Appearance.colors.subtext1
+                                        font.pixelSize: Commons.Appearance.font.sizeBase
+                                        font.family: Commons.Appearance.font.family
+                                        elide: Text.ElideRight; Layout.fillWidth: true
+                                    }
+                                    // Pair (spinner while pairing)
+                                    Item {
+                                        property bool _busy: NetworkServices.Bluetooth.pairingTo === modelData.address
+                                        Layout.alignment: Qt.AlignVCenter
+                                        implicitWidth: _busy ? 20 : pairBtn.width; implicitHeight: 26
+                                        Behavior on implicitWidth { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+                                        Text {
+                                            id: pairSpin; visible: parent._busy; anchors.centerIn: parent
+                                            text: "󰑙"; color: Commons.Appearance.colors.accent
+                                            font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                                            RotationAnimator { target: pairSpin; running: pairSpin.visible; loops: Animation.Infinite; from: 0; to: 360; duration: 900 }
+                                        }
+                                        Rectangle {
+                                            id: pairBtn; visible: !parent._busy
+                                            height: 26; width: pairTxt.implicitWidth + 16
+                                            radius: Commons.Appearance.radius.sm
+                                            color: pairMa.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.base
+                                            Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                                            Text {
+                                                id: pairTxt; anchors.centerIn: parent
+                                                text: "Pair"; color: Commons.Appearance.colors.mauve
+                                                font.pixelSize: Commons.Appearance.font.sizeSm
+                                                font.family: Commons.Appearance.font.family
+                                            }
+                                            MouseArea {
+                                                id: pairMa; anchors.fill: parent; hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: NetworkServices.Bluetooth.pairDevice(modelData.address)
+                                            }
                                         }
                                     }
                                 }
@@ -417,6 +607,26 @@ Item {
                             }
                         }
                     }
+                }
+            }
+
+            // Forget a saved network (deletes the stored profile).
+            Rectangle {
+                visible: modelData.saved
+                Layout.alignment: Qt.AlignVCenter
+                width: 26; height: 26; radius: Commons.Appearance.radius.sm
+                color: forgetMa.containsMouse ? Commons.Appearance.colors.surface1 : "transparent"
+                Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰩺"
+                    color: forgetMa.containsMouse ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay0
+                    font.pixelSize: 14; font.family: Commons.Appearance.font.family
+                }
+                MouseArea {
+                    id: forgetMa; anchors.fill: parent; hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: NetworkServices.Network.forget(modelData.ssid)
                 }
             }
         }
