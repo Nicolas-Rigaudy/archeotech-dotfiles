@@ -156,6 +156,14 @@ Bar WiFi/BT icons used to launch `nm-connection-editor` / `blueman-manager`. Rep
 
 `busctl monitor org.bluez` exits with code 1 ("Access denied") in normal user sessions. Original `onExited` unconditionally restarted, creating an infinite crash-loop. Fix: only restart on `code === 0` (clean disconnect); fall back to a 3-second polling `Timer` when monitor is unavailable. Lesson: any auto-restart on subprocess exit must distinguish clean exit from auth/permission failure.
 
+### [2026-06-15] Bluetooth: set Trusted *before* Connect
+
+`connectDevice()` marks the device `Trusted=true` before calling `Connect`. An untrusted audio device brings the ACL link up, then bluez is denied A2DP/HFP profile setup ("avdtp/Hands-Free Connection refused" in bluetoothd) and tears the whole link down — i.e. it "connects then disconnects straight away". Trust authorises the audio profiles and also enables auto-reconnect on power-on / range return. The device model emits **all** tree devices (`{name,address,connected,paired,trusted}`, deduped with `sort -u` because a connected device otherwise appears once per audio sub-object) — the UI filters `.paired` for the paired list and shows unpaired ones under AVAILABLE while scanning.
+
+### [2026-06-15] Bluetooth discovery/pairing needs a persistent agent (`bt-agent.py`)
+
+Scan and pair require a persistent D-Bus connection — a one-shot `busctl` call dies instantly, so discovery can't be held open and pairing has no agent to answer. `scripts/bt-agent.py` is a small dbus-python + GLib `NoInputNoOutput` BlueZ agent: `--scan <secs>` holds discovery open, `--pair <MAC>` does Pair+Trust+Connect. Must be symlinked to `~/.local/bin` (in `install.sh` `LOCAL_SCRIPTS`); `Bluetooth.qml` calls it by name. Trade-off: a Python dependency (dbus-python, PyGObject) for the pairing path.
+
 ---
 
 ## Shell architecture (sprint 17 onwards)
@@ -169,6 +177,14 @@ Caelestia maps widget id → component via a static `DelegateChooser` (type-safe
 ### [2026-06-02] Widget contract: explicit `barRoot` / `stripRoot` context
 
 Bar/strip widgets receive a `required property var barRoot` (or `stripRoot`) injected via `setSource(path, { barRoot, widgetId })`. The exposed API surface (`side`, `horizontal`, `screen`, `showPopup`, `hidePopup`, …) is documented in `docs/WIDGET_API.md`. This is Noctalia's PluginAPI pattern scaled down. Plugin widgets in S21 use the same `barRoot` reference — same surface, manifest-discovered. Documenting the contract before S21 means plugins don't reshape it. Trade-off: a few `_`-prefixed properties remain on `barRoot` for sibling-coordination state (e.g. mutual-exclusion between popups) — documented but underscore-marked "internal-to-bar, reachable when coordinating".
+
+### [2026-06-15] Bar popups need their own input-mask region
+
+Bar popups (HoverCard/Calendar/WiFi/BT) float *below* the bar, outside the `SideLoader` rect that `ShellSurface`'s input mask covers — so clicks passed straight through to the windows behind. Fix: `Bar.qml` exposes `_anyPopupOpen` + `_popupBounds` (union bounding box of every visible popup, bar-local coords); `ShellSurface.qml` mirrors it into a `_topBarPopupMask` `Region`. Any future bar/popup restructure must preserve this or popups become click-through. Related: `showPopup()` guards `if (_wifiPopupVisible || _btPopupVisible) return` so a hover status card never renders behind a pinned WiFi/BT popup (one popup slot).
+
+### [2026-06-15] Panels are global: open/close affects all screens
+
+A panel (CC-era → now Settings/NC/Launcher/Dashboard/Media/Wallpaper) is open on *every* screen or none — strip icons call `toggleGlobal`, reflect `isOpenAnywhere`, and every close path (Esc, content close, click-outside) calls `closeAllAcross()`. Rationale: opening via the bar gear / IPC was already global, so per-screen strip-icon open + per-screen close was asymmetric — exiting on one screen left the panel open on the others. Trade-off: you can't show a panel on only one screen; acceptable for a single-user multi-monitor desktop where the panels are modal-ish.
 
 ### [2026-06-11] Dissolve Control Center; Settings is a unified side panel
 

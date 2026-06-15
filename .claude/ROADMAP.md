@@ -82,14 +82,14 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ### Sprint 24 — Settings Depth ← NEXT (depth tasks remain; IA restructure shipped 2026-06-11)
 
-**Shipped (part 1, 2026-06-11):** Control Center dissolved; Settings is now a unified right-strip panel; Media panel + bottom Appearance switcher; theme+wallpaper merged via shared components. See Sprint History + `DECISIONS.md [2026-06-11]`.
+**Shipped (2026-06-11 → 06-15):** Control Center dissolved; Settings = unified right-strip card panel; Media panel + bottom Appearance switcher; theme+wallpaper merged via shared components; UX pass (de-windowed sidebar, Shell pane w/ Edit-Layout entry + frame controls, StackLayout panes — no flash/slide, global panel close); **Audio** sinks + sources + device aliasing + per-device volume cap; **settings search** (fuzzy index + sidebar); **Connections** WiFi forget + BT scan/pair/trust/remove via persistent `bt-agent.py` (trust-before-connect fix); bar-popup click-through input mask. See Sprint History + `DECISIONS.md`.
 
-**Still to do — fill out the placeholder panes with full native implementations:**
-- Connections pane: WiFi sub-tab (known networks, forget, priority) + BT sub-tab (connected/paired/available per Noctalia model, battery level, signal). Extract a shared `WifiList`/`BtList` reused by the bar popups too.
-- Audio pane: PipeWire sinks + sources (QS 0.3.0 `Quickshell.Services.Pipewire`), device aliasing, per-device volume limit
-- ColorScheme pane: dark mode toggle, schedule (off/manual/location), wallpaper color extraction toggle
-- Settings search: fuzzy index per registered pane, max 15 results, sidebar search input
-- **Layout pane** (new) — UI for `shell-config.json` side type switcher (top/right/bottom/left = bar/strip/none) + per-zone widget chooser. Bridge between current Settings and full Module Builder UI (Sprint 21). Lets users reconfigure sides from a familiar settings interface without needing the visual edit mode.
+**Still to do (the remaining build work):**
+- Connections pane: **segmented WiFi | BT sub-tabs** (in-pane NTabBar — currently one long scroll; decided nav approach) + **WiFi priority/autoconnect** (needs a `Network` service method) + **BT per-device battery + signal** (extend the device model with `org.bluez.Battery1 Percentage` + RSSI-during-discovery). Consider extracting a shared `WifiList`/`BtList` reused by the bar popups.
+- ~~Audio pane~~ ✓ done (sinks/sources/aliasing/volume cap; full Pipewire-service migration still a separate Sprint 3 backlog item)
+- ~~Settings search~~ ✓ done
+- ColorScheme pane → **deferred** to the Hierarchical Theming System sprint (below)
+- **Layout pane** — superseded by the Shell pane's "Edit Layout" entry into the visual builder (S21 edit mode); a separate side/zone settings UI is no longer planned unless desired.
 
 ### Sprint X — Hierarchical Theming System (family → flavor → accent) ← high priority, deferred from S24
 
