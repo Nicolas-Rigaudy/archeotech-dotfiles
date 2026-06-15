@@ -1,9 +1,35 @@
 pragma Singleton
 import QtQuick
 import Quickshell.Io
+import "../Persistence" as Persistence
 
 QtObject {
     id: root
+
+    // ── Device aliasing + per-device volume cap (Sprint 24) ──────────────────────
+    // Stored in Persistence.Config (per-user UI state) keyed by the pactl device
+    // name. Alias is display-only; the volume cap clamps setVolume on the active
+    // sink so a device can't be driven past a safe level.
+    function aliasFor(name) {
+        var a = Persistence.Config.get("audio.aliases", ({}))
+        return (a && a[name]) ? a[name] : ""
+    }
+    function setAlias(name, alias) {
+        var a = JSON.parse(JSON.stringify(Persistence.Config.get("audio.aliases", ({}))))
+        var t = (alias || "").trim()
+        if (t !== "") a[name] = t; else delete a[name]
+        Persistence.Config.set("audio.aliases", a)
+    }
+    function volumeLimitFor(name) {
+        var l = Persistence.Config.get("audio.volumeLimits", ({}))
+        return (l && l[name] !== undefined) ? l[name] : 100
+    }
+    function setVolumeLimit(name, pct) {
+        var l = JSON.parse(JSON.stringify(Persistence.Config.get("audio.volumeLimits", ({}))))
+        l[name] = Math.round(pct)
+        Persistence.Config.set("audio.volumeLimits", l)
+        if (name === root.defaultSink && root.volume > pct) root.setVolume(pct)
+    }
 
     property int  volume:     0
     property bool muted:      false
@@ -202,7 +228,10 @@ QtObject {
     }
 
     function setVolume(pct) {
-        _cmd.cmd = "pactl set-sink-volume @DEFAULT_SINK@ " + Math.round(pct) + "%"
+        // Clamp to the active sink's configured max (default 100).
+        var cap = volumeLimitFor(defaultSink)
+        var v = Math.min(Math.round(pct), cap)
+        _cmd.cmd = "pactl set-sink-volume @DEFAULT_SINK@ " + v + "%"
         _cmd.running = true
     }
 
