@@ -23,6 +23,7 @@ QtObject {
     readonly property var families: [
         {
             id: "catppuccin", label: "Catppuccin",
+            swatch: ["#c6a0f6", "#8aadf4", "#a6da95", "#eed49f"],
             accents: _catppuccinAccents,
             flavors: [
                 { id: "latte",     label: "Latte",     variant: "archeotech-latte",     mode: "light" },
@@ -33,22 +34,27 @@ QtObject {
         },
         {
             id: "dracula", label: "Dracula", accents: [],
+            swatch: ["#bd93f9", "#8be9fd", "#50fa7b", "#ff79c6"],
             flavors: [ { id: "dracula", label: "Dracula", variant: "dracula", mode: "dark" } ]
         },
         {
             id: "tokyo-night", label: "Tokyo Night", accents: [],
+            swatch: ["#bb9af7", "#7aa2f7", "#9ece6a", "#e0af68"],
             flavors: [ { id: "night", label: "Night", variant: "tokyo-night", mode: "dark" } ]
         },
         {
             id: "gruvbox", label: "Gruvbox", accents: [],
+            swatch: ["#fabd2f", "#83a598", "#b8bb26", "#fb4934"],
             flavors: [ { id: "dark", label: "Dark", variant: "gruvbox", mode: "dark" } ]
         },
         {
             id: "nord", label: "Nord", accents: [],
+            swatch: ["#88c0d0", "#5e81ac", "#a3be8c", "#ebcb8b"],
             flavors: [ { id: "nord", label: "Nord", variant: "nord", mode: "dark" } ]
         },
         {
             id: "monochrome", label: "Monochrome", accents: [],
+            swatch: ["#d8d8d8", "#c8c8c8", "#a8a8a8", "#888888"],
             flavors: [ { id: "dark", label: "Dark", variant: "monochrome", mode: "dark" } ]
         }
     ]

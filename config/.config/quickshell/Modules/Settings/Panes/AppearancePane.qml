@@ -37,14 +37,11 @@ Item {
                 width: root.width - 48
                 spacing: 6
 
-                // ── Theme ─────────────────────────────────────────────────────
-                // Shared ThemeGridBody (also used by the bottom Appearance
-                // quick switcher): card grid with name + accent swatch row.
-                SectionLabel { text: "THEME" }
-
-                Appearance.ThemeGridBody {
+                // ── Colour scheme (family → flavor + light/dark + schedule) ───
+                // Shared ColorSchemeBody (also powers the bottom Appearance
+                // switcher in compact mode). Provides its own section labels.
+                Appearance.ColorSchemeBody {
                     Layout.fillWidth: true
-                    Layout.topMargin: 8
                 }
 
                 Item { implicitHeight: 10; Layout.fillWidth: true }

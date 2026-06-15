@@ -5,10 +5,10 @@ import "../../../../Services/Shell" as ShellServices
 import "../../../../Widgets/Appearance" as Appearance
 
 // Appearance quick-switcher panel (Super+W → this; bottom strip). Compact
-// version of Settings → Appearance: theme swatches + wallpaper carousel +
-// logos, sharing the exact ThemeGridBody / WallpaperPickerBody components so
-// there's no duplicated logic. A gear shortcut opens the full Settings pane
-// (typography + geometry live there).
+// version of Settings → Appearance: colour scheme (family/flavor/mode) +
+// wallpaper carousel + logos, sharing the exact ColorSchemeBody /
+// WallpaperPickerBody components so there's no duplicated logic. A gear
+// shortcut opens the full Settings pane (schedule, typography, geometry).
 Item {
     id: root
     anchors.fill: parent
@@ -75,9 +75,10 @@ Item {
             }
         }
 
-        // Theme swatch row (shared with Settings → Appearance).
-        Appearance.ThemeGridBody {
+        // Colour scheme (family/flavor/mode) — compact, shared with Settings.
+        Appearance.ColorSchemeBody {
             Layout.fillWidth: true
+            compact: true
         }
 
         // Wallpaper carousel + logo tiles (shared body, fills remaining space).
