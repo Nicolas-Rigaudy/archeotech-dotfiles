@@ -317,7 +317,7 @@ Item {
                                             visible: modelData.connected
                                             text: "Connected"
                                                 + (modelData.battery !== undefined && modelData.battery !== null
-                                                   ? "  ·  " + modelData.battery + "% battery" : "")
+                                                   ? "  ·  󰁹 " + modelData.battery + "%" : "")
                                             color: Commons.Appearance.colors.mauve
                                             font.pixelSize: Commons.Appearance.font.sizeSm
                                             font.family: Commons.Appearance.font.family
