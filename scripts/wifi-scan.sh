@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Output one JSON object per line for each WiFi network from nmcli.
-Fields: ssid, security, signal, active (bool), saved (bool), bssid"""
+Fields: ssid, security, signal, active (bool), saved (bool), autoconnect (bool), bssid"""
 import subprocess, json
 
 def run(*cmd):
@@ -19,11 +19,12 @@ def parse_nmcli(output):
         rows.append([p.replace('\x00', ':') for p in parts])
     return rows
 
-# Saved WiFi connection profiles
-saved = set()
+# Saved WiFi connection profiles → autoconnect state (ssid -> bool)
+saved = {}
 for row in parse_nmcli(run('nmcli', '-g', 'NAME,TYPE', 'connection', 'show')):
     if len(row) >= 2 and row[1] == '802-11-wireless':
-        saved.add(row[0])
+        ac = run('nmcli', '-g', 'connection.autoconnect', 'connection', 'show', row[0]).strip()
+        saved[row[0]] = (ac == 'yes')
 
 # WiFi network list
 for row in parse_nmcli(run('nmcli', '-g', 'SSID,SECURITY,SIGNAL,ACTIVE,BSSID', 'dev', 'wifi', 'list')):
@@ -40,7 +41,8 @@ for row in parse_nmcli(run('nmcli', '-g', 'SSID,SECURITY,SIGNAL,ACTIVE,BSSID', '
         'ssid':     ssid,
         'security': security,
         'signal':   signal,
-        'active':   active,
-        'saved':    ssid in saved,
-        'bssid':    bssid,
+        'active':      active,
+        'saved':       ssid in saved,
+        'autoconnect': saved.get(ssid, True),
+        'bssid':       bssid,
     }), flush=True)

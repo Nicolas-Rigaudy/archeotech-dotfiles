@@ -210,6 +210,22 @@ QtObject {
         root._forgetCmd.running = true
     }
 
+    // ── Auto-join (NetworkManager autoconnect) ──────────────────────────────────
+    // Toggle whether a saved network is auto-joined when in range. Re-scans on
+    // completion so the model's `autoconnect` field reflects the new state.
+    property var _autoconnCmd: Process {
+        property string _cmd: ""
+        command: ["bash", "-c", _cmd]
+        running: false
+        onExited: (code, status) => { root._scan() }
+    }
+
+    function setAutoconnect(targetSsid, on) {
+        root._autoconnCmd._cmd = "nmcli connection modify " + root._esc(targetSsid)
+            + " connection.autoconnect " + (on ? "yes" : "no") + " 2>/dev/null; true"
+        root._autoconnCmd.running = true
+    }
+
     // bash single-quote escape (handles all characters including single quotes)
     function _esc(s) { return "'" + s.replace(/'/g, "'\\''") + "'" }
 
@@ -222,8 +238,11 @@ QtObject {
 
     function signalIcon(strength, secure) {
         var lvl = strength >= 75 ? 4 : strength >= 50 ? 3 : strength >= 25 ? 2 : strength > 0 ? 1 : 0
+        // wifi-strength-{lock-outline,1..4-lock} for secure; wifi-strength-{outline,1..4}
+        // for open. Both follow the MDI +3 codepoint stride so all levels render as
+        // proper wifi bars (the old secure set used scattered non-wifi glyphs).
         return secure
-            ? ["󰤮", "󰤙", "󰤜", "󰤛", "󰤡"][lvl]
+            ? ["󰤭", "󰤡", "󰤤", "󰤧", "󰤪"][lvl]
             : ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"][lvl]
     }
 }

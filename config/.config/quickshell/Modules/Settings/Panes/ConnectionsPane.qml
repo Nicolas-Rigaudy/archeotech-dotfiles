@@ -9,6 +9,7 @@ Item {
     id: root
 
     property string _wifiAskPwFor: ""
+    property int    _tab: 0   // 0 = Wi-Fi, 1 = Bluetooth
 
     ColumnLayout {
         anchors.fill: parent
@@ -38,10 +39,21 @@ Item {
                 width: root.width - 48
                 spacing: 6
 
-                // ── WiFi ──────────────────────────────────────────────────────
+                // ── Segmented Wi-Fi | Bluetooth tabs ──────────────────────────
                 RowLayout {
                     Layout.fillWidth: true
-                    SectionLabel { text: "WI-FI"; Layout.fillWidth: true }
+                    Layout.bottomMargin: 4
+                    spacing: 6
+                    TabButton { label: "Wi-Fi";     glyph: "󰖩"; idx: 0 }
+                    TabButton { label: "Bluetooth"; glyph: "󰂯"; idx: 1 }
+                    Item { Layout.fillWidth: true }
+                }
+
+                // ── WiFi ──────────────────────────────────────────────────────
+                RowLayout {
+                    visible: root._tab === 0
+                    Layout.fillWidth: true
+                    Item { Layout.fillWidth: true }
 
                     // Enable/disable toggle pill
                     Rectangle {
@@ -86,7 +98,7 @@ Item {
                     color: Commons.Appearance.colors.surface0
                     radius: Commons.Appearance.radius.md
                     implicitHeight: wifiCol.implicitHeight
-                    visible: NetworkServices.Network.wifiEnabled
+                    visible: root._tab === 0 && NetworkServices.Network.wifiEnabled
 
                     ColumnLayout {
                         id: wifiCol
@@ -152,7 +164,7 @@ Item {
                 }
 
                 Text {
-                    visible: !NetworkServices.Network.wifiEnabled
+                    visible: root._tab === 0 && !NetworkServices.Network.wifiEnabled
                     text: "Wi-Fi is disabled."
                     color: Commons.Appearance.colors.overlay0
                     font.pixelSize: Commons.Appearance.font.sizeBase
@@ -160,12 +172,11 @@ Item {
                 }
 
                 // ── Bluetooth ─────────────────────────────────────────────────
-                Item { implicitHeight: 10; Layout.fillWidth: true }
-
                 RowLayout {
+                    visible: root._tab === 1
                     Layout.fillWidth: true
                     spacing: 8
-                    SectionLabel { text: "BLUETOOTH"; Layout.fillWidth: true }
+                    Item { Layout.fillWidth: true }
 
                     // Scan for new devices — toggles discovery (bt-agent.py --scan).
                     Rectangle {
@@ -245,7 +256,7 @@ Item {
                     color: Commons.Appearance.colors.surface0
                     radius: Commons.Appearance.radius.md
                     implicitHeight: btCol.implicitHeight
-                    visible: NetworkServices.Bluetooth.enabled
+                    visible: root._tab === 1 && NetworkServices.Bluetooth.enabled
 
                     ColumnLayout {
                         id: btCol
@@ -305,6 +316,8 @@ Item {
                                         Text {
                                             visible: modelData.connected
                                             text: "Connected"
+                                                + (modelData.battery !== undefined && modelData.battery !== null
+                                                   ? "  ·  " + modelData.battery + "% battery" : "")
                                             color: Commons.Appearance.colors.mauve
                                             font.pixelSize: Commons.Appearance.font.sizeSm
                                             font.family: Commons.Appearance.font.family
@@ -500,7 +513,7 @@ Item {
                 }
 
                 Text {
-                    visible: !NetworkServices.Bluetooth.enabled
+                    visible: root._tab === 1 && !NetworkServices.Bluetooth.enabled
                     text: "Bluetooth is disabled."
                     color: Commons.Appearance.colors.overlay0
                     font.pixelSize: Commons.Appearance.font.sizeBase
@@ -563,9 +576,10 @@ Item {
 
             // Spinner or action button
             Item {
-                width: _busy ? 20 : (actionBtn.visible ? actionBtn.width : 0)
-                height: 26
-                Behavior on width { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+                Layout.preferredWidth: _busy ? 20 : (actionTxt.implicitWidth + 16)
+                Layout.preferredHeight: 26
+                Layout.alignment: Qt.AlignVCenter
+                Behavior on Layout.preferredWidth { NumberAnimation { duration: Commons.Appearance.anim.fast } }
 
                 Text {
                     id: spinnerTxt
@@ -580,7 +594,6 @@ Item {
                     id: actionBtn
                     visible: !_busy
                     anchors.fill: parent
-                    width: actionTxt.implicitWidth + 16
                     radius: Commons.Appearance.radius.sm
                     color: actionMa.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
                     Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
@@ -610,11 +623,46 @@ Item {
                 }
             }
 
+            // Auto-join toggle (saved networks) — NetworkManager autoconnect.
+            Rectangle {
+                visible: modelData.saved
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: _autoRow.implicitWidth + 14
+                Layout.preferredHeight: 22
+                radius: 11
+                color: modelData.autoconnect ? Commons.Appearance.colors.accentAlpha
+                     : (autoMa.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0)
+                border.color: modelData.autoconnect ? Commons.Appearance.colors.accentBorder : "transparent"
+                border.width: 1
+                Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                RowLayout {
+                    id: _autoRow
+                    anchors.centerIn: parent
+                    spacing: 4
+                    Text {
+                        text: "󰁪"
+                        color: modelData.autoconnect ? Commons.Appearance.colors.accent : Commons.Appearance.colors.overlay0
+                        font.pixelSize: 10; font.family: Commons.Appearance.font.family
+                    }
+                    Text {
+                        text: "Auto"
+                        color: modelData.autoconnect ? Commons.Appearance.colors.accent : Commons.Appearance.colors.overlay0
+                        font.pixelSize: 10; font.family: Commons.Appearance.font.family
+                    }
+                }
+                MouseArea {
+                    id: autoMa; anchors.fill: parent; hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: NetworkServices.Network.setAutoconnect(modelData.ssid, !modelData.autoconnect)
+                }
+                ToolTip { visible: autoMa.containsMouse; delay: 400; text: modelData.autoconnect ? "Auto-join: on" : "Auto-join: off" }
+            }
+
             // Forget a saved network (deletes the stored profile).
             Rectangle {
                 visible: modelData.saved
                 Layout.alignment: Qt.AlignVCenter
-                width: 26; height: 26; radius: Commons.Appearance.radius.sm
+                Layout.preferredWidth: 26; Layout.preferredHeight: 26; radius: Commons.Appearance.radius.sm
                 color: forgetMa.containsMouse ? Commons.Appearance.colors.surface1 : "transparent"
                 Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
                 Text {
@@ -715,5 +763,43 @@ Item {
         font.family: Commons.Appearance.font.family
         font.weight: Font.Medium
         font.letterSpacing: 1.5
+    }
+
+    // Segmented tab button (Wi-Fi | Bluetooth).
+    component TabButton: Rectangle {
+        id: tabBtn
+        required property string label
+        required property string glyph
+        required property int idx
+        readonly property bool _on: root._tab === idx
+        implicitWidth: _tabRow.implicitWidth + 24
+        implicitHeight: 30
+        radius: Commons.Appearance.radius.base
+        color: _on ? Commons.Appearance.colors.accentAlpha
+             : (_tabMa.containsMouse ? Commons.Appearance.colors.surface0 : "transparent")
+        border.color: _on ? Commons.Appearance.colors.accentBorder : "transparent"
+        border.width: 1
+        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+        RowLayout {
+            id: _tabRow
+            anchors.centerIn: parent
+            spacing: 7
+            Text {
+                text: tabBtn.glyph
+                color: tabBtn._on ? Commons.Appearance.colors.accent : Commons.Appearance.colors.subtext0
+                font.pixelSize: 13; font.family: Commons.Appearance.font.family
+            }
+            Text {
+                text: tabBtn.label
+                color: tabBtn._on ? Commons.Appearance.colors.text : Commons.Appearance.colors.subtext0
+                font.pixelSize: Commons.Appearance.font.sizeBase; font.family: Commons.Appearance.font.family
+                font.weight: tabBtn._on ? Font.Medium : Font.Normal
+            }
+        }
+        MouseArea {
+            id: _tabMa; anchors.fill: parent; hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root._tab = tabBtn.idx
+        }
     }
 }

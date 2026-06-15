@@ -83,9 +83,10 @@ QtObject {
             "  conn=$(busctl get-property org.bluez \"$dev\" org.bluez.Device1 Connected 2>/dev/null | awk '{print $2}'); " +
             "  paird=$(busctl get-property org.bluez \"$dev\" org.bluez.Device1 Paired 2>/dev/null | awk '{print $2}'); " +
             "  trust=$(busctl get-property org.bluez \"$dev\" org.bluez.Device1 Trusted 2>/dev/null | awk '{print $2}'); " +
+            "  bat=$(busctl get-property org.bluez \"$dev\" org.bluez.Battery1 Percentage 2>/dev/null | awk '{print $2}'); " +
             "  [ -n \"$addr\" ] && " +
-            "    printf '{\"name\":\"%s\",\"address\":\"%s\",\"connected\":%s,\"paired\":%s,\"trusted\":%s}\\n' " +
-            "      \"${name:-$addr}\" \"$addr\" \"${conn:-false}\" \"${paird:-false}\" \"${trust:-false}\"; " +
+            "    printf '{\"name\":\"%s\",\"address\":\"%s\",\"connected\":%s,\"paired\":%s,\"trusted\":%s,\"battery\":%s}\\n' " +
+            "      \"${name:-$addr}\" \"$addr\" \"${conn:-false}\" \"${paird:-false}\" \"${trust:-false}\" \"${bat:-null}\"; " +
             "done"]
         running: false
         stdout: SplitParser {
