@@ -49,6 +49,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 | 23 | Lock Screen — CANCELLED. Built native `WlSessionLock`+`PamContext` QML lock, then reverted: kept swaylock (battle-tested, preferred), closed the only real gap by making it theme-aware via `theme-switch.py` (template + stripped-hex applier). Same session: fixed launcher regression on QS 0.3.0 (`Quickshell.execDetached` instead of a child Process killed on panel close; `highlightMoveDuration 120→0` for instant hover). Confirmed QS upgraded 0.2.1-6→0.3.0 | 2026-06-10 |
 | 24 | Settings Depth + IA restructure — dissolved Control Center (~1035 LOC); Settings → unified right-strip card panel (was FloatingWindow); standalone Media panel; DND → Notifications header; theme+wallpaper+logo unified via shared `Widgets/Appearance/{ThemeGridBody,WallpaperPickerBody}`; **Audio** sinks+sources+aliasing+volume cap; **settings search**; **Connections** WiFi/BT segmented tabs + WiFi forget/auto-join + BT scan/pair/trust/remove (persistent `bt-agent.py`, trust-before-connect) + battery; UX pass (de-windowed sidebar, Shell pane w/ Edit-Layout entry + frame controls, StackLayout panes — no flash/slide, global panel close); bar-popup click-through mask. ColorScheme → deferred to Hierarchical Theming sprint. | 2026-06-11→15 |
 | 22 | Adaptive Shell Frame — replaced 4 separate `CornerBlend` Items with one `Modules/Shell/FrameBackground.qml` per screen (single `Shape`/`PathSvg`, WindingFill): full-width horizontal bands + between-them vertical bands (no overlap → one clean translucent fill, no seams) + concave fillet wedges at active junctions = dynamic rounded inner corners independent of side thickness. Bar/Strip bodies transparent (host widgets only). `corners.pillMode`+`corners.pillGap` config + edit-mode "Framed ↔ Pill frame" banner toggle. Framed = hugs screen, sharp outer corners, rounded inner junctions, inner-only termination caps. Pill = whole frame floats by `pillGap` (added to `ShellExclusions` too), rounded outer corners + pill-shaped (both-corner) termination caps; cap radii clamped to half band thickness. `ShellExclusions` reserves the breathing gap on off/holder edges too. Fixed `setSideType` to reset `size` to the type default so strip↔bar actually changes geometry | 2026-06-03 |
+| 25 | Hierarchical Theming (family → flavor → accent) — `ThemeCatalog` + refactored `ColorScheme` (imperative `_apply`, no binding-loop); Dark/Light/Auto mode + day-night schedule; **light flavors for all 6 families** (Latte, Tokyo Night Day, Gruvbox Light, Dracula Alucard, Nord light, Monochrome light) — each `theme.json` + light kitty conf; **Catppuccin accent picker** (14 swatches → mango/rofi/GTK/VSCode/Obsidian/QML, installed-check GTK fallback); `theme-switch.py` gained `apply_fish`/`apply_zen` + theme-aware kitty opacity + Obsidian vault-registry/light-base + VSCode `colorCustomizations` regen (fixed frozen bg); installed Catppuccin {latte,frappe,mocha} + VSCode tokyo/gruvbox/nord exts; cross-app verified. **Side:** scroller width controls (ShellPane slider + `MangoWC.setProportion`/`setDefaultProportion`, `Super+O` presets). **Zen translucency:** compositor-opacity (`focused_opacity:0.88/0.75,appid:zen` + `noblur:zen`) — app-level glass blocked by Intel WebRender-compositor blocklist; `Super+Shift+O` glass↔opaque toggle; `MOZ_ENABLE_WAYLAND` env. See `TROUBLESHOOTING.md` for the Zen diagnosis. | 2026-06-24 |
 
 **Sprint 3 — remaining items blocked on Quickshell 0.3.0** (track: `paru -Qu quickshell`):
 - Audio → `Quickshell.Services.Pipewire`
@@ -80,36 +81,13 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ## Planned Sprints
 
-### Sprint 25 — Hierarchical Theming System (family → flavor → accent) ← CODE COMPLETE (manual follow-ups pending)
+### Sprint 25 — Hierarchical Theming System (family → flavor → accent) ✅ SHIPPED 2026-06-24
 
-*(Sprint 24 — Settings Depth — shipped 2026-06-15; see Sprint History. Remaining deferred items: full Pipewire audio-service migration is a Sprint 3 backlog item; a shared `WifiList`/`BtList` extraction for the bar popups + Connections is a nice-to-have cleanup, not blocking.)*
+**Shipped** — see Sprint History row 25 for the summary, `docs/THEME_SPEC.md` for the family/flavor/accent schema + apply mechanics, and `TROUBLESHOOTING.md` for the Zen-transparency diagnosis. Model delivered: `family → flavor → accent` where the flavor axis carries light/dark, Dark/Light/Auto mode + day-night schedule, light flavors for all 6 families, and a Catppuccin accent picker. Manual follow-ups all resolved (Catppuccin {latte,frappe,mocha} GTK packages installed 2026-06-24; VSCode tokyo/gruvbox/nord exts installed). Remaining nice-to-have (not blocking): script the per-variant theme symlinks in `install.sh` for fresh-deploy reproducibility.
 
-**Why deferred:** Raised during the S24 ColorScheme discussion. The current theme system is a **flat list of full `theme.json` variants** (one card per variant). That doesn't scale — Catppuccin alone is 4 flavors × 14 accents = 56 combinations, and adding light variants bloats the flat card grid. The right model is hierarchical, and it cleanly subsumes the original S24 "ColorScheme depth" goals (dark/light + schedule).
+<details><summary>Implementation detail (collapsed — shipped)</summary>
 
-**Model:** `family → flavor → accent`
-- **Family** = a theme identity (Catppuccin, Dracula, Gruvbox, Tokyo Night, Nord, Monochrome).
-- **Flavor** = a palette within the family. **The flavor axis IS the light/dark axis** — light flavors (Catppuccin Latte, Tokyo Night Day, Gruvbox Light, Dracula Alucard) are "light mode"; the rest are dark. Per-family flavors:
-  - Catppuccin: Latte (light) / Frappé / Macchiato / Mocha
-  - Tokyo Night: Day (light) / Storm / Night / Moon
-  - Gruvbox: Light / Dark (× hard/medium/soft contrast, optional)
-  - Dracula: Alucard (light) / Dracula (dark)
-  - Nord: Dark (+ a hand-built light, no canonical one)
-  - Monochrome: Light / Dark
-- **Accent** = which palette color drives `accent` (Catppuccin: 14 named colors). Accent customization is the hard part — see below.
-
-**UI** (replaces the flat `ThemeGridBody` cards): family cards → on select, reveal a **flavor selector** (segmented/pills) + an **accent swatch row**. Lives in a dedicated **ColorScheme** Settings pane; the bottom Appearance switcher shows a compact version.
-
-**Light/dark + day-night cycle** (the original S24 ColorScheme depth, folded in here):
-- Mode: Dark / Light / Auto. Dark/Light pick which flavor of the chosen family to use.
-- Auto = day-night schedule: off / manual (light-start + dark-start times) / location (sunrise-sunset). A `ColorScheme` service singleton ticks a `Timer` and applies the right flavor on transition.
-
-**Config model** (`Persistence.Config`): `colorScheme.family`, `colorScheme.flavorDark`, `colorScheme.flavorLight`, `colorScheme.accent`, `colorScheme.mode` (dark|light|auto), `colorScheme.schedule` ({mode, lightStart, darkStart}). Keep `theme.variant` as the resolved/applied variant the rest of the shell reads.
-
-**The accent challenge (why it's a chunk, not a checkbox):** changing accent isn't only QML recolor. GTK and VSCode ship **per-accent theme packages** (`catppuccin-macchiato-mauve-standard` vs `…-blue-…`, VSCode `Catppuccin Macchiato` is accent-agnostic but icon themes/others vary). So `theme-switch.py` must template the chosen accent into each app target: mango `focuscolor`/`bordercolor`, rofi `border`, GTK theme name, VSCode where applicable, plus the QML `accent` token. Families without 14-accent packages (Gruvbox/Nord/Mono) expose a smaller accent set or none.
-
-**theme.json restructure:** group by family — either a `family.json` listing `flavors[]` (each with its palette + `mode`) and `accents[]`, or keep per-variant files but add `family` / `flavor` / `mode` / `accent-capable` metadata + a resolver. Migration: the 7 current flat variants map onto families (Macchiato/Mocha → Catppuccin; the rest are single-flavor families today).
-
-**Phase 1 — complete (uncommitted, 2026-06-22):**
+**Phase 1:**
 - [x] `Services/Theming/ColorScheme.qml` — refactored to imperative `_apply()` from each setter + clock tick + boot; `_resolveVariant()` pure fn reads Config directly (fixes binding-loop re-entrancy from reactive `onActiveVariantChanged` writing Config); auto-mode clock only runs when `mode === "auto"`; boot eager-init via `shell.qml` touching `effectiveMode` (QS lazy singletons need a property access to fire `Component.onCompleted`)
 - [x] `Services/Theming/ThemeCatalog.qml` (new) — 6 families: Catppuccin (Latte/Frappé/Macchiato/Mocha; Latte is the only light flavor), Dracula, Tokyo Night, Gruvbox, Nord, Monochrome (all dark-only until Phase 1 remaining). `_catppuccinAccents` (14 color names) defined for Phase 2.
 - [x] `Widgets/Appearance/ColorSchemeBody.qml` — family card grid + flavor pills + Dark/Light/Auto mode selector + day-night schedule time pickers; fixed `> 1` → `>= 1` so single-flavor families show their flavor row; "No light variant for this family yet" label when family has no light flavors
@@ -144,17 +122,13 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
   - **Revisit trigger:** if a Mesa update lifts the WebRender-compositor blocklist (check `about:support` → `WEBRENDER_COMPOSITOR` after driver updates), the clean app-level path (a) becomes viable — flip `zen.widget.linux.transparency`+mod transparency back on, set the mango rule to 1.0/1.0, drop noblur.
   - **NOTE:** the Zen profile `user.js`/prefs are runtime state, NOT the dotfiles repo. Only the env.d file, the mango rules, and `zen-opacity-toggle.sh` are repo-tracked.
 
-**Manual follow-ups (need user / system):**
-- [ ] Install Catppuccin light/flavor GTK packages — built but the install step needs a sudo password (couldn't run headless): `paru -S catppuccin-gtk-theme-{latte,frappe,mocha}`. Until then, light Catppuccin + per-accent GTK on those 3 flavors falls back to default-accent GTK (QML/terminal/rofi/mango still recolor).
-- [ ] Reload Quickshell to load the new theming UI (`pkill quickshell && quickshell &`) — note this re-resolves the theme from `config.json`.
-- [ ] Obsidian gruvbox/nord community CSS themes aren't installed in all vaults (pre-existing); base light/dark + accent still apply.
-- [ ] (nice-to-have) Script the per-variant theme symlinks in `install.sh` for fresh-deploy reproducibility.
+**Side addition (separate commit):** Scroller proportion controls — ShellPane SCROLLER section (window-width slider 80–100%, 60ms debounce → `MangoWC.setProportion()`; "Save as default" → `setDefaultProportion()` surgical sed on config.conf); mango: `scroller_focus_center=1`, default proportion 0.98, `Super+O` = `switch_proportion_preset`, presets `0.8,0.85,0.9,0.95,0.98`.
 
-**Side addition (separate commit, not Sprint 25 scope):** Scroller proportion controls — ShellPane SCROLLER section (window-width slider 80–100%, 60ms debounce → `MangoWC.setProportion()`; "Save as default" → `setDefaultProportion()` surgical sed on config.conf); mango: `scroller_focus_center=1`, default proportion 0.98, `Super+O` = `switch_proportion_preset`, presets `0.8,0.85,0.9,0.95,0.98`.
+</details>
 
 ---
 
-### Sprint 26 — Multi-Compositor Support
+### Sprint 26 — Multi-Compositor Support ← NEXT
 
 **Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).
 

@@ -551,6 +551,28 @@ layer_shadows=0
 
 ---
 
+### Zen browser transparency — washed out / grey / can't get clean glass (Sprint 25)
+
+**Symptoms:**
+- Zen chrome looks washed-out / lighter than kitty/VSCode/Obsidian/Spotify at the same transparency.
+- Or: Zen is fully opaque despite the transparency toggle.
+- Or: a flat grey layer regardless of wallpaper (even over a black wallpaper).
+
+**Causes & what we found (long investigation — don't re-chase from scratch):**
+1. **App-level alpha is GPU-blocked.** The *clean* look (Zen rendering its own premultiplied ARGB glass like kitty/VSCode/Obsidian/Spotify) needs the **WebRender native compositor**, which is **blocklisted on this Intel Xe / Mesa** GPU. Force-enabling `gfx.webrender.compositor.force-enabled=true` produces clean glass BUT throws **diamond/star rendering artifacts** + a near-white sidebar. Not viable until a Mesa update lifts the blocklist (check `about:support` → `WEBRENDER_COMPOSITOR`).
+2. **Opaque despite the toggle** = Zen on the **XWayland** backend (`DISPLAY` set, no `MOZ_ENABLE_WAYLAND`). The `zen.widget.linux.transparency` pref is Wayland-only. Fixed by `config/.config/environment.d/firefox-wayland.conf` (`MOZ_ENABLE_WAYLAND=1`).
+3. **Flat grey independent of wallpaper** = MangoWC **blur** on a translucent window renders the blur as a grey layer. firefox/chromium were `noblur`'d; `zen`'s appid wasn't. Fixed by `windowrule=noblur:1,appid:zen`.
+4. **Residual washout** = inherent to **compositor opacity** (MangoWC dimming an opaque window) vs app-level premultiplied alpha. Not config-fixable; it's the cost of using approach (b) instead of (a).
+5. **Pref won't turn off** — removing a `user_pref` line from `user.js` does NOT reset it; `prefs.js` retains the last value. Must set it explicitly `false`.
+
+**Current solution (the artifact-free ceiling on this hardware):**
+- Zen renders **opaque internally** (`user.js`: `zen.widget.linux.transparency=false`, mod `light_tint=0`, `transparent_sidebar/glance=false`, `acrylic-elements=false`, `gfx.webrender.compositor.force-enabled=false`).
+- MangoWC provides the see-through: `windowrule=focused_opacity:0.88,unfocused_opacity:0.75,appid:zen` + `windowrule=noblur:1,appid:zen`.
+- `scripts/zen-opacity-toggle.sh` (`SUPER+SHIFT+O`) flips glass ↔ opaque (opaque for screen-share/presenting).
+- Note: Zen profile `user.js`/prefs are runtime state, NOT in the dotfiles repo (only the mango rules, env.d file, and toggle script are tracked).
+
+---
+
 ## Quickshell / QML Issues
 
 > **Before solving a Quickshell problem:** Check the reference projects first — they've solved most common issues.
