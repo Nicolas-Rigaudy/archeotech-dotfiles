@@ -22,7 +22,7 @@ QtObject {
         settings: {
             content:  _settingsComp,
             side:     "right",
-            size:     760,
+            size:     940,
             axisSize: 880
         },
         launcher: {
@@ -46,7 +46,7 @@ QtObject {
         wallpaper: {
             content:  _wallpaperComp,
             side:     "bottom",
-            size:     480,
+            size:     600,
             axisSize: 1280
         }
     })

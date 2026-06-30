@@ -52,18 +52,24 @@
   },
   "gtk": {
     "theme": "catppuccin-latte-mauve-standard+default",
-    "icon":  "Papirus-Light",
-    "cursor":"catppuccin-latte-mauve-cursors"
+    "icon": "Papirus-Light",
+    "cursor": "catppuccin-latte-mauve-cursors"
   },
   "vscode": {
     "theme": "Catppuccin Latte",
-    "icon":  "catppuccin-latte"
+    "icon": "catppuccin-latte"
   },
   "obsidian": {
     "css_theme": "AnuPpuccin"
   },
   "card": {
     "display": "Latte",
-    "accents": ["#8839ef", "#1e66f5", "#40a02b", "#df8e1d"]
-  }
+    "accents": [
+      "#8839ef",
+      "#1e66f5",
+      "#40a02b",
+      "#df8e1d"
+    ]
+  },
+  "accent": "mauve"
 }

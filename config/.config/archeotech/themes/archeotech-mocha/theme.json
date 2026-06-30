@@ -52,18 +52,24 @@
   },
   "gtk": {
     "theme": "catppuccin-mocha-mauve-standard+default",
-    "icon":  "Papirus-Dark",
-    "cursor":"catppuccin-mocha-mauve-cursors"
+    "icon": "Papirus-Dark",
+    "cursor": "catppuccin-mocha-mauve-cursors"
   },
   "vscode": {
     "theme": "Catppuccin Mocha",
-    "icon":  "catppuccin-mocha"
+    "icon": "catppuccin-mocha"
   },
   "obsidian": {
     "css_theme": "AnuPpuccin"
   },
   "card": {
     "display": "Mocha",
-    "accents": ["#cba6f7", "#89b4fa", "#a6e3a1", "#f9e2af"]
-  }
+    "accents": [
+      "#cba6f7",
+      "#89b4fa",
+      "#a6e3a1",
+      "#f9e2af"
+    ]
+  },
+  "accent": "mauve"
 }

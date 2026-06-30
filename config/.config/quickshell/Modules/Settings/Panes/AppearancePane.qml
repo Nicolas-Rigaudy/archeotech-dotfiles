@@ -35,7 +35,7 @@ Item {
                 id: col
                 anchors { top: parent.top; left: parent.left; right: parent.right; topMargin: 24; leftMargin: 24; rightMargin: 24 }
                 width: root.width - 48
-                spacing: 6
+                spacing: 12
 
                 // ── Colour scheme (family → flavor + light/dark + schedule) ───
                 // Shared ColorSchemeBody (also powers the bottom Appearance

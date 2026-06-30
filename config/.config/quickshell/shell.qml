@@ -39,6 +39,10 @@ ShellRoot {
     Component.onCompleted: {
         console.log("[Sprint 17] shellConfig.ready =", _shellConfig.ready,
                     "  shellState screens =", Object.keys(_shellState.stateMap).join(","))
+        // Touch a ColorScheme property to force eager singleton instantiation
+        // (Quickshell singletons are lazy — a bare reference never runs their
+        // Component.onCompleted, so the day-night/boot apply would never arm).
+        _colorScheme.effectiveMode
     }
 
     // ── IPC handlers ───────────────────────────────────────────────────────────

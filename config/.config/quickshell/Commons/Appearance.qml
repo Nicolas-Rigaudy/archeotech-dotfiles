@@ -29,6 +29,11 @@ QtObject {
         return (d && d.colors && d.colors[key]) || fallback
     }
 
+    // Palette color name that drives `accent` (Sprint 25 accent picker). The
+    // theme's top-level `accent` key holds a color name (e.g. "blue"); falls
+    // back to "mauve" so themes without the key behave as before.
+    readonly property string _accentName: (root._data && root._data.accent) || "mauve"
+
     function _rgba(key, fallback, alpha) {
         var c = Qt.color(root._c(key, fallback))
         return Qt.rgba(c.r, c.g, c.b, alpha)
@@ -76,8 +81,10 @@ QtObject {
         readonly property color rosewater:root._c("rosewater","#f4dbd6")
         readonly property color lavender: root._c("lavender", "#b7bdf8")
 
-        // Semantic aliases
-        readonly property color accent:  mauve
+        // Semantic aliases. The accent is the palette color named by the
+        // theme's top-level `accent` key (Sprint 25 accent picker) — defaults
+        // to mauve when unset (e.g. dark Catppuccin / non-accent families).
+        readonly property color accent:  root._c(root._accentName, "#c6a0f6")
         readonly property color error:   red
         readonly property color warning: yellow
         readonly property color success: green
@@ -87,8 +94,8 @@ QtObject {
         readonly property color baseAlpha:     root._rgba("base",     "#24273a", 0.85)
         readonly property color mantleAlpha:   root._rgba("mantle",   "#1e2030", 0.90)
         readonly property color surface0Alpha: root._rgba("surface0", "#363a4f", 0.60)
-        readonly property color accentAlpha:   root._rgba("mauve",    "#c6a0f6", 0.15)
-        readonly property color accentBorder:  root._rgba("mauve",    "#c6a0f6", 0.40)
+        readonly property color accentAlpha:   root._rgba(root._accentName, "#c6a0f6", 0.15)
+        readonly property color accentBorder:  root._rgba(root._accentName, "#c6a0f6", 0.40)
 
         // Glass panel backgrounds
         readonly property color glassBg:      root._rgba("mantle",   "#1e2030", 0.96)

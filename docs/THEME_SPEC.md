@@ -7,6 +7,14 @@ and the `AppearancePane` card grid.
 > Sprint 19 — initial spec. Wallpaper layer is intentionally **out of scope**:
 > themes change colors/fonts/icons only, never the desktop wallpaper. Wallpaper
 > selection lives in its own strip-panel picker.
+>
+> Sprint 25 — hierarchical theming. A theme is now identified by
+> **family → flavor → (accent)**, and the flavor axis carries light/dark mode.
+> `theme.json` gained `family` / `flavor` / `mode` / `accent` fields; the
+> catalogue + picker live in `Services/Theming/{ThemeCatalog,ColorScheme}.qml`
+> and `Widgets/Appearance/ColorSchemeBody.qml`. Light variants ship for every
+> family. The accent (a palette color the user picks) is an **overlay** applied
+> on top of a variant at switch time — see *Accent override* below.
 
 ---
 
@@ -35,6 +43,11 @@ All fields are required unless noted *(optional)*. Hex colors are full
 ```jsonc
 {
   "name": "archeotech-macchiato",          // matches the directory name
+
+  "family": "catppuccin",                  // theme identity (Sprint 25)
+  "flavor": "macchiato",                   // palette within the family
+  "mode":   "dark",                        // "dark" | "light" — the flavor's mode
+  "accent": "mauve",                       // palette color name driving `accent`
 
   "colors": {                              // Catppuccin-shape palette
     "base":      "#24273a", "mantle":   "#1e2030", "crust":    "#181926",
@@ -91,28 +104,59 @@ All fields are required unless noted *(optional)*. Hex colors are full
 }
 ```
 
-> Note: the `card.*` metadata is currently mirrored in `AppearancePane.qml`'s
-> hardcoded `_themes` list. A future `ThemeRegistry` singleton will discover
-> themes by scanning the directory and reading each `theme.json` directly.
+> Note: `card.*` metadata feeds the picker. The family/flavor catalogue
+> (which variant maps to which family + mode, plus the accent list) lives in
+> `Services/Theming/ThemeCatalog.qml`.
 
 ---
 
 ## Apply mechanics — what `theme-switch.py` does
 
+```
+theme-switch.py <variant> [accent]
+```
+
 The script is a single-process Python driver. It takes an `fcntl` non-blocking
 exclusive lock on `~/.config/archeotech/theme.lock` so simultaneous invocations
-do not race.
+do not race. The optional second arg is an **accent** color name (see below).
 
 | Target     | Mechanism                                                                                                    | Reload signal                       |
 |------------|--------------------------------------------------------------------------------------------------------------|--------------------------------------|
 | Quickshell | Atomic write of `theme.json` → `~/.config/archeotech/theme.json`                                             | `qs ipc call theme reload`           |
-| Kitty      | `cp themes/<kitty.theme>.conf → kitty/current-theme.conf`                                                    | `pkill -USR1 kitty`                  |
+| Kitty      | Copy `themes/<kitty.theme>.conf` + append theme-aware `background_opacity` (0.9 light / 0.6 dark) → `current-theme.conf` | `pkill -USR1 kitty`     |
 | MangoWC    | Regex-patch `shadowscolor` / `shadows_size` / `bordercolor` / `focuscolor` / `urgentcolor` in `mango/config.conf` | `mmsg -s -d reload_config`           |
 | Rofi       | Render `rofi-colors.rasi.tmpl` → `~/.config/rofi/colors.rasi` (theme.rasi `@imports` it)                    | none (read on next rofi launch)      |
 | Starship   | Render `starship.toml.tmpl` → `~/.config/starship.toml`                                                       | none (read on next prompt)           |
+| Swaylock   | Render `swaylock.config.tmpl` (stripped-hex vars) → `swaylock/config`                                         | none (read on next lock)             |
+| Fish       | Render `fish-theme.fish.tmpl` → `fish/conf.d/fish_frozen_theme.fish`                                          | new shells (current: `exec fish`)    |
 | GTK 3/4    | Regex-patch `settings.ini` + `gsettings set org.gnome.desktop.interface gtk-theme / icon-theme / cursor-theme` | gsettings broadcast                  |
-| VSCode     | `jq` patch on `Code/User/settings.json` (`workbench.colorTheme`, `workbench.iconTheme`)                       | VSCode auto-reloads on save          |
-| Obsidian   | `jq` patch on every `Documents/*/.obsidian/appearance.json` (`cssTheme`)                                      | Obsidian reloads CSS on mtime change |
+| VSCode     | `jq` patch on `Code/User/settings.json` (`workbench.colorTheme`, `workbench.iconTheme`, `catppuccin.accentColor`) | VSCode auto-reloads on save      |
+| Obsidian   | `jq` patch on every vault's `.obsidian/appearance.json` (`cssTheme`, `theme` light/dark base, `accentColor`); vaults found via `~/.config/obsidian/obsidian.json` registry | Obsidian reloads on mtime change |
+| Zen        | Render `zen-colors.css.tmpl` → each profile's `chrome/archeotech-colors.css`, `@import`ed into `userChrome.css` | Zen restart                        |
+
+### Accent override
+
+When `theme-switch.py` gets a second arg, `apply_accent()` mutates the in-memory
+theme **before** the appliers run, so each target just consumes the overridden
+values:
+
+- **QML** — sets the top-level `accent` color *name*; `Commons/Appearance.qml`
+  resolves `colors.accent` (and `accentAlpha` / `accentBorder`) from it.
+- **mango** — `focuscolor` / `bordercolor` → the accent hex (`0xrrggbbff`).
+- **rofi** — `border` → the accent hex.
+- **GTK** — for Catppuccin, swaps to `catppuccin-<flavor>-<accent>-standard+default`
+  *only if that theme is installed*, else keeps the variant's default (so GTK is
+  never pointed at a missing theme).
+- **VSCode** — sets `catppuccin.accentColor` (the Catppuccin extension's own
+  accent setting; ignored by non-Catppuccin themes).
+- **Obsidian** — `accentColor` → the accent hex.
+
+Only **accent-capable families** honor it. A family is accent-capable when
+`ThemeCatalog` lists a non-empty `accents` array for it — currently only
+Catppuccin (it ships per-accent GTK packages + 14 named palette colors). Other
+families ignore the arg. Per-accent GTK packages must be installed per *flavor*
+(`catppuccin-gtk-theme-{latte,frappe,macchiato,mocha}`); without them GTK falls
+back to the default-accent theme while QML/mango/rofi/kitty still recolor.
 
 ### Atomic writes
 
@@ -138,14 +182,23 @@ warning but never breaks the rest of the switch.
    config/.config/archeotech/themes/my-theme/
    ```
 2. Write `theme.json` following the schema above. Pay attention to:
-   - `shadowscolor` stays **neutral** (`0x00000066`) — never accent-colored.
-     See `.claude/feedback_mangowc_shadow_color.md`.
+   - `family` / `flavor` / `mode` / `accent` must be set (Sprint 25). `mode`
+     is `"light"` or `"dark"` and is what the day-night scheduler keys off.
+   - `shadowscolor` stays **neutral** (`0x00000066` dark / `0x00000033` light) —
+     never accent-colored. See `.claude/feedback_mangowc_shadow_color.md`.
+   - light variants: GTK should use a real light theme (`Adwaita`, or
+     `catppuccin-<flavor>-<accent>-standard+default` for Catppuccin) + a light
+     icon set (`Papirus-Light`).
    - `card.accents` should be 4 colors from your palette that read well at
      16px swatch height.
 3. Add a kitty theme file at `kitty/themes/<kitty.theme>.conf` (or pick an
-   existing one).
-4. Add the theme to `AppearancePane.qml`'s `_themes` array (display + accents).
-5. Switch to it: `theme-switch.sh my-theme`.
+   existing one). Light flavors need a light kitty conf.
+4. Register the variant in `Services/Theming/ThemeCatalog.qml`: add a `flavors`
+   entry (id / label / variant / mode) under its family — or a whole new family
+   block (with `swatch` + `accents`). The `ColorSchemeBody` picker reads this.
+5. Symlink it into the live config:
+   `ln -sfn <repo>/config/.config/archeotech/themes/my-theme ~/.config/archeotech/themes/my-theme`
+6. Switch to it: `theme-switch.py my-theme` (or pick it in Settings → Appearance).
 
 ---
 
@@ -156,8 +209,9 @@ warning but never breaks the rest of the switch.
   any wallpaper can be paired with any theme.
 - **Per-monitor variants.** A theme is a single palette. Per-screen rules live
   in `shell-config.json`'s `perScreen` block, not in `theme.json`.
-- **Light mode.** All built-in themes are dark. Light mode is on the roadmap as
-  a future flag inside `theme.json` (`"mode": "dark" | "light"`).
+- **Per-flavor contrast steps.** Gruvbox's hard/medium/soft and similar are not
+  modeled — each shipped flavor is one fixed palette. Add more flavor entries if
+  you want them.
 - **Wallpaper-extracted colors (matugen / wallust / pywal).** Archeotech is
   intentionally a **curated** theme system, not a dynamic one — see
   `.claude/DECISIONS.md`.

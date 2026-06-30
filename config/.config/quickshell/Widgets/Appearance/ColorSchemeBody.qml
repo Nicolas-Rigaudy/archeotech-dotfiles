@@ -19,6 +19,11 @@ Item {
     readonly property var _darkFlavors:  _cat.flavorsForMode(_cs.family, "dark")
     readonly property var _lightFlavors: _cat.flavorsForMode(_cs.family, "light")
 
+    // Accent picker state (accent-capable families only — currently Catppuccin).
+    readonly property var _accents: _cat.accentsFor(_cs.family)
+    // Active accent: the explicit choice, else the family's default (mauve).
+    readonly property string _activeAccent: _cs.accent || "mauve"
+
     // 48 half-hour options for the schedule pickers.
     readonly property var _times: {
         var t = []
@@ -31,7 +36,7 @@ Item {
     ColumnLayout {
         id: col
         anchors { left: parent.left; right: parent.right; top: parent.top }
-        spacing: 8
+        spacing: root.compact ? 5 : 10
 
         // ── Mode ────────────────────────────────────────────────────────────────
         SLabel { text: "MODE" }
@@ -48,7 +53,7 @@ Item {
                     required property var modelData
                     readonly property bool _on: root._cs.mode === modelData.id
                     Layout.fillWidth: true
-                    implicitHeight: 30
+                    implicitHeight: root.compact ? 28 : 30
                     radius: Commons.Appearance.radius.base
                     color: _on ? Commons.Appearance.colors.accentAlpha
                          : (_mma.containsMouse ? Commons.Appearance.colors.surface0 : Commons.Appearance.colors.base)
@@ -93,7 +98,7 @@ Item {
                     readonly property bool _on: root._cs.family === modelData.id
                     property bool _hov: false
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 64
+                    Layout.preferredHeight: root.compact ? 50 : 64
                     radius: Commons.Appearance.radius.md
                     color: _on ? Commons.Appearance.colors.surface1
                          : (_hov ? Commons.Appearance.colors.surface0 : Commons.Appearance.colors.base)
@@ -151,19 +156,59 @@ Item {
         // ── Dark flavor (when a choice exists & dark is reachable) ────────────────
         FlavorRow {
             label: root._cs.mode === "auto" ? "DARK FLAVOR" : "FLAVOR"
-            visible: (root._cs.mode === "dark" || root._cs.mode === "auto") && root._darkFlavors.length > 1
+            visible: (root._cs.mode === "dark" || root._cs.mode === "auto") && root._darkFlavors.length >= 1
             flavors: root._darkFlavors
             current: root._cs.flavorDark
             onPick: id => root._cs.setFlavorDark(id)
         }
 
-        // ── Light flavor (when a choice exists & light is reachable) ──────────────
+        // ── Light flavor ──────────────────────────────────────────────────────────
         FlavorRow {
             label: root._cs.mode === "auto" ? "LIGHT FLAVOR" : "FLAVOR"
-            visible: (root._cs.mode === "light" || root._cs.mode === "auto") && root._lightFlavors.length > 1
+            visible: (root._cs.mode === "light" || root._cs.mode === "auto") && root._lightFlavors.length >= 1
             flavors: root._lightFlavors
             current: root._cs.flavorLight
             onPick: id => root._cs.setFlavorLight(id)
+        }
+
+        // Shown when the chosen family has no light flavor but light is requested.
+        SLabel {
+            text: "No light variant for this family yet"
+            visible: (root._cs.mode === "light" || root._cs.mode === "auto") && root._lightFlavors.length === 0
+        }
+
+        // ── Accent (accent-capable families only — currently Catppuccin) ──────────
+        SLabel { text: "ACCENT"; visible: root._accents.length > 0 }
+        Flow {
+            Layout.fillWidth: true
+            visible: root._accents.length > 0
+            spacing: 8
+            Repeater {
+                model: root._accents
+                delegate: Rectangle {
+                    required property string modelData
+                    readonly property bool _on: root._activeAccent === modelData
+                    readonly property color _swatch: Commons.Appearance.colors[modelData] || Commons.Appearance.colors.accent
+                    width: 26; height: 26; radius: 13
+                    color: _swatch
+                    border.width: _on ? 3 : (_ama.containsMouse ? 2 : 0)
+                    border.color: Commons.Appearance.colors.text
+                    Behavior on border.width { NumberAnimation { duration: Commons.Appearance.anim.fast } }
+                    // Inner ring to separate the border from the swatch fill.
+                    Rectangle {
+                        anchors.fill: parent; anchors.margins: -3
+                        radius: width / 2; color: "transparent"
+                        border.width: _on ? 1 : 0
+                        border.color: Commons.Appearance.colors.base
+                        visible: _on
+                    }
+                    MouseArea {
+                        id: _ama; anchors.fill: parent; hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root._cs.setAccent(modelData)
+                    }
+                }
+            }
         }
 
         // ── Schedule (auto only, full pane only) ──────────────────────────────────

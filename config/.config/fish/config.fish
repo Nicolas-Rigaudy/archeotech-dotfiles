@@ -10,8 +10,9 @@ export PATH="$HOME/.local/bin:$PATH"
 # ================================================================================
 
 if status is-interactive
-    # Apply Catppuccin Macchiato theme - Official theme from: https://github.com/catppuccin/fish
-	fish_config theme choose "Catppuccin Macchiato"
+    # Fish colors are managed by theme-switch.py (conf.d/fish_frozen_theme.fish),
+	# which regenerates them from the active palette. Don't pin a theme here —
+	# it would override the active theme's colors on every shell start.
 
 	# Shell integrations
 	starship init fish | source

@@ -42,9 +42,16 @@ Item {
     readonly property string _assetsBase:
         Commons.Paths.home + "/Projects/archeotech-dotfiles/scripts/assets"
 
-    property string _archSvg: ""
-    property string _rebelSvg: ""
-    property string _imperialSvg: ""
+    // Raw SVG text; the data URIs below recompute reactively so the logo tint
+    // tracks the theme's text color (was hardcoded dark-lavender → invisible on
+    // light themes like Latte).
+    property string _archSvgRaw: ""
+    property string _rebelSvgRaw: ""
+    property string _imperialSvgRaw: ""
+
+    readonly property string _archSvg:     _svgDataUri(_archSvgRaw)
+    readonly property string _rebelSvg:    _svgDataUri(_rebelSvgRaw)
+    readonly property string _imperialSvg: _svgDataUri(_imperialSvgRaw)
 
     function _svgFor(id) {
         if (id === "arch")     return root._archSvg
@@ -56,7 +63,7 @@ Item {
     function _svgDataUri(content) {
         if (!content) return ""
         var sub = content
-            .replace(/LOGO_COLOR/g,   "#cad3f5")
+            .replace(/LOGO_COLOR/g,   "" + Commons.Appearance.colors.text)
             .replace(/LOGO_OPACITY/g, "1.0")
         return "data:image/svg+xml;utf8," + encodeURIComponent(sub)
     }
@@ -72,19 +79,19 @@ Item {
         path: root._assetsBase + "/arch-logo.svg"
         preload: true
         printErrors: false
-        onTextChanged: root._archSvg = root._svgDataUri(text())
+        onTextChanged: root._archSvgRaw = text()
     }
     FileView {
         path: root._assetsBase + "/rebel-logo.svg"
         preload: true
         printErrors: false
-        onTextChanged: root._rebelSvg = root._svgDataUri(text())
+        onTextChanged: root._rebelSvgRaw = text()
     }
     FileView {
         path: root._assetsBase + "/imperial-logo.svg"
         preload: true
         printErrors: false
-        onTextChanged: root._imperialSvg = root._svgDataUri(text())
+        onTextChanged: root._imperialSvgRaw = text()
     }
 
     Component.onCompleted: _refresh()

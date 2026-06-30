@@ -52,18 +52,24 @@
   },
   "gtk": {
     "theme": "catppuccin-frappe-mauve-standard+default",
-    "icon":  "Papirus-Dark",
-    "cursor":"catppuccin-frappe-mauve-cursors"
+    "icon": "Papirus-Dark",
+    "cursor": "catppuccin-frappe-mauve-cursors"
   },
   "vscode": {
     "theme": "Catppuccin Frappé",
-    "icon":  "catppuccin-frappe"
+    "icon": "catppuccin-frappe"
   },
   "obsidian": {
     "css_theme": "AnuPpuccin"
   },
   "card": {
     "display": "Frappé",
-    "accents": ["#ca9ee6", "#8caaee", "#a6d189", "#e5c890"]
-  }
+    "accents": [
+      "#ca9ee6",
+      "#8caaee",
+      "#a6d189",
+      "#e5c890"
+    ]
+  },
+  "accent": "mauve"
 }
