@@ -196,6 +196,21 @@ QtObject {
     function toggleFullscreen() { dispatch("fullscreen 0") }
     function closeWindow()     { dispatch("killclient") }
 
+    // Live-set the focused scroller window's width fraction (0..1).
+    function setProportion(p) { dispatch("set_proportion " + Number(p).toFixed(2)) }
+
+    // Persist the scroller default into mango's config.conf so windows opened in
+    // future sessions inherit it. Mango re-reads this global only on reload/login,
+    // so it affects *new* windows from then on — not the current ones. The sed is
+    // surgical (anchored single key line) and --follow-symlinks keeps the dotfiles
+    // symlink intact (it edits the repo file the symlink points at).
+    function setDefaultProportion(p) {
+        var v = Number(p).toFixed(2)
+        _cmd("sed --follow-symlinks -i "
+             + "'s|^scroller_default_proportion=.*|scroller_default_proportion=" + v + "|' "
+             + "\"$HOME/.config/mango/config.conf\"")
+    }
+
     property var _cmdRunner: Process {
         property string cmd: ""
         command: ["bash", "-c", cmd]

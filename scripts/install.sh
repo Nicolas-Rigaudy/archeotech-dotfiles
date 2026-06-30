@@ -171,6 +171,7 @@ install_local_scripts() {
         "project-jump.sh"
         "list-desktop-apps.sh"
         "bt-agent.py"
+        "zen-opacity-toggle.sh"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do

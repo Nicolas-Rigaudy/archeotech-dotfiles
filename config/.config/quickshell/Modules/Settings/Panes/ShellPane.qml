@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import "../../../Commons" as Commons
 import "../../../Services/Persistence" as Persistence
 import "../../../Services/Shell" as ShellServices
+import "../../../Services/Compositor" as CompositorServices
 import "../Widgets"
 
 // Shell pane (Sprint 24) — hub for shell-structure customization: the visual
@@ -31,6 +32,20 @@ Item {
     Timer {
         id: _gapTimer; interval: 250
         onTriggered: if (root._pendingGap >= 0) { ShellServices.ShellConfig.setOuterGap(root._pendingGap); root._pendingGap = -1 }
+    }
+
+    // Scroller proportion: live set_proportion is a cheap IPC dispatch, so a short
+    // debounce keeps the focused window resizing smoothly under the drag without
+    // firing an mmsg call on every sub-step. _savedProp tracks whether the current
+    // value has been persisted as the new default.
+    property real _pendingProp: -1
+    property bool _savedProp:   false
+    Timer {
+        id: _propTimer; interval: 60
+        onTriggered: if (root._pendingProp >= 0) {
+            CompositorServices.MangoWC.setProportion(root._pendingProp)
+            root._pendingProp = -1
+        }
     }
 
     ColumnLayout {
@@ -161,6 +176,85 @@ Item {
                             onMoved: (v) => { root._pendingGap = Math.round(v); _gapTimer.restart() }
                         }
                         Item { implicitHeight: 4; Layout.fillWidth: true }
+                    }
+                }
+
+                Item { implicitHeight: 10; Layout.fillWidth: true }
+                SectionLabel { text: "SCROLLER" }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    color: Commons.Appearance.colors.surface0
+                    radius: Commons.Appearance.radius.md
+                    implicitHeight: scrollerCol.implicitHeight
+
+                    ColumnLayout {
+                        id: scrollerCol
+                        anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 16; rightMargin: 16 }
+                        spacing: 0
+
+                        Item { implicitHeight: 4; Layout.fillWidth: true }
+                        SliderRow {
+                            id: propSlider
+                            label: "Window width"
+                            description: "Focused window's width; the rest is the side peek"
+                            from: 0.8; to: 1.0; stepSize: 0.01
+                            value: Persistence.Config.get("scroller.proportion", 0.98)
+                            valueDisplay: Math.round(value * 100) + "%"
+                            onMoved: (v) => {
+                                root._pendingProp = v
+                                root._savedProp = false
+                                Persistence.Config.set("scroller.proportion", v)
+                                _propTimer.restart()
+                            }
+                        }
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.base }
+
+                        Item { implicitHeight: 8; Layout.fillWidth: true }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 44
+                            radius: Commons.Appearance.radius.md
+                            color: saveMa.containsMouse ? Commons.Appearance.colors.surface1 : Commons.Appearance.colors.surface0
+                            border.width: 1
+                            border.color: saveMa.containsMouse ? Commons.Appearance.colors.accentBorder : Commons.Appearance.colors.surface1
+                            Behavior on color        { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+                            Behavior on border.color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+
+                            RowLayout {
+                                anchors { fill: parent; leftMargin: 14; rightMargin: 14 }
+                                spacing: 10
+                                Text {
+                                    text: root._savedProp ? "󰄬" : "󰆓"
+                                    color: Commons.Appearance.colors.accent
+                                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
+                                }
+                                Text {
+                                    text: root._savedProp ? "Saved as default" : "Save as default"
+                                    color: Commons.Appearance.colors.text
+                                    font.pixelSize: Commons.Appearance.font.sizeBase
+                                    font.family: Commons.Appearance.font.family
+                                    Layout.fillWidth: true
+                                }
+                                Text {
+                                    text: "new windows, after reload"
+                                    color: Commons.Appearance.colors.overlay0
+                                    font.pixelSize: Commons.Appearance.font.sizeSm
+                                    font.family: Commons.Appearance.font.family
+                                }
+                            }
+                            MouseArea {
+                                id: saveMa
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    CompositorServices.MangoWC.setDefaultProportion(propSlider.value)
+                                    root._savedProp = true
+                                }
+                            }
+                        }
+                        Item { implicitHeight: 12; Layout.fillWidth: true }
                     }
                 }
 

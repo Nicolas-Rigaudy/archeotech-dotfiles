@@ -36,6 +36,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + Ctrl + P` | Open project jump (rofi) | Lists git repos in ~/Projects (personal) and ~/Documents/repos (work), opens VSCode + kitty |
 | `Super + W` | Open wallpaper picker (Quickshell panel) | Bottom-strip panel — horizontal thumbnail carousel + 4 logo tiles + palette icon shortcut to theme picker |
 | `Super + Shift + W` | Toggle logo overlay | Cycles last active logo on/off on current wallpaper |
+| `Super + Shift + O` | Toggle Zen glass ↔ opaque | Flips Zen browser between translucent and opaque (opaque = best readability for screen-share/presenting) |
 
 ---
 
