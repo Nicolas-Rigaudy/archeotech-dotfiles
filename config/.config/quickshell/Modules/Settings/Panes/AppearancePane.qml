@@ -46,6 +46,31 @@ Item {
 
                 Item { implicitHeight: 10; Layout.fillWidth: true }
 
+                // ── Behavior ──────────────────────────────────────────────────
+                SectionLabel { text: "BEHAVIOR" }
+                Rectangle {
+                    Layout.fillWidth: true
+                    color: Commons.Appearance.colors.surface0
+                    radius: Commons.Appearance.radius.md
+                    implicitHeight: behCol.implicitHeight
+
+                    ColumnLayout {
+                        id: behCol
+                        anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 16; rightMargin: 16 }
+                        spacing: 0
+                        Item { implicitHeight: 4; Layout.fillWidth: true }
+                        ToggleRow {
+                            label: "Restart Zen on theme change"
+                            description: "Zen only recolors on restart; auto-restart it (debounced) so it follows the theme"
+                            checked: Persistence.Config.get("colorScheme.restartZen", true)
+                            onToggled: v => Persistence.Config.set("colorScheme.restartZen", v)
+                        }
+                        Item { implicitHeight: 4; Layout.fillWidth: true }
+                    }
+                }
+
+                Item { implicitHeight: 10; Layout.fillWidth: true }
+
                 // ── Wallpaper & Logo ──────────────────────────────────────────
                 // Embeds the shared WallpaperPickerBody so theme + wallpaper +
                 // logo all live in one Appearance pane (Sprint 24). The bottom-
