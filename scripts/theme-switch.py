@@ -250,7 +250,11 @@ def apply_obsidian(theme: dict, vars: Dict[str, str]) -> None:
     """Patch every vault's .obsidian/appearance.json: community CSS theme, the
     light/dark base mode (so Catppuccin-style themes flip to their light palette
     on Latte), and the accent color. Obsidian reloads when the file's mtime
-    changes."""
+    changes.
+
+    Per-vault lock: a vault with a `.obsidian/.archeotech-theme-lock` marker
+    keeps its own community theme + accent; only the light/dark base still
+    flips with the active palette's mode."""
     ob = theme.get("obsidian")
     if not ob:
         return
@@ -262,7 +266,6 @@ def apply_obsidian(theme: dict, vars: Dict[str, str]) -> None:
     mode  = "moonstone" if theme.get("mode") == "light" else "obsidian"
     # Default accent = the family's primary accent until the accent picker lands.
     accent = ob.get("accent") or vars.get("mauve", "")
-    expr = f'.cssTheme = "{css}" | .theme = "{mode}" | .accentColor = "{accent}"'
     # Use Obsidian's own vault registry — covers vaults anywhere, not just the
     # one-level-deep guesses the old globs caught.
     candidates: List[Path] = []
@@ -280,6 +283,13 @@ def apply_obsidian(theme: dict, vars: Dict[str, str]) -> None:
         candidates = list((HOME / "Documents").glob("*/.obsidian/appearance.json"))
         candidates += list((HOME / "Notes").glob("*/.obsidian/appearance.json"))
     for path in candidates:
+        # Per-vault theme lock: drop a `.archeotech-theme-lock` file next to
+        # appearance.json (in the vault's .obsidian/) to keep that vault's
+        # community CSS theme + accent — only the light/dark base still flips.
+        if (path.parent / ".archeotech-theme-lock").exists():
+            expr = f'.theme = "{mode}"'
+        else:
+            expr = f'.cssTheme = "{css}" | .theme = "{mode}" | .accentColor = "{accent}"'
         r = run(["jq", expr, str(path)])
         if r.returncode != 0:
             warn(f"jq failed on {path}: {r.stderr.strip()}")

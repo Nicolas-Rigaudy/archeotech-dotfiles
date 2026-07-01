@@ -171,7 +171,7 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 - [ ] Hardcoded path audit — zero `/home/corvus`; all via `$HOME`/`Paths.qml`
 - [ ] `scripts/install-packages.sh` — `paru -S` list, split required vs optional
 - [ ] Rewrite `scripts/install.sh` — prereq check, timestamped backup, stow deploy, service enable, verification, first-run experience
-- [ ] Also script the per-variant theme symlinks + save `gen_light_themes.py` into `scripts/` (currently only in scratchpad — see audit)
+- [ ] Script the per-variant theme symlinks (`~/.config/archeotech/themes/<v>` → repo) in `install.sh` for fresh-deploy reproducibility (theme.json + kitty confs are the committed source of truth; the one-shot light-theme generator is gone/not needed)
 - [ ] `docs/INSTALL.md` (fresh Arch + MangoWC, also Hyprland) + `docs/PLUGIN_API.md` + `CONTRIBUTING.md` (submit a plugin / theme)
 - [ ] Finalize `MODULE_API`/`WIDGET_API`/`THEME_SPEC`/`PANEL_API`
 - [ ] README harden — screenshots (bar, OSD, launcher, dashboard, settings, edit mode) + demo GIF (edit mode + theme/accent switch + plugin install)
@@ -199,6 +199,29 @@ Only for raw Wayland protocols QML can't reach: `archeotech-daemon` Go binary (U
 ## Feature Backlog
 
 Well-defined features not yet scheduled into a sprint.
+
+### Pre-v1.0 QA checklist (from the 2026-07-01 session audit)
+Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
+- [ ] **Verify Zen chrome actually recolors** with the theme. S25 switched the zen template to solid palette backgrounds to guarantee it, but it's never been visually confirmed (we only ever tested Zen *transparency*). Also check the solid bg doesn't flatten Zen's per-workspace **gradient** — if it does, back the solid bg off the gradient element and keep palette only on periphery (urlbar/tabs/text).
+- [ ] **Test the auto day/night schedule end-to-end** — `ColorScheme` Dark/Light/Auto + schedule logic was built but never watched flip at a scheduled time.
+- [ ] **Visual pass on the light themes** — Latte/TokyoNightDay/GruvboxLight/DraculaAlucard are official palettes; **Nord light is hand-tuned** (contrast-audited OK, yellow darkened to #977100) — eyeball it on real content.
+- [ ] **VSCode `colorCustomizations`** now regenerates bg from the palette for *every* theme — verify it doesn't clash on the non-Catppuccin VSCode themes (Gruvbox/Tokyo/Nord); gate to Catppuccin if it does.
+- [ ] **Settings panel widened 760→940** globally — check the other panes don't look sparse at the new width.
+
+### Core → plugin / optional candidates (for "super-customizable" + a lean default)
+Things currently baked into core that are really *personal* and should be extractable:
+- **Dev-workflow tooling** → first official plugin (already Sprint 27).
+- **Logo overlay set** (Arch/Rebel/Imperial) — the compositing mechanism is fine, but the 3 hardcoded logos are personal. Make the logo set **data-driven** (users drop their own SVGs); ship distro-logo or none by default. Folds into Theme Packs (below).
+- **Machine-specific config** — logiops (MX Master 3S), the exact 3-monitor rules (DP-3 portrait), battery thresholds, AZERTY/QWERTY → **machine profiles** (Portability section); not sane defaults for a stranger.
+- **Dashboard persona/dev bits** — AWS/VPN system-notes → dev-workflow plugin; the `~/Projects` + `~/Documents/repos` scan paths → configurable.
+- **Accent picker is Catppuccin-only** — QML/terminal/rofi/mango accent works for *any* palette color (only GTK needs per-accent packages), so expose accent for **all families** with graceful GTK fallback.
+- **Obsidian per-vault theme lock** (shipped this session) — `.obsidian/.archeotech-theme-lock` marker keeps a vault's community theme; only light/dark flips. Document in THEME_SPEC.
+
+### Theme Packs (full-featured themes, official + community)
+*Beyond palettes — a "pack" bundles the whole aesthetic identity.* User vision: Warhammer / Star Wars / Gundam / Cyberpunk etc. as optional installable packs, the flagship examples of the plugin/theme ecosystem.
+- A pack = palette (theme.json) **+** wallpaper set **+** logo/sigil SVG **+** matching **Zen gradient** **+** optional persona (kitty/starship flavor, rofi, dashboard tips).
+- This is where the **logo overlay** stops being 3 personal hardcodes and becomes pack content, and where **palette-driven Zen gradient** lives (theme-switch writes the workspace gradient from the pack's palette — see the Zen-gradient note; needs the `zen_workspaces` DB write, done during the Zen relaunch window).
+- Distribution model: a couple of **official** packs (incl. shadow-spear) + a **community** pack index (same `plugins.json` mechanism as plugins). Depends on the Sprint 26 plugin manager + Sprint 27 install/registry work.
 
 ### Visual Builder enhancements (extends Sprint 21 edit mode)
 *(User-requested during S21: "in the end I'd like a more visual representation of what is in each, to really drag and drop all the widgets where I want them.")*
