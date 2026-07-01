@@ -135,29 +135,51 @@ Item {
     ListModel { id: _centerModel }
     ListModel { id: _rightModel }
 
-    function _syncZone(model, newIds) {
-        // Remove ids no longer present.
-        var newSet = {}
-        for (var j = 0; j < newIds.length; j++) newSet[newIds[j]] = true
-        for (var k = model.count - 1; k >= 0; k--) {
-            if (!newSet[model.get(k).widgetId]) model.remove(k)
+    // Sprint 26 — entries are { id, config }. We key each row on a stable
+    // `instanceKey` = id + "#" + occurrence so two same-id widgets (e.g. two
+    // clocks) keep distinct delegates. Config rides as a JSON string
+    // (`configJson`) — ListModel mangles nested object roles; the delegate
+    // JSON.parses it. Updating config on an existing row is setProperty in
+    // place, so the widget instance survives an edit (no reload).
+    // ponytail: reordering two same-id widgets recreates the moved delegate
+    // (its occurrence changes) — cheap; revisit only if it visibly flickers.
+    function _syncZone(model, entries) {
+        var rows = []
+        var seen = {}
+        for (var i = 0; i < entries.length; i++) {
+            var id  = entries[i].id
+            var occ = seen[id] === undefined ? 0 : seen[id] + 1
+            seen[id] = occ
+            rows.push({ widgetId: id, instanceKey: id + "#" + occ,
+                        configJson: JSON.stringify(entries[i].config || {}) })
         }
-        // Insert or move so model order matches newIds.
-        for (var m = 0; m < newIds.length; m++) {
-            var id = newIds[m]
+        // Remove keys no longer present.
+        var newSet = {}
+        for (var j = 0; j < rows.length; j++) newSet[rows[j].instanceKey] = true
+        for (var k = model.count - 1; k >= 0; k--) {
+            if (!newSet[model.get(k).instanceKey]) model.remove(k)
+        }
+        // Insert / move / update-config so model order matches rows.
+        for (var m = 0; m < rows.length; m++) {
+            var r = rows[m]
             var currentIdx = -1
             for (var n = m; n < model.count; n++) {
-                if (model.get(n).widgetId === id) { currentIdx = n; break }
+                if (model.get(n).instanceKey === r.instanceKey) { currentIdx = n; break }
             }
-            if (currentIdx === -1)     model.insert(m, { widgetId: id })
-            else if (currentIdx !== m) model.move(currentIdx, m, 1)
+            if (currentIdx === -1) {
+                model.insert(m, r)
+            } else {
+                if (currentIdx !== m) model.move(currentIdx, m, 1)
+                if (model.get(m).configJson !== r.configJson)
+                    model.setProperty(m, "configJson", r.configJson)
+            }
         }
     }
 
     function _syncAllZones() {
-        _syncZone(_leftModel,   ShellServices.ShellConfig.zoneWidgets(bar.side, "left",   bar._screenName))
-        _syncZone(_centerModel, ShellServices.ShellConfig.zoneWidgets(bar.side, "center", bar._screenName))
-        _syncZone(_rightModel,  ShellServices.ShellConfig.zoneWidgets(bar.side, "right",  bar._screenName))
+        _syncZone(_leftModel,   ShellServices.ShellConfig.zoneEntries(bar.side, "left",   bar._screenName))
+        _syncZone(_centerModel, ShellServices.ShellConfig.zoneEntries(bar.side, "center", bar._screenName))
+        _syncZone(_rightModel,  ShellServices.ShellConfig.zoneEntries(bar.side, "right",  bar._screenName))
     }
 
     Component.onCompleted: _syncAllZones()
@@ -213,6 +235,7 @@ Item {
                         required property int index
                         widgetId: model ? model.widgetId : ""
                         barRoot:  bar
+                        config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                         isFirst:  index === 0
                         isLast:   index === _leftZone.count - 1
                         // Report the non-title widths up so the title can size
@@ -239,6 +262,7 @@ Item {
                         required property int index
                         widgetId: model ? model.widgetId : ""
                         barRoot:  bar
+                        config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                         isFirst:  index === 0
                         isLast:   index === _rightZone.count - 1
                     }
@@ -262,6 +286,7 @@ Item {
                     required property int index
                     widgetId: model ? model.widgetId : ""
                     barRoot:  bar
+                    config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                     isFirst:  index === 0
                     isLast:   index === _centerZone.count - 1
                 }

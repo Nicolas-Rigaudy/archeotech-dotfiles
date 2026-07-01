@@ -357,6 +357,13 @@ Item {
                         anchors.fill: parent
                         widgetId: iconSlot.modelData
                         stripRoot: strip
+                        // Sprint 26 — resolve this icon's per-instance config by
+                        // position (strip icons are keyed by index, not a diffed
+                        // ListModel). Reactive on ShellConfig.data.
+                        config: {
+                            var e = ShellServices.ShellConfig.stripEntries(strip.side, strip._screenName)
+                            return (e[iconSlot.index] && e[iconSlot.index].config) || ({})
+                        }
                     }
                 }
             }

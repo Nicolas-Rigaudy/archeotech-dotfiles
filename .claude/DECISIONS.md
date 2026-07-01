@@ -260,6 +260,14 @@ Zen's *clean* glass (its own premultiplied ARGB surface, like kitty/VSCode) need
 
 After a distribution-readiness audit vs the inspiration repos, reordered the path to v1.0. Was: 26 multi-compositor → 27 distribution. Now: **26 Widget Extensibility & Plugin Manager → 27 Dev Workflow Official Plugin → 28 Distribution/v1.0**, with multi-compositor + Go daemon pushed *behind* v1.0. Rationale: the product differentiator is "everything super-customizable + a plugin ecosystem," and per-instance widget config (`configSchema` is declared but unconsumed) is the last thing forcing users to hand-edit `shell-config.json`. Multi-compositor is real work but only benefits *other people's machines* (Hyprland is already the tested backup), so it's genuinely "later." Dev-workflow tooling becomes the first **official plugin** (Obsidian model) rather than core — dogfoods the plugin API and keeps niche TF/AWS tooling out of the default install.
 
+### [2026-07-01] Per-instance widget config: read-time shim, not a migration; JSON-string in ListModel; config in edit mode, not a defaults layer
+
+Sprint 26 made `configSchema` consumed. Zone/strip entries became `{id, config}` objects, but the shim (`ShellConfig._normEntry`) normalizes **on read** so old bare-string `shell-config.json` files load unchanged — no migration script, no version bump. Config rides through `Bar._syncZone`'s stable `ListModel` as a **JSON string** (`configJson`), not a nested object role: ListModel mangles nested object/array roles, and a string is trivially diffable + updatable in place (`setProperty`), which is what lets an instance's config edit *not* reload the live widget. Rows are keyed on `id + "#" + occurrence` so two same-id widgets (two clocks) keep distinct delegates. Config is edited per-instance from the edit-mode chip gear; there is deliberately **no global-default layer** for built-ins (YAGNI — the schema `default` covers unset fields, and a defaults store would need its own persistence + merge order). Trade-off: reordering two identical-id widgets recreates the moved delegate (occurrence changes); cheap.
+
+### [2026-07-01] External plugins read an injected `appearance`, not `import Commons`
+
+Quickshell's `qs.Commons` module import (and the deprecated `root:/` scheme) only resolve for files **inside** the config tree; a module loaded from `~/.local/share/archeotech/modules/` via absolute `file://` cannot import the shell's tokens by any prefix (confirmed against QS 0.3.0 docs). Rather than symlink external modules into the stow-managed config tree (pollutes the repo, needs a rescan), the loaders inject `Commons.Appearance` as an `appearance` property — but only onto `plugin:` widgets that declare it, via the strict-safe `'x' in item` `onLoaded` guard, so built-ins that `import Commons` are untouched. Trade-off: external authors use `appearance.colors.x` instead of the familiar `import`; shell *services* beyond theme tokens are still not exposed to external modules.
+
 ---
 
 ## Process & methodology
@@ -270,5 +278,5 @@ After a distribution-readiness audit vs the inspiration repos, reordered the pat
 
 ---
 
-**Last Updated:** 2026-07-01
+**Last Updated:** 2026-07-01 (Sprint 26 core)
 **Total Decisions:** 38 (post-cleanup; previous file held 60 entries, dropped tactical/superseded/in-code items)

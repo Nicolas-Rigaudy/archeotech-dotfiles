@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import "../../Commons" as Commons
-import "../../Services/Persistence" as Persistence
 
 // Time + date display. Hover anywhere over the clock area opens the
 // calendar popup (state lives in barRoot — see CalendarPopup.qml).
@@ -9,6 +8,17 @@ Item {
     id: root
     required property var barRoot
     property string widgetId
+    // Sprint 26 — per-instance config (schema in WidgetRegistry._builtinSchemas):
+    //   format: "24h" | "12h"    showSeconds: bool
+    // Injected by BarWidgetLoader; two clocks can differ.
+    property var config: ({})
+
+    // Qt time-format string from the instance config.
+    function _timeFmt() {
+        var h = (config && config.format === "12h") ? "h:mm" : "HH:mm"
+        if (config && config.showSeconds === true) h += ":ss"
+        return (config && config.format === "12h") ? h + " AP" : h
+    }
 
     visible: barRoot && barRoot.horizontal
     Layout.alignment: Qt.AlignVCenter
@@ -26,7 +36,7 @@ Item {
 
         function clockText() {
             return "<span style='color:" + Commons.Appearance.colors.text + ";font-weight:600'>"
-                + Qt.formatDateTime(new Date(), Persistence.Config.get("bar.clockFormat", "HH:mm"))
+                + Qt.formatDateTime(new Date(), root._timeFmt())
                 + "</span>"
                 + "<span style='color:" + Commons.Appearance.colors.surface1 + "'> &nbsp;·&nbsp; </span>"
                 + "<span style='color:" + Commons.Appearance.colors.subtext0 + "'>"

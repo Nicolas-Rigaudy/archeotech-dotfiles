@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../Commons" as Commons
 import "../../../Services/Shell" as ShellServices
 
 // Async loader for a single bar widget. Caelestia's WrappedLoader pattern:
@@ -19,14 +20,46 @@ import "../../../Services/Shell" as ShellServices
 //   function showPopup(item, label, primary, secondary, hint)
 //   function hidePopup(caller)
 //
+// Sprint 26 — per-instance config. `config` is the instance's saved config
+// (schema defaults filled in by _resolvedConfig). Optional props are set in
+// onLoaded only if the widget declares them (the `'x' in item` guard) — so
+// setSource stays strict-safe and config-less widgets are untouched. External
+// plugin widgets that declare `property var appearance` get the theme tokens
+// injected (they can't `import Commons` from outside the config tree).
+//
 // See docs/WIDGET_API.md for the widget contract.
 Loader {
     id: loader
 
     required property string widgetId
     required property var    barRoot
+    property var  config: ({})
     property bool isFirst: false
     property bool isLast:  false
+
+    // Instance config with schema defaults merged underneath (built-in schema
+    // from WidgetRegistry; plugin schema from its module.json).
+    function _resolvedConfig() {
+        if (ShellServices.WidgetRegistry.isPlugin(widgetId)) {
+            var m = ShellServices.ModuleRegistry.moduleFor(widgetId)
+            var defs = ShellServices.WidgetRegistry.schemaDefaults(m ? m.configSchema : null)
+            if (config) for (var k in config) defs[k] = config[k]
+            return defs
+        }
+        return ShellServices.WidgetRegistry.resolveConfig(widgetId, config)
+    }
+
+    // Push optional props onto an already-loaded widget without failing on
+    // widgets that don't declare them. Also the config hot-update path: editing
+    // an instance's config re-runs this, keeping the live widget instance.
+    function _applyOptional() {
+        if (!item) return
+        if ('config' in item) item.config = _resolvedConfig()
+        if (ShellServices.WidgetRegistry.isPlugin(widgetId) && ('appearance' in item))
+            item.appearance = Commons.Appearance
+    }
+    onLoaded: _applyOptional()
+    onConfigChanged: _applyOptional()
 
     // Caelestia first/last padding — matches the pill's inner horizontal
     // padding so the leftmost/rightmost widget doesn't sit flush with the

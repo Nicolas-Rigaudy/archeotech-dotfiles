@@ -51,6 +51,45 @@ QtObject {
     function barWidgetMeta(id) { return _metaFor(availableBarWidgets, id) }
     function stripIconMeta(id) { return _metaFor(availableStripIcons, id) }
 
+    // ── Per-instance config (Sprint 26) ─────────────────────────────────────────
+    // configSchema for built-in widgets (plugins declare theirs in module.json,
+    // read via ModuleRegistry). Field types map to Settings/Widgets rows in
+    // ConfigForm.qml: bool→ToggleRow, int/real→SliderRow, enum→ButtonGroupRow /
+    // DropdownRow, string→TextFieldRow. Add a widget's schema here to make it
+    // per-instance configurable; widgets with no entry are config-less.
+    readonly property var _builtinSchemas: ({
+        clock: {
+            format: {
+                type: "enum", label: "Time format", "default": "24h",
+                options: [{ value: "24h", label: "24-hour" }, { value: "12h", label: "12-hour" }]
+            },
+            showSeconds: { type: "bool", label: "Show seconds", "default": false }
+        }
+    })
+
+    function configSchemaFor(id) {
+        if (_isPlugin(id)) return {}   // plugin schema comes from ModuleRegistry
+        return _builtinSchemas[id] || {}
+    }
+
+    // Default config object derived from a schema's declared defaults.
+    // Loaders merge instance overrides on top of this.
+    function schemaDefaults(schema) {
+        var out = {}
+        if (!schema) return out
+        for (var k in schema) {
+            if (schema[k] && schema[k]["default"] !== undefined) out[k] = schema[k]["default"]
+        }
+        return out
+    }
+
+    // Instance config with schema defaults filled in for any unset field.
+    function resolveConfig(id, instanceConfig) {
+        var out = schemaDefaults(configSchemaFor(id))
+        if (instanceConfig) for (var k in instanceConfig) out[k] = instanceConfig[k]
+        return out
+    }
+
     // "active-window" → "ActiveWindow". PascalCase from kebab/snake input.
     function _pascalCase(id) {
         var parts = id.split(/[-_]/)

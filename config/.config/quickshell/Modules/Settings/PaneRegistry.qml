@@ -9,6 +9,7 @@ QtObject {
         { id: "notifications", label: "Notifications", icon: "󰂚", source: "./Panes/NotificationsPane.qml" },
         { id: "connections",   label: "Connections",   icon: "󰤨", source: "./Panes/ConnectionsPane.qml"   },
         { id: "audio",         label: "Audio",         icon: "󰕾", source: "./Panes/AudioPane.qml"         },
+        { id: "plugins",       label: "Plugins",       icon: "󰏗", source: "./Panes/PluginsPane.qml"       },
         { id: "power",         label: "Power",         icon: "󱐋", source: "./Panes/PowerPane.qml"         },
         { id: "about",         label: "About",         icon: "󰅺", source: "./Panes/AboutPane.qml"         },
     ]
@@ -49,6 +50,7 @@ QtObject {
         { pane: "connections",   label: "VPN",                   keywords: "vpn wireguard tunnel" },
         { pane: "audio",         label: "Output device",         keywords: "sink speakers headphones volume audio sound" },
         { pane: "audio",         label: "Input device",          keywords: "source microphone mic recording" },
+        { pane: "plugins",       label: "Plugins & modules",     keywords: "plugin module widget manager install uninstall enable disable verified extension configure" },
         { pane: "power",         label: "Power profile",         keywords: "performance balanced power saver battery" },
         { pane: "power",         label: "Idle & sleep",          keywords: "timeout lock suspend swayidle screen off" },
         { pane: "about",         label: "About",                 keywords: "version system info quickshell archeotech" }

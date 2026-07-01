@@ -13,15 +13,42 @@
           "clock"
         ],
         "right": [
-          "mic",
-          "volume",
-          "brightness",
-          "network",
-          "bluetooth",
-          "battery",
-          "notifications",
-          "settings",
-          "power"
+          {
+            "id": "mic",
+            "config": {}
+          },
+          {
+            "id": "volume",
+            "config": {}
+          },
+          {
+            "id": "brightness",
+            "config": {}
+          },
+          {
+            "id": "network",
+            "config": {}
+          },
+          {
+            "id": "bluetooth",
+            "config": {}
+          },
+          {
+            "id": "battery",
+            "config": {}
+          },
+          {
+            "id": "notifications",
+            "config": {}
+          },
+          {
+            "id": "settings",
+            "config": {}
+          },
+          {
+            "id": "power",
+            "config": {}
+          }
         ]
       }
     },
@@ -30,8 +57,14 @@
       "size": 10,
       "expanded": 240,
       "icons": [
-        "settings",
-        "nc"
+        {
+          "id": "nc",
+          "config": {}
+        },
+        {
+          "id": "settings",
+          "config": {}
+        }
       ],
       "zones": {
         "left": [],
@@ -44,9 +77,18 @@
       "size": 10,
       "expanded": 240,
       "icons": [
-        "dashboard",
-        "media",
-        "wallpaper"
+        {
+          "id": "dashboard",
+          "config": {}
+        },
+        {
+          "id": "media",
+          "config": {}
+        },
+        {
+          "id": "wallpaper",
+          "config": {}
+        }
       ],
       "zones": {
         "left": [],
@@ -59,7 +101,10 @@
       "size": 10,
       "expanded": 240,
       "icons": [
-        "launcher"
+        {
+          "id": "launcher",
+          "config": {}
+        }
       ],
       "zones": {
         "left": [],

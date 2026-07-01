@@ -49,15 +49,35 @@ QtObject {
         return side(name, screenName).type
     }
 
-    function zoneWidgets(sideName, zone, screenName) {
+    // Sprint 26 — per-instance config. Zone/strip entries are now { id, config }
+    // objects; a bare string id is the legacy form (pre-S26 shell-config.json).
+    // Normalize on read so both forms load and old files keep working untouched.
+    function _normEntry(e) {
+        if (typeof e === "string") return { id: e, config: {} }
+        if (e && typeof e === "object") return { id: e.id, config: e.config || {} }
+        return { id: "", config: {} }
+    }
+
+    // Normalized [{ id, config }] — config-aware consumers (loaders, edit mode).
+    function zoneEntries(sideName, zone, screenName) {
         var s = side(sideName, screenName)
         if (!s.zones || !s.zones[zone]) return []
-        return s.zones[zone]
+        return s.zones[zone].map(function(e) { return root._normEntry(e) })
+    }
+
+    function stripEntries(sideName, screenName) {
+        var s = side(sideName, screenName)
+        if (!s.icons) return []
+        return s.icons.map(function(e) { return root._normEntry(e) })
+    }
+
+    // Ids only — legacy id-consumers keep working regardless of file format.
+    function zoneWidgets(sideName, zone, screenName) {
+        return zoneEntries(sideName, zone, screenName).map(function(e) { return e.id })
     }
 
     function stripIcons(sideName, screenName) {
-        var s = side(sideName, screenName)
-        return s.icons || []
+        return stripEntries(sideName, screenName).map(function(e) { return e.id })
     }
 
     function sideSize(sideName, screenName) {
@@ -154,12 +174,14 @@ QtObject {
         })
     }
 
-    // Assign / reorder / clear a bar zone (left | center | right).
-    function setZoneWidgets(sideName, zone, ids) {
+    // Assign / reorder / clear a bar zone (left | center | right). Accepts
+    // { id, config } entries or bare id strings (normalized either way), so
+    // callers can pass entries to preserve per-instance config through reorder.
+    function setZoneWidgets(sideName, zone, entries) {
         _mutate(function(d) {
             var s = d.sides[sideName] || { type: "bar" }
             if (!s.zones) s.zones = { left: [], center: [], right: [] }
-            s.zones[zone] = ids.slice()
+            s.zones[zone] = entries.map(function(e) { return root._normEntry(e) })
             d.sides[sideName] = s
         })
     }
@@ -187,11 +209,26 @@ QtObject {
     }
 
     // Assign / reorder / clear the icon list of a strip or holder side.
-    function setStripIcons(sideName, ids) {
+    // Same { id, config } | bare-string normalization as setZoneWidgets.
+    function setStripIcons(sideName, entries) {
         _mutate(function(d) {
             var s = d.sides[sideName] || { type: "strip" }
-            s.icons = ids.slice()
+            s.icons = entries.map(function(e) { return root._normEntry(e) })
             d.sides[sideName] = s
+        })
+    }
+
+    // Write per-instance config onto one entry, addressed by position.
+    // zone === "" (or null) targets a strip/holder icon list; otherwise a bar zone.
+    function setEntryConfig(sideName, zone, index, config) {
+        _mutate(function(d) {
+            var s = d.sides[sideName]
+            if (!s) return
+            var list = zone ? (s.zones && s.zones[zone]) : s.icons
+            if (!list || index < 0 || index >= list.length) return
+            var e = root._normEntry(list[index])
+            e.config = config || {}
+            list[index] = e
         })
     }
 

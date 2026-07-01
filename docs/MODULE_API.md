@@ -48,7 +48,9 @@ folder appears in the palette immediately.
 | `author`, `version` | rec. | Metadata. |
 | `defaultSize` | opt. | `{ width, height }` hint. `width` is the panel fallback `size` if `panel` is absent. |
 | `panel` | opt. | `{ size, axisSize }` for `panel-content` modules — see Panel sizing. |
-| `configSchema` | opt. | Reserved for per-module settings UI (future). |
+| `configSchema` | opt. | Per-instance config fields → auto-generated settings form. See [Per-instance config](#per-instance-config-configschema). |
+| `verified` | opt. | `true` shows a "Verified" badge in the Plugins pane. Honored, not cryptographically checked (signing is a later sprint). |
+| `description` | opt. | One-line blurb (shown in the Plugins pane). |
 
 ### `canLiveIn` targets
 
@@ -96,14 +98,73 @@ extent along the strip: a number (px), `"auto"` (the entry exposes a numeric
 omitted, `size` falls back to `defaultSize.width` (or 360) and `axisSize` to
 `"auto"`. See [PANEL_API.md](PANEL_API.md) for the underlying model.
 
+## Per-instance config (`configSchema`)
+
+`configSchema` declares a widget's user-configurable fields. Each *placed*
+instance carries its own values, so two instances of the same module can differ
+(e.g. two clocks, one 12-hour). The shell auto-generates a settings form from
+the schema — you write no UI. It's a flat object of `field → spec`:
+
+```json
+"configSchema": {
+  "city":     { "type": "string", "label": "City",     "default": "Berlin", "placeholder": "City name" },
+  "units":    { "type": "enum",   "label": "Units",    "default": "c",
+                "options": [ { "value": "c", "label": "°C" }, { "value": "f", "label": "°F" } ] },
+  "interval": { "type": "int",    "label": "Refresh",  "default": 15, "min": 5, "max": 60, "step": 5, "unit": " min" },
+  "showIcon": { "type": "bool",   "label": "Show icon", "default": true }
+}
+```
+
+| `type` | Renders as | Extra spec keys |
+|--------|-----------|-----------------|
+| `bool` | toggle | — |
+| `int` / `real` | slider | `min`, `max`, `step`, `unit` (label suffix) |
+| `enum` | segmented buttons (≤3 options) or dropdown | `options: [{value,label}]` |
+| `string` | text field | `placeholder` |
+
+Every spec may also carry `label` (falls back to the field key) and
+`description`. `default` fills the value until the user overrides it.
+
+**Reading config in the entry QML** — declare `property var config`; it's
+injected (defaults merged in) and updated live when edited:
+
+```qml
+Item {
+    required property var    barRoot
+    required property string widgetId
+    property var config: ({})          // { city, units, interval, showIcon }
+    // e.g. config.units === "f" ? … : …
+}
+```
+
+Users edit an instance's config from the gear on its chip in **Edit Layout**
+(`Super+Shift+E`). The Plugins pane (Settings → Plugins) lists modules and marks
+configurable ones; it does not store a global default (config is per-instance).
+
 ## Theming
 
 Modules bundled under `~/.config/quickshell/modules/` may import the shell's
 tokens by relative path — `import "../../Commons" as Commons` — and use
-`Commons.Appearance.colors / font / radius / spacing / anim`. Fully external
-modules under `~/.local/share` can't resolve that relative path, so they should
-be self-styled (or wait for `configSchema`-driven theming). The two bundled
-examples (`hello`, `notes`) import Commons.
+`Commons.Appearance.colors / font / radius / spacing / anim`.
+
+**Fully external modules** under `~/.local/share/archeotech/modules/` can't
+resolve that path (Quickshell's `qs.Commons` module import only works inside the
+config tree; there's no import-path knob for outside files). Instead, declare
+`property var appearance` and the loader injects the live theme tokens:
+
+```qml
+Item {
+    required property var barRoot
+    property var appearance             // = Commons.Appearance; colors/font/radius/spacing/anim
+    property var config: ({})
+    // color: appearance ? appearance.colors.text : "#ffffff"
+}
+```
+
+`appearance` is only injected for `plugin:` modules and only if the property
+exists, so bundled modules that `import Commons` are unaffected. The two bundled
+examples (`hello`, `notes`) use the relative import. (Access to shell *services*
+beyond theme tokens is not yet exposed to external modules.)
 
 ## Worked example
 

@@ -25,6 +25,7 @@ Item {
         NotificationsPane {}
         ConnectionsPane   {}
         AudioPane         {}
+        PluginsPane       {}
         PowerPane         {}
         AboutPane         {}
     }

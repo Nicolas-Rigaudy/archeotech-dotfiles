@@ -56,7 +56,7 @@ Save, watch the bar update — Quickshell hot-reloads.
 | Bar widget  | `active-window` | `Widgets/Bar/ActiveWindowWidget.qml`       |
 | Strip icon  | `cc`            | `Widgets/Strip/CcIcon.qml`                 |
 | Strip icon  | `dashboard`     | `Widgets/Strip/DashboardIcon.qml`          |
-| Plugin      | `plugin:foo`    | reserved for Sprint 20 (manifest scanning) |
+| Plugin      | `plugin:foo`    | resolved from `module.json` — see [MODULE_API.md](MODULE_API.md) |
 
 PascalCase the id (`-` and `_` are separators). Suffix is `Widget` for bar, `Icon` for strip.
 
@@ -135,6 +135,49 @@ StripIconBase {
 
 ---
 
+## Per-instance config (`configSchema`)
+
+A widget can expose user-configurable fields. Each *placed* instance carries its
+own values, so two of the same widget can differ (two clocks, one 12-hour). The
+shell auto-generates the settings form — no UI to write.
+
+**1. Declare the schema.** Built-in widgets register it in
+`Services/Shell/WidgetRegistry.qml` under `_builtinSchemas`, keyed by id
+(plugins declare it in `module.json` — see [MODULE_API.md](MODULE_API.md)):
+
+```qml
+readonly property var _builtinSchemas: ({
+    clock: {
+        format:      { type: "enum", label: "Time format", "default": "24h",
+                       options: [{ value: "24h", label: "24-hour" }, { value: "12h", label: "12-hour" }] },
+        showSeconds: { type: "bool", label: "Show seconds", "default": false }
+    }
+})
+```
+
+Field types → form rows: `bool`→toggle, `int`/`real`→slider (`min`/`max`/`step`/`unit`),
+`enum`→segmented buttons (≤3 options) or dropdown (`options:[{value,label}]`),
+`string`→text field (`placeholder`). Every spec takes `label`, `description`, `default`.
+
+**2. Read it in the widget.** Declare `property var config` — the loader injects
+it (schema defaults merged in) and updates it live when the user edits:
+
+```qml
+Item {
+    required property var    barRoot
+    property string widgetId
+    property var config: ({})            // { format, showSeconds }
+    function _fmt() { return config.format === "12h" ? "h:mm AP" : "HH:mm" }
+}
+```
+
+`ClockWidget.qml` is the reference. Users edit an instance from the gear on its
+chip in **Edit Layout** (`Super+Shift+E`); the **Plugins** settings pane lists
+which widgets are configurable. There is no global-default layer — config is
+per-instance, stored on the zone entry in `shell-config.json`.
+
+---
+
 ## Loader injection details
 
 Bar widgets are loaded asynchronously by `Modules/Shell/Sides/BarWidgetLoader.qml`:
@@ -146,7 +189,16 @@ loader.setSource("../../../Widgets/Bar/<File>.qml", {
 })
 ```
 
-This means `barRoot` is set at construction time — bindings on `barRoot.*` work from the first frame. Required properties on the widget are satisfied via the properties map; using a plain `barRoot: bar` declarative binding on a `Loader.source` does NOT work for required props.
+`barRoot` + `widgetId` are set at construction time (required props must come
+through this map — a declarative `barRoot: bar` on a `Loader` does NOT satisfy a
+required property). **Optional** props are set in `onLoaded` guarded by
+`'x' in item`, so setSource stays strict-safe:
+
+- `config` — set on any widget that declares it (see above); re-applied when the
+  instance's config changes, keeping the live widget instance.
+- `appearance` — injected only for external `plugin:` widgets that declare
+  `property var appearance` (they can't `import Commons` from outside the config
+  tree). Built-in widgets `import Commons` directly and ignore this.
 
 Strip icons go through the same flow via `StripWidgetLoader.qml`.
 
@@ -166,18 +218,21 @@ Per-widget vertical layouts are out of scope for Sprint 18; a follow-up sprint w
 
 ## Stable ListModel (preserve delegates)
 
-`Bar.qml` syncs each zone's id list into a `ListModel` via `_syncZone()` (HyprPanel-style diff). When `shell-config.json` changes, only added/removed/moved widgets churn — unchanged widgets keep their state (MPRIS marquee position, transient hover state, etc.).
+`Bar.qml` syncs each zone's `{ id, config }` entries into a `ListModel` via `_syncZone()` (HyprPanel-style diff). Rows are keyed on a stable `instanceKey` (`id + "#" + occurrence`) so two same-id widgets keep distinct delegates; config rides as a JSON string and is updated in place, so editing an instance's config does not reload the widget. When `shell-config.json` changes, only added/removed/moved widgets churn — unchanged widgets keep their state (MPRIS marquee position, transient hover state, etc.).
 
 Widgets do not need to know about this. The takeaway: edits to `shell-config.json` hot-reload cleanly; you don't have to design defensively around delegate destruction.
 
 ---
 
-## Plugin reservation
+## Plugins
 
-`WidgetRegistry.barWidgetFile("plugin:foo")` returns `""` and the loader leaves the slot empty. Sprint 20 will land:
+`plugin:<id>` ids are **not** resolved by the filename convention — the loaders
+route them to `Services/Shell/ModuleRegistry.qml`, which discovers self-describing
+module folders (`module.json` + entry QML) under `~/.config/quickshell/modules/`
+and `~/.local/share/archeotech/modules/`. Plugin widgets share this same widget
+contract (`barRoot`/`stripRoot`, `config`, and — for external modules —
+`appearance`). Authoring, `module.json`, `configSchema`, placement targets, and
+the external-import story live in [MODULE_API.md](MODULE_API.md).
 
-- `~/.local/share/archeotech/plugins/<id>/` scanning via FolderListModel
-- Manifest (`plugin.json`) with `entryPoints.barWidget`, `entryPoints.stripIcon`, etc.
-- `?t=<timestamp>` cache-bust on hot-reload
-
-See `.claude/ANALYSIS.md` §12 and the `reference_widget_registry_patterns` memory for the chosen pattern (Noctalia-style filesystem convention + `plugin:<id>` namespacing).
+See `.claude/ANALYSIS.md` §12 for the chosen pattern (Noctalia-style filesystem
+convention + `plugin:<id>` namespacing).

@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../Commons" as Commons
 import "../../../Services/Shell" as ShellServices
 
 // Async loader for a single strip icon. Mirrors BarWidgetLoader but routes
@@ -23,9 +24,30 @@ Loader {
 
     required property string widgetId
     required property var    stripRoot
+    property var config: ({})   // Sprint 26 — per-instance config
 
     asynchronous: true
     visible: status === Loader.Ready
+
+    // See BarWidgetLoader for the rationale (schema-default merge + strict-safe
+    // optional-prop injection + config hot-update + plugin appearance token).
+    function _resolvedConfig() {
+        if (ShellServices.WidgetRegistry.isPlugin(widgetId)) {
+            var m = ShellServices.ModuleRegistry.moduleFor(widgetId)
+            var defs = ShellServices.WidgetRegistry.schemaDefaults(m ? m.configSchema : null)
+            if (config) for (var k in config) defs[k] = config[k]
+            return defs
+        }
+        return ShellServices.WidgetRegistry.resolveConfig(widgetId, config)
+    }
+    function _applyOptional() {
+        if (!item) return
+        if ('config' in item) item.config = _resolvedConfig()
+        if (ShellServices.WidgetRegistry.isPlugin(widgetId) && ('appearance' in item))
+            item.appearance = Commons.Appearance
+    }
+    onLoaded: _applyOptional()
+    onConfigChanged: _applyOptional()
 
     function _resolve() {
         // Plugin module (Sprint 21 Chunk 2):

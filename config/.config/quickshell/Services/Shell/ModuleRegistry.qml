@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell.Io
+import "../Persistence" as Persistence
 
 // Sprint 21 Chunk 2 — community extension discovery.
 //
@@ -53,15 +54,37 @@ QtObject {
     }
 
     // Modules accepting any of the given placement targets (for the palette).
+    // Disabled modules are excluded so the builder can't place new instances of
+    // them (Sprint 26 — enable/disable from the Plugins pane).
     function modulesFor(targets) {
         var out = []
         for (var i = 0; i < modules.length; i++) {
+            if (!isEnabled(modules[i].id)) continue
             var cl = modules[i].canLiveIn || []
             for (var j = 0; j < targets.length; j++) {
                 if (cl.indexOf(targets[j]) !== -1) { out.push(modules[i]); break }
             }
         }
         return out
+    }
+
+    // ── Enable / disable (Sprint 26) ────────────────────────────────────────────
+    // Persisted as a list of disabled bare ids in Persistence.Config. Disabled =
+    // hidden from the builder palette. ponytail: already-placed instances of a
+    // disabled module keep running until removed in Edit Layout — full unload
+    // would need per-widget loader gating; add it if a plugin misbehaves badly
+    // enough that "stop offering it" isn't enough.
+    function isEnabled(id) {
+        var dis = Persistence.Config.get("plugins.disabled", [])
+        return dis.indexOf(_bare(id)) === -1
+    }
+    function setEnabled(id, on) {
+        var dis = Persistence.Config.get("plugins.disabled", []).slice()
+        var b = _bare(id)
+        var i = dis.indexOf(b)
+        if (on && i !== -1) dis.splice(i, 1)
+        else if (!on && i === -1) dis.push(b)
+        Persistence.Config.set("plugins.disabled", dis)
     }
 
     function rescan() { if (!_scan.running) _scan.running = true }
@@ -73,7 +96,7 @@ QtObject {
         command: ["bash", "-c",
             "scan(){ [ -d \"$1\" ] || return; for d in \"$1\"/*/; do m=\"${d}module.json\"; " +
             "[ -f \"$m\" ] || continue; " +
-            "jq -c --arg dir \"$d\" '{dir:$dir, id, name, author, version, canLiveIn, entry, icon, defaultSize, panel, configSchema}' \"$m\" 2>/dev/null; " +
+            "jq -c --arg dir \"$d\" '{dir:$dir, id, name, author, version, canLiveIn, entry, icon, defaultSize, panel, configSchema, verified, description}' \"$m\" 2>/dev/null; " +
             "done; }; " +
             "scan \"$HOME/.config/quickshell/modules\"; " +
             "scan \"$HOME/.local/share/archeotech/modules\""

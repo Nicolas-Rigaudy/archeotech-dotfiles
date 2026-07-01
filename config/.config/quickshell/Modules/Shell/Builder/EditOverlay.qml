@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import "../../../Commons" as Commons
 import "../../../Services/Shell" as ShellServices
+import "../../Settings/Widgets" as SettingsWidgets
 
 // Sprint 21 — visual builder edit mode.
 //
@@ -40,18 +41,24 @@ Item {
         if (t === "strip" || t === "holder") return [""]
         return []
     }
+    // Sprint 26 — the builder works with { id, config } entries throughout so
+    // per-instance config survives reorder/remove (splicing ids would drop it).
     function _list(side, zone) {
-        return zone !== "" ? _cfg.zoneWidgets(side, zone) : _cfg.stripIcons(side)
+        return zone !== "" ? _cfg.zoneEntries(side, zone) : _cfg.stripEntries(side)
     }
-    function _write(side, zone, ids) {
-        if (zone !== "") _cfg.setZoneWidgets(side, zone, ids)
-        else             _cfg.setStripIcons(side, ids)
+    function _write(side, zone, entries) {
+        if (zone !== "") _cfg.setZoneWidgets(side, zone, entries)
+        else             _cfg.setStripIcons(side, entries)
     }
     function _meta(zone, id) {
+        if (_reg.isPlugin(id)) {
+            var m = _mods.moduleFor(id)
+            return { id: id, name: (m && m.name) || id, icon: (m && m.icon) || "󰏗" }
+        }
         return zone !== "" ? _reg.barWidgetMeta(id) : _reg.stripIconMeta(id)
     }
     function addId(side, zone, id) {
-        var l = _list(side, zone).slice(); l.push(id); _write(side, zone, l)
+        var l = _list(side, zone).slice(); l.push({ id: id, config: {} }); _write(side, zone, l)
     }
     function removeAt(side, zone, idx) {
         var l = _list(side, zone).slice(); l.splice(idx, 1); _write(side, zone, l)
@@ -64,6 +71,34 @@ Item {
         _write(side, zone, l)
     }
     function _label(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
+
+    // configSchema for an id — built-in from WidgetRegistry, plugin from its
+    // module.json. Drives the per-chip config gear (shown only when non-empty).
+    function _schemaFor(id) {
+        if (_reg.isPlugin(id)) {
+            var m = _mods.moduleFor(id)
+            return (m && m.configSchema) ? m.configSchema : {}
+        }
+        return _reg.configSchemaFor(id)
+    }
+    function _hasConfig(id) {
+        var s = _schemaFor(id)
+        return !!s && Object.keys(s).length > 0
+    }
+
+    // ── Per-instance config popup state ─────────────────────────────────────────
+    property bool   _cfgOpen:  false
+    property string _cfgSide:  ""
+    property string _cfgZone:  ""
+    property int    _cfgIndex: -1
+    property string _cfgId:    ""
+    function openConfig(side, zone, index, id) {
+        _cfgSide = side; _cfgZone = zone; _cfgIndex = index; _cfgId = id; _cfgOpen = true
+    }
+    function _currentConfig() {
+        var l = _list(_cfgSide, _cfgZone)
+        return (l[_cfgIndex] && l[_cfgIndex].config) || ({})
+    }
 
     // ── Palette state ───────────────────────────────────────────────────────────
     property string _palSide: ""
@@ -301,9 +336,10 @@ Item {
                                 model: editOverlay._list(sideCard.side, zoneBlock.zoneName)
                                 delegate: Rectangle {
                                     id: chip
-                                    required property string modelData
+                                    required property var modelData
                                     required property int index
-                                    readonly property var meta: editOverlay._meta(zoneBlock.zoneName, chip.modelData)
+                                    readonly property string _id: chip.modelData.id
+                                    readonly property var meta: editOverlay._meta(zoneBlock.zoneName, chip._id)
                                     height: 30
                                     width: chipRow.implicitWidth + 16
                                     radius: Commons.Appearance.radius.md
@@ -325,10 +361,24 @@ Item {
                                         }
                                         Text {
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: chip.meta.name || chip.modelData
+                                            text: chip.meta.name || chip._id
                                             color: Commons.Appearance.colors.text
                                             font.family: Commons.Appearance.font.family
                                             font.pixelSize: Commons.Appearance.font.sizeSm
+                                        }
+                                        // Config gear (only if the widget declares a configSchema)
+                                        Text {
+                                            visible: editOverlay._hasConfig(chip._id)
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: "󰒓"
+                                            color: Commons.Appearance.colors.subtext0
+                                            font.family: Commons.Appearance.font.family
+                                            font.pixelSize: Commons.Appearance.font.sizeBase
+                                            MouseArea {
+                                                anchors.fill: parent; anchors.margins: -3
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: editOverlay.openConfig(sideCard.side, zoneBlock.zoneName, chip.index, chip._id)
+                                            }
                                         }
                                         // Reorder ‹ ›  + remove ×
                                         Text {
@@ -410,5 +460,72 @@ Item {
             palette.visible = false
         }
         onCancelled: palette.visible = false
+    }
+
+    // ── Per-instance config popup (Sprint 26) ───────────────────────────────────
+    // Driven by editOverlay state (not anchored to a chip) so it survives the
+    // Repeater rebuild that a config write triggers. Each edit persists via
+    // setEntryConfig → hot reload; the form re-reads the same value (no loop,
+    // ConfigForm only emits on user interaction).
+    Item {
+        anchors.fill: parent
+        visible: editOverlay._cfgOpen
+        z: 200
+
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(0, 0, 0, 0.4)
+            MouseArea { anchors.fill: parent; onClicked: editOverlay._cfgOpen = false }
+        }
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: 380
+            height: cfgCol.implicitHeight + 32
+            radius: Commons.Appearance.radius.lg
+            color: Commons.Appearance.colors.glassBg
+            border.width: 1
+            border.color: Commons.Appearance.colors.accentBorder
+
+            ColumnLayout {
+                id: cfgCol
+                anchors { top: parent.top; left: parent.left; right: parent.right; margins: 16 }
+                spacing: 12
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Text {
+                        Layout.fillWidth: true
+                        text: "Configure · " + (editOverlay._reg.isPlugin(editOverlay._cfgId)
+                                ? ((editOverlay._mods.moduleFor(editOverlay._cfgId) || {}).name || editOverlay._cfgId)
+                                : editOverlay._meta(editOverlay._cfgZone, editOverlay._cfgId).name)
+                        color: Commons.Appearance.colors.text
+                        font.family: Commons.Appearance.font.family
+                        font.pixelSize: Commons.Appearance.font.sizeMd
+                        font.bold: true
+                        elide: Text.ElideRight
+                    }
+                    Text {
+                        text: "×"
+                        color: Commons.Appearance.colors.subtext0
+                        font.family: Commons.Appearance.font.family
+                        font.pixelSize: Commons.Appearance.font.sizeLg
+                        MouseArea {
+                            anchors.fill: parent; anchors.margins: -4
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: editOverlay._cfgOpen = false
+                        }
+                    }
+                }
+
+                SettingsWidgets.ConfigForm {
+                    Layout.fillWidth: true
+                    schema: editOverlay._cfgOpen ? editOverlay._schemaFor(editOverlay._cfgId) : ({})
+                    config: editOverlay._cfgOpen ? editOverlay._currentConfig() : ({})
+                    onChanged: (c) => editOverlay._cfg.setEntryConfig(
+                        editOverlay._cfgSide, editOverlay._cfgZone, editOverlay._cfgIndex, c)
+                }
+            }
+        }
     }
 }

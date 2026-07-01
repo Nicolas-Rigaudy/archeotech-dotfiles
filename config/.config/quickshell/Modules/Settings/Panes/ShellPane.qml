@@ -259,34 +259,6 @@ Item {
                 }
 
                 Item { implicitHeight: 10; Layout.fillWidth: true }
-                SectionLabel { text: "CLOCK" }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    color: Commons.Appearance.colors.surface0
-                    radius: Commons.Appearance.radius.md
-                    implicitHeight: clockCol.implicitHeight
-
-                    ColumnLayout {
-                        id: clockCol
-                        anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 16; rightMargin: 16 }
-                        spacing: 0
-                        Item { implicitHeight: 8; Layout.fillWidth: true }
-                        ButtonGroupRow {
-                            label: "Format"
-                            options: [
-                                { value: "HH:mm",    label: "24h"   },
-                                { value: "HH:mm:ss", label: "24h+s" },
-                                { value: "h:mm ap",  label: "12h"   },
-                            ]
-                            currentValue: Persistence.Config.get("bar.clockFormat", "HH:mm")
-                            onSelected: value => Persistence.Config.set("bar.clockFormat", value)
-                        }
-                        Item { implicitHeight: 8; Layout.fillWidth: true }
-                    }
-                }
-
-                Item { implicitHeight: 10; Layout.fillWidth: true }
 
                 Rectangle {
                     Layout.fillWidth: true

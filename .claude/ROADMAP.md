@@ -140,13 +140,15 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 3. **Vertical-orientation widgets.** Most widgets gate on `barRoot.horizontal`; vertical strips fall back to an icon column, so "fits on *any* side" isn't fully true. Give widgets real vertical layouts (Noctalia `BarPill → Horizontal/Vertical`).
 
 **Checklist:**
-- [ ] `configSchema` spec in `docs/WIDGET_API.md` + `docs/MODULE_API.md`; auto-generated form component (reuse Settings widgets)
-- [ ] `shell-config.json` zone entries → `{id, config}` objects + compat shim; `ShellConfig` setters updated
-- [ ] `BarWidgetLoader`/`StripWidgetLoader` inject per-instance `config` as a required property
-- [ ] **Plugin/Widget Manager** Settings pane — list built-ins + discovered modules; per-instance config forms; enable/disable; uninstall; `verified` badge
-- [ ] Fix external-plugin import path — modules under `~/.local/share/archeotech/modules/` can't `import "../../Commons"` (`MODULE_API` known issue); expose a stable import path **before** promoting community plugins
+- [x] `configSchema` spec in `docs/WIDGET_API.md` + `docs/MODULE_API.md`; auto-generated form component (`Modules/Settings/Widgets/ConfigForm.qml` + new `TextFieldRow`, reuses ToggleRow/SliderRow/DropdownRow/ButtonGroupRow)
+- [x] `shell-config.json` zone entries → `{id, config}` objects + compat shim (`ShellConfig._normEntry`, read-time — old bare-string files load untouched, no migration script); `zoneEntries`/`stripEntries`/`setEntryConfig`
+- [x] `BarWidgetLoader`/`StripWidgetLoader` inject per-instance `config` (schema defaults merged) via strict-safe `onLoaded` optional-prop pattern; `Bar._syncZone` keys rows on `id#occurrence` + config-as-JSON so two clocks coexist and config edits don't reload the widget; `ClockWidget` migrated as the proof
+- [x] **Plugin/Widget Manager** Settings pane (`PluginsPane.qml`) — installed modules (enable/disable via `plugins.disabled`, `verified` badge, uninstall user-dir only w/ confirm) + built-in widget catalogue; per-instance config forms live on the edit-mode chip gear (no global-default layer)
+- [x] Fix external-plugin import path — `qs.Commons` can't reach outside the config tree (verified w/ QS docs), so external `plugin:` widgets declare `property var appearance` and the loader injects the theme tokens; documented in `MODULE_API`
 - [ ] (optional) intra-overlay drag-and-drop reorder + spatial side mock
-- [ ] (optional) vertical-orientation widget layouts
+- [ ] **(follow-up B) same widget on 2+ sides opens its panel on all of them** — `ShellState.stateMap` is keyed per-screen only (`{open: id}`), no side; add `side` to the entry + gate strip panel visibility on side match + thread clicked side through toggle
+- [ ] **(follow-up C = vertical-orientation + holder-awareness)** bottom-strip panels (dashboard/media/appearance) + bar widgets break on side strips — make them responsive (read actual allocated size + `horizontal`/`side`, lay out with Layouts/wrapping); reserve `*Vertical` variant files only where a layout genuinely can't flow. **Includes the strip↔bar unification (user idea 2026-07-01):** a widget shouldn't care about its holder — a panel-opener on a strip hover-reveals, the *same* opener on a bar stays visible + toggles. Concretely: a generic **panel-opener bar widget** (bar analogue of `StripIconBase`, takes `panelId`) so dashboard/media/etc. are placeable on a bar; `setSideType` carries compatible entries across a strip↔bar switch; longer term merge `zones`/`icons` into one per-side content list + a holder-aware widget contract. Depends on B (panel-opener on 2 holders = same "which side opens" problem).
+- [ ] disable-a-module could also unload already-placed instances (currently only hides from palette — the documented ceiling)
 
 ---
 
