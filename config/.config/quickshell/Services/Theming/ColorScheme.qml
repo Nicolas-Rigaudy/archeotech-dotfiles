@@ -119,12 +119,13 @@ QtObject {
     // so clicking through the picker doesn't thrash the browser). Armed only from
     // the user-facing setters via _armZenRestart(): never on boot or the auto
     // day-night clock, which would kill Zen on every login / at sunset.
-    // Zen only reads its chrome CSS at startup, so it can't recolor on a theme
-    // change without a restart. ON by default so Zen actually follows the theme
-    // (debounced 2.5s, only on explicit picks — session restore brings tabs
-    // back). Toggle in Settings → Appearance ("Restart Zen on theme change") if
-    // the restarts bother you; then Zen recolors only on its next manual launch.
-    readonly property bool restartZen: Persistence.Config.get("colorScheme.restartZen", true)
+    // OFF by default: Zen's chrome is its own workspace gradient (userChrome
+    // can't recolor it), so restarting Zen on a theme change only refreshes minor
+    // accent/text tint — not worth killing the browser for, and the churn left
+    // stale profile locks. Toggle in Settings → Appearance → Behavior if you
+    // still want it (e.g. once the palette→gradient DB-sync lands and Zen
+    // actually follows themes, this becomes worthwhile).
+    readonly property bool restartZen: Persistence.Config.get("colorScheme.restartZen", false)
     property var _zenProc: Process { command: []; running: false }
     property var _zenTimer: Timer {
         interval: 2500
