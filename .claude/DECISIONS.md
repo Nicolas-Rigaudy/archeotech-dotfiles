@@ -252,6 +252,14 @@ The original `arch-logo.svg` / `rebel-logo.svg` / `imperial-logo.svg` have `LOGO
 
 The original cache was single-slot — one `$COMPOSED_IMG` file + a `$COMPOSED_CACHE` flag storing `<logo>:<wallpaper>`. Switching anything invalidated it and forced a 2-4s re-render. Replaced with `$CACHE_DIR/composed/<sha1>-<logo>-{l,p}.png` files; cache hits are O(1) file existence checks. Background-warm subshell composites the *other* logos for the current wallpaper after every apply, so the next logo switch is cache-hit. `--warm-all` subcommand pre-renders every combination (~167 MB for 16 wallpapers × 3 logos × 2 orientations). Trade-off: disk grows with usage; no automatic cleanup yet (cheap enough on 512 GB).
 
+### [2026-06-24] Zen transparency: compositor opacity + noblur, not app-level ARGB
+
+Zen's *clean* glass (its own premultiplied ARGB surface, like kitty/VSCode) needs the WebRender native compositor, which is **blocklisted on this Intel Xe / Mesa** GPU — force-enabling it throws diamond/star artifacts. So we let **MangoWC** dim the whole window instead (`focused_opacity:0.88/0.75,appid:zen` + `noblur:1,appid:zen`), Zen rendered opaque internally. Trade-off accepted: slightly more washed than the app-level apps (compositor-vs-premultiplied-alpha gap, not config-fixable) but artifact-free. `Super+SHIFT+O` toggles opaque for screen-share. Full diagnosis + revisit-trigger (Mesa lifting the blocklist) in `TROUBLESHOOTING.md`.
+
+### [2026-07-01] Roadmap re-sequenced: extensibility/plugins before portability
+
+After a distribution-readiness audit vs the inspiration repos, reordered the path to v1.0. Was: 26 multi-compositor → 27 distribution. Now: **26 Widget Extensibility & Plugin Manager → 27 Dev Workflow Official Plugin → 28 Distribution/v1.0**, with multi-compositor + Go daemon pushed *behind* v1.0. Rationale: the product differentiator is "everything super-customizable + a plugin ecosystem," and per-instance widget config (`configSchema` is declared but unconsumed) is the last thing forcing users to hand-edit `shell-config.json`. Multi-compositor is real work but only benefits *other people's machines* (Hyprland is already the tested backup), so it's genuinely "later." Dev-workflow tooling becomes the first **official plugin** (Obsidian model) rather than core — dogfoods the plugin API and keeps niche TF/AWS tooling out of the default install.
+
 ---
 
 ## Process & methodology
@@ -262,5 +270,5 @@ The original cache was single-slot — one `$COMPOSED_IMG` file + a `$COMPOSED_C
 
 ---
 
-**Last Updated:** 2026-06-02
-**Total Decisions:** 36 (post-cleanup; previous file held 60 entries, dropped tactical/superseded/in-code items)
+**Last Updated:** 2026-07-01
+**Total Decisions:** 38 (post-cleanup; previous file held 60 entries, dropped tactical/superseded/in-code items)

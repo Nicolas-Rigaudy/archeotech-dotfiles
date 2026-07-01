@@ -128,72 +128,71 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ---
 
-### Sprint 26 — Multi-Compositor Support ← NEXT
+> **Re-sequenced 2026-07-01** (see `DECISIONS.md`). The path to v1.0 is *extensibility → plugin story → distribution*, NOT portability. Multi-compositor + Go daemon are real work but only matter for **other people's machines**, so they move to *after* v1.0. The differentiator is "everything super-customizable + a plugin ecosystem," so that comes first.
 
-**Goal:** Make Archeotech installable by anyone regardless of compositor. `CompositorService` facade dispatches all WM calls to the right backend. Source-inspected from Noctalia (supports MangoWC/DWL, Hyprland, Niri, Sway, Scroll, Labwc).
+### Sprint 26 — Widget Extensibility & Plugin Manager ← NEXT
 
-**Reference:** Noctalia `Services/Compositor/` — `CompositorService.qml` (singleton facade), `MangoService.qml` (DWL protocol), `HyprlandService.qml` (socket IPC), `NiriService.qml` (JSON IPC), `SwayService.qml` (i3-compatible IPC).
+**Goal:** Make every widget/module **per-instance configurable** and manageable from a GUI — the last thing forcing users to hand-edit `shell-config.json`, and the prerequisite for a real plugin ecosystem. The drop-in + place-via-builder half already works (S18 registry + S21 `ModuleRegistry` + edit-mode palette merges built-ins & plugins); this sprint fills the config/management half.
 
-**API contract** (compositor-agnostic):
-```qml
-CompositorService.switchWorkspace(n)
-CompositorService.focusWindow(id)
-CompositorService.activeWorkspace       // readable property
-CompositorService.focusedApp            // readable property
-CompositorService.activeWindowTitle     // readable property
-```
-
-**Architecture validation tasks** (from S17 + S20 audits):
-- Verify 4× 1px ExclusionStrip PanelWindows behave correctly on Hyprland/Niri (layershell anchors with `implicitHeight: 1` — may need compositor-specific tweaks)
-- Per-compositor blur namespace handling — MangoWC `layerrule = blur, namespace:archeotech-shell` vs Hyprland `layerrule = blur, archeotech-*`
-- `Services/Compositor/Blur.qml` — abstraction for compositor-specific blur rules
+**The three gaps (from the 2026-07-01 audit):**
+1. **Per-instance config — the biggest gap.** `configSchema` is declared in `module.json` and carried through `ModuleRegistry` but **nothing consumes it**. Need: a `configSchema` spec → auto-generated settings form; migrate `shell-config.json` zone entries from bare-string ids → `{ id, config: {} }` objects (with a back-compat shim reading old strings); inject the per-instance config into the widget via `BarWidgetLoader`/`StripWidgetLoader`. Enables e.g. two clocks with different formats. (Reference: Noctalia per-instance widget config, DMS deep per-widget settings.)
+2. **Reorder is `‹ ›` arrows, not drag-and-drop** + no spatial preview. Intra-overlay drag is Wayland-safe (`ANALYSIS.md` §14.4); optional: render each side as a to-scale mock (§12.7) instead of a chip list.
+3. **Vertical-orientation widgets.** Most widgets gate on `barRoot.horizontal`; vertical strips fall back to an icon column, so "fits on *any* side" isn't fully true. Give widgets real vertical layouts (Noctalia `BarPill → Horizontal/Vertical`).
 
 **Checklist:**
-- [ ] `Services/Compositor/CompositorService.qml` — detects active compositor on startup (`$XDG_CURRENT_DESKTOP`, `$WAYLAND_DISPLAY` hints), delegates to detected backend
-- [ ] `Services/Compositor/MangoService.qml` — current `mmsg -w` subprocess pattern, promotes to primary backend
-- [ ] `Services/Compositor/HyprlandService.qml` — Hyprland IPC socket (`/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.ipc`), workspace + window events
-- [ ] `Services/Compositor/NiriService.qml` — Niri IPC socket (`$NIRI_SOCKET`), JSON event stream
-- [ ] `Services/Compositor/Blur.qml` — per-compositor blur rule abstraction
-- [ ] Replace all direct MangoWC calls in widgets/services with `CompositorService.*`
-- [ ] Verify ShellSurface + ExclusionStrips work on Hyprland (backup compositor)
-- [ ] `docs/COMPOSITOR_SUPPORT.md` — supported compositors, how to add a new backend
+- [ ] `configSchema` spec in `docs/WIDGET_API.md` + `docs/MODULE_API.md`; auto-generated form component (reuse Settings widgets)
+- [ ] `shell-config.json` zone entries → `{id, config}` objects + compat shim; `ShellConfig` setters updated
+- [ ] `BarWidgetLoader`/`StripWidgetLoader` inject per-instance `config` as a required property
+- [ ] **Plugin/Widget Manager** Settings pane — list built-ins + discovered modules; per-instance config forms; enable/disable; uninstall; `verified` badge
+- [ ] Fix external-plugin import path — modules under `~/.local/share/archeotech/modules/` can't `import "../../Commons"` (`MODULE_API` known issue); expose a stable import path **before** promoting community plugins
+- [ ] (optional) intra-overlay drag-and-drop reorder + spatial side mock
+- [ ] (optional) vertical-orientation widget layouts
 
 ---
 
-### Sprint 27 — Distribution & GitHub Release
+### Sprint 27 — Dev Workflow: First Official Plugin
 
-**Goal:** Clean, documented, installable by a stranger on a fresh Arch Linux machine. Everything hardcoded to `/home/corvus` is gone. Module + theme APIs are documented. Community can publish extensions. **v1.0 milestone.**
+**Goal:** Ship the git/AWS/Terraform dev tooling as the **first official plugin package** (Obsidian-style official-vs-community model) — high personal value AND it dogfoods the plugin install/manifest/enable story before community authors touch it. Keeps niche dev tooling out of core (most users don't do TF/AWS).
 
 **Checklist:**
-- [ ] Hardcoded path audit — zero `/home/corvus` in any config or script; all paths via `$HOME` or `Paths.qml`
-- [ ] `scripts/install-packages.sh` — full `paru -S` list for fresh Arch; split: required vs optional
-- [ ] Rewrite `scripts/install.sh` — prereq check, timestamped backup, stow deploy, service enable, verification
-- [ ] `docs/INSTALL.md` — step-by-step for fresh Arch + MangoWC from zero; also Hyprland path; documents `shell-config.json` per-side configuration
-- [ ] `docs/MODULE_API.md` — finalized (from S21); example module walkthrough
-- [ ] `docs/THEME_SPEC.md` — finalized (from S19); community submission guidelines
-- [ ] `docs/WIDGET_API.md` — finalized (from S18)
-- [ ] README harden — screenshots of bar, OSD, CC, launcher, dashboard, settings, edit mode
-- [ ] Demo GIF of edit mode + theme switching + per-side reconfiguration
-- [ ] Version tag `v1.0.0` on first release
-- [ ] GitHub repo description, topics, social preview
-- [ ] `CONTRIBUTING.md` — how to submit a module, how to submit a theme
+- [ ] Plugin manifest fields: `official` / `verified` / `minShellVersion` / `dependencies`
+- [ ] Install mechanism: `archeotech plugin install <name>` (git-clone into modules dir) + a repo-hosted `plugins.json` index (official + community catalog)
+- [ ] **dev-workflow** official plugin package: `GitWidget` (CWD from focused window, dims when no git ctx), `AwsWidget` (dims when `$AWS_PROFILE` unset), `TerraformWidget` (`terraform workspace show`, tf-repos only), `DockerWidget` (containers badge)
+- [ ] Bundled rofi menus in the plugin: AWS console launcher `Super+A` (`granted console`), Terraform commands menu, SSH quick-connect `Super+Ctrl+S`, VSCode project switcher
+- [ ] Enable/disable + config via the Sprint 26 Plugin Manager pane
 
 ---
 
-### Sprint 28 — Go Daemon
-Only for raw Wayland protocols that QML can't reach natively:
-- `archeotech-daemon` Go binary — Unix socket, newline-JSON RPC
-- `Services/ArcheotechDaemon.qml` — Quickshell Socket, exponential-backoff reconnect
-- Handles: `wlr-output-management` (display layout), `wlr-gamma-control` (night light), `wlr-screencopy` (screenshot)
-- Does NOT handle: audio, network, BT, notifications, lock (all native QML)
+### Sprint 28 — Distribution & v1.0 Release
 
-### Sprint 29 — Dev Personality + Shadow Spear
-- `themes/shadow-spear/` full theme package (compositor + kitty + starship raven sigil + rofi + wallpaper set)
-- Git branch widget (`Widgets/Bar/GitWidget.qml`) — CWD from focused window, dims when no git context
-- AWS profile widget (`Widgets/Bar/AwsWidget.qml`) — always visible, dims when `$AWS_PROFILE` unset
-- Terraform workspace indicator (`Widgets/Bar/TerraformWidget.qml`) — shows `terraform workspace show`, only in tf repos
-- Per-workspace wallpapers via `CompositorService.onTagSwitched` hook (S26 dependency)
-- **Stretch:** SDF GLSL shader for corner blob (replaces ShapePath cubic bezier for ultra-smooth corners — Caelestia §15.2 line 2143)
+**Goal:** Installable by a stranger on fresh Arch. Zero hardcoded paths. APIs documented. Community can publish plugins/themes. **v1.0 milestone.** (Only **1** hardcoded `/home/corvus` left — the audit is nearly done.)
+
+**Checklist:**
+- [ ] Hardcoded path audit — zero `/home/corvus`; all via `$HOME`/`Paths.qml`
+- [ ] `scripts/install-packages.sh` — `paru -S` list, split required vs optional
+- [ ] Rewrite `scripts/install.sh` — prereq check, timestamped backup, stow deploy, service enable, verification, first-run experience
+- [ ] Also script the per-variant theme symlinks + save `gen_light_themes.py` into `scripts/` (currently only in scratchpad — see audit)
+- [ ] `docs/INSTALL.md` (fresh Arch + MangoWC, also Hyprland) + `docs/PLUGIN_API.md` + `CONTRIBUTING.md` (submit a plugin / theme)
+- [ ] Finalize `MODULE_API`/`WIDGET_API`/`THEME_SPEC`/`PANEL_API`
+- [ ] README harden — screenshots (bar, OSD, launcher, dashboard, settings, edit mode) + demo GIF (edit mode + theme/accent switch + plugin install)
+- [ ] `v1.0.0` tag; GitHub description, topics, social preview
+
+---
+
+## Post-v1.0 — "depth" sprints (portability & extras)
+
+*These are real but matter for **other machines**, not the release. Deferred behind v1.0.*
+
+### Multi-Compositor Support (was Sprint 26)
+`CompositorService` facade so the shell runs on Hyprland/Niri/Sway, not just MangoWC. Ref: Noctalia `Services/Compositor/`. API: `switchWorkspace`/`focusWindow`/`activeWorkspace`/`focusedApp`/`activeWindowTitle`. Tasks: `CompositorService.qml` (detect on startup) + `MangoService`/`HyprlandService`/`NiriService`/`Blur.qml`; replace direct MangoWC calls (incl. S25's `MangoWC.setProportion`/`setDefaultProportion`) with `CompositorService.*`; verify ShellSurface + 4× ExclusionStrips + per-compositor blur namespace on Hyprland; `docs/COMPOSITOR_SUPPORT.md`.
+
+### Go Daemon (was Sprint 28)
+Only for raw Wayland protocols QML can't reach: `archeotech-daemon` Go binary (Unix socket, newline-JSON RPC) + `Services/ArcheotechDaemon.qml` (backoff reconnect). Handles `wlr-output-management` / `wlr-gamma-control` / `wlr-screencopy`. NOT audio/network/BT/notifications/lock (native QML).
+
+### Personality & flair (was Sprint 29)
+- `themes/shadow-spear/` full theme package (compositor + kitty + starship raven sigil + rofi + wallpaper set) — Corvus persona; ships as an optional theme, not core.
+- Per-workspace wallpapers via `CompositorService.onTagSwitched` (multi-compositor dependency).
+- **Stretch:** SDF GLSL shader for corner blob (replaces ShapePath bezier — Caelestia §15.2 line 2143).
 
 ---
 
@@ -219,8 +218,8 @@ Quick-access rofi menus for cloud/infra work:
 - **VSCode project switcher** — parse `~/.config/Code/User/globalStorage/storage.json` recent folders → rofi → `code <path>`
 - **Monitor layout switcher** (`Super+Shift+M`) — presets: laptop-only / home / work / present → wlr-randr; complements CC display section for quick switching
 
-### Keybinds Cheatsheet
-`Super+?` → rofi menu or Quickshell overlay showing all active keybindings grouped by category. Data sourced from a flat text file (same approach as tips.txt in the dashboard) or parsed from mango.conf.
+### ~~Keybinds Cheatsheet~~ ✅ DONE
+`Super+?` overlay showing active keybindings — already implemented.
 
 ### Clipboard Improvements
 - Image clipboard support in cliphist — paste images from clipboard history
