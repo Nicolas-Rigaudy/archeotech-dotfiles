@@ -40,14 +40,16 @@
   --menu-color:            {{text}} !important;
 }
 
-/* No border on the popup box; the rounded content is the only visible fill.
- * ::part(content) is the inner rounded box — style it and make the outer box
- * transparent/borderless so no square frame shows behind it. */
+/* The white "square" is the popup's backing window surface (white by default on
+ * Wayland). We can't round the actual window, so COVER it with the dark fill
+ * (opaque, no border) — the square corners then read as dark menu, not white.
+ * Do NOT set background:transparent here — that just reveals the white surface. */
 menupopup,
 panel {
   --panel-border-color: transparent !important;
   border: none !important;
-  background: transparent !important;
+  background-color: {{mantle}} !important;
+  color: {{text}} !important;
 }
 menupopup::part(content),
 panel::part(content) {
