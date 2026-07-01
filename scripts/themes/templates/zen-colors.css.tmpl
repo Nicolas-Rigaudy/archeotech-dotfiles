@@ -27,4 +27,26 @@
   --toolbar-color:          {{text}} !important;
   --tab-selected-textcolor: {{text}} !important;
   --toolbar-field-color:    {{text}} !important;
+
+  /* Context menus / popups — Firefox's default `--panel-border-color` is light
+   * (the "big white border" on right-click menus). Palette them; these are
+   * standard Firefox chrome (not Zen's gradient), so userChrome styles them
+   * reliably. */
+  --panel-background:      {{mantle}} !important;
+  --panel-color:           {{text}} !important;
+  --panel-border-color:    {{surface0}} !important;
+  --menu-background-color: {{mantle}} !important;
+  --menu-color:            {{text}} !important;
+}
+
+/* Belt-and-braces for the menu box itself (some builds don't honor the vars). */
+menupopup,
+panel {
+  background-color: {{mantle}} !important;
+  color: {{text}} !important;
+  --panel-border-color: {{surface0}} !important;
+}
+menupopup > menuitem[_moz-menuactive="true"],
+menupopup > menu[_moz-menuactive="true"] {
+  background-color: {{surface0}} !important;
 }
