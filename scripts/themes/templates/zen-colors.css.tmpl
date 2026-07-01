@@ -47,15 +47,19 @@
 menupopup,
 panel {
   --panel-border-color: transparent !important;
+  --panel-border-radius: 0 !important;
   border: none !important;
   background-color: {{mantle}} !important;
   color: {{text}} !important;
 }
+/* radius 0 so the content fills the square popup window exactly — no rounded
+ * content leaving mismatched (white/dark) corners. Flat dark rectangle. */
 menupopup::part(content),
 panel::part(content) {
   background-color: {{mantle}} !important;
   color: {{text}} !important;
   border: none !important;
+  border-radius: 0 !important;
 }
 menupopup > menuitem[_moz-menuactive="true"],
 menupopup > menu[_moz-menuactive="true"] {
