@@ -119,7 +119,11 @@ QtObject {
     // so clicking through the picker doesn't thrash the browser). Armed only from
     // the user-facing setters via _armZenRestart(): never on boot or the auto
     // day-night clock, which would kill Zen on every login / at sunset.
-    readonly property bool restartZen: Persistence.Config.get("colorScheme.restartZen", true)
+    // Default OFF — auto-restarting the browser on every theme pick is
+    // disruptive (loses scroll/video/form state; session restore only brings
+    // tabs back). Opt in via colorScheme.restartZen=true if you theme-switch
+    // often and want Zen to recolor immediately instead of on its next restart.
+    readonly property bool restartZen: Persistence.Config.get("colorScheme.restartZen", false)
     property var _zenProc: Process { command: []; running: false }
     property var _zenTimer: Timer {
         interval: 2500
