@@ -28,23 +28,32 @@
   --tab-selected-textcolor: {{text}} !important;
   --toolbar-field-color:    {{text}} !important;
 
-  /* Context menus / popups — Firefox's default `--panel-border-color` is light
-   * (the "big white border" on right-click menus). Palette them; these are
-   * standard Firefox chrome (not Zen's gradient), so userChrome styles them
-   * reliably. */
+  /* Context menus / popups — the "square white frame" around the rounded menu
+   * is Firefox's default popup border/backdrop. Kill the border entirely and
+   * palette the fill; these are standard Firefox chrome (not Zen's gradient),
+   * so userChrome styles them reliably. */
   --panel-background:      {{mantle}} !important;
   --panel-color:           {{text}} !important;
-  --panel-border-color:    {{surface0}} !important;
+  --panel-border-color:    transparent !important;
+  --panel-shadow-margin:   0 !important;
   --menu-background-color: {{mantle}} !important;
   --menu-color:            {{text}} !important;
 }
 
-/* Belt-and-braces for the menu box itself (some builds don't honor the vars). */
+/* No border on the popup box; the rounded content is the only visible fill.
+ * ::part(content) is the inner rounded box — style it and make the outer box
+ * transparent/borderless so no square frame shows behind it. */
 menupopup,
 panel {
+  --panel-border-color: transparent !important;
+  border: none !important;
+  background: transparent !important;
+}
+menupopup::part(content),
+panel::part(content) {
   background-color: {{mantle}} !important;
   color: {{text}} !important;
-  --panel-border-color: {{surface0}} !important;
+  border: none !important;
 }
 menupopup > menuitem[_moz-menuactive="true"],
 menupopup > menu[_moz-menuactive="true"] {
