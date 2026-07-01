@@ -130,9 +130,14 @@ QtObject {
         onTriggered: {
             // No-op if Zen isn't running; otherwise kill, wait for a clean exit,
             // then relaunch detached so it outlives this Process.
+            // NB: match the process NAME (-x zen-bin), NOT the full cmdline
+            // (-f) — this bash command's own cmdline contains "zen-bin", so
+            // `pkill -f zen-bin` would kill THIS script before the relaunch line
+            // ("kills but doesn't restart"). `-x zen-bin` matches only the
+            // browser (comm=zen-bin); this script's comm is "bash".
             root._zenProc.command = ["bash", "-lc",
-                "pgrep -f zen-bin >/dev/null 2>&1 || exit 0; pkill -f zen-bin; " +
-                "for i in $(seq 1 20); do pgrep -f zen-bin >/dev/null 2>&1 || break; sleep 0.1; done; " +
+                "pgrep -x zen-bin >/dev/null 2>&1 || exit 0; pkill -x zen-bin; " +
+                "for i in $(seq 1 30); do pgrep -x zen-bin >/dev/null 2>&1 || break; sleep 0.1; done; " +
                 "setsid /opt/zen-browser-bin/zen-bin >/dev/null 2>&1 &"]
             root._zenProc.running = true
         }
