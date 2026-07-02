@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last Updated:** 2026-06-03  
+**Last Updated:** 2026-07-02  
 **See also:** `ANALYSIS.md` — research, reference projects, confirmed QML APIs, settings ecosystem deep-dives.
 
 ---
@@ -147,7 +147,12 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 - [x] Fix external-plugin import path — `qs.Commons` can't reach outside the config tree (verified w/ QS docs), so external `plugin:` widgets declare `property var appearance` and the loader injects the theme tokens; documented in `MODULE_API`
 - [ ] (optional) intra-overlay drag-and-drop reorder + spatial side mock
 - [ ] **(follow-up B) same widget on 2+ sides opens its panel on all of them** — `ShellState.stateMap` is keyed per-screen only (`{open: id}`), no side; add `side` to the entry + gate strip panel visibility on side match + thread clicked side through toggle
-- [ ] **(follow-up C = vertical-orientation + holder-awareness)** bottom-strip panels (dashboard/media/appearance) + bar widgets break on side strips — make them responsive (read actual allocated size + `horizontal`/`side`, lay out with Layouts/wrapping); reserve `*Vertical` variant files only where a layout genuinely can't flow. **Includes the strip↔bar unification (user idea 2026-07-01):** a widget shouldn't care about its holder — a panel-opener on a strip hover-reveals, the *same* opener on a bar stays visible + toggles. Concretely: a generic **panel-opener bar widget** (bar analogue of `StripIconBase`, takes `panelId`) so dashboard/media/etc. are placeable on a bar; `setSideType` carries compatible entries across a strip↔bar switch; longer term merge `zones`/`icons` into one per-side content list + a holder-aware widget contract. Depends on B (panel-opener on 2 holders = same "which side opens" problem).
+- [~] **(follow-up C = vertical-orientation + holder-awareness)** — phased; 0–2 done (2026-07-02, commits `63d74bf`, `f8a5dff`), 3–4 remaining.
+  - [x] **Phase 0 — responsive widgets/panels.** `BarPill` shared capsule owns the horizontal↔vertical fork (icon+value / icon-only; Noctalia/DMS pattern, no text rotation); 9 widgets migrated. ClockWidget stacks HH/MM vertically; WorkspacesWidget row→column. `Bar.qml` vertical path deleted the hardcoded icon Column — vertical bars drive the same zone models via ColumnLayouts. Dashboard/MediaPanel reflow on measured width (2→1 col / row→stack, scroll when tall-narrow); fixed `Layout` height/width bugs (plain `height:`/`width:` on layout children → 0 → overlap). Title/media stay horizontal-only (can't flow).
+  - [x] **Phase 1 — `PanelHost`** (`Modules/Shell/Panels/PanelHost.qml`): reusable panel-content kernel (meta resolution + content loaders + size targets), holder-agnostic. Strip left on its own inline copy for now.
+  - [x] **Phase 2 — bars host panels.** `BarPanel` drops a panel from the bar edge, anchored to the clicked opener, using the SAME neck `Shape` as the strip card (fuses in identically). Direct opener widgets `dashboard`/`launcher`/`wallpaper` (resolve to `PanelOpenerWidget`, panel = the id, no config step, no hover popup). `ShellSurface` bar-popup input-mask generalised top-only → all 4 sides + click-outside treats a bar panel as inside. `setSideType` carry-over on direct ids. **← delivers "dashboard drops from the top bar".**
+  - [ ] **Phase 3** — merge `zones`/`icons` into one per-side `content: [{id, config, align?}]` list + read-time shim; unify the two widget catalogues.
+  - [ ] **Phase 4** — replace `barRoot`/`stripRoot` with one `holderRoot` contract (side/horizontal/type/screen/showPopup/togglePanel); converge `StripIconBase`/`BarPill`; migrate Strip onto `PanelHost`; one WidgetLoader. Then docs (WIDGET/PANEL/MODULE_API).
 - [ ] disable-a-module could also unload already-placed instances (currently only hides from palette — the documented ceiling)
 
 ---
