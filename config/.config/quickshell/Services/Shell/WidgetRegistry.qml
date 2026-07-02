@@ -33,8 +33,18 @@ QtObject {
         { id: "notifications", name: "Notifications", icon: "󰂚" },
         { id: "settings",      name: "Settings",      icon: "󰒓" },
         { id: "power",         name: "Power",         icon: "󰐥" },
-        { id: "panel-opener",  name: "Panel Opener",  icon: "󰏗" }
+        // Panel openers — placed directly (like the strip icons); each drops its
+        // own panel from the bar edge. Resolved to PanelOpenerWidget by id.
+        { id: "dashboard",     name: "Dashboard",     icon: "󰕮" },
+        { id: "launcher",      name: "Launcher",      icon: "󱓞" },
+        { id: "wallpaper",     name: "Appearance",    icon: "󰏘" }
     ]
+
+    // Bar-widget ids that are panel openers → all resolve to PanelOpenerWidget
+    // (the panel is the id itself). Keeps them out of the *Widget.qml filename
+    // convention. "nc"/"settings" already have dedicated bar widgets; "media" is
+    // the marquee, which opens the media panel itself.
+    readonly property var _panelOpenerIds: ["dashboard", "launcher", "wallpaper"]
 
     readonly property var availableStripIcons: [
         { id: "nc",        name: "Notification Center", icon: "󰂚" },
@@ -65,19 +75,6 @@ QtObject {
                 options: [{ value: "24h", label: "24-hour" }, { value: "12h", label: "12-hour" }]
             },
             showSeconds: { type: "bool", label: "Show seconds", "default": false }
-        },
-        "panel-opener": {
-            panelId: {
-                type: "enum", label: "Panel", "default": "dashboard",
-                options: [
-                    { value: "dashboard", label: "Dashboard" },
-                    { value: "media",     label: "Media" },
-                    { value: "wallpaper", label: "Appearance" },
-                    { value: "settings",  label: "Settings" },
-                    { value: "nc",        label: "Notifications" },
-                    { value: "launcher",  label: "Launcher" }
-                ]
-            }
         }
     })
 
@@ -127,6 +124,8 @@ QtObject {
             // reserved now so callers don't change in S20.
             return ""
         }
+        // Panel-opener ids share one component (panel = the id itself).
+        if (_panelOpenerIds.indexOf(id) !== -1) return "PanelOpenerWidget.qml"
         return _pascalCase(id) + "Widget.qml"
     }
 

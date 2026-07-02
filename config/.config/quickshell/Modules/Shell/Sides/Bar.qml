@@ -64,6 +64,10 @@ Item {
     property real _wifiAnchorX:      0
     property real _btAnchorX:        0
 
+    // Along-axis center (bar-local) of the panel-opener that was last clicked,
+    // so a bar-hosted panel drops anchored under it. -1 = unset → bar center.
+    property real _panelAnchor: -1
+
     // ── Bar-popup input region (consumed by ShellSurface's input mask) ──────────
     // The popup cards float BELOW the bar, outside the SideLoader rect that the
     // surface mask covers — without this, clicks on them pass straight through to
@@ -73,9 +77,9 @@ Item {
     // down is fine.
     readonly property bool _anyPopupOpen:
         _hoverCardPopup.visible || _calendarPopup.visible
-        || _wifiPopup.visible   || _btPopup.visible
+        || _wifiPopup.visible   || _btPopup.visible || _barPanel.visible
     readonly property rect _popupBounds: {
-        var ps = [_hoverCardPopup, _calendarPopup, _wifiPopup, _btPopup]
+        var ps = [_hoverCardPopup, _calendarPopup, _wifiPopup, _btPopup, _barPanel]
         var l = 1e9, t = 1e9, r = -1e9, b = -1e9, any = false
         for (var i = 0; i < ps.length; i++) {
             if (!ps[i].visible) continue
@@ -359,4 +363,5 @@ Item {
     BarWidgets.CalendarPopup { id: _calendarPopup;  barRoot: bar }
     BarWidgets.WifiPopup     { id: _wifiPopup;       barRoot: bar }
     BarWidgets.BtPopup       { id: _btPopup;         barRoot: bar }
+    BarWidgets.BarPanel      { id: _barPanel;        barRoot: bar }
 }

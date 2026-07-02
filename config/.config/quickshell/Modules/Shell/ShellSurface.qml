@@ -51,23 +51,30 @@ Variants {
             Region { item: _panelOpenMask }
             Region { item: _editMask }
             Region { item: _topBarPopupMask }
+            Region { item: _bottomBarPopupMask }
+            Region { item: _leftBarPopupMask }
+            Region { item: _rightBarPopupMask }
         }
 
-        // Bar popups (BT / WiFi / calendar / hover) float below the top bar,
-        // outside the SideLoader's masked rect — mirror their union bounds here
-        // so clicks land on them instead of passing through. Collapses to 0×0
-        // when no popup is open (and for non-bar top sides, which lack these
-        // properties → _open stays false).
-        Item {
-            id: _topBarPopupMask
-            readonly property var  _bar:  _topSide.item
+        // Bar popups (hover/wifi/bt/calendar) AND bar-hosted panels float outside
+        // the thin SideLoader rect — mirror each bar's union bounds here so clicks
+        // land on them. One per side; collapses to 0×0 when that side isn't a bar
+        // or has nothing open (strips lack _anyPopupOpen → _open stays false).
+        // (S26-C generalised this from top-only to all four sides.)
+        component BarPopupMask: Item {
+            required property Item sideItem
+            readonly property var  _bar:  sideItem.item
             readonly property bool _open: _bar && _bar._anyPopupOpen === true
             readonly property rect _b:    _open ? _bar._popupBounds : Qt.rect(0, 0, 0, 0)
-            x: _topSide.x + _b.x
-            y: _topSide.y + _b.y
+            x: sideItem.x + _b.x
+            y: sideItem.y + _b.y
             width:  _open ? _b.width  : 0
             height: _open ? _b.height : 0
         }
+        BarPopupMask { id: _topBarPopupMask;    sideItem: _topSide }
+        BarPopupMask { id: _bottomBarPopupMask; sideItem: _bottomSide }
+        BarPopupMask { id: _leftBarPopupMask;   sideItem: _leftSide }
+        BarPopupMask { id: _rightBarPopupMask;  sideItem: _rightSide }
 
         // Full-surface mask while editing so all of EditOverlay is clickable;
         // collapses to 0×0 otherwise.
@@ -96,7 +103,12 @@ Variants {
                             && point.position.y >= s.y && point.position.y < s.y + s.height
                     }
                     if (!inside(_topSide) && !inside(_bottomSide)
-                        && !inside(_leftSide) && !inside(_rightSide)) {
+                        && !inside(_leftSide) && !inside(_rightSide)
+                        // A bar-hosted panel lives outside its side's rect — its
+                        // bounds are in the bar-popup masks; treat those as inside
+                        // so clicking the panel doesn't close it.
+                        && !inside(_topBarPopupMask) && !inside(_bottomBarPopupMask)
+                        && !inside(_leftBarPopupMask) && !inside(_rightBarPopupMask)) {
                         // Global close — clicking outside on one screen dismisses
                         // the panel on every screen.
                         ShellServices.ShellState.closeAllAcross()

@@ -159,18 +159,22 @@ QtObject {
     // strip form (clock, volume, …) map to null and are dropped on the way to a
     // strip. Used to seed the target container on a type switch so the side
     // isn't empty after flipping.
-    readonly property var _stripToBarWidget: ({ settings: "settings", nc: "notifications" })
-    readonly property var _barToStripPanel:  ({ settings: "settings", notifications: "nc" })
+    // Panel-opener ids are shared across holders (dashboard/launcher/wallpaper/
+    // media/settings). Only nc differs — the bar opens it via the notifications
+    // widget. Everything else on a bar (clock, volume, …) has no strip form.
+    readonly property var _stripToBarWidget: ({ nc: "notifications" })
+    readonly property var _barToStripPanel:  ({ notifications: "nc" })
+    readonly property var _stripCapable: ({ nc: 1, dashboard: 1, media: 1, launcher: 1, wallpaper: 1, settings: 1 })
     function _stripEntryToBar(e) {
         var n = _normEntry(e)
         if (_stripToBarWidget[n.id]) return { id: _stripToBarWidget[n.id], config: {} }
-        if (n.id && n.id.indexOf("plugin:") !== 0) return { id: "panel-opener", config: { panelId: n.id } }
-        return null
+        return { id: n.id, config: n.config || {} }   // opener id is the same on a bar
     }
     function _barEntryToStrip(e) {
         var n = _normEntry(e)
         if (n.id === "panel-opener") return n.config && n.config.panelId ? { id: n.config.panelId, config: {} } : null
         if (_barToStripPanel[n.id])  return { id: _barToStripPanel[n.id], config: {} }
+        if (_stripCapable[n.id])     return { id: n.id, config: n.config || {} }
         return null
     }
     function _compact(list) { return list.filter(function(x) { return !!x }) }
