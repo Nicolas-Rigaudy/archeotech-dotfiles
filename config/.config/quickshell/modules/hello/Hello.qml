@@ -1,36 +1,39 @@
 import QtQuick
-import "../../Commons" as Commons
 
-// Example bar-zone module (Sprint 21 Chunk 2).
+// Example bar-zone module (Sprint 21 Chunk 2; theming updated Sprint 26).
 //
-// A module's entry is a plain widget that follows the same contract as a
-// built-in bar widget: it receives `barRoot` + `widgetId` injected via
-// Loader.setSource, and may use barRoot's popup API (see docs/WIDGET_API.md).
+// A module's entry follows the same contract as a built-in bar widget: it
+// receives `barRoot` + `widgetId` injected via Loader.setSource, and may use
+// barRoot's popup API (see docs/WIDGET_API.md).
 //
-// Modules bundled under ~/.config/quickshell/modules/ can import the shell's
-// Commons (relative path below). Fully external modules in ~/.local/share
-// should be self-styled — see docs/MODULE_API.md.
+// Theming: a module loaded from a modules dir is mounted by absolute file://
+// URL, so `import "../../Commons"` does NOT resolve. Instead declare
+// `property var appearance` — the loader injects the shell's theme tokens
+// (colors / font / radius / spacing / anim). Guard uses until it arrives
+// (`_a ? … : fallback`), since it's set just after the object is created.
 Item {
     id: root
     required property var    barRoot
     required property string widgetId
+    property var appearance
+    readonly property var _a: appearance
 
     implicitWidth:  label.implicitWidth + 14
     implicitHeight: 22
 
     Rectangle {
         anchors.fill: parent
-        radius: Commons.Appearance.radius.sm
-        color: ma.containsMouse ? Commons.Appearance.colors.surface0Alpha : "transparent"
-        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+        radius: _a ? _a.radius.sm : 6
+        color: (ma.containsMouse && _a) ? _a.colors.surface0Alpha : "transparent"
+        Behavior on color { ColorAnimation { duration: _a ? _a.anim.fast : 120 } }
 
         Text {
             id: label
             anchors.centerIn: parent
             text: "󰜗 hello"
-            color: Commons.Appearance.colors.text
-            font.family: Commons.Appearance.font.family
-            font.pixelSize: Commons.Appearance.font.sizeBase
+            color: _a ? _a.colors.text : "#cdd6f4"
+            font.family: _a ? _a.font.family : "sans-serif"
+            font.pixelSize: _a ? _a.font.sizeBase : 13
         }
 
         MouseArea {

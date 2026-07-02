@@ -143,28 +143,31 @@ configurable ones; it does not store a global default (config is per-instance).
 
 ## Theming
 
-Modules bundled under `~/.config/quickshell/modules/` may import the shell's
-tokens by relative path — `import "../../Commons" as Commons` — and use
-`Commons.Appearance.colors / font / radius / spacing / anim`.
+**Every** module — bundled *or* external — is mounted by absolute `file://`
+URL, so `import "../../Commons"` does **not** resolve (it either fails or loads a
+separate, empty singleton → `Cannot read property … of undefined`). Quickshell's
+`qs.Commons` import only works for files inside the config tree, and there's no
+import-path knob for outside files. So a module must **not** `import Commons`.
 
-**Fully external modules** under `~/.local/share/archeotech/modules/` can't
-resolve that path (Quickshell's `qs.Commons` module import only works inside the
-config tree; there's no import-path knob for outside files). Instead, declare
-`property var appearance` and the loader injects the live theme tokens:
+Instead declare `property var appearance`; the loader injects the live theme
+tokens (`colors / font / radius / spacing / anim`). It's set just after the
+object is created, so guard uses until it arrives:
 
 ```qml
 Item {
-    required property var barRoot
-    property var appearance             // = Commons.Appearance; colors/font/radius/spacing/anim
+    required property var barRoot       // (panel-content declares panelRoot instead)
+    property var appearance
     property var config: ({})
-    // color: appearance ? appearance.colors.text : "#ffffff"
+    readonly property var _a: appearance
+    // color: _a ? _a.colors.text : "#cdd6f4"
+    // font.family: _a ? _a.font.family : "sans-serif"
 }
 ```
 
-`appearance` is only injected for `plugin:` modules and only if the property
-exists, so bundled modules that `import Commons` are unaffected. The two bundled
-examples (`hello`, `notes`) use the relative import. (Access to shell *services*
-beyond theme tokens is not yet exposed to external modules.)
+`appearance` is injected for all three placement types (bar-zone, strip-icon,
+panel-content) and only if the property exists. The bundled examples (`hello`,
+`notes`) use exactly this pattern — copy them. (Access to shell *services*
+beyond theme tokens is not yet exposed to modules.)
 
 ## Worked example
 
