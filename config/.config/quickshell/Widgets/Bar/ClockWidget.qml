@@ -1,33 +1,34 @@
 import QtQuick
-import QtQuick.Layouts
 import "../../Commons" as Commons
 
-// Time + date display. Hover anywhere over the clock area opens the
-// calendar popup (state lives in barRoot — see CalendarPopup.qml).
+// Time + date. Horizontal: single rich-text line, hover opens the calendar.
+// Vertical (thin side bar): HH over MM stacked (DMS pattern — never rotate
+// text), no date/calendar (the calendar popup anchors horizontally).
 Item {
     id: root
     required property var barRoot
     property string widgetId
     // Sprint 26 — per-instance config (schema in WidgetRegistry._builtinSchemas):
     //   format: "24h" | "12h"    showSeconds: bool
-    // Injected by BarWidgetLoader; two clocks can differ.
     property var config: ({})
 
-    // Qt time-format string from the instance config.
+    readonly property bool _horizontal: barRoot && barRoot.horizontal
+
     function _timeFmt() {
         var h = (config && config.format === "12h") ? "h:mm" : "HH:mm"
         if (config && config.showSeconds === true) h += ":ss"
         return (config && config.format === "12h") ? h + " AP" : h
     }
+    function _hourFmt() { return (config && config.format === "12h") ? "h" : "HH" }
 
-    visible: barRoot && barRoot.horizontal
-    Layout.alignment: Qt.AlignVCenter
+    visible: barRoot
+    implicitWidth:  _horizontal ? centerClock.implicitWidth : (barRoot ? barRoot.thickness : 30)
+    implicitHeight: _horizontal ? Commons.Appearance.bar.height : vClock.implicitHeight
 
-    implicitWidth:  centerClock.implicitWidth
-    implicitHeight: Commons.Appearance.bar.height
-
+    // ── Horizontal — rich single line + calendar hover ──────────────────────────
     Text {
         id: centerClock
+        visible: root._horizontal
         anchors.centerIn: parent
         textFormat: Text.RichText
         text: clockText()
@@ -43,9 +44,32 @@ Item {
                 + Qt.formatDateTime(new Date(), "ddd d MMM")
                 + "</span>"
         }
-        Timer {
-            interval: 1000; running: true; repeat: true
-            onTriggered: centerClock.text = centerClock.clockText()
+        Timer { interval: 1000; running: root._horizontal; repeat: true
+                onTriggered: centerClock.text = centerClock.clockText() }
+    }
+
+    // ── Vertical — HH / MM stacked ───────────────────────────────────────────────
+    Column {
+        id: vClock
+        visible: !root._horizontal
+        anchors.centerIn: parent
+        spacing: 0
+        property var _now: new Date()
+        Timer { interval: 1000; running: !root._horizontal; repeat: true
+                onTriggered: vClock._now = new Date() }
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: Qt.formatDateTime(vClock._now, root._hourFmt())
+            color: Commons.Appearance.colors.text
+            font.pixelSize: Commons.Appearance.font.sizeMd; font.weight: Font.DemiBold
+            font.family: Commons.Appearance.font.family
+        }
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: Qt.formatDateTime(vClock._now, "mm")
+            color: Commons.Appearance.colors.subtext0
+            font.pixelSize: Commons.Appearance.font.sizeMd
+            font.family: Commons.Appearance.font.family
         }
     }
 
@@ -55,6 +79,7 @@ Item {
         height: parent.height
         hoverEnabled: true
         acceptedButtons: Qt.NoButton
+        enabled: root._horizontal
         z: 2
         onEntered: {
             if (!root.barRoot) return

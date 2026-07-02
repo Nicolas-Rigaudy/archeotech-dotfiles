@@ -32,7 +32,8 @@ QtObject {
         { id: "battery",       name: "Battery",       icon: "󰁹" },
         { id: "notifications", name: "Notifications", icon: "󰂚" },
         { id: "settings",      name: "Settings",      icon: "󰒓" },
-        { id: "power",         name: "Power",         icon: "󰐥" }
+        { id: "power",         name: "Power",         icon: "󰐥" },
+        { id: "panel-opener",  name: "Panel Opener",  icon: "󰏗" }
     ]
 
     readonly property var availableStripIcons: [
@@ -64,6 +65,19 @@ QtObject {
                 options: [{ value: "24h", label: "24-hour" }, { value: "12h", label: "12-hour" }]
             },
             showSeconds: { type: "bool", label: "Show seconds", "default": false }
+        },
+        "panel-opener": {
+            panelId: {
+                type: "enum", label: "Panel", "default": "dashboard",
+                options: [
+                    { value: "dashboard", label: "Dashboard" },
+                    { value: "media",     label: "Media" },
+                    { value: "wallpaper", label: "Appearance" },
+                    { value: "settings",  label: "Settings" },
+                    { value: "nc",        label: "Notifications" },
+                    { value: "launcher",  label: "Launcher" }
+                ]
+            }
         }
     })
 

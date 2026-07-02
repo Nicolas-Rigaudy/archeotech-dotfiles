@@ -1,12 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
 import "../../../Commons" as Commons
-import "../../../Services/Media" as MediaServices
-import "../../../Services/Hardware" as HardwareServices
-import "../../../Services/Networking" as NetworkServices
-import "../../../Services/System" as SystemServices
-import "../../../Services/Persistence" as Persistence
 import "../../../Services/Shell" as ShellServices
 import "../../../Widgets/Bar" as BarWidgets
 
@@ -293,111 +287,69 @@ Item {
             }
         }
 
-        // ── Vertical layout (left/right side bars) — simplified icons, no popups.
-        // Widget-aware vertical layouts arrive in a later sprint.
-        Column {
+        // ── Vertical layout (left/right side bars) — config-driven zones,
+        //    same ListModels as horizontal (left→top, right→bottom, center→
+        //    middle overlay). Widgets render their icon-only form via BarPill
+        //    (S26-C), so a vertical bar is now fully configurable like the top
+        //    bar — no more hardcoded icon column.
+        ColumnLayout {
             visible: !bar.horizontal
-            anchors.centerIn: parent
-            spacing: 12
+            anchors.fill: parent
+            anchors.topMargin:    Commons.Appearance.bar.innerPadding
+            anchors.bottomMargin: Commons.Appearance.bar.innerPadding
+            spacing: 0
 
-            Item {
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 24; height: 24
-                Text {
-                    anchors.centerIn: parent
-                    text: MediaServices.Audio.micMuted ? "󰍭" : "󰍬"
-                    color: MediaServices.Audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
-                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
-                    Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
-                }
-                TapHandler { onTapped: MediaServices.Audio.toggleMicMute() }
-            }
-            Item {
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 24; height: 24
-                Text {
-                    anchors.centerIn: parent
-                    text: MediaServices.Audio.muted ? "󰖁" : MediaServices.Audio.volume > 66 ? "󰕾" : MediaServices.Audio.volume > 33 ? "󰖀" : "󰕿"
-                    color: MediaServices.Audio.muted ? Commons.Appearance.colors.overlay0 : Commons.Appearance.colors.subtext1
-                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
-                }
-                TapHandler { onTapped: MediaServices.Audio.toggleMute() }
-            }
-            Item {
-                visible: Persistence.Config.get("bar.modules.wifi", true)
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 24; height: 24
-                Text {
-                    anchors.centerIn: parent
-                    text: NetworkServices.Network.icon()
-                    color: NetworkServices.Network.connected ? Commons.Appearance.colors.blue : Commons.Appearance.colors.overlay0
-                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
-                }
-            }
-            Item {
-                visible: Persistence.Config.get("bar.modules.bluetooth", true)
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 24; height: 24
-                Text {
-                    anchors.centerIn: parent
-                    text: NetworkServices.Bluetooth.icon()
-                    color: NetworkServices.Bluetooth.connected ? Commons.Appearance.colors.mauve
-                         : NetworkServices.Bluetooth.enabled   ? Commons.Appearance.colors.subtext1
-                         :                                        Commons.Appearance.colors.overlay0
-                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
-                }
-            }
-            Item {
-                visible: HardwareServices.Battery.present && Persistence.Config.get("bar.modules.battery", true)
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 24; height: 24
-                Text {
-                    anchors.centerIn: parent
-                    text: HardwareServices.Battery.icon()
-                    color: HardwareServices.Battery.percent <= 20 ? Commons.Appearance.colors.red : Commons.Appearance.colors.green
-                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
-                }
-            }
-            Item {
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 24; height: 24
-                Text {
-                    anchors.centerIn: parent
-                    text: "󰂚"
-                    color: ShellServices.ShellState.isOpenAnywhere("nc")       ? Commons.Appearance.colors.accent
-                         : SystemServices.Notifications.unreadCount > 0 ? Commons.Appearance.colors.red
-                         :                                                 Commons.Appearance.colors.subtext1
-                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
-                }
-                TapHandler {
-                    onTapped: {
-                        if (!ShellServices.ShellState.isOpenAnywhere("nc"))
-                            SystemServices.Notifications.unreadCount = 0
-                        ShellServices.ShellState.toggleGlobal("nc")
+            // TOP zone
+            ColumnLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 8
+                Repeater {
+                    model: _leftModel
+                    delegate: BarWidgetLoader {
+                        required property var model
+                        required property int index
+                        widgetId: model ? model.widgetId : ""
+                        barRoot:  bar
+                        config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                     }
                 }
             }
-            Item {
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 24; height: 24
-                Text {
-                    anchors.centerIn: parent
-                    text: "󰒓"
-                    color: ShellServices.ShellState.isOpenAnywhere("settings") ? Commons.Appearance.colors.accent : Commons.Appearance.colors.subtext1
-                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
+
+            Item { Layout.fillHeight: true }
+
+            // BOTTOM zone
+            ColumnLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 8
+                Repeater {
+                    model: _rightModel
+                    delegate: BarWidgetLoader {
+                        required property var model
+                        required property int index
+                        widgetId: model ? model.widgetId : ""
+                        barRoot:  bar
+                        config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
+                    }
                 }
-                TapHandler { onTapped: ShellServices.ShellState.toggleGlobal("settings") }
             }
-            Item {
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 24; height: 24
-                Text {
-                    anchors.centerIn: parent
-                    text: "󰐥"
-                    color: Commons.Appearance.colors.subtext1
-                    font.pixelSize: 16; font.family: Commons.Appearance.font.family
+        }
+
+        // CENTER zone (vertical) — absolutely centered overlay, mirrors the
+        // horizontal center Row so zone widths don't shift it.
+        Column {
+            visible: !bar.horizontal
+            anchors.centerIn: parent
+            z: 2
+            spacing: 8
+            Repeater {
+                model: _centerModel
+                delegate: BarWidgetLoader {
+                    required property var model
+                    required property int index
+                    widgetId: model ? model.widgetId : ""
+                    barRoot:  bar
+                    config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                 }
-                TapHandler { onTapped: powerCmd.running = true }
             }
         }
     }
@@ -407,6 +359,4 @@ Item {
     BarWidgets.CalendarPopup { id: _calendarPopup;  barRoot: bar }
     BarWidgets.WifiPopup     { id: _wifiPopup;       barRoot: bar }
     BarWidgets.BtPopup       { id: _btPopup;         barRoot: bar }
-
-    Process { id: powerCmd; command: ["bash", "-c", "wlogout-launch.sh &"]; running: false }
 }

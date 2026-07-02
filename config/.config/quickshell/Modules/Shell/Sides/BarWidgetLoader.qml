@@ -66,7 +66,9 @@ Loader {
     // pill's edge. Inner gap between widgets stays at 0 (RowLayout spacing).
     Layout.leftMargin:  isFirst ? 2 : 0
     Layout.rightMargin: isLast  ? 2 : 0
-    Layout.alignment:   Qt.AlignVCenter
+    // Center on the cross axis: vertical bars stack in a ColumnLayout, so the
+    // widget must center horizontally instead (S26-C).
+    Layout.alignment:   (barRoot && barRoot.horizontal) ? Qt.AlignVCenter : Qt.AlignHCenter
 
     asynchronous: true
     visible: status === Loader.Ready

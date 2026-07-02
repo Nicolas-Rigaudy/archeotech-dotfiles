@@ -16,6 +16,11 @@ Item {
 
     property var panelRoot
 
+    // Responsive: two columns side-by-side when the card is wide (bottom strip),
+    // stacked + scrollable when narrow (vertical side strip). Keys on the actual
+    // allocated width, so it's holder-agnostic — no per-side variant. (S26-C)
+    readonly property bool _wide: width >= 720
+
     // Auto-dismiss when opened via autostart (openAuto IPC call)
     Timer {
         id: autoDismiss
@@ -110,33 +115,47 @@ Item {
             color: Commons.Appearance.colors.surface0
         }
 
-        // ── Left column ──────────────────────────────────────────────────
-        ColumnLayout {
-            id: leftCol
+        // ── Body — reflowing grid, scrollable when stacked ────────────────
+        Flickable {
             anchors {
-                top:  divider.bottom; topMargin:  16
-                left: parent.left;    leftMargin: 24
+                top:    divider.bottom; topMargin:    16
+                left:   parent.left;    leftMargin:   24
+                right:  parent.right;   rightMargin:  24
+                bottom: parent.bottom;  bottomMargin: 20
             }
-            width: 320
-            spacing: 8
+            clip: true
+            contentWidth: width
+            contentHeight: grid.implicitHeight
+            boundsBehavior: Flickable.StopAtBounds
+            interactive: contentHeight > height
 
-            SystemStatus { Layout.fillWidth: true }
-            SystemNotes  { Layout.fillWidth: true }
-        }
+            GridLayout {
+                id: grid
+                width: parent.width
+                columns: root._wide ? 2 : 1
+                columnSpacing: 16
+                rowSpacing: 16
 
-        // ── Right column ─────────────────────────────────────────────────
-        ColumnLayout {
-            id: rightCol
-            anchors {
-                top:   divider.bottom; topMargin:   16
-                left:  leftCol.right;  leftMargin:  16
-                right: parent.right;   rightMargin: 24
+                // Two grouped column-containers. Wide → sit side-by-side;
+                // narrow → the grid drops to 1 column and they stack in order.
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1   // equal split with the right group
+                    Layout.alignment: Qt.AlignTop
+                    spacing: 8
+                    SystemStatus { Layout.fillWidth: true }
+                    SystemNotes  { Layout.fillWidth: true }
+                }
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    Layout.alignment: Qt.AlignTop
+                    spacing: 8
+                    ActiveProjects { Layout.fillWidth: true }
+                    QuickLaunch    { Layout.fillWidth: true }
+                    TipOfSession   { Layout.fillWidth: true }
+                }
             }
-            spacing: 8
-
-            ActiveProjects { Layout.fillWidth: true }
-            QuickLaunch    { Layout.fillWidth: true }
-            TipOfSession   { Layout.fillWidth: true }
         }
     }
 }

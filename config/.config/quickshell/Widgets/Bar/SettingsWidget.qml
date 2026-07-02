@@ -1,43 +1,17 @@
 import QtQuick
-import QtQuick.Layouts
 import "../../Commons" as Commons
 import "../../Services/Shell" as ShellServices
 
-// Settings gear — toggles the Settings panel.
-Item {
+// Settings gear — toggles the Settings panel. Icon-only vertical (BarPill).
+BarPill {
     id: root
-    required property var barRoot
-    property string widgetId
+    icon: "󰒓"
+    iconColor: Commons.Appearance.colors.subtext1
 
-    visible: barRoot && barRoot.horizontal
-    height: Commons.Appearance.bar.height
-    width: settingsIcon.implicitWidth + 10
-    Layout.alignment: Qt.AlignVCenter
-
-    Text {
-        id: settingsIcon
-        anchors.centerIn: parent
-        text: "󰒓"
-        color: Commons.Appearance.colors.subtext1
-        font.pixelSize: 18; font.family: Commons.Appearance.font.family
-        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+    onClicked: {
+        if (barRoot) { barRoot._wifiPopupVisible = false; barRoot._btPopupVisible = false }
+        ShellServices.ShellState.toggleGlobal("settings")
     }
-    MouseArea {
-        anchors.fill: parent; hoverEnabled: true
-        onClicked: {
-            if (root.barRoot) {
-                root.barRoot._wifiPopupVisible = false
-                root.barRoot._btPopupVisible   = false
-            }
-            ShellServices.ShellState.toggleGlobal("settings")
-        }
-        onEntered: {
-            settingsIcon.color = Commons.Appearance.colors.accent
-            if (root.barRoot) root.barRoot.showPopup(root, "SETTINGS", "󰒓  Settings", "", "Click to toggle")
-        }
-        onExited: {
-            settingsIcon.color = Commons.Appearance.colors.subtext1
-            if (root.barRoot) root.barRoot.hidePopup(root)
-        }
-    }
+    onEntered: if (barRoot && barRoot.horizontal) barRoot.showPopup(root, "SETTINGS", "󰒓  Settings", "", "Click to toggle")
+    onExited:  if (barRoot) barRoot.hidePopup(root)
 }

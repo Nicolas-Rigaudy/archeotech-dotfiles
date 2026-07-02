@@ -152,23 +152,53 @@ QtObject {
         _save()
     }
 
+    // Strip↔bar entry compatibility (Sprint 26-C). A strip hosts panel-opener
+    // icons; a bar hosts widgets. Panel-openers map both ways: a strip icon
+    // becomes a bar entry (a dedicated widget where one exists, else the generic
+    // `panel-opener` carrying the panelId), and vice-versa. Bar widgets with no
+    // strip form (clock, volume, …) map to null and are dropped on the way to a
+    // strip. Used to seed the target container on a type switch so the side
+    // isn't empty after flipping.
+    readonly property var _stripToBarWidget: ({ settings: "settings", nc: "notifications" })
+    readonly property var _barToStripPanel:  ({ settings: "settings", notifications: "nc" })
+    function _stripEntryToBar(e) {
+        var n = _normEntry(e)
+        if (_stripToBarWidget[n.id]) return { id: _stripToBarWidget[n.id], config: {} }
+        if (n.id && n.id.indexOf("plugin:") !== 0) return { id: "panel-opener", config: { panelId: n.id } }
+        return null
+    }
+    function _barEntryToStrip(e) {
+        var n = _normEntry(e)
+        if (n.id === "panel-opener") return n.config && n.config.panelId ? { id: n.config.panelId, config: {} } : null
+        if (_barToStripPanel[n.id])  return { id: _barToStripPanel[n.id], config: {} }
+        return null
+    }
+    function _compact(list) { return list.filter(function(x) { return !!x }) }
+
     // Switch a side's type (bar | strip | holder | none). Seeds an empty
-    // container for the new type when absent, but preserves any existing
-    // zones/icons so toggling types back and forth is non-destructive.
+    // container for the new type when absent; if the target container is empty
+    // it's seeded by converting the *other* container's compatible entries
+    // (panel-openers carry across, incompatible widgets are dropped), so a
+    // strip↔bar flip isn't left blank. A non-empty target is left untouched, so
+    // toggling back and forth is non-destructive and never duplicates.
     function setSideType(sideName, type) {
         _mutate(function(d) {
             var s = d.sides[sideName] || {}
             s.type = type
-            // Reset thickness to the new type's default so a strip↔bar switch
-            // actually changes geometry (a bar must be bar-height thick, a strip
-            // thin). Zones/icons are preserved so toggling back is non-destructive.
             if (type === "bar") {
                 if (!s.zones) s.zones = { left: [], center: [], right: [] }
                 s.size = 30
+                var zonesEmpty = !s.zones.left.length && !s.zones.center.length && !s.zones.right.length
+                if (zonesEmpty && s.icons && s.icons.length)
+                    s.zones.right = root._compact(s.icons.map(root._stripEntryToBar))
             } else if (type === "strip" || type === "holder") {
                 if (!s.icons) s.icons = []
                 s.size = 10
                 if (s.expanded === undefined) s.expanded = 240
+                if (!s.icons.length && s.zones) {
+                    var all = (s.zones.left || []).concat(s.zones.center || [], s.zones.right || [])
+                    s.icons = root._compact(all.map(root._barEntryToStrip))
+                }
             }
             d.sides[sideName] = s
         })

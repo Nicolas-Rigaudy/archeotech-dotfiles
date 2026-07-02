@@ -16,8 +16,14 @@ Item {
 
     readonly property bool _available: MediaServices.MprisService.available
 
-    // axisSize:"auto" — width follows content (wide enough for art + controls).
-    readonly property real implicitAxis: 520
+    // axisSize:"auto" — along-strip extent. Wide (520) on a horizontal strip so
+    // art + info sit side-by-side; short (300) on a vertical strip where the
+    // player stacks, so it doesn't leave a tall empty gap. (S26-C)
+    readonly property real implicitAxis: (panelRoot && !panelRoot._horizontal) ? 300 : 520
+
+    // Responsive: art beside info when wide (bottom strip), stacked above when
+    // narrow (vertical side strip). Keys on measured width. (S26-C)
+    readonly property bool _narrow: width < 360
 
     Process {
         id: cmdRunner
@@ -50,20 +56,25 @@ Item {
 
         Rectangle { Layout.fillWidth: true; height: 1; color: Commons.Appearance.colors.surface0; opacity: 0.5 }
 
-        // Nothing playing — launch shortcut
-        RowLayout {
+        // Nothing playing — launch shortcut. Wraps to a column when narrow so
+        // the label and button don't collide on a vertical strip.
+        GridLayout {
             Layout.fillWidth: true
             visible: !root._available
-            spacing: 10
+            columns: root._narrow ? 1 : 2
+            columnSpacing: 10
+            rowSpacing: 8
             Text {
                 text: "󰝚  Nothing playing"
                 color: Commons.Appearance.colors.overlay0
                 font.pixelSize: Commons.Appearance.font.sizeBase
                 font.family: Commons.Appearance.font.family
+                elide: Text.ElideRight
                 Layout.fillWidth: true
             }
             Rectangle {
-                width: 100; height: 30
+                Layout.preferredWidth: 100; Layout.preferredHeight: 30
+                Layout.alignment: root._narrow ? Qt.AlignLeft : Qt.AlignRight
                 radius: Commons.Appearance.radius.base
                 color: spotifyArea.containsMouse ? Commons.Appearance.colors.surface0 : Commons.Appearance.colors.base
                 Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
@@ -81,17 +92,23 @@ Item {
             }
         }
 
-        // Player card
-        RowLayout {
+        // Player card — art + info side-by-side, or stacked when narrow.
+        // Fill height only when wide; when stacked, pack under the header so a
+        // tall panel doesn't scatter the controls with empty space. (S26-C)
+        GridLayout {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.fillHeight: !root._narrow
+            Layout.alignment: root._narrow ? Qt.AlignTop : Qt.AlignVCenter
             visible: root._available
-            spacing: 14
+            columns: root._narrow ? 1 : 2
+            columnSpacing: 14
+            rowSpacing: 14
 
-            // Album art / app icon
+            // Album art / app icon — smaller when stacked so the info column breathes.
             Rectangle {
-                Layout.preferredWidth: 92; Layout.preferredHeight: 92
-                Layout.alignment: Qt.AlignVCenter
+                readonly property int _art: root._narrow ? 72 : 92
+                Layout.preferredWidth: _art; Layout.preferredHeight: _art
+                Layout.alignment: root._narrow ? Qt.AlignHCenter : Qt.AlignVCenter
                 radius: Commons.Appearance.radius.base
                 color: Commons.Appearance.colors.base
 
@@ -146,7 +163,10 @@ Item {
                 // Progress bar (seekable)
                 Item {
                     Layout.fillWidth: true
-                    height: 28
+                    // preferredHeight, not height — a ColumnLayout ignores plain
+                    // height (falls back to implicitHeight 0), collapsing this and
+                    // overlapping the time labels onto the controls (S26-C fix).
+                    Layout.preferredHeight: 28
                     visible: MediaServices.MprisService.length > 0
 
                     Rectangle {
@@ -198,7 +218,7 @@ Item {
                         MouseArea { id: prevArea; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; onClicked: MediaServices.MprisService.previous() }
                     }
 
-                    Item { width: 24 }
+                    Item { Layout.preferredWidth: 24 }
 
                     Text {
                         text: MediaServices.MprisService.playing ? "󰏤" : "󰐊"
@@ -208,7 +228,7 @@ Item {
                         MouseArea { id: playArea; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; onClicked: MediaServices.MprisService.togglePlay() }
                     }
 
-                    Item { width: 24 }
+                    Item { Layout.preferredWidth: 24 }
 
                     Text {
                         text: "󰒭"
@@ -222,5 +242,9 @@ Item {
                 }
             }
         }
+
+        // Absorbs slack so the stacked (narrow) player packs under the header
+        // instead of floating; collapses to 0 when the player fills height.
+        Item { Layout.fillWidth: true; Layout.fillHeight: true }
     }
 }
