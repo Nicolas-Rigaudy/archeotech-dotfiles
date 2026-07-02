@@ -39,7 +39,26 @@ Item {
     readonly property int    _expanded:     ShellServices.ShellConfig.sideExpanded(side, _screenName)
 
     readonly property string _activePanel: ShellServices.ShellState.activePanel(_screenName)
-    readonly property bool   _panelOpen:   _activePanel !== "" && _icons.indexOf(_activePanel) !== -1
+    // Sprint 26 follow-up B — only show the panel if the active side matches
+    // this strip (or is wildcard ""), so the same opener on 2+ sides opens
+    // just the clicked one.
+    readonly property string _activeSide:  ShellServices.ShellState.activeSide(_screenName)
+    // A wildcard open (side "" — bar gear / shortcut / IPC) must show on exactly
+    // ONE strip, not every strip that lists the panel. Pick the primary host:
+    // the first side in priority order whose config hosts this panel.
+    function _isPrimaryHost(id) {
+        var order = ["right", "bottom", "left", "top"]
+        for (var i = 0; i < order.length; i++) {
+            if (ShellServices.ShellConfig.stripIcons(order[i], _screenName).indexOf(id) !== -1)
+                return order[i] === side
+        }
+        return false
+    }
+    function _showsPanel(id) {
+        if (!id || _icons.indexOf(id) === -1) return false
+        return _activeSide === side || (_activeSide === "" && _isPrimaryHost(id))
+    }
+    readonly property bool   _panelOpen:   _activePanel !== "" && _showsPanel(_activePanel)
     readonly property bool   _showCard:    _hov || _panelOpen
 
     // Panel metadata: built-in panels come from PanelRegistry; an unknown
@@ -101,10 +120,20 @@ Item {
     readonly property int _rb: Commons.Appearance.radius.md
     readonly property int _popupExtra: _bodyDepth + _r
 
+    // Auto-sized panels only know their axis extent once their content has
+    // loaded + measured `implicitAxis`. Until then, hold the card at popup size
+    // so it expands to the final size in ONE motion instead of popping to a
+    // floor size then re-growing (the "jitter then stops"). Fixed-size panels
+    // (and content that doesn't expose implicitAxis) are ready immediately.
+    readonly property bool _ready: !_panelOpen
+                                   || _axisSizeRaw !== "auto"
+                                   || _contentImplicitAxis > 0
+                                   || (!!_contentItem && _contentItem.implicitAxis === undefined)
+
     // Perpendicular expansion target (drives strip Item size + card perpendicular dim).
-    readonly property real _perpTarget: _panelOpen ? _panelSize
-                                       : _hov      ? _popupExtra
-                                       :             0
+    readonly property real _perpTarget: (_panelOpen && _ready) ? _panelSize
+                                       : (_hov || _panelOpen)  ? _popupExtra
+                                       :                          0
 
     // Animated values — bound to targets so they animate on state changes.
     property real _perp: _perpTarget
@@ -115,7 +144,7 @@ Item {
     // content's implicitAxis, numeric = exact pixels (still clamped).
     readonly property int _screenAxis: _horizontal ? width : height
     readonly property int _axisFloor:  _bodyAxis + 2 * _r
-    readonly property real _axisTarget: !_panelOpen
+    readonly property real _axisTarget: (!_panelOpen || !_ready)
         ? _axisFloor
         : _axisSizeRaw === "full" ? _screenAxis
         : _axisSizeRaw === "auto" ? Math.min(_screenAxis, Math.max(_axisFloor, _contentImplicitAxis + 2 * _r))
@@ -213,8 +242,13 @@ Item {
          : strip.side === "top"    ? strip._edgeInset
          : strip._cardAxis
 
-        layer.enabled: true
-        layer.samples: 8
+        // Sprint 26 fix: NO layer here. The icons live inside this card; with
+        // layer.enabled the layered item's input hit-test ate all hover (the
+        // strip MouseArea never saw the cursor) and icon hover flipped with the
+        // card size → a feedback loop that made the popup jitter. CurveRenderer
+        // antialiases the shape natively (no offscreen layer), so edges stay
+        // smooth without blocking hover. (See DECISIONS 2026-07-02.)
+        preferredRendererType: Shape.CurveRenderer
 
         transformOrigin: strip.side === "right"  ? Item.Right
                        : strip.side === "left"   ? Item.Left
@@ -291,7 +325,7 @@ Item {
             anchors.topMargin:    strip.side === "top"    ? 4 : strip._r
             anchors.bottomMargin: strip.side === "bottom" ? 4 : strip._r
 
-            opacity: strip._panelOpen ? 1.0 : 0.0
+            opacity: (strip._panelOpen && strip._ready) ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
             Loader {
@@ -307,7 +341,13 @@ Item {
                 anchors.fill: parent
                 active: strip._panelOpen && !!strip._activeMeta && !!strip._activeMeta.contentUrl
                 source: (strip._activeMeta && strip._activeMeta.contentUrl) ? strip._activeMeta.contentUrl : ""
-                onLoaded: { if (item && 'panelRoot' in item) item.panelRoot = strip }
+                // panel-content modules load via absolute file:// and can't
+                // `import Commons` — inject the theme tokens like the bar/strip
+                // loaders do (S26). Only if the module declares the property.
+                onLoaded: {
+                    if (item && 'panelRoot' in item)  item.panelRoot = strip
+                    if (item && 'appearance' in item) item.appearance = Commons.Appearance
+                }
             }
         }
 

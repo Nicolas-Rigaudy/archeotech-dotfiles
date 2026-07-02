@@ -17,9 +17,14 @@ Item {
     property string panelId: widgetId   // override if different from widgetId
 
     readonly property string _screenName: stripRoot && stripRoot.screen ? stripRoot.screen.name : ""
-    // Panels are global: open on every screen or none. The icon reflects "open
-    // anywhere" and the click toggles all screens (matches the bar gear).
-    readonly property bool   _active:     ShellServices.ShellState.isOpenAnywhere(panelId)
+    readonly property string _side:       stripRoot ? stripRoot.side : ""
+    // Panels are global (open on every screen or none). S26 follow-up B: only
+    // the strip that actually shows the panel lights up — `_showsPanel` handles
+    // both the clicked-side case and the wildcard→primary-host case, so the
+    // same opener on 2+ sides highlights + opens just one.
+    readonly property bool   _active:
+        ShellServices.ShellState.activePanel(_screenName) === panelId
+        && !!stripRoot && stripRoot._showsPanel(panelId)
     property bool _hovered: false
 
     anchors.fill: parent
@@ -59,6 +64,6 @@ Item {
             root._hovered = false
             if (root.stripRoot) root.stripRoot._iconHoverExit()
         }
-        onClicked: ShellServices.ShellState.toggleGlobal(root.panelId)
+        onClicked: ShellServices.ShellState.toggleGlobal(root.panelId, root._side)
     }
 }
