@@ -210,6 +210,28 @@ Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
 - [ ] **VSCode `colorCustomizations`** now regenerates bg from the palette for *every* theme — verify it doesn't clash on the non-Catppuccin VSCode themes (Gruvbox/Tokyo/Nord); gate to Catppuccin if it does.
 - [ ] **Settings panel widened 760→940** globally — check the other panes don't look sparse at the new width.
 
+### Polish & Liveliness pass (research → adopt) — feels bland/cold vs Caelestia
+
+**Motivation (user, 2026-07-02):** next to Caelestia and other mature Quickshell shells, ours reads bland, strict, and cold — motion is minimal and mechanical rather than organic/lively, and the styling is flat. Want a deliberate pass on animation, micro-interaction, and warmth. Ties into the existing S26 follow-up C (holder-aware layout) and the `HoverCard`/`Strip` animation work already in flight.
+
+**1. Research spike first** (source-inspect the liveliest reference shells; catalogue *concrete adoptable techniques*, not vibes — findings go to `ANALYSIS.md`, building on its existing §"Animation system" notes):
+- **Caelestia** (the benchmark the user cited), **Noctalia**, **end-4/dots-hyprland**, **DankMaterialShell**, + any others the user flags.
+- Extract, per repo: easing curves + durations actually used; where they use spring/overshoot vs linear; stagger/sequencing on list & panel appearance; hover/press micro-interactions (scale, depress, ripple, glow); depth treatment (layered shadows, gradients, inner glow) vs our flat glass; colour warmth (accent tints, non-pure-grey surfaces); empty/loading states; icon + type rhythm.
+
+**2. Then a polish sprint** (adopt, don't clone):
+- Motion tokens in `Commons/Appearance.anim` beyond `fast/base/spring` — named easing presets (`emphasized`/`standard`/`decelerate`) so widgets stop hand-rolling durations.
+- Organic easing (spring/overshoot) on high-traffic transitions: panel/strip expand, popup enter/exit, tag switch, toggle, hover.
+- Consistent micro-interactions via a shared primitive (hover scale/glow, press depress, active fill) instead of per-widget.
+- Warmth & depth: revisit the flat glass — layered shadow, subtle gradient/tint, accent-tinted surfaces; audit the "cold" pure-grey values.
+- Appearance stagger on lists/panels (notifications, launcher results, settings rows).
+
+### Layout loadouts / presets (user idea 2026-07-02)
+
+Save named snapshots of the whole bar/strip layout and switch between them in one click, instead of re-arranging widgets by hand. Cheap because `shell-config.json`'s `sides` block already *is* the full layout — a loadout is just a stored copy of it (+ optionally `corners`/`outerGap`). Sketch:
+- `ShellConfig.saveLoadout(name)` snapshots current `sides`/`corners`/`outerGap` into a `loadouts: { <name>: {...} }` map in the config (or a sidecar file); `applyLoadout(name)` writes it back through the existing `_mutate` path → hot-reloads live.
+- UI: a loadouts row in the Shell settings pane / edit-mode banner — save current, apply, rename, delete. Per-instance widget config (S26) rides along automatically since it lives in the entries.
+- Nice-to-haves: a couple of built-in presets (minimal / full / dev), export/import a loadout as JSON to share.
+
 ### Core → plugin / optional candidates (for "super-customizable" + a lean default)
 Things currently baked into core that are really *personal* and should be extractable:
 - **Dev-workflow tooling** → first official plugin (already Sprint 27).
