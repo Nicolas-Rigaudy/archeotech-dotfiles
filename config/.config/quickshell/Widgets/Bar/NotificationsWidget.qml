@@ -13,15 +13,15 @@ BarPill {
              :                                                 Commons.Appearance.colors.subtext1
 
     onClicked: {
-        if (barRoot) { barRoot._wifiPopupVisible = false; barRoot._btPopupVisible = false }
+        if (holderRoot) { holderRoot._wifiPopupVisible = false; holderRoot._btPopupVisible = false }
         if (!_open) SystemServices.Notifications.unreadCount = 0
         ShellServices.ShellState.toggleGlobal("nc")
     }
-    onEntered: if (barRoot && barRoot.horizontal) barRoot.showPopup(root, "NOTIFICATIONS",
+    onEntered: if (holderRoot && holderRoot.horizontal) holderRoot.showPopup(root, "NOTIFICATIONS",
         SystemServices.Notifications.unreadCount > 0
             ? "󰂚  " + SystemServices.Notifications.unreadCount + " unread"
             : "󰂜  All caught up",
         SystemServices.Notifications.dndEnabled ? "󰂛  Do not disturb on" : "",
         "Click to toggle")
-    onExited: if (barRoot) barRoot.hidePopup(root)
+    onExited: if (holderRoot) holderRoot.hidePopup(root)
 }

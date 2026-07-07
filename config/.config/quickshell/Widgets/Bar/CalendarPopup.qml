@@ -4,10 +4,10 @@ import "../../Commons" as Commons
 
 // Month calendar dropped from the bar's center. Same ear+arc shape as
 // HoverCard so it merges with the pill. Visibility + month state driven
-// by barRoot._calendarVisible / _calendarMonth / _calendarYear.
+// by holderRoot._calendarVisible / _calendarMonth / _calendarYear.
 Shape {
     id: card
-    required property var barRoot
+    required property var holderRoot
 
     property real cellW: 28
     property real cellH: 22
@@ -17,8 +17,8 @@ Shape {
 
     x: Math.max(
            Commons.Appearance.bar.marginSide + 4,
-           Math.min((barRoot ? barRoot.width / 2 : 0) - (_bw + _r * 2) / 2,
-                    (barRoot ? barRoot.width : 0) - (_bw + _r * 2) - Commons.Appearance.bar.marginSide - 4))
+           Math.min((holderRoot ? holderRoot.width / 2 : 0) - (_bw + _r * 2) / 2,
+                    (holderRoot ? holderRoot.width : 0) - (_bw + _r * 2) - Commons.Appearance.bar.marginSide - 4))
     y: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
     width:  _bw + _r * 2
     height: _calCol.implicitHeight + 20
@@ -27,9 +27,9 @@ Shape {
     layer.samples: 8
 
     transformOrigin: Item.Top
-    scale:   (barRoot && barRoot._calendarVisible) ? 1.0 : 0.85
-    opacity: (barRoot && barRoot._calendarVisible) ? 1.0 : 0.0
-    visible: barRoot && barRoot.side === "top" && opacity > 0.01
+    scale:   (holderRoot && holderRoot._calendarVisible) ? 1.0 : 0.85
+    opacity: (holderRoot && holderRoot._calendarVisible) ? 1.0 : 0.0
+    visible: holderRoot && holderRoot.side === "top" && opacity > 0.01
 
     Behavior on scale   { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
     Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
@@ -74,8 +74,8 @@ Shape {
 
     MouseArea {
         anchors.fill: parent; hoverEnabled: true
-        onEntered: if (card.barRoot) card.barRoot.keepPopupsAlive()
-        onExited:  if (card.barRoot) card.barRoot.hideCalendar(card)
+        onEntered: if (card.holderRoot) card.holderRoot.keepPopupsAlive()
+        onExited:  if (card.holderRoot) card.holderRoot.hideCalendar(card)
     }
 
     Column {
@@ -95,19 +95,19 @@ Shape {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if (!card.barRoot) return
-                        if (card.barRoot._calendarMonth === 1) {
-                            card.barRoot._calendarMonth = 12
-                            card.barRoot._calendarYear--
+                        if (!card.holderRoot) return
+                        if (card.holderRoot._calendarMonth === 1) {
+                            card.holderRoot._calendarMonth = 12
+                            card.holderRoot._calendarYear--
                         } else {
-                            card.barRoot._calendarMonth--
+                            card.holderRoot._calendarMonth--
                         }
                     }
                 }
             }
             Text {
-                text: card.barRoot
-                    ? card._monthName(card.barRoot._calendarMonth) + " " + card.barRoot._calendarYear
+                text: card.holderRoot
+                    ? card._monthName(card.holderRoot._calendarMonth) + " " + card.holderRoot._calendarYear
                     : ""
                 color: Commons.Appearance.colors.text
                 font.pixelSize: Commons.Appearance.font.sizeMd
@@ -125,12 +125,12 @@ Shape {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if (!card.barRoot) return
-                        if (card.barRoot._calendarMonth === 12) {
-                            card.barRoot._calendarMonth = 1
-                            card.barRoot._calendarYear++
+                        if (!card.holderRoot) return
+                        if (card.holderRoot._calendarMonth === 12) {
+                            card.holderRoot._calendarMonth = 1
+                            card.holderRoot._calendarYear++
                         } else {
-                            card.barRoot._calendarMonth++
+                            card.holderRoot._calendarMonth++
                         }
                     }
                 }
@@ -159,18 +159,18 @@ Shape {
             columnSpacing: 0
 
             Repeater {
-                model: card.barRoot
-                    ? card._calendarDays(card.barRoot._calendarYear, card.barRoot._calendarMonth)
+                model: card.holderRoot
+                    ? card._calendarDays(card.holderRoot._calendarYear, card.holderRoot._calendarMonth)
                     : []
                 delegate: Item {
                     required property int modelData
                     property bool isToday: {
                         var now = new Date()
                         return modelData > 0
-                            && card.barRoot
+                            && card.holderRoot
                             && modelData === now.getDate()
-                            && card.barRoot._calendarMonth === (now.getMonth() + 1)
-                            && card.barRoot._calendarYear  === now.getFullYear()
+                            && card.holderRoot._calendarMonth === (now.getMonth() + 1)
+                            && card.holderRoot._calendarYear  === now.getFullYear()
                     }
                     width: card.cellW
                     height: card.cellH

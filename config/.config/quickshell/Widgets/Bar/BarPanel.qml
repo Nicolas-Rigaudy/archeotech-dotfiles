@@ -10,7 +10,7 @@ import "../../Modules/Shell/Panels" as Panels
 //
 // Shows when a panel is open on THIS bar's side (an opener on the bar passed its
 // side to ShellState). Grows perpendicular from the bar's inner edge, anchored
-// along the axis to the opener that was clicked (barRoot._panelAnchor), clamped
+// along the axis to the opener that was clicked (holderRoot._panelAnchor), clamped
 // to the screen. Content + sizing come from the shared PanelHost; this file owns
 // the chrome + placement + open/close (it IS the content's panelRoot).
 //
@@ -20,12 +20,12 @@ import "../../Modules/Shell/Panels" as Panels
 // DECISIONS 2026-07-02).
 Item {
     id: root
-    required property var barRoot
+    required property var holderRoot
 
-    readonly property string _side:   barRoot ? barRoot.side : ""
-    readonly property var    _screen: barRoot ? barRoot.screen : null
-    readonly property string _scr:    barRoot && barRoot.screen ? barRoot.screen.name : ""
-    readonly property bool   horizontal: barRoot && barRoot.horizontal
+    readonly property string _side:   holderRoot ? holderRoot.side : ""
+    readonly property var    _screen: holderRoot ? holderRoot.screen : null
+    readonly property string _scr:    holderRoot && holderRoot.screen ? holderRoot.screen.name : ""
+    readonly property bool   horizontal: holderRoot && holderRoot.horizontal
 
     // Panels are global; show on the bar whose side matches the active side.
     readonly property string _activePanel: ShellServices.ShellState.activePanel(_scr)
@@ -40,11 +40,11 @@ Item {
 
     // ── Geometry ─────────────────────────────────────────────────────────────
     readonly property int  _r:          Commons.Appearance.radius.md
-    readonly property int  _screenAxis: horizontal ? (barRoot ? barRoot.width : 0)
-                                                    : (barRoot ? barRoot.height : 0)
+    readonly property int  _screenAxis: horizontal ? (holderRoot ? holderRoot.width : 0)
+                                                    : (holderRoot ? holderRoot.height : 0)
     // Along-axis center: the clicked opener's position, else bar center.
-    readonly property real _anchor: (barRoot && barRoot._panelAnchor >= 0)
-                                    ? barRoot._panelAnchor : _screenAxis / 2
+    readonly property real _anchor: (holderRoot && holderRoot._panelAnchor >= 0)
+                                    ? holderRoot._panelAnchor : _screenAxis / 2
 
     // Retained size — updated only while a valid panel is resolved, so closing
     // (host.meta → null → the "full" axis fallback) doesn't snap the card
@@ -61,10 +61,10 @@ Item {
     height: horizontal ? _perpSize : _axisSize
 
     // Position in bar-local coords: attach to the bar's inner edge; clamp along axis.
-    x: _side === "left"  ? barRoot.width
+    x: _side === "left"  ? holderRoot.width
      : _side === "right" ? -width
      :                      Math.max(0, Math.min(_screenAxis - width, _anchor - width / 2))
-    y: _side === "top"    ? barRoot.height
+    y: _side === "top"    ? holderRoot.height
      : _side === "bottom" ? -height
      :                       Math.max(0, Math.min(_screenAxis - height, _anchor - height / 2))
 

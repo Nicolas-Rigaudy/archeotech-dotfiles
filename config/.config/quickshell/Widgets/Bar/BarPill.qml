@@ -12,14 +12,14 @@ import "../../Commons" as Commons
 // rotate text — a vertical bar is thin, so it shows the icon only (the value
 // text hides). Hover popups are horizontal-only for now (a vertical bar's
 // popup anchoring is a later pass); widgets guard showPopup on
-// `barRoot.horizontal` themselves.
+// `holderRoot.horizontal` themselves.
 Item {
     id: pill
 
-    required property var barRoot
+    required property var holderRoot
     property string widgetId
 
-    readonly property bool horizontal: barRoot && barRoot.horizontal
+    readonly property bool horizontal: holderRoot && holderRoot.horizontal
 
     // ── Content ────────────────────────────────────────────────────────────────
     property string icon:      ""
@@ -36,9 +36,28 @@ Item {
     // widgets that drive icon colour entirely from state can set this false.
     property bool highlightOnHover: true
 
+    // Rounded highlight behind the icon (Sprint 26-C phase 4 — absorbed from
+    // StripIconBase): a strip icon shows an accent fill when its panel is active
+    // and a subtle fill on hover. Off by default so bar pills stay flat.
+    property bool showActiveBg: false
+    property bool active:       false
+    property int  activeBgSize: 44
+
     readonly property bool hovered: _ma.containsMouse
     readonly property color _iconColor: (interactive && highlightOnHover && hovered)
                                         ? hoverColor : iconColor
+
+    Rectangle {
+        anchors.centerIn: parent
+        visible: pill.showActiveBg
+        width:  pill.activeBgSize
+        height: pill.activeBgSize
+        radius: Commons.Appearance.radius.md
+        color: pill.active  ? Commons.Appearance.colors.accentAlpha
+             : pill.hovered ? Commons.Appearance.colors.surface0Alpha
+             :                "transparent"
+        Behavior on color { ColorAnimation { duration: Commons.Appearance.anim.fast } }
+    }
 
     signal clicked()
     signal wheel(int delta)
@@ -49,7 +68,7 @@ Item {
     // wide, a square-ish icon cell tall (drives the ColumnLayout position).
     readonly property int _cell: 36
     implicitWidth:  horizontal ? (_row.implicitWidth + 10)
-                               : (barRoot ? barRoot.thickness : 30)
+                               : (holderRoot ? holderRoot.thickness : 30)
     implicitHeight: horizontal ? Commons.Appearance.bar.height : _cell
     Layout.alignment: horizontal ? Qt.AlignVCenter : Qt.AlignHCenter
 

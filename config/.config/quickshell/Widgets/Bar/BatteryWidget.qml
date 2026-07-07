@@ -17,8 +17,8 @@ BarPill {
     text: HardwareServices.Battery.percent + "%"
     textColor: _low ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
 
-    onEntered: if (barRoot && barRoot.horizontal) barRoot.showPopup(root, "BATTERY",
+    onEntered: if (holderRoot && holderRoot.horizontal) holderRoot.showPopup(root, "BATTERY",
         HardwareServices.Battery.icon() + "  " + HardwareServices.Battery.percent + "%",
         HardwareServices.Battery.charging ? "󰂄  Charging" : "󱉞  On battery", "")
-    onExited: if (barRoot) barRoot.hidePopup(root)
+    onExited: if (holderRoot) holderRoot.hidePopup(root)
 }

@@ -6,13 +6,13 @@ import "../../Commons" as Commons
 // text), no date/calendar (the calendar popup anchors horizontally).
 Item {
     id: root
-    required property var barRoot
+    required property var holderRoot
     property string widgetId
     // Sprint 26 — per-instance config (schema in WidgetRegistry._builtinSchemas):
     //   format: "24h" | "12h"    showSeconds: bool
     property var config: ({})
 
-    readonly property bool _horizontal: barRoot && barRoot.horizontal
+    readonly property bool _horizontal: holderRoot && holderRoot.horizontal
 
     function _timeFmt() {
         var h = (config && config.format === "12h") ? "h:mm" : "HH:mm"
@@ -21,8 +21,8 @@ Item {
     }
     function _hourFmt() { return (config && config.format === "12h") ? "h" : "HH" }
 
-    visible: barRoot
-    implicitWidth:  _horizontal ? centerClock.implicitWidth : (barRoot ? barRoot.thickness : 30)
+    visible: holderRoot
+    implicitWidth:  _horizontal ? centerClock.implicitWidth : (holderRoot ? holderRoot.thickness : 30)
     implicitHeight: _horizontal ? Commons.Appearance.bar.height : vClock.implicitHeight
 
     // ── Horizontal — rich single line + calendar hover ──────────────────────────
@@ -82,14 +82,14 @@ Item {
         enabled: root._horizontal
         z: 2
         onEntered: {
-            if (!root.barRoot) return
-            root.barRoot._calendarYear  = new Date().getFullYear()
-            root.barRoot._calendarMonth = new Date().getMonth() + 1
-            root.barRoot._popupVisible      = false
-            root.barRoot._wifiPopupVisible  = false
-            root.barRoot._btPopupVisible    = false
-            root.barRoot._calendarVisible   = true
+            if (!root.holderRoot) return
+            root.holderRoot._calendarYear  = new Date().getFullYear()
+            root.holderRoot._calendarMonth = new Date().getMonth() + 1
+            root.holderRoot._popupVisible      = false
+            root.holderRoot._wifiPopupVisible  = false
+            root.holderRoot._btPopupVisible    = false
+            root.holderRoot._calendarVisible   = true
         }
-        onExited: if (root.barRoot) root.barRoot.hideCalendar(root)
+        onExited: if (root.holderRoot) root.holderRoot.hideCalendar(root)
     }
 }

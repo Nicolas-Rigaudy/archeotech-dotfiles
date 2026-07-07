@@ -6,19 +6,19 @@ import "../../Services/Networking" as NetworkServices
 import "../../Services/Shell" as ShellServices
 
 // WiFi popup — adapter toggle, network list, connect/disconnect, rescan.
-// Anchor x driven by barRoot._wifiAnchorX (set by NetworkWidget on click).
+// Anchor x driven by holderRoot._wifiAnchorX (set by NetworkWidget on click).
 Shape {
     id: card
-    required property var barRoot
+    required property var holderRoot
 
     property real _r:  Commons.Appearance.radius.xl
     property real _rb: Commons.Appearance.radius.md
     property real _bw: 260
 
     x: Math.min(
-           Math.max((barRoot ? barRoot._wifiAnchorX : 0) - width / 2,
+           Math.max((holderRoot ? holderRoot._wifiAnchorX : 0) - width / 2,
                     Commons.Appearance.bar.marginSide + 4),
-           (barRoot ? barRoot.width : 0) - width - Commons.Appearance.bar.marginSide - 4)
+           (holderRoot ? holderRoot.width : 0) - width - Commons.Appearance.bar.marginSide - 4)
     y: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
     width:  _bw + _r * 2
     height: _wifiContent.implicitHeight + 20
@@ -26,9 +26,9 @@ Shape {
     layer.enabled: true
     layer.samples: 8
     transformOrigin: Item.Top
-    scale:   (barRoot && barRoot._wifiPopupVisible) ? 1.0 : 0.85
-    opacity: (barRoot && barRoot._wifiPopupVisible) ? 1.0 : 0.0
-    visible: barRoot && barRoot.side === "top" && opacity > 0.01
+    scale:   (holderRoot && holderRoot._wifiPopupVisible) ? 1.0 : 0.85
+    opacity: (holderRoot && holderRoot._wifiPopupVisible) ? 1.0 : 0.0
+    visible: holderRoot && holderRoot.side === "top" && opacity > 0.01
     Behavior on scale   { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
     Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
@@ -53,7 +53,7 @@ Shape {
 
     MouseArea {
         anchors.fill: parent; hoverEnabled: true
-        onEntered: if (card.barRoot) card.barRoot.keepPopupsAlive()
+        onEntered: if (card.holderRoot) card.holderRoot.keepPopupsAlive()
     }
 
     Column {
@@ -95,7 +95,7 @@ Shape {
                         id: _wifiCloseMA
                         anchors.fill: parent; anchors.margins: -4
                         hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: if (card.barRoot) card.barRoot._wifiPopupVisible = false
+                        onClicked: if (card.holderRoot) card.holderRoot._wifiPopupVisible = false
                     }
                 }
             }
@@ -167,7 +167,7 @@ Shape {
                                     } else if (_needsPw) {
                                         Commons.State.settingsOpenPane = "connections"
                                         ShellServices.ShellState.openGlobal("settings")
-                                        if (card.barRoot) card.barRoot._wifiPopupVisible = false
+                                        if (card.holderRoot) card.holderRoot._wifiPopupVisible = false
                                     } else {
                                         NetworkServices.Network.connect(modelData.ssid)
                                     }

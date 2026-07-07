@@ -14,22 +14,22 @@ BarPill {
              :                                        Commons.Appearance.colors.overlay0
 
     onClicked: {
-        if (!barRoot) return
-        if (barRoot._btPopupVisible) {
-            barRoot._btPopupVisible = false
+        if (!holderRoot) return
+        if (holderRoot._btPopupVisible) {
+            holderRoot._btPopupVisible = false
         } else {
-            var pt = root.mapToItem(barRoot, root.width / 2, 0)
-            barRoot._btAnchorX        = pt.x
-            barRoot._btPopupVisible   = true
-            barRoot._wifiPopupVisible = false
-            barRoot._calendarVisible  = false
-            barRoot._popupVisible     = false
+            var pt = root.mapToItem(holderRoot, root.width / 2, 0)
+            holderRoot._btAnchorX        = pt.x
+            holderRoot._btPopupVisible   = true
+            holderRoot._wifiPopupVisible = false
+            holderRoot._calendarVisible  = false
+            holderRoot._popupVisible     = false
         }
     }
-    onEntered: if (barRoot && barRoot.horizontal && !barRoot._btPopupVisible)
-        barRoot.showPopup(root, "BLUETOOTH",
+    onEntered: if (holderRoot && holderRoot.horizontal && !holderRoot._btPopupVisible)
+        holderRoot.showPopup(root, "BLUETOOTH",
             NetworkServices.Bluetooth.connected ? "󰂱  " + NetworkServices.Bluetooth.device
                 : NetworkServices.Bluetooth.enabled ? "󰂯  On — no device" : "󰂲  Off",
             "", "Click to manage Bluetooth")
-    onExited: if (barRoot) barRoot.hidePopup(root)
+    onExited: if (holderRoot) holderRoot.hidePopup(root)
 }

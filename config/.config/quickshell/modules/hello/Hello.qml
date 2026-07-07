@@ -3,8 +3,8 @@ import QtQuick
 // Example bar-zone module (Sprint 21 Chunk 2; theming updated Sprint 26).
 //
 // A module's entry follows the same contract as a built-in bar widget: it
-// receives `barRoot` + `widgetId` injected via Loader.setSource, and may use
-// barRoot's popup API (see docs/WIDGET_API.md).
+// receives `holderRoot` + `widgetId` injected via Loader.setSource, and may use
+// holderRoot's popup API (see docs/WIDGET_API.md).
 //
 // Theming: a module loaded from a modules dir is mounted by absolute file://
 // URL, so `import "../../Commons"` does NOT resolve. Instead declare
@@ -13,7 +13,7 @@ import QtQuick
 // (`_a ? … : fallback`), since it's set just after the object is created.
 Item {
     id: root
-    required property var    barRoot
+    required property var    holderRoot
     required property string widgetId
     property var appearance
     readonly property var _a: appearance
@@ -40,8 +40,8 @@ Item {
             id: ma
             anchors.fill: parent
             hoverEnabled: true
-            onEntered: root.barRoot.showPopup(root, "Hello", "An example bar-zone module", "Sprint 21 · Chunk 2", "")
-            onExited:  root.barRoot.hidePopup(root)
+            onEntered: root.holderRoot.showPopup(root, "Hello", "An example bar-zone module", "Sprint 21 · Chunk 2", "")
+            onExited:  root.holderRoot.hidePopup(root)
         }
     }
 }

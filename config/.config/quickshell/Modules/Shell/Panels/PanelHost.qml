@@ -8,13 +8,11 @@ import "../../../Services/Shell" as ShellServices
 // dropdown — can host a panel without re-deriving the loader + sizing logic.
 //
 // The holder owns the chrome (glass card, animation, positioning) and reads
-// `perpTarget` / `axisTarget` to size it; PanelHost just mounts the content
-// filling itself and reports what size it wants. `panelRoot` (with close() /
-// panelOpen) is supplied by the holder and injected into the content.
-//
-// ponytail: Strip.qml still has its own inline copy of this logic — it works
-// and is freshly polished, so it's left alone; converge it onto PanelHost in
-// the phase-4 cleanup, not now.
+// `perpTarget` / `axisTarget` (or the raw hints: panelSize / axisSizeRaw / ready
+// / contentImplicitAxis) to size it; PanelHost just mounts the content filling
+// itself and reports what size it wants. `panelRoot` (with close() / panelOpen)
+// is supplied by the holder and injected into the content. Both holders use it:
+// BarPanel (bar dropdown) and Strip (edge card).
 Item {
     id: host
 

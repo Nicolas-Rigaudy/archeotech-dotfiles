@@ -49,26 +49,74 @@ QtObject {
         return side(name, screenName).type
     }
 
-    // Sprint 26 — per-instance config. Zone/strip entries are now { id, config }
-    // objects; a bare string id is the legacy form (pre-S26 shell-config.json).
-    // Normalize on read so both forms load and old files keep working untouched.
+    // Sprint 26 — per-instance config. Entries are { id, config } objects; a bare
+    // string id is the legacy form (pre-S26 shell-config.json). Normalize on read
+    // so both forms load and old files keep working untouched.
     function _normEntry(e) {
         if (typeof e === "string") return { id: e, config: {} }
         if (e && typeof e === "object") return { id: e.id, config: e.config || {} }
         return { id: "", config: {} }
     }
 
-    // Normalized [{ id, config }] — config-aware consumers (loaders, edit mode).
+    // ── Unified per-side content model (Sprint 26-C, phase 3) ────────────────────
+    // A side is one ordered list `content: [{ id, config, align }]`. `align` is the
+    // bar zone ("left"|"center"|"right"); "" means the strip/holder icon list.
+    // `_sideContent` is the read-time shim: it reads `content` if present, else
+    // flattens the legacy `zones{left,center,right}` (bar) / `icons[]` (strip) into
+    // the same shape — so old files load untouched and mutators can write `content`
+    // going forward. A single side may legitimately hold both flavours at once
+    // (align "" plus align L/C/R): that's how a bar↔strip type flip stays
+    // non-destructive — each renderer reads only the align matching its type.
+    function _normContentEntry(e, defAlign) {
+        var n = _normEntry(e)
+        var a = (e && typeof e === "object" && e.align !== undefined) ? e.align : defAlign
+        return { id: n.id, config: n.config, align: a }
+    }
+    function _sideContent(s) {
+        if (!s) return []
+        if (s.content) return s.content.map(function(e) { return root._normContentEntry(e, "") })
+        var out = []
+        if (s.zones) {
+            var order = ["left", "center", "right"]
+            for (var i = 0; i < order.length; i++) {
+                var z = s.zones[order[i]] || []
+                for (var j = 0; j < z.length; j++) out.push(root._normContentEntry(z[j], order[i]))
+            }
+        }
+        if (s.icons)
+            for (var k = 0; k < s.icons.length; k++) out.push(root._normContentEntry(s.icons[k], ""))
+        return out
+    }
+    // Canonical accessor — the whole side as [{ id, config, align }] (phase 4 uses
+    // this directly; phase 3 derives the legacy zone/strip views from it).
+    function contentEntries(sideName, screenName) {
+        return _sideContent(side(sideName, screenName))
+    }
+
+    // Re-group a content list so bar zones stay clustered (left, center, right),
+    // then the strip list ("") and anything else in original order. filter() is
+    // order-preserving, so this is a stable regroup without relying on sort().
+    function _regroup(content) {
+        var order = ["left", "center", "right"]
+        var out = []
+        for (var i = 0; i < order.length; i++)
+            out = out.concat(content.filter(function(e) { return e.align === order[i] }))
+        return out.concat(content.filter(function(e) { return order.indexOf(e.align) === -1 }))
+    }
+
+    // ── Derived legacy views — config-aware consumers (loaders, edit mode) keep
+    // working over the split model while the renderers migrate (phase 4). A bar
+    // zone is the content filtered by align; the strip list is align "" only. ──
     function zoneEntries(sideName, zone, screenName) {
-        var s = side(sideName, screenName)
-        if (!s.zones || !s.zones[zone]) return []
-        return s.zones[zone].map(function(e) { return root._normEntry(e) })
+        return contentEntries(sideName, screenName)
+            .filter(function(e) { return e.align === zone })
+            .map(function(e) { return { id: e.id, config: e.config } })
     }
 
     function stripEntries(sideName, screenName) {
-        var s = side(sideName, screenName)
-        if (!s.icons) return []
-        return s.icons.map(function(e) { return root._normEntry(e) })
+        return contentEntries(sideName, screenName)
+            .filter(function(e) { return e.align === "" })
+            .map(function(e) { return { id: e.id, config: e.config } })
     }
 
     // Ids only — legacy id-consumers keep working regardless of file format.
@@ -154,56 +202,58 @@ QtObject {
 
     // Strip↔bar entry compatibility (Sprint 26-C). A strip hosts panel-opener
     // icons; a bar hosts widgets. Panel-openers map both ways: a strip icon
-    // becomes a bar entry (a dedicated widget where one exists, else the generic
-    // `panel-opener` carrying the panelId), and vice-versa. Bar widgets with no
-    // strip form (clock, volume, …) map to null and are dropped on the way to a
-    // strip. Used to seed the target container on a type switch so the side
-    // isn't empty after flipping.
+    // becomes a bar entry (a dedicated widget where one exists, else the opener
+    // id itself), and vice-versa. Bar widgets with no strip form (clock, volume,
+    // …) map to null and are dropped on the way to a strip. Used to seed the
+    // target flavour on a type switch so the side isn't empty after flipping.
     // Panel-opener ids are shared across holders (dashboard/launcher/wallpaper/
     // media/settings). Only nc differs — the bar opens it via the notifications
     // widget. Everything else on a bar (clock, volume, …) has no strip form.
     readonly property var _stripToBarWidget: ({ nc: "notifications" })
     readonly property var _barToStripPanel:  ({ notifications: "nc" })
     readonly property var _stripCapable: ({ nc: 1, dashboard: 1, media: 1, launcher: 1, wallpaper: 1, settings: 1 })
-    function _stripEntryToBar(e) {
-        var n = _normEntry(e)
-        if (_stripToBarWidget[n.id]) return { id: _stripToBarWidget[n.id], config: {} }
-        return { id: n.id, config: n.config || {} }   // opener id is the same on a bar
+    // Convert a content entry to the other flavour, tagging the target align.
+    // Bar seeds default to the right zone; strip seeds to the icon list ("").
+    function _contentToBar(e) {
+        if (_stripToBarWidget[e.id]) return { id: _stripToBarWidget[e.id], config: {}, align: "right" }
+        return { id: e.id, config: e.config || {}, align: "right" }   // opener id is the same on a bar
     }
-    function _barEntryToStrip(e) {
-        var n = _normEntry(e)
-        if (n.id === "panel-opener") return n.config && n.config.panelId ? { id: n.config.panelId, config: {} } : null
-        if (_barToStripPanel[n.id])  return { id: _barToStripPanel[n.id], config: {} }
-        if (_stripCapable[n.id])     return { id: n.id, config: n.config || {} }
+    function _contentToStrip(e) {
+        if (e.id === "panel-opener")
+            return (e.config && e.config.panelId) ? { id: e.config.panelId, config: {}, align: "" } : null
+        if (_barToStripPanel[e.id]) return { id: _barToStripPanel[e.id], config: {}, align: "" }
+        if (_stripCapable[e.id])    return { id: e.id, config: e.config || {}, align: "" }
         return null
     }
     function _compact(list) { return list.filter(function(x) { return !!x }) }
 
-    // Switch a side's type (bar | strip | holder | none). Seeds an empty
-    // container for the new type when absent; if the target container is empty
-    // it's seeded by converting the *other* container's compatible entries
-    // (panel-openers carry across, incompatible widgets are dropped), so a
-    // strip↔bar flip isn't left blank. A non-empty target is left untouched, so
-    // toggling back and forth is non-destructive and never duplicates.
+    // Switch a side's type (bar | strip | holder | none). The side keeps its one
+    // `content` list; a flip only *seeds* the target flavour when that flavour is
+    // empty, by converting the other flavour's compatible entries (panel-openers
+    // carry across, incompatible widgets are dropped). The originals are kept, so
+    // each renderer reads only its own align and toggling back and forth is
+    // non-destructive and never duplicates.
     function setSideType(sideName, type) {
         _mutate(function(d) {
             var s = d.sides[sideName] || {}
+            var content = root._sideContent(s)
             s.type = type
             if (type === "bar") {
-                if (!s.zones) s.zones = { left: [], center: [], right: [] }
                 s.size = 30
-                var zonesEmpty = !s.zones.left.length && !s.zones.center.length && !s.zones.right.length
-                if (zonesEmpty && s.icons && s.icons.length)
-                    s.zones.right = root._compact(s.icons.map(root._stripEntryToBar))
+                var hasBar = content.some(function(e) { return e.align === "left" || e.align === "center" || e.align === "right" })
+                if (!hasBar)
+                    content = content.concat(root._compact(
+                        content.filter(function(e) { return e.align === "" }).map(root._contentToBar)))
             } else if (type === "strip" || type === "holder") {
-                if (!s.icons) s.icons = []
                 s.size = 10
                 if (s.expanded === undefined) s.expanded = 240
-                if (!s.icons.length && s.zones) {
-                    var all = (s.zones.left || []).concat(s.zones.center || [], s.zones.right || [])
-                    s.icons = root._compact(all.map(root._barEntryToStrip))
-                }
+                var hasStrip = content.some(function(e) { return e.align === "" })
+                if (!hasStrip)
+                    content = content.concat(root._compact(
+                        content.filter(function(e) { return e.align !== "" }).map(root._contentToStrip)))
             }
+            s.content = root._regroup(content)
+            delete s.zones; delete s.icons
             d.sides[sideName] = s
         })
     }
@@ -211,11 +261,16 @@ QtObject {
     // Assign / reorder / clear a bar zone (left | center | right). Accepts
     // { id, config } entries or bare id strings (normalized either way), so
     // callers can pass entries to preserve per-instance config through reorder.
+    // Rewrites the side's `content`: replace this zone's entries, keep the rest.
     function setZoneWidgets(sideName, zone, entries) {
         _mutate(function(d) {
             var s = d.sides[sideName] || { type: "bar" }
-            if (!s.zones) s.zones = { left: [], center: [], right: [] }
-            s.zones[zone] = entries.map(function(e) { return root._normEntry(e) })
+            var content = root._sideContent(s).filter(function(e) { return e.align !== zone })
+            var add = entries.map(function(e) {
+                var n = root._normEntry(e); return { id: n.id, config: n.config, align: zone }
+            })
+            s.content = root._regroup(content.concat(add))
+            delete s.zones; delete s.icons
             d.sides[sideName] = s
         })
     }
@@ -242,27 +297,41 @@ QtObject {
         _mutate(function(d) { d.outerGap = Math.round(g) })
     }
 
-    // Assign / reorder / clear the icon list of a strip or holder side.
-    // Same { id, config } | bare-string normalization as setZoneWidgets.
+    // Assign / reorder / clear the icon list of a strip or holder side (align "").
+    // Same { id, config } | bare-string normalization as setZoneWidgets. Keeps any
+    // bar-flavour (align L/C/R) entries so a strip↔bar round trip is preserved.
     function setStripIcons(sideName, entries) {
         _mutate(function(d) {
             var s = d.sides[sideName] || { type: "strip" }
-            s.icons = entries.map(function(e) { return root._normEntry(e) })
+            var content = root._sideContent(s).filter(function(e) { return e.align !== "" })
+            var add = entries.map(function(e) {
+                var n = root._normEntry(e); return { id: n.id, config: n.config, align: "" }
+            })
+            s.content = root._regroup(content.concat(add))
+            delete s.zones; delete s.icons
             d.sides[sideName] = s
         })
     }
 
-    // Write per-instance config onto one entry, addressed by position.
-    // zone === "" (or null) targets a strip/holder icon list; otherwise a bar zone.
+    // Write per-instance config onto one entry, addressed by (align, position).
+    // zone === "" (or null) targets the strip/holder icon list; otherwise a bar
+    // zone — index is the position *within* that align's sublist (matches how the
+    // renderer + edit-mode index the split view).
     function setEntryConfig(sideName, zone, index, config) {
         _mutate(function(d) {
             var s = d.sides[sideName]
             if (!s) return
-            var list = zone ? (s.zones && s.zones[zone]) : s.icons
-            if (!list || index < 0 || index >= list.length) return
-            var e = root._normEntry(list[index])
-            e.config = config || {}
-            list[index] = e
+            var target = zone || ""
+            var content = root._sideContent(s)
+            var seen = -1, at = -1
+            for (var i = 0; i < content.length; i++) {
+                if (content[i].align === target) { seen++; if (seen === index) { at = i; break } }
+            }
+            if (at === -1) return
+            content[at].config = config || {}
+            s.content = content
+            delete s.zones; delete s.icons
+            d.sides[sideName] = s
         })
     }
 

@@ -10,11 +10,11 @@ import "../../Services/Shell" as ShellServices
 // title/clock around.
 Item {
     id: root
-    required property var barRoot
+    required property var holderRoot
     property string widgetId
 
     visible: Persistence.Config.get("bar.modules.music", true)
-        && barRoot && barRoot.horizontal
+        && holderRoot && holderRoot.horizontal
 
     property bool active: MediaServices.MprisService.playing === true
     property string displayText: {
@@ -159,10 +159,10 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.NoButton
-        onEntered: if (root.barRoot) root.barRoot.showPopup(root, "NOW PLAYING",
+        onEntered: if (root.holderRoot) root.holderRoot.showPopup(root, "NOW PLAYING",
             MediaServices.MprisService.title  || "—",
             MediaServices.MprisService.artist || "",
             "Click icon to play / pause")
-        onExited: if (root.barRoot) root.barRoot.hidePopup(root)
+        onExited: if (root.holderRoot) root.holderRoot.hidePopup(root)
     }
 }

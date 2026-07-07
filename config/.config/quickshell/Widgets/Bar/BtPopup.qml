@@ -7,16 +7,16 @@ import "../../Services/Networking" as NetworkServices
 // Bluetooth popup — adapter toggle, paired device list, connect/disconnect.
 Shape {
     id: card
-    required property var barRoot
+    required property var holderRoot
 
     property real _r:  Commons.Appearance.radius.xl
     property real _rb: Commons.Appearance.radius.md
     property real _bw: 240
 
     x: Math.min(
-           Math.max((barRoot ? barRoot._btAnchorX : 0) - width / 2,
+           Math.max((holderRoot ? holderRoot._btAnchorX : 0) - width / 2,
                     Commons.Appearance.bar.marginSide + 4),
-           (barRoot ? barRoot.width : 0) - width - Commons.Appearance.bar.marginSide - 4)
+           (holderRoot ? holderRoot.width : 0) - width - Commons.Appearance.bar.marginSide - 4)
     y: Commons.Appearance.bar.marginTop + Commons.Appearance.bar.height
     width:  _bw + _r * 2
     height: _btContent.implicitHeight + 20
@@ -24,9 +24,9 @@ Shape {
     layer.enabled: true
     layer.samples: 8
     transformOrigin: Item.Top
-    scale:   (barRoot && barRoot._btPopupVisible) ? 1.0 : 0.85
-    opacity: (barRoot && barRoot._btPopupVisible) ? 1.0 : 0.0
-    visible: barRoot && barRoot.side === "top" && opacity > 0.01
+    scale:   (holderRoot && holderRoot._btPopupVisible) ? 1.0 : 0.85
+    opacity: (holderRoot && holderRoot._btPopupVisible) ? 1.0 : 0.0
+    visible: holderRoot && holderRoot.side === "top" && opacity > 0.01
     Behavior on scale   { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
     Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
@@ -51,7 +51,7 @@ Shape {
 
     MouseArea {
         anchors.fill: parent; hoverEnabled: true
-        onEntered: if (card.barRoot) card.barRoot.keepPopupsAlive()
+        onEntered: if (card.holderRoot) card.holderRoot.keepPopupsAlive()
     }
 
     Column {
@@ -98,7 +98,7 @@ Shape {
                         id: _btCloseMA
                         anchors.fill: parent; anchors.margins: -4
                         hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: if (card.barRoot) card.barRoot._btPopupVisible = false
+                        onClicked: if (card.holderRoot) card.holderRoot._btPopupVisible = false
                     }
                 }
             }

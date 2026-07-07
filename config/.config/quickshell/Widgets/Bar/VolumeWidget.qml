@@ -12,10 +12,10 @@ BarPill {
 
     onClicked: MediaServices.Audio.toggleMute()
     onWheel: d => MediaServices.Audio.setVolume(Math.max(0, Math.min(100, MediaServices.Audio.volume + d * 5)))
-    onEntered: if (barRoot && barRoot.horizontal) barRoot.showPopup(root, "VOLUME",
+    onEntered: if (holderRoot && holderRoot.horizontal) holderRoot.showPopup(root, "VOLUME",
         MediaServices.Audio.muted ? "󰖁  Muted" : "󰕾  " + MediaServices.Audio.volume + "%",
         "", "Scroll to adjust · Click to mute")
-    onExited: if (barRoot) barRoot.hidePopup(root)
+    onExited: if (holderRoot) holderRoot.hidePopup(root)
 
     Connections {
         target: MediaServices.Audio
@@ -23,7 +23,7 @@ BarPill {
         function onMutedChanged()  { root._syncPopup() }
     }
     function _syncPopup() {
-        if (hovered && barRoot && barRoot._popupVisible)
-            barRoot._popupPrimary = MediaServices.Audio.muted ? "󰖁  Muted" : "󰕾  " + MediaServices.Audio.volume + "%"
+        if (hovered && holderRoot && holderRoot._popupVisible)
+            holderRoot._popupPrimary = MediaServices.Audio.muted ? "󰖁  Muted" : "󰕾  " + MediaServices.Audio.volume + "%"
     }
 }

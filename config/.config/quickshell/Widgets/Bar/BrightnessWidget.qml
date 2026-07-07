@@ -13,15 +13,15 @@ BarPill {
     text: HardwareServices.Brightness.percent + "%"
 
     onWheel: d => HardwareServices.Brightness.adjust(d * 5)
-    onEntered: if (barRoot && barRoot.horizontal) barRoot.showPopup(root, "BRIGHTNESS",
+    onEntered: if (holderRoot && holderRoot.horizontal) holderRoot.showPopup(root, "BRIGHTNESS",
         "󰃠  " + HardwareServices.Brightness.percent + "%", "", "Scroll to adjust")
-    onExited: if (barRoot) barRoot.hidePopup(root)
+    onExited: if (holderRoot) holderRoot.hidePopup(root)
 
     Connections {
         target: HardwareServices.Brightness
         function onPercentChanged() {
-            if (root.hovered && root.barRoot && root.barRoot._popupVisible)
-                root.barRoot._popupPrimary = "󰃠  " + HardwareServices.Brightness.percent + "%"
+            if (root.hovered && root.holderRoot && root.holderRoot._popupVisible)
+                root.holderRoot._popupPrimary = "󰃠  " + HardwareServices.Brightness.percent + "%"
         }
     }
 }

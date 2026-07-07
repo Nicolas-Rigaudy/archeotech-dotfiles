@@ -7,38 +7,45 @@ import QtQuick
 //   Built-in strip icon  id  "nc"           → "NcIcon.qml"
 //   Plugin widget id         "plugin:foo"   → "" (S20 work)
 //
-// The loader (BarWidgetLoader / StripWidgetLoader) owns the directory
-// path prefix because Loader.source resolves relative to the calling
-// file — keeping it relative avoids Qt URL handling pitfalls (it would
-// double-prefix file:// URLs treated as relative strings).
+// The loader (WidgetLoader) owns the directory path prefix because
+// Loader.source resolves relative to the calling file — keeping it relative
+// avoids Qt URL handling pitfalls (it would double-prefix file:// URLs
+// treated as relative strings).
 QtObject {
     id: root
 
-    // ── Palette catalogue (Sprint 21) ──────────────────────────────────────────
-    // The edit-mode palette lists these as assignable. For now this is the
-    // hand-maintained built-in set; Sprint 22 (Module Builder) replaces these
-    // arrays with manifest discovery (module.json under Modules/ + user dir),
-    // keeping the same { id, name, icon } shape so the palette UI is unchanged.
-    readonly property var availableBarWidgets: [
-        { id: "workspaces",    name: "Workspaces",    icon: "󰧨" },
-        { id: "title",         name: "Window Title",  icon: "󰖯" },
-        { id: "media",         name: "Media",         icon: "󰝚" },
-        { id: "clock",         name: "Clock",         icon: "󰥔" },
-        { id: "mic",           name: "Microphone",    icon: "󰍬" },
-        { id: "volume",        name: "Volume",        icon: "󰕾" },
-        { id: "brightness",    name: "Brightness",    icon: "󰃟" },
-        { id: "network",       name: "Network",       icon: "󰤨" },
-        { id: "bluetooth",     name: "Bluetooth",     icon: "󰂯" },
-        { id: "battery",       name: "Battery",       icon: "󰁹" },
-        { id: "notifications", name: "Notifications", icon: "󰂚" },
-        { id: "settings",      name: "Settings",      icon: "󰒓" },
-        { id: "power",         name: "Power",         icon: "󰐥" },
-        // Panel openers — placed directly (like the strip icons); each drops its
-        // own panel from the bar edge. Resolved to PanelOpenerWidget by id.
-        { id: "dashboard",     name: "Dashboard",     icon: "󰕮" },
-        { id: "launcher",      name: "Launcher",      icon: "󱓞" },
-        { id: "wallpaper",     name: "Appearance",    icon: "󰏘" }
+    // ── Palette catalogue (Sprint 21, unified Sprint 26-C phase 3) ──────────────
+    // ONE hand-maintained built-in set. `bar`/`strip` tag which holder flavour
+    // each widget can live in (a clock is bar-only; a panel opener is both; `nc`
+    // is strip-only — the bar opens it via `notifications`). Sprint 22 (Module
+    // Builder) replaces this with manifest discovery, keeping the shape so the
+    // palette UI is unchanged. `availableBarWidgets`/`availableStripIcons` are
+    // derived views over this so existing palette code keeps working.
+    readonly property var availableWidgets: [
+        { id: "workspaces",    name: "Workspaces",         icon: "󰧨", bar: true,  strip: false },
+        { id: "title",         name: "Window Title",       icon: "󰖯", bar: true,  strip: false },
+        { id: "media",         name: "Media",              icon: "󰝚", bar: true,  strip: true  },
+        { id: "clock",         name: "Clock",              icon: "󰥔", bar: true,  strip: false },
+        { id: "mic",           name: "Microphone",         icon: "󰍬", bar: true,  strip: false },
+        { id: "volume",        name: "Volume",             icon: "󰕾", bar: true,  strip: false },
+        { id: "brightness",    name: "Brightness",         icon: "󰃟", bar: true,  strip: false },
+        { id: "network",       name: "Network",            icon: "󰤨", bar: true,  strip: false },
+        { id: "bluetooth",     name: "Bluetooth",          icon: "󰂯", bar: true,  strip: false },
+        { id: "battery",       name: "Battery",            icon: "󰁹", bar: true,  strip: false },
+        { id: "notifications", name: "Notifications",      icon: "󰂚", bar: true,  strip: false },
+        { id: "settings",      name: "Settings",           icon: "󰒓", bar: true,  strip: true  },
+        { id: "power",         name: "Power",              icon: "󰐥", bar: true,  strip: false },
+        // Panel openers — placed directly (like strip icons); on a bar each drops
+        // its own panel from the edge (resolved to PanelOpenerWidget by id); on a
+        // strip each is a hover-reveal icon.
+        { id: "dashboard",     name: "Dashboard",          icon: "󰕮", bar: true,  strip: true  },
+        { id: "launcher",      name: "Launcher",           icon: "󱓞", bar: true,  strip: true  },
+        { id: "wallpaper",     name: "Appearance",         icon: "󰏘", bar: true,  strip: true  },
+        { id: "nc",            name: "Notification Center", icon: "󰂚", bar: false, strip: true  }
     ]
+
+    readonly property var availableBarWidgets: availableWidgets.filter(function(w) { return w.bar })
+    readonly property var availableStripIcons: availableWidgets.filter(function(w) { return w.strip })
 
     // Bar-widget ids that are panel openers → all resolve to PanelOpenerWidget
     // (the panel is the id itself). Keeps them out of the *Widget.qml filename
@@ -46,21 +53,15 @@ QtObject {
     // the marquee, which opens the media panel itself.
     readonly property var _panelOpenerIds: ["dashboard", "launcher", "wallpaper"]
 
-    readonly property var availableStripIcons: [
-        { id: "nc",        name: "Notification Center", icon: "󰂚" },
-        { id: "dashboard", name: "Dashboard",           icon: "󰕮" },
-        { id: "media",     name: "Media",               icon: "󰝚" },
-        { id: "launcher",  name: "Launcher",            icon: "󱓞" },
-        { id: "wallpaper", name: "Appearance",           icon: "󰏘" },
-        { id: "settings",  name: "Settings",            icon: "󰒓" }
-    ]
-
     function _metaFor(list, id) {
         for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]
         return { id: id, name: id, icon: "" }
     }
-    function barWidgetMeta(id) { return _metaFor(availableBarWidgets, id) }
-    function stripIconMeta(id) { return _metaFor(availableStripIcons, id) }
+    // One meta lookup over the unified catalogue; the bar/strip aliases remain
+    // for existing callers.
+    function widgetMeta(id)    { return _metaFor(availableWidgets, id) }
+    function barWidgetMeta(id) { return widgetMeta(id) }
+    function stripIconMeta(id) { return widgetMeta(id) }
 
     // ── Per-instance config (Sprint 26) ─────────────────────────────────────────
     // configSchema for built-in widgets (plugins declare theirs in module.json,
@@ -116,23 +117,15 @@ QtObject {
     // Public alias — loaders branch on this to route plugin ids to ModuleRegistry.
     function isPlugin(id) { return _isPlugin(id) }
 
-    // Bar widget filename: <PascalId>Widget.qml ("clock" → "ClockWidget.qml")
-    function barWidgetFile(id) {
-        if (!id) return ""
-        if (_isPlugin(id)) {
-            // Sprint 20 — plugin manifest scanning lands here. Branch
-            // reserved now so callers don't change in S20.
-            return ""
-        }
-        // Panel-opener ids share one component (panel = the id itself).
-        if (_panelOpenerIds.indexOf(id) !== -1) return "PanelOpenerWidget.qml"
-        return _pascalCase(id) + "Widget.qml"
-    }
-
-    // Strip icon filename: <PascalId>Icon.qml ("nc" → "NcIcon.qml")
-    function stripWidgetFile(id) {
-        if (!id) return ""
-        if (_isPlugin(id)) return ""
-        return _pascalCase(id) + "Icon.qml"
+    // Resolve a built-in widget id to its QML file, relative to Widgets/ (the one
+    // WidgetLoader prefixes the path). Sprint 26-C phase 4: one resolver for both
+    // holders — on a strip/holder EVERY entry is a panel opener → the single
+    // opener component; on a bar the panel-opener ids resolve to it too, and
+    // everything else is a dedicated <PascalId>Widget.qml. Plugins load by
+    // absolute URL (handled in the loader), so they return "".
+    function widgetFile(id, isStrip) {
+        if (!id || _isPlugin(id)) return ""
+        if (isStrip || _panelOpenerIds.indexOf(id) !== -1) return "Bar/PanelOpenerWidget.qml"
+        return "Bar/" + _pascalCase(id) + "Widget.qml"
     }
 }

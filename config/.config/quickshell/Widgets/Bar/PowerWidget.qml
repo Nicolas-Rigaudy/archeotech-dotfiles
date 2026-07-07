@@ -12,6 +12,6 @@ BarPill {
     Process { id: powerCmd; command: ["bash", "-c", "wlogout-launch.sh &"]; running: false }
 
     onClicked: powerCmd.running = true
-    onEntered: if (barRoot && barRoot.horizontal) barRoot.showPopup(root, "POWER", "󰐥  Power menu", "", "Click to open")
-    onExited:  if (barRoot) barRoot.hidePopup(root)
+    onEntered: if (holderRoot && holderRoot.horizontal) holderRoot.showPopup(root, "POWER", "󰐥  Power menu", "", "Click to open")
+    onExited:  if (holderRoot) holderRoot.hidePopup(root)
 }

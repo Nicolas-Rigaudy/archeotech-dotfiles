@@ -9,15 +9,15 @@ BarPill {
     iconColor: MediaServices.Audio.micMuted ? Commons.Appearance.colors.red : Commons.Appearance.colors.overlay1
 
     onClicked: MediaServices.Audio.toggleMicMute()
-    onEntered: if (barRoot && barRoot.horizontal) barRoot.showPopup(root, "MICROPHONE",
+    onEntered: if (holderRoot && holderRoot.horizontal) holderRoot.showPopup(root, "MICROPHONE",
         MediaServices.Audio.micMuted ? "󰍭  Muted" : "󰍬  Active", "", "Click to toggle")
-    onExited: if (barRoot) barRoot.hidePopup(root)
+    onExited: if (holderRoot) holderRoot.hidePopup(root)
 
     Connections {
         target: MediaServices.Audio
         function onMicMutedChanged() {
-            if (root.hovered && root.barRoot && root.barRoot._popupVisible)
-                root.barRoot._popupPrimary = MediaServices.Audio.micMuted ? "󰍭  Muted" : "󰍬  Active"
+            if (root.hovered && root.holderRoot && root.holderRoot._popupVisible)
+                root.holderRoot._popupPrimary = MediaServices.Audio.micMuted ? "󰍭  Muted" : "󰍬  Active"
         }
     }
 }

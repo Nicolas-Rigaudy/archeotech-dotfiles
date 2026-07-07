@@ -8,11 +8,11 @@ import "../../Services/Compositor" as CompositorServices
 // axis either way (no text, so no rotation concern).
 Item {
     id: root
-    required property var barRoot
+    required property var holderRoot
     property string widgetId
 
-    readonly property bool _horizontal: barRoot && barRoot.horizontal
-    visible: barRoot
+    readonly property bool _horizontal: holderRoot && holderRoot.horizontal
+    visible: holderRoot
     implicitWidth:  grid.implicitWidth
     implicitHeight: grid.implicitHeight
     Layout.alignment: _horizontal ? Qt.AlignVCenter : Qt.AlignHCenter
@@ -25,7 +25,7 @@ Item {
         spacing: 4
 
         Repeater {
-            model: CompositorServices.MangoWC.tagsFor(root.barRoot && root.barRoot.screen ? root.barRoot.screen.name : "")
+            model: CompositorServices.MangoWC.tagsFor(root.holderRoot && root.holderRoot.screen ? root.holderRoot.screen.name : "")
             delegate: Rectangle {
                 required property var modelData
                 property bool sel: modelData.selected
@@ -45,7 +45,7 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: CompositorServices.MangoWC.switchTag(
-                        root.barRoot.screen ? root.barRoot.screen.name : "", modelData.num)
+                        root.holderRoot.screen ? root.holderRoot.screen.name : "", modelData.num)
                 }
             }
         }

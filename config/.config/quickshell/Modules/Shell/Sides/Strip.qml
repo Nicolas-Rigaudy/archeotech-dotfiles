@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Shapes
 import "../../../Commons" as Commons
 import "../../../Services/Shell" as ShellServices
+import "../Panels" as Panels
 
 // Edge strip + popup + panel — single component for all three states.
 //
@@ -32,6 +33,26 @@ Item {
     function close() { ShellServices.ShellState.closeAllAcross() }
     readonly property bool panelOpen: _panelOpen
 
+    // ── holderRoot contract (Sprint 26-C phase 4) ──────────────────────────────
+    // The superset API a bar and a strip both expose, so one opener widget runs
+    // on either. Strips implement the hover-reveal + panel half; dismissPopups is
+    // a no-op (a strip has no floating control popups). anchor is ignored — a
+    // strip card is centred, not anchored under the opener.
+    readonly property string type:       holderMode ? "holder" : "strip"
+    readonly property bool   horizontal: _horizontal
+    readonly property string screenName: _screenName
+    readonly property int    thickness:  _bodyDepth
+    function togglePanel(id, sideArg, anchor) {
+        ShellServices.ShellState.toggleGlobal(id, sideArg !== undefined ? sideArg : side)
+    }
+    function dismissPopups() {}
+    // Is `id` the active panel shown on THIS strip? (_showsPanel only checks the
+    // side/primary-host routing, so AND the id match — else every opener on an
+    // active side reports active.)
+    function showsPanel(id)  { return _activePanel === id && _showsPanel(id) }
+    function iconHoverEnter() { _iconHoverEnter() }
+    function iconHoverExit()  { _iconHoverExit() }
+
     readonly property string _screenName: screen ? screen.name : ""
     readonly property bool   _horizontal: side === "top" || side === "bottom"
     readonly property var    _icons: ShellServices.ShellConfig.stripIcons(side, _screenName)
@@ -61,36 +82,14 @@ Item {
     readonly property bool   _panelOpen:   _activePanel !== "" && _showsPanel(_activePanel)
     readonly property bool   _showCard:    _hov || _panelOpen
 
-    // Panel metadata: built-in panels come from PanelRegistry; an unknown
-    // plugin id falls back to a panel-content module (Sprint 21 Chunk 2).
-    // Plugin panels carry `contentUrl` (absolute QML) instead of `content`.
-    function _metaFor(id) {
-        var m = ShellServices.PanelRegistry.panelFor(id)
-        if (m) return m
-        if (ShellServices.WidgetRegistry.isPlugin(id)) {
-            var mod = ShellServices.ModuleRegistry.moduleFor(id)
-            if (mod && (mod.canLiveIn || []).indexOf("panel-content") !== -1) {
-                var p = mod.panel || {}
-                return {
-                    contentUrl: ShellServices.ModuleRegistry.entryUrl(id),
-                    content:    null,
-                    size:       p.size || (mod.defaultSize && mod.defaultSize.width) || 380,
-                    axisSize:   p.axisSize !== undefined ? p.axisSize : "auto"
-                }
-            }
-        }
-        return null
-    }
-    readonly property var    _activeMeta:  _panelOpen ? _metaFor(_activePanel) : null
-    readonly property int    _panelSize:   _activeMeta ? _activeMeta.size : 0
-    readonly property var    _axisSizeRaw: _activeMeta && _activeMeta.axisSize !== undefined
-                                           ? _activeMeta.axisSize : "full"
+    // Panel meta + content mount live in the shared PanelHost kernel (declared
+    // inside contentArea as `host`). Strip reads its size hints to drive the card
+    // geometry below. `host` is referenced by id from component scope — it's
+    // declared later in the file, which QML resolves fine.
+    readonly property int    _panelSize:   host.panelSize
+    readonly property var    _axisSizeRaw: host.axisSizeRaw
     // Panel content may expose `implicitAxis` (numeric) to drive axisSize:"auto".
-    // Either the built-in or the plugin loader holds the live item.
-    readonly property var    _contentItem: contentLoader.item || pluginContentLoader.item
-    readonly property real   _contentImplicitAxis: (_panelOpen && _contentItem
-                                                    && _contentItem.implicitAxis !== undefined)
-                                                   ? _contentItem.implicitAxis : 0
+    readonly property real   _contentImplicitAxis: host.contentImplicitAxis
 
     property bool _hov: false
     // Defensive: child MouseAreas can shadow the strip-level MA's hover in Qt 6.
@@ -121,14 +120,9 @@ Item {
     readonly property int _popupExtra: _bodyDepth + _r
 
     // Auto-sized panels only know their axis extent once their content has
-    // loaded + measured `implicitAxis`. Until then, hold the card at popup size
-    // so it expands to the final size in ONE motion instead of popping to a
-    // floor size then re-growing (the "jitter then stops"). Fixed-size panels
-    // (and content that doesn't expose implicitAxis) are ready immediately.
-    readonly property bool _ready: !_panelOpen
-                                   || _axisSizeRaw !== "auto"
-                                   || _contentImplicitAxis > 0
-                                   || (!!_contentItem && _contentItem.implicitAxis === undefined)
+    // loaded + measured `implicitAxis`; until then hold the card at popup size so
+    // it expands in ONE motion (the anti-jitter gate). PanelHost computes this.
+    readonly property bool _ready: host.ready
 
     // Perpendicular expansion target (drives strip Item size + card perpendicular dim).
     readonly property real _perpTarget: (_panelOpen && _ready) ? _panelSize
@@ -196,7 +190,7 @@ Item {
         onTriggered: strip._hov = false
     }
 
-    // Called by strip icons via stripRoot — keeps the popup card open
+    // Called by strip icons via holderRoot — keeps the popup card open
     // when the cursor crosses from the strip body onto an icon (and
     // back), even when child MouseAreas shadow the strip-level hover.
     function _iconHoverEnter() { _iconHoverCount++;                       _updateHover() }
@@ -307,12 +301,11 @@ Item {
                        radiusX: card._r;  radiusY: card._r;  direction: PathArc.Counterclockwise }
         }
 
-        // ── Content area: active panel content ────────────────────────────────
-        // Content area: built-in panels load via `sourceComponent` (a Component
-        // from PanelRegistry); plugin panel modules load via `source` (an
-        // absolute file:// URL). They're split into two mutually-exclusive
-        // Loaders because binding both `source` and `sourceComponent` on one
-        // Loader races (Qt treats them as exclusive). `active` gates each.
+        // ── Content area: active panel content, mounted by the shared PanelHost
+        // kernel (Sprint 26-C phase 4 — replaces the inline meta+loader copy that
+        // BarPanel already shares). PanelHost resolves meta, mounts the built-in
+        // Component / plugin file:// content, injects panelRoot + appearance, and
+        // reports size hints; Strip reads those (via id `host`) to size the card.
         Item {
             id: contentArea
 
@@ -328,26 +321,16 @@ Item {
             opacity: (strip._panelOpen && strip._ready) ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
-            Loader {
-                id: contentLoader
+            Panels.PanelHost {
+                id: host
                 anchors.fill: parent
-                active: strip._panelOpen && !!strip._activeMeta && !strip._activeMeta.contentUrl
-                sourceComponent: (strip._activeMeta && !strip._activeMeta.contentUrl) ? strip._activeMeta.content : null
-                onLoaded: { if (item && 'panelRoot' in item) item.panelRoot = strip }
-            }
-
-            Loader {
-                id: pluginContentLoader
-                anchors.fill: parent
-                active: strip._panelOpen && !!strip._activeMeta && !!strip._activeMeta.contentUrl
-                source: (strip._activeMeta && strip._activeMeta.contentUrl) ? strip._activeMeta.contentUrl : ""
-                // panel-content modules load via absolute file:// and can't
-                // `import Commons` — inject the theme tokens like the bar/strip
-                // loaders do (S26). Only if the module declares the property.
-                onLoaded: {
-                    if (item && 'panelRoot' in item)  item.panelRoot = strip
-                    if (item && 'appearance' in item) item.appearance = Commons.Appearance
-                }
+                side:       strip.side
+                screen:     strip.screen
+                panelId:    strip._activePanel
+                shown:      strip._panelOpen
+                screenAxis: strip._screenAxis
+                axisFloor:  strip._bodyAxis
+                panelRoot:  strip
             }
         }
 
@@ -393,10 +376,10 @@ Item {
                     x: strip._horizontal ? _center - width  / 2 : (iconArea.width  - width)  / 2
                     y: strip._horizontal ? (iconArea.height - height) / 2 : _center - height / 2
 
-                    StripWidgetLoader {
+                    WidgetLoader {
                         anchors.fill: parent
                         widgetId: iconSlot.modelData
-                        stripRoot: strip
+                        holderRoot: strip
                         // Sprint 26 — resolve this icon's per-instance config by
                         // position (strip icons are keyed by index, not a diffed
                         // ListModel). Reactive on ShellConfig.data.

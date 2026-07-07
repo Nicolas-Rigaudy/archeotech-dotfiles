@@ -6,12 +6,12 @@ import "../../../Widgets/Bar" as BarWidgets
 
 // Bar — a side container that hosts widgets driven by shell-config.json.
 // Three zones on horizontal bars (left / center / right) each mount a
-// Repeater of BarWidgetLoader, resolving widget ids via WidgetRegistry's
+// Repeater of WidgetLoader, resolving widget ids via WidgetRegistry's
 // filename convention (Widgets/Bar/<PascalId>Widget.qml).
 //
 // Bar owns the popup state (hover info, calendar, WiFi, BT) — widgets
-// flip these properties through the barRoot API. Popup components live
-// in Widgets/Bar/*Popup.qml and read state directly from barRoot.
+// flip these properties through the holderRoot API. Popup components live
+// in Widgets/Bar/*Popup.qml and read state directly from holderRoot.
 //
 // Vertical side bars still inline a simplified icon Column for now.
 // Widget-aware vertical layouts arrive in a later sprint.
@@ -45,7 +45,7 @@ Item {
         pill.width / 2 - _centerRow.width / 2
         - Commons.Appearance.bar.innerPadding - _wsWidth - _mediaWidth - 16)
 
-    // ── Popup state (read/written by widgets via barRoot) ──────────────────────
+    // ── Popup state (read/written by widgets via holderRoot) ──────────────────────
     property real    _popupAnchorX:   0
     property string  _popupLabel:     ""
     property string  _popupPrimary:   ""
@@ -90,7 +90,7 @@ Item {
         return any ? Qt.rect(l, t, r - l, b - t) : Qt.rect(0, 0, 0, 0)
     }
 
-    // ── barRoot API surface ─────────────────────────────────────────────────────
+    // ── holderRoot API surface ─────────────────────────────────────────────────────
     function showPopup(item, label, primary, secondary, hint) {
         // A pinned control popup (WiFi/BT) owns the screen — never raise a hover
         // status card while one is open (it would render behind it). This makes
@@ -120,6 +120,27 @@ Item {
         _calHideTimer.stop()
         _popupVisible = false
     }
+
+    // ── holderRoot contract (Sprint 26-C phase 4) ──────────────────────────────
+    // The superset API a bar and a strip both expose, so one opener widget runs
+    // on either. Bars implement the panel/popup half; the hover-reveal hooks are
+    // no-ops (a bar has no hover-reveal card).
+    readonly property string type:       "bar"
+    readonly property string screenName: _screenName
+    // Toggle a panel; record where it should drop from (the opener's along-axis
+    // center) so BarPanel anchors under it. sideArg "" = wildcard (bar gear).
+    function togglePanel(id, sideArg, anchor) {
+        if (anchor !== undefined) _panelAnchor = anchor
+        ShellServices.ShellState.toggleGlobal(id, sideArg || "")
+    }
+    function dismissPopups() { _wifiPopupVisible = false; _btPopupVisible = false }
+    // A bar opener is active when its panel is open on THIS bar's side.
+    function showsPanel(id) {
+        return ShellServices.ShellState.activePanel(_screenName) === id
+            && ShellServices.ShellState.activeSide(_screenName) === side
+    }
+    function iconHoverEnter() {}
+    function iconHoverExit()  {}
 
     Timer { id: _hideTimer;    interval: 250; onTriggered: bar._popupVisible    = false }
     Timer { id: _calHideTimer; interval: 250; onTriggered: bar._calendarVisible = false }
@@ -225,14 +246,14 @@ Item {
                 Repeater {
                     id: _leftZone
                     model: _leftModel
-                    delegate: BarWidgetLoader {
+                    delegate: WidgetLoader {
                         // Qt 6.11.1 stopped auto-binding ListModel roles to
                         // a delegate's *inherited* required properties; we
                         // pass widgetId explicitly via `model.widgetId`.
                         required property var model
                         required property int index
                         widgetId: model ? model.widgetId : ""
-                        barRoot:  bar
+                        holderRoot:  bar
                         config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                         isFirst:  index === 0
                         isLast:   index === _leftZone.count - 1
@@ -255,11 +276,11 @@ Item {
                 Repeater {
                     id: _rightZone
                     model: _rightModel
-                    delegate: BarWidgetLoader {
+                    delegate: WidgetLoader {
                         required property var model
                         required property int index
                         widgetId: model ? model.widgetId : ""
-                        barRoot:  bar
+                        holderRoot:  bar
                         config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                         isFirst:  index === 0
                         isLast:   index === _rightZone.count - 1
@@ -279,11 +300,11 @@ Item {
             Repeater {
                 id: _centerZone
                 model: _centerModel
-                delegate: BarWidgetLoader {
+                delegate: WidgetLoader {
                     required property var model
                     required property int index
                     widgetId: model ? model.widgetId : ""
-                    barRoot:  bar
+                    holderRoot:  bar
                     config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                     isFirst:  index === 0
                     isLast:   index === _centerZone.count - 1
@@ -309,11 +330,11 @@ Item {
                 spacing: 8
                 Repeater {
                     model: _leftModel
-                    delegate: BarWidgetLoader {
+                    delegate: WidgetLoader {
                         required property var model
                         required property int index
                         widgetId: model ? model.widgetId : ""
-                        barRoot:  bar
+                        holderRoot:  bar
                         config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                     }
                 }
@@ -327,11 +348,11 @@ Item {
                 spacing: 8
                 Repeater {
                     model: _rightModel
-                    delegate: BarWidgetLoader {
+                    delegate: WidgetLoader {
                         required property var model
                         required property int index
                         widgetId: model ? model.widgetId : ""
-                        barRoot:  bar
+                        holderRoot:  bar
                         config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                     }
                 }
@@ -347,11 +368,11 @@ Item {
             spacing: 8
             Repeater {
                 model: _centerModel
-                delegate: BarWidgetLoader {
+                delegate: WidgetLoader {
                     required property var model
                     required property int index
                     widgetId: model ? model.widgetId : ""
-                    barRoot:  bar
+                    holderRoot:  bar
                     config:   (model && model.configJson) ? JSON.parse(model.configJson) : ({})
                 }
             }
@@ -359,9 +380,9 @@ Item {
     }
 
     // ── Popup overlays — single instance, persistent ───────────────────────────
-    BarWidgets.HoverCard     { id: _hoverCardPopup; barRoot: bar }
-    BarWidgets.CalendarPopup { id: _calendarPopup;  barRoot: bar }
-    BarWidgets.WifiPopup     { id: _wifiPopup;       barRoot: bar }
-    BarWidgets.BtPopup       { id: _btPopup;         barRoot: bar }
-    BarWidgets.BarPanel      { id: _barPanel;        barRoot: bar }
+    BarWidgets.HoverCard     { id: _hoverCardPopup; holderRoot: bar }
+    BarWidgets.CalendarPopup { id: _calendarPopup;  holderRoot: bar }
+    BarWidgets.WifiPopup     { id: _wifiPopup;       holderRoot: bar }
+    BarWidgets.BtPopup       { id: _btPopup;         holderRoot: bar }
+    BarWidgets.BarPanel      { id: _barPanel;        holderRoot: bar }
 }
