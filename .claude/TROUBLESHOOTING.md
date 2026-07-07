@@ -23,6 +23,39 @@ This document contains all known issues, their symptoms, causes, and solutions. 
 
 ## Boot & System Issues
 
+### Freeze on resume — swaylock segfaults (lock screen / gray screen with cursor) — INTERIM MITIGATION 2026-07-03; hyprlock planned
+
+**Symptoms:** Reopening the laptop after lunch (resume from suspend) intermittently freezes on the swaylock lock page or a gray screen with only a mouse cursor; no input works, only a hard power-cycle recovers.
+
+**Root cause:** `swaylock` **segfaults on resume**, not a GPU/kernel fault. Journal (boot −1) shows a clean resume (`PM: suspend exit`, lid opened, tasks thawed) then, ~2 s later:
+```
+swaylock[…]: segfault at 117 … in swaylock
+systemd-coredump: Process … (swaylock) … signal 11/SEGV … dumped core.
+```
+The compositor stays alive showing the last locked frame (→ gray/wallpaper + cursor), but with the locker process dead there's no way to authenticate → hard reset. Intermittent: crashed on boots −1 and −5, not −2/−3/−4. It is the **only** userspace coredump on the system (rest of health is clean: no failed units, no OOM, disk 66%).
+
+**Contributing factor:** the installed locker is **`swaylock-effects` 1.7.0.0** (the less-maintained fork), launched with `--image <wallpaper>` from `scripts/swaylock-launch.sh`. swaylock-effects has known segfaults around image handling + output re-initialisation during suspend/resume (esp. when outputs change, e.g. lid close/open or docking).
+
+**Fix options (pick one — all need `sudo`, run them yourself):**
+1. **Recommended — switch to upstream `swaylock`** (maintained; drop-in for our `--image`-only usage):
+   `paru -S swaylock` then `sudo pacman -Rns swaylock-effects` (or let paru replace it). No script change needed — `swaylock-launch.sh` only uses `--image`.
+2. **Cheap confirm first** — test whether the image path is the trigger: temporarily launch the locker with no image (solid color). If resume stops crashing, the image decode is implicated.
+3. **Exact backtrace** (if wanted before swapping): `coredumpctl debug swaylock` with `debuginfod` enabled, or install swaylock debug symbols — the stock trace is stripped (`n/a` frames).
+
+**Diagnostics already in place:** `swaylock-launch.sh` logs every lock to `~/.cache/swaylock-trigger.log` (trigger + caller chain + battery/lid/suspend), and swayidle writes `~/.cache/swayidle-canary.log`. Check these after a freeze.
+
+**Why it can't just be "fixed" on swaylock-effects (verified 2026-07-03):** `swaylock-effects` is **unmaintained** — the fork in use (jirutka's) says "(unmaintained)" in its own repo title and the whole chain (mortie → jirutka → …) is dead, so there's no upstream fix. The crash is a **known, longstanding sway-ecosystem bug**: a locker active across suspend segfaults on resume when an output changes (lid close→open removes+re-adds the internal panel → stale-output deref during Wayland event dispatch — matches our coredump stack in `wl_display_dispatch_queue`). Reported for years (swaylock #90, sway #6395/#2626, wlroots #2145) and it affects even plain swaylock/sway, not just the fork — so it's ecosystem fragility, not a config error. Patching it ourselves = maintaining a custom build of dead C code (rejected — bad for distribution).
+
+**Interim mitigation applied (2026-07-03):** switched to upstream `swaylock` 1.8.5 (`paru -S swaylock` auto-removed `swaylock-effects`) — maintained, and normal `Super+L` locking verified working under MangoWC. Upstream errors on unknown options, so the config **and its generator template** (`scripts/themes/templates/swaylock.config.tmpl`) were de-effected: removed `clock`/`timestr`/`datestr`, `effect-blur`/`effect-vignette`, `grace*`, `fade-in`; replaced the fork's bare `indicator` with `indicator-idle-visible`. **Trade-offs:** lost blur/vignette/clock/fade-in, and a brief grey flash (swaylock's solid `color=`) before the `--image` wallpaper paints. Being upstream/maintained it's *less* likely to hit the resume segfault, but the ecosystem fragility means it's not guaranteed either.
+
+**Real fix — planned next: switch to hyprlock** (see ROADMAP "Locker: swaylock → hyprlock"). Separate, actively-maintained codebase (not the sway/swaylock lineage), does blur + clock, hyprlock config already exists for the Hyprland side. Needs: shell hyprlock config (blur + dynamic wallpaper via a `~/.cache/wallpaper/current` symlink + theme colors), a theme-switch template, and repointing `Super+L` + swayidle (idle + before-sleep) from swaylock → hyprlock. Then verify across suspend/resume + dock/undock.
+
+**Blocks distribution:** a locker that strands the session on resume is a showstopper for other machines — resolve (hyprlock, verified across resume) before packaging the repo for sharing. Diagnostics on recurrence: `coredumpctl list`, `~/.cache/swaylock-trigger.log`.
+
+Sources: [jirutka/swaylock-effects (unmaintained)](https://github.com/jirutka/swaylock-effects) · [swaylock #90](https://github.com/swaywm/swaylock/issues/90) · [sway #6395](https://github.com/swaywm/sway/issues/6395) · [wlroots #2145](https://github.com/swaywm/wlroots/issues/2145)
+
+---
+
 > **Note:** Fedora entries below are archived. System is Arch-only since ~2026-04-20 (Fedora partition removed). Kept for historical reference only.
 
 ### [ARCHIVED] Fedora Won't Boot After Arch Install

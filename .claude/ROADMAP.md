@@ -147,13 +147,27 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 - [x] Fix external-plugin import path — `qs.Commons` can't reach outside the config tree (verified w/ QS docs), so external `plugin:` widgets declare `property var appearance` and the loader injects the theme tokens; documented in `MODULE_API`
 - [ ] (optional) intra-overlay drag-and-drop reorder + spatial side mock
 - [ ] **(follow-up B) same widget on 2+ sides opens its panel on all of them** — `ShellState.stateMap` is keyed per-screen only (`{open: id}`), no side; add `side` to the entry + gate strip panel visibility on side match + thread clicked side through toggle
-- [~] **(follow-up C = vertical-orientation + holder-awareness)** — phased; 0–2 done (2026-07-02, commits `63d74bf`, `f8a5dff`), 3–4 remaining.
+- [x] **(follow-up C = vertical-orientation + holder-awareness)** — DONE. Phased 0–4; 0–2 (2026-07-02, commits `63d74bf`, `f8a5dff`), 3–4 (2026-07-03, uncommitted).
   - [x] **Phase 0 — responsive widgets/panels.** `BarPill` shared capsule owns the horizontal↔vertical fork (icon+value / icon-only; Noctalia/DMS pattern, no text rotation); 9 widgets migrated. ClockWidget stacks HH/MM vertically; WorkspacesWidget row→column. `Bar.qml` vertical path deleted the hardcoded icon Column — vertical bars drive the same zone models via ColumnLayouts. Dashboard/MediaPanel reflow on measured width (2→1 col / row→stack, scroll when tall-narrow); fixed `Layout` height/width bugs (plain `height:`/`width:` on layout children → 0 → overlap). Title/media stay horizontal-only (can't flow).
   - [x] **Phase 1 — `PanelHost`** (`Modules/Shell/Panels/PanelHost.qml`): reusable panel-content kernel (meta resolution + content loaders + size targets), holder-agnostic. Strip left on its own inline copy for now.
   - [x] **Phase 2 — bars host panels.** `BarPanel` drops a panel from the bar edge, anchored to the clicked opener, using the SAME neck `Shape` as the strip card (fuses in identically). Direct opener widgets `dashboard`/`launcher`/`wallpaper` (resolve to `PanelOpenerWidget`, panel = the id, no config step, no hover popup). `ShellSurface` bar-popup input-mask generalised top-only → all 4 sides + click-outside treats a bar panel as inside. `setSideType` carry-over on direct ids. **← delivers "dashboard drops from the top bar".**
-  - [ ] **Phase 3** — merge `zones`/`icons` into one per-side `content: [{id, config, align?}]` list + read-time shim; unify the two widget catalogues.
-  - [ ] **Phase 4** — replace `barRoot`/`stripRoot` with one `holderRoot` contract (side/horizontal/type/screen/showPopup/togglePanel); converge `StripIconBase`/`BarPill`; migrate Strip onto `PanelHost`; one WidgetLoader. Then docs (WIDGET/PANEL/MODULE_API).
+  - [x] **Phase 3** (2026-07-03) — one per-side `content: [{id, config, align}]` list; read-time shim in `ShellConfig._sideContent` reads old `zones`/`icons` untouched, mutators write `content` (side converts on first GUI edit), `align` = bar zone / `""` = strip; type-flip keeps both flavours in one list so bar↔strip round-trips are non-destructive. Unified `WidgetRegistry.availableWidgets` with `{bar,strip}` caps (old arrays are filtered views); one `widgetMeta`.
+  - [x] **Phase 4** (2026-07-03) — one `holderRoot` contract on Bar+Strip (side/horizontal/type/screen/screenName/thickness/togglePanel/dismissPopups/showsPanel/iconHover*/showPopup — each side stubs the other's half). `StripIconBase` folded into `BarPill` (added active/hover highlight bg) + all 6 strip wrappers deleted → `PanelOpenerWidget` is the one holder-aware opener. One `WidgetLoader` (+ `widgetFile(id,isStrip)` resolver) replaces Bar/StripWidgetLoader; `barRoot`/`stripRoot` renamed `holderRoot` shell-wide. Strip mounts via shared `PanelHost` (inline copy gone). Docs updated (WIDGET/PANEL/MODULE_API).
 - [ ] disable-a-module could also unload already-placed instances (currently only hides from palette — the documented ceiling)
+
+---
+
+### Locker: swaylock → hyprlock (next — blocks distribution)
+
+**Goal:** Replace the swaylock lock screen with **hyprlock** — the resume-freeze fix + brings back the blur aesthetic. Rationale (verified 2026-07-03, see `TROUBLESHOOTING.md` → "Freeze on resume" + `DECISIONS.md`): `swaylock-effects` is unmaintained and hits a known, unfixable-by-us sway-ecosystem resume/output-hotplug segfault; upstream swaylock (current interim) is maintained but the same fragile lineage and has no blur + a grey pre-wallpaper flash. hyprlock is a separate, actively-maintained codebase that does blur + clock.
+
+**Checklist:**
+- [ ] Shell hyprlock config (`config/.config/hypr/` or a shell-specific path): blur, theme colors, **dynamic wallpaper** — add a stable `~/.cache/wallpaper/current` symlink maintained by `wallpaper-set.sh`, point hyprlock's `background { path }` at it (hyprlock's path is static, so the symlink is the indirection).
+- [ ] Theme-switch template (`scripts/themes/templates/hyprlock.conf.tmpl`) so colors track the active `theme.json` (replaces the swaylock template's role).
+- [ ] Repoint `Super+L` bind (`mango/config.conf`) + swayidle idle-timeout + before-sleep (`swayidle/config.sh`) from `swaylock-launch.sh` → hyprlock (or a `hyprlock-launch.sh`).
+- [ ] Decide swaylock's fate (keep as documented fallback, or remove) + keep `swaylock-launch.sh`'s trigger-diagnostic block or port it.
+- [ ] **Verify** across suspend/resume **and** dock/undock (laptop-only + 3-monitor work setup) — the exact scenarios that crashed swaylock. Escape hatch reminder: a hung `ext-session-lock` locker can't be cleanly killed (compositor stays blanked), so test when nothing's unsaved.
+- [ ] Once verified, flip the "Resume freeze" QA item to done and drop the distribution blocker.
 
 ---
 
@@ -209,6 +223,7 @@ Well-defined features not yet scheduled into a sprint.
 
 ### Pre-v1.0 QA checklist (from the 2026-07-01 session audit)
 Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
+- [~] **Resume freeze — swaylock segfaults (INTERIM MITIGATION 2026-07-03; hyprlock planned).** Intermittent freeze on resume (lock page / gray screen + cursor) = `swaylock-effects` 1.7.0.0 (unmaintained fork) hitting the known sway-ecosystem resume/output-hotplug segfault. Interim: switched to upstream `swaylock` 1.8.5 (maintained; normal lock verified) + de-effected config/template — but lost blur/clock and it's the same fragile lineage. Real fix = the hyprlock sprint below. **Blocks distribution.** Full verified diagnosis + sources in `TROUBLESHOOTING.md` → "Freeze on resume".
 - [x] **Zen chrome color — RESOLVED (2026-07-01):** solid palette backgrounds *did* recolor the chrome but flattened Zen's per-workspace **gradient** to a flat fill (Monochrome → flat black). Reverted the zen template to **light-touch** (accent + text vars only, no bg fills) so the gradient survives. Conclusion: Zen owns its chrome color via the workspace gradient (`zen_workspaces` DB, set in Zen's UI) and userChrome can't cleanly override it — so Zen's main chrome does NOT follow the shell theme by CSS. **Real fix = drive the workspace gradient from the palette during the Zen restart window** (queued: theme-packs / Sprint 26 — see the Zen-gradient note there). Interim: user sets a palette-matched gradient manually.
 - [ ] **Test the auto day/night schedule end-to-end** — `ColorScheme` Dark/Light/Auto + schedule logic was built but never watched flip at a scheduled time.
 - [ ] **Visual pass on the light themes** — Latte/TokyoNightDay/GruvboxLight/DraculaAlucard are official palettes; **Nord light is hand-tuned** (contrast-audited OK, yellow darkened to #977100) — eyeball it on real content.
@@ -236,6 +251,25 @@ Save named snapshots of the whole bar/strip layout and switch between them in on
 - `ShellConfig.saveLoadout(name)` snapshots current `sides`/`corners`/`outerGap` into a `loadouts: { <name>: {...} }` map in the config (or a sidecar file); `applyLoadout(name)` writes it back through the existing `_mutate` path → hot-reloads live.
 - UI: a loadouts row in the Shell settings pane / edit-mode banner — save current, apply, rename, delete. Per-instance widget config (S26) rides along automatically since it lives in the entries.
 - Nice-to-haves: a couple of built-in presets (minimal / full / dev), export/import a loadout as JSON to share.
+
+### Auto-hide sides in fullscreen (user idea 2026-07-03)
+
+Bars/strips eat a sliver of screen — annoying in fullscreen (presentations, video, games). Want them to get out of the way. Two mechanisms, ship both:
+- **Auto-detect fullscreen** — hide all sides when the focused window is fullscreen, reveal on exit. Compositor-dependent (needs a "focused window is fullscreen" signal); on MangoWC check what IPC exposes, else route through the planned `CompositorService` facade (post-v1.0 multi-compositor work). A strip in `holder` mode already reserves no space + hover-reveals, so "auto-hide" for bars ≈ making them behave like holders while fullscreen (collapse + edge hover-catch), reusing the existing reveal path rather than new chrome.
+- **Manual toggle** — a keybind / setting to force-hide the shell regardless of window state (`ShellState`-level "shell hidden" flag gating `ShellSurface` visibility + exclusion zones), for when auto-detect misfires or the user just wants a clean screen.
+
+Cheap-ish: the exclusion-zone + holder-reveal machinery already exists; this is mostly a global "hidden" gate + a fullscreen signal to drive it.
+
+### Launcher → keyboard-first master search (user idea 2026-07-03)
+
+Launcher isn't keyboard-usable enough. Concrete gaps + vision:
+- **Search field must auto-focus on open** — especially when opened via keybind, typing should land in the search box immediately (type-to-search), Enter opens the top result. Right now focus doesn't go to the input. Likely a `forceActiveFocus()` on the TextField when the panel opens + making the panel/surface grab keyboard focus (tie into the panel focus handling that Strip/BarPanel already do for Esc).
+- **Master search** (KDE KRunner / macOS Spotlight model): one field that searches apps **and** actions/tools — not just app launch. Candidate providers: apps, open windows, settings entries, wallpaper/theme switch, power actions, calculator, unit convert, maybe web search / project-jump. Keyboard-driven: arrow/Tab to move, Enter to run, per-provider prefixes optional. Pluggable provider list so plugins can register search sources.
+- Ties into the panel keybind item below (Enter to open, Esc to dismiss).
+
+### Panel keybinds / dismissal (user idea 2026-07-03)
+
+More keybinds for panel control — notably **keys to exit/close panels** (Esc already closes strip/bar panels via the surface focus grab; extend to a global "close any open panel" bind, and possibly per-panel open binds). Audit which panels grab keyboard focus so Esc works consistently across all holders (bar panels + strip panels). Overlaps the launcher focus work above.
 
 ### Core → plugin / optional candidates (for "super-customizable" + a lean default)
 Things currently baked into core that are really *personal* and should be extractable:
