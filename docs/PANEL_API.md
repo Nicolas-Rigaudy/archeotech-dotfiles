@@ -1,8 +1,13 @@
 # Panel API
 
-Panels are the larger content surfaces that mount inside an edge strip's card — Control Center, Notifications, Launcher, Dashboard, Wallpaper Picker. Each panel is a single QML file under `Modules/Shell/Panels/Content/` plus an entry in `Services/Shell/PanelRegistry.qml`.
+Panels are the larger content surfaces a holder shows — Notifications, Launcher, Dashboard, Settings, Media, Wallpaper Picker. Each panel is a single QML file under `Modules/Shell/Panels/Content/` plus an entry in `Services/Shell/PanelRegistry.qml`.
 
-A panel is *not* a window. The Strip owns the chrome (glass card, animations, click-outside, Esc); the panel is just the inner content.
+A panel is *not* a window, and it is *not* tied to a strip. Both holder types host panels through the shared **`PanelHost`** kernel (`Modules/Shell/Panels/PanelHost.qml`), which resolves the panel meta, mounts the content, injects `panelRoot`, and reports size hints:
+
+- a **strip** shows the panel in its edge card (`Strip.qml`);
+- a **bar** drops it from the bar edge, anchored under the opener (`Widgets/Bar/BarPanel.qml`).
+
+The holder owns the chrome (glass card, animations, click-outside, Esc); PanelHost mounts the content; the panel file is just the inner content.
 
 ---
 
@@ -11,7 +16,7 @@ A panel is *not* a window. The Strip owns the chrome (glass card, animations, cl
 1. Create `config/.config/quickshell/Modules/Shell/Panels/Content/<PascalName>.qml`.
 2. Declare `property var panelRoot` and anchor-fill the parent.
 3. Add an entry to `PanelRegistry.qml`.
-4. Add a strip icon (`Widgets/Strip/<PascalName>Icon.qml`) and wire it to the same id in `shell-config.json`.
+4. Add its opener to the catalogue (`availableWidgets` in `WidgetRegistry`, with `strip`/`bar` caps) and place that id in a side's `content` in `shell-config.json`. No per-panel icon file — `PanelOpenerWidget` is the shared opener (see [WIDGET_API.md](WIDGET_API.md)).
 
 ```qml
 // Modules/Shell/Panels/Content/MyPanel.qml
@@ -72,12 +77,12 @@ In all cases the size is floored at the icon row width (`_bodyAxis + 2 * radius.
 
 ## `panelRoot` API
 
-`Strip.qml` injects `panelRoot` into the panel content right after `Loader.onLoaded`. The object exposes:
+`PanelHost` injects `panelRoot` into the panel content on load (the holder — Strip or BarPanel — supplies it). The object exposes:
 
 | Member         | Type     | What                                                                    |
 |----------------|----------|-------------------------------------------------------------------------|
-| `close()`      | function | Closes the panel (clears `ShellState.activePanel` for this screen).     |
-| `panelOpen`    | `bool`   | `true` while this strip's panel is active (any panel on this strip).    |
+| `close()`      | function | Closes the panel (clears `ShellState` across screens).                  |
+| `panelOpen`    | `bool`   | `true` while this holder's panel is active.                             |
 
 Use it to dismiss the panel after a successful action:
 
@@ -159,13 +164,17 @@ This gives a consistent visual treatment (subtle `surface1` icon + `overlay0` te
 ```
 config/.config/quickshell/
 ├── Services/Shell/PanelRegistry.qml    # the panels map (id → metadata)
-├── Modules/Shell/Sides/Strip.qml       # axisSize logic + card chrome + anims
-└── Modules/Shell/Panels/Content/
-    ├── ControlCenter.qml               # axisSize: 440  — quick toggles only
-    ├── NotificationCenter.qml          # axisSize: "auto" — exposes implicitAxis
-    ├── Launcher.qml                    # axisSize: 440  — recents + search + list
-    ├── Dashboard.qml                   # axisSize: 920  — left/right cols
-    └── WallpaperPicker.qml             # axisSize: 1280 — horizontal carousel
+├── Modules/Shell/Panels/
+│   ├── PanelHost.qml                   # shared kernel: meta + content mount + size hints
+│   └── Content/
+│       ├── NotificationCenter.qml      # axisSize: "auto" — exposes implicitAxis
+│       ├── Launcher.qml                # recents + search + list
+│       ├── Dashboard.qml               # left/right cols
+│       ├── MediaPanel.qml
+│       ├── SettingsPanel.qml
+│       └── WallpaperPicker.qml         # horizontal carousel
+├── Modules/Shell/Sides/Strip.qml       # strip card chrome + anims (hosts PanelHost)
+└── Widgets/Bar/BarPanel.qml            # bar dropdown chrome (hosts PanelHost)
 ```
 
-Only `PanelRegistry.qml` knows about the full panel list. Strip mounts whichever panel is active for that screen via `ShellState`.
+Only `PanelRegistry.qml` knows the full panel list. A holder mounts whichever panel is active for that screen/side via `ShellState` + `PanelHost`.

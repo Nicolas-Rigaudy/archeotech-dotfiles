@@ -56,9 +56,9 @@ folder appears in the palette immediately.
 
 | Target | Behaviour | Status |
 |--------|-----------|--------|
-| `bar-zone` | `entry` mounts inline as a bar widget in a Left/Center/Right zone. | ✅ Chunk 2 |
+| `bar-zone` | `entry` mounts inline as a bar widget in a bar zone. | ✅ Chunk 2 |
 | `strip-icon` | `entry` mounts directly as a strip icon (small, self-contained). | ✅ Chunk 2 |
-| `panel-content` | the strip auto-generates an opener icon (the `icon` glyph); clicking it toggles a panel whose content is `entry`. | ✅ Chunk 2 |
+| `panel-content` | the holder auto-generates an opener (the shared `PanelOpenerWidget` with the `icon` glyph); clicking it toggles a panel whose content is `entry`. | ✅ Chunk 2 |
 | `desktop-widget` | placed free-floating on the desktop layer. | ⏳ Sprint 21 Chunk 3 |
 
 A module may list several. When placed on a strip, `panel-content` wins over
@@ -67,21 +67,23 @@ A module may list several. When placed on a strip, `panel-content` wins over
 ## The entry QML contract
 
 **`bar-zone` / `strip-icon`** — same contract as a built-in widget. Declare the
-injected properties; use the context API:
+injected properties; use the `holderRoot` context API (one contract for bars and
+strips — see [WIDGET_API.md](WIDGET_API.md)):
 
 ```qml
 Item {
-    required property var    barRoot     // (strip icons get `stripRoot` instead)
+    required property var    holderRoot   // a Bar or a Strip; same superset API
     required property string widgetId
     implicitWidth: /* your content width */
     implicitHeight: 22
-    // barRoot.showPopup(item, label, primary, secondary, hint) / hidePopup(item)
+    // holderRoot.showPopup(item, label, primary, secondary, hint) / hidePopup(item)
 }
 ```
 
 **`panel-content`** — declare `property var panelRoot` (call `panelRoot.close()`
-to dismiss). The panel mounts inside the strip card; its size comes from the
-manifest `panel` block:
+to dismiss). The panel mounts in the hosting holder (a strip card or a bar
+dropdown) via the shared `PanelHost`; its size comes from the manifest `panel`
+block:
 
 ```qml
 Item {
@@ -130,7 +132,7 @@ injected (defaults merged in) and updated live when edited:
 
 ```qml
 Item {
-    required property var    barRoot
+    required property var    holderRoot
     required property string widgetId
     property var config: ({})          // { city, units, interval, showIcon }
     // e.g. config.units === "f" ? … : …
@@ -155,7 +157,7 @@ object is created, so guard uses until it arrives:
 
 ```qml
 Item {
-    required property var barRoot       // (panel-content declares panelRoot instead)
+    required property var holderRoot    // (panel-content declares panelRoot instead)
     property var appearance
     property var config: ({})
     readonly property var _a: appearance
@@ -179,5 +181,5 @@ beyond theme tokens is not yet exposed to modules.)
 
 Then: `Super+Shift+E` → click a strip's `+` → pick **Quick Notes** → an opener
 icon appears on that strip; click it → the Notes panel slides out. The
-assignment persists in `shell-config.json` as `plugin:notes` in that strip's
-`icons` list.
+assignment persists in `shell-config.json` as `plugin:notes` in that side's
+`content` list.
