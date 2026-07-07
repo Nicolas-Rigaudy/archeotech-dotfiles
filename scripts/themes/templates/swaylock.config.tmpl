@@ -18,28 +18,19 @@ font=FiraCode Nerd Font
 font-size=30
 
 # Indicator settings (centered on screen with larger radius)
-indicator
+# (upstream swaylock: `indicator-idle-visible` = the fork's bare `indicator`)
+indicator-idle-visible
 indicator-caps-lock
 indicator-radius=140
 indicator-thickness=20
 
-# Clock settings
-clock
-timestr=%H:%M
-# Shorter date format to fit better (day and date only)
-datestr=%a, %d %b
-
-# Effects (blur and vignette for aesthetic)
-effect-blur=7x5
-effect-vignette=0.5:0.5
-
-# Grace period before lock (0 = immediate)
-grace=0
-grace-no-mouse
-grace-no-touch
-
-# Fade in effect
-fade-in=0.3
+# NOTE (2026-07-03): switched swaylock-effects → upstream swaylock (the fork
+# segfaulted on resume — see TROUBLESHOOTING.md). Upstream errors on unknown
+# options, so the effects-only settings were removed: clock/timestr/datestr,
+# effect-blur/effect-vignette, grace/grace-no-mouse/grace-no-touch, fade-in.
+# (Upstream locks immediately by default, so grace=0 needed no replacement.)
+# Want blur + clock back? hyprlock is the maintained option (already configured
+# for Hyprland) — would need its own template/format.
 
 ################################################################################
 # COLORS — substituted from the active theme (hex without leading '#').
