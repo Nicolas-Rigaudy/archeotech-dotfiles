@@ -6,14 +6,23 @@
 # hyprlock replaced swaylock (2026-07-08): a separately-maintained codebase (not
 # the sway lineage) that fixes the resume-freeze segfault AND restores blur.
 # hyprlock reads this file fresh on every launch, so no reload is needed.
+#
+# Layout: cinematic blurred+vignetted wallpaper; clock/date/greeting float
+# above a frosted shape-card that holds the input, username and kb layout;
+# battery/uptime pinned bottom-centre (via scripts/hyprlock-info.sh).
 ################################################################################
 
-# ── Colors (hyprlang vars; hex WITHOUT '#', wrapped in rgb()/rgba()) ──────────
+# ── Fonts + colors (hyprlang vars; hex WITHOUT '#', wrapped in rgb()/rgba()) ──
+$font    = FiraCode Nerd Font
 $base    = rgb({{base}})
 $text    = rgb({{text}})
 $subtext = rgb({{subtext0}})
 $accent  = rgb({{lavender}})
+$accent2 = rgb({{mauve}})
 $inner   = rgba({{surface0}}99)
+$card    = rgba({{base}}73)
+$border  = rgba({{lavender}}59)
+$shadow  = rgba({{crust}}cc)
 $check   = rgb({{blue}})
 $fail    = rgb({{maroon}})
 $caps    = rgb({{peach}})
@@ -24,43 +33,111 @@ general {
     ignore_empty_input = true
 }
 
-# Wallpaper: static path, so it points at a symlink that wallpaper-set.sh
-# repoints to the current wallpaper. hyprlock applies its own blur.
+# Wallpaper: static path → a symlink wallpaper-set.sh repoints to the current
+# wallpaper. Blur + dim + vignette + subtle vibrancy make it cinematic.
 background {
     monitor =
     path = $HOME/.cache/wallpaper/current
-    blur_passes = 2
-    blur_size = 3
+    blur_passes = 3
+    blur_size = 4
+    noise = 0.0117
+    contrast = 0.9
+    brightness = 0.8
+    vibrancy = 0.17
+    vignette = 0.4
 }
 
-input-field {
+animations {
+    enabled = true
+    bezier = smooth, 0.25, 1, 0.5, 1
+    animation = fadeIn, 1, 4, smooth
+}
+
+# ── Frosted card (drawn before input/labels so it sits behind them) ───────────
+shape {
     monitor =
-    size = 300, 50
-    outline_thickness = 2
-    dots_size = 0.25
-    dots_spacing = 0.2
-    dots_center = true
-    outer_color = $accent
-    inner_color = $inner
-    font_color = $text
-    check_color = $check
-    fail_color = $fail
-    capslock_color = $caps
-    fade_on_empty = false
-    placeholder_text = <span foreground="##{{subtext0}}">Password…</span>
-    position = 0, -200
+    size = 480, 280
+    color = $card
+    rounding = 24
+    border_size = 2
+    border_color = $border
+    shadow_passes = 3
+    shadow_size = 8
+    shadow_color = $shadow
+    position = 0, -50
     halign = center
     valign = center
 }
 
-# Clock ($TIME = HH:MM, auto-refreshed by hyprlock)
+input-field {
+    monitor =
+    size = 320, 56
+    rounding = 16
+    outline_thickness = 2
+    dots_size = 0.25
+    dots_spacing = 0.25
+    dots_center = true
+    outer_color = rgba({{lavender}}ff) rgba({{mauve}}ff) 45deg
+    inner_color = $inner
+    font_color = $text
+    check_color = $check
+    fail_color = $fail
+    fail_text = Wrong — $ATTEMPTS attempt(s)
+    fail_transition = 300
+    capslock_color = $caps
+    fade_on_empty = false
+    placeholder_text = <span foreground="##{{subtext0}}">Enter password</span>
+    shadow_passes = 2
+    shadow_size = 5
+    shadow_color = $shadow
+    shadow_boost = 1.2
+    position = 0, 20
+    halign = center
+    valign = center
+}
+
+# Clock (HH:MM)
 label {
     monitor =
-    text = $TIME
+    text = cmd[update:1000] date +"%H:%M"
     color = $text
-    font_size = 120
-    font_family = FiraCode Nerd Font
-    position = 0, 100
+    font_size = 96
+    font_family = $font
+    shadow_passes = 2
+    shadow_size = 6
+    shadow_color = $shadow
+    shadow_boost = 1.2
+    position = 0, 235
+    halign = center
+    valign = center
+}
+
+# Date
+label {
+    monitor =
+    text = cmd[update:60000] date +"%A, %d %B"
+    color = $subtext
+    font_size = 20
+    font_family = $font
+    shadow_passes = 1
+    shadow_size = 3
+    shadow_color = $shadow
+    position = 0, 135
+    halign = center
+    valign = center
+}
+
+# Greeting (time-of-day, via helper)
+label {
+    monitor =
+    text = cmd[update:1800000] hyprlock-info.sh greeting
+    color = $subtext
+    font_size = 22
+    font_family = $font
+    shadow_passes = 1
+    shadow_size = 3
+    shadow_color = $shadow
+    position = 0, 330
     halign = center
     valign = center
 }
@@ -69,23 +146,40 @@ label {
 label {
     monitor =
     text = $USER
-    color = $subtext
-    font_size = 25
-    font_family = FiraCode Nerd Font
-    position = 0, -250
+    color = $text
+    font_size = 22
+    font_family = $font
+    shadow_passes = 1
+    shadow_size = 3
+    shadow_color = $shadow
+    position = 0, -70
     halign = center
     valign = center
 }
 
-# Keyboard layout ($LAYOUT auto-updates on layout switch — replaces swaylock's
-# show-keyboard-layout)
+# Keyboard layout ($LAYOUT auto-updates on layout switch)
 label {
     monitor =
-    text =  $LAYOUT
+    text = $LAYOUT
     color = $subtext
-    font_size = 16
-    font_family = FiraCode Nerd Font
-    position = 0, -295
+    font_size = 15
+    font_family = $font
+    position = 0, -120
     halign = center
     valign = center
+}
+
+# Battery + uptime (dev flair, bottom-centre, via helper)
+label {
+    monitor =
+    text = cmd[update:30000] hyprlock-info.sh status
+    color = $subtext
+    font_size = 15
+    font_family = $font
+    shadow_passes = 1
+    shadow_size = 3
+    shadow_color = $shadow
+    position = 0, 40
+    halign = center
+    valign = bottom
 }

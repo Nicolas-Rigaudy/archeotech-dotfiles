@@ -168,6 +168,7 @@ install_local_scripts() {
         "battery-alert.sh"
         "swaylock-launch.sh"
         "hyprlock-launch.sh"
+        "hyprlock-info.sh"
         "mango-reload.sh"
         "project-jump.sh"
         "list-desktop-apps.sh"
