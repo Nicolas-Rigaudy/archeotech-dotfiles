@@ -271,6 +271,14 @@ Launcher isn't keyboard-usable enough. Concrete gaps + vision:
 
 More keybinds for panel control — notably **keys to exit/close panels** (Esc already closes strip/bar panels via the surface focus grab; extend to a global "close any open panel" bind, and possibly per-panel open binds). Audit which panels grab keyboard focus so Esc works consistently across all holders (bar panels + strip panels). Overlaps the launcher focus work above.
 
+### Lock screen customization / "widgets" pane (user idea 2026-07-08)
+
+Configure the hyprlock lock screen from a Settings pane — a phone-lockscreen feel: toggle/arrange which elements show (clock, date, rotating phrase, status bar, battery, uptime; later weather/media/avatar), pick a layout preset, edit the phrase list, choose the clock format.
+
+**Key constraint:** hyprlock is a *separate process* driven by a static text file (`~/.config/hypr/hyprlock.conf`) with no live QML/IPC — so this is **not** arbitrary QML widgets on the lock surface. It's a **config generator** that emits `hyprlock.conf` from a config model, the same mechanism `theme-switch.py` already uses to render that file (colors from the active `theme.json`).
+
+Fits existing patterns: swap today's fixed template for a config-driven generator, store choices in `Persistence.Config`, add a "Lock Screen" Settings pane (element show/hide toggles + layout presets + phrase-list editor + clock format), regenerate on change. The current hand-authored template — the "Console" layout (thin FiraCode-Light clock, date, rotating dev/inspiration phrase via `hyprlock-info.sh`, understated underline input, one bottom status bar `user · layout · battery · uptime`) — becomes the default preset the generator templates from. Self-contained small sprint; do it once the default lock is settled (it is, as of 2026-07-08).
+
 ### Core → plugin / optional candidates (for "super-customizable" + a lean default)
 Things currently baked into core that are really *personal* and should be extractable:
 - **Dev-workflow tooling** → first official plugin (already Sprint 27).
