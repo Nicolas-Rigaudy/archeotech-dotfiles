@@ -24,6 +24,7 @@ PLAIN_PORTRAIT_IMG="$CACHE_DIR/plain-portrait.png"
 LOGO_STATE="$CACHE_DIR/logo-active"         # active logo name, empty/absent = none
 LAST_LOGO="$CACHE_DIR/logo-last"            # last active logo for keybind restore
 LAST_WALL="$CACHE_DIR/last-wallpaper"
+CURRENT_LINK="$CACHE_DIR/current"           # stable symlink → current wallpaper (hyprlock bg)
 LAST_COLOR="$CACHE_DIR/last-color"
 LAST_COLOR_FOR="$CACHE_DIR/last-color-for"
 
@@ -530,6 +531,9 @@ case "${1:-}" in
         fi
 
         echo "$WALLPAPER" > "$LAST_WALL"
+        # Repoint the stable symlink hyprlock's background reads (raw wallpaper,
+        # no logo overlay — matches the prior swaylock --image behaviour).
+        ln -sfn "$WALLPAPER" "$CURRENT_LINK"
 
         CURRENT="$(active_logo)"
         if [ -n "$CURRENT" ]; then
