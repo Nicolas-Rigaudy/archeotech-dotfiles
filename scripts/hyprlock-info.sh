@@ -15,11 +15,18 @@ case "$1" in
         fi
         ;;
     status)
+        # One-line status bar: user · layout · battery · uptime.
+        # Layout comes from mmsg (MangoWC); omitted gracefully elsewhere.
+        lay=$(mmsg -g -k 2>/dev/null | awk 'NR==1{print toupper($3)}')
         bat=$(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null)
-        up=$(uptime -p 2>/dev/null | sed 's/^up //')
+        up=$(uptime -p 2>/dev/null \
+             | sed 's/^up //; s/ days\?,\?/d/g; s/ hours\?,\?/h/g; s/ minutes\?,\?/m/g; s/,//g')
+        parts=("$USER")
+        [ -n "$lay" ] && parts+=("$lay")
+        [ -n "$bat" ] && parts+=("󰁹 ${bat}%")
+        [ -n "$up" ]  && parts+=("󰅐 up $up")
         out=""
-        [ -n "$bat" ] && out="󰁹 ${bat}%"
-        [ -n "$up" ]  && out="${out:+$out    }󰅐 ${up}"
+        for p in "${parts[@]}"; do out="${out:+$out   ·   }$p"; done
         echo "$out"
         ;;
     *)
