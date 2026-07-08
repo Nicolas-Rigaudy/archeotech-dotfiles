@@ -157,17 +157,19 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ---
 
-### Locker: swaylock → hyprlock (next — blocks distribution)
+### Locker: swaylock → hyprlock ✅ SHIPPED 2026-07-08
 
-**Goal:** Replace the swaylock lock screen with **hyprlock** — the resume-freeze fix + brings back the blur aesthetic. Rationale (verified 2026-07-03, see `TROUBLESHOOTING.md` → "Freeze on resume" + `DECISIONS.md`): `swaylock-effects` is unmaintained and hits a known, unfixable-by-us sway-ecosystem resume/output-hotplug segfault; upstream swaylock (current interim) is maintained but the same fragile lineage and has no blur + a grey pre-wallpaper flash. hyprlock is a separate, actively-maintained codebase that does blur + clock.
+**Shipped** — hyprlock replaced swaylock as the lock screen: it fixes the resume-freeze segfault (a separate, actively-maintained codebase, not the sway lineage) and restores blur. Verified across suspend/resume + dock/undock in initial testing (laptop-only + 3-monitor); watching day-to-day use before treating the *intermittent* resume case as fully closed. swaylock kept as a documented fallback. See `DECISIONS.md [2026-07-08]` + `TROUBLESHOOTING.md` → "Freeze on resume".
 
-**Checklist:**
-- [ ] Shell hyprlock config (`config/.config/hypr/` or a shell-specific path): blur, theme colors, **dynamic wallpaper** — add a stable `~/.cache/wallpaper/current` symlink maintained by `wallpaper-set.sh`, point hyprlock's `background { path }` at it (hyprlock's path is static, so the symlink is the indirection).
-- [ ] Theme-switch template (`scripts/themes/templates/hyprlock.conf.tmpl`) so colors track the active `theme.json` (replaces the swaylock template's role).
-- [ ] Repoint `Super+L` bind (`mango/config.conf`) + swayidle idle-timeout + before-sleep (`swayidle/config.sh`) from `swaylock-launch.sh` → hyprlock (or a `hyprlock-launch.sh`).
-- [ ] Decide swaylock's fate (keep as documented fallback, or remove) + keep `swaylock-launch.sh`'s trigger-diagnostic block or port it.
-- [ ] **Verify** across suspend/resume **and** dock/undock (laptop-only + 3-monitor work setup) — the exact scenarios that crashed swaylock. Escape hatch reminder: a hung `ext-session-lock` locker can't be cleanly killed (compositor stays blanked), so test when nothing's unsaved.
-- [ ] Once verified, flip the "Resume freeze" QA item to done and drop the distribution blocker.
+**Delivered:**
+- [x] Shell hyprlock config (`config/.config/hypr/hyprlock.conf`) — blur + vignette background via a stable `~/.cache/wallpaper/current` symlink (maintained by `wallpaper-set.sh`; hyprlock's `background { path }` is static, so the symlink is the indirection), theme colors, and the "Console" layout (thin FiraCode-Light clock, date, rotating dev/inspiration phrase, understated boxless underline input, one bottom status bar `user · layout · battery · uptime`).
+- [x] Theme-switch template (`scripts/themes/templates/hyprlock.conf.tmpl`) + `apply_hyprlock` applier — colors track the active `theme.json` (stripped-hex → hyprlang `rgb()`/`rgba()`, like the old swaylock applier).
+- [x] `scripts/hyprlock-launch.sh` (double-launch guard + ported trigger diagnostics → `~/.cache/hyprlock-trigger.log`) and `scripts/hyprlock-info.sh` (status-bar + rotating-phrase providers, kept in a script because hyprlang mangles `$(...)`/`#` in inline label commands). Both added to `install.sh` LOCAL_SCRIPTS + deployed to `~/.local/bin`.
+- [x] Repointed `Super+L` (`mango/config.conf`), swayidle idle-timeout + before-sleep (`swayidle/config.sh`), wlogout, and `Paths.qml` from `swaylock-launch.sh` → `hyprlock-launch.sh`.
+- [x] swaylock kept as documented fallback (package + `swaylock-launch.sh` + template retained; de-risks the intermittent case until hyprlock has many cycles of daily use).
+- [x] Distribution blocker dropped (resume-freeze resolved).
+
+**Follow-up idea (logged in Feature Backlog):** a "Lock Screen" Settings pane that regenerates `hyprlock.conf` from a config model — phone-lockscreen feel; hyprlock has no live QML, so it's a config generator, not QML widgets.
 
 ---
 
@@ -223,7 +225,7 @@ Well-defined features not yet scheduled into a sprint.
 
 ### Pre-v1.0 QA checklist (from the 2026-07-01 session audit)
 Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
-- [~] **Resume freeze — swaylock segfaults (INTERIM MITIGATION 2026-07-03; hyprlock planned).** Intermittent freeze on resume (lock page / gray screen + cursor) = `swaylock-effects` 1.7.0.0 (unmaintained fork) hitting the known sway-ecosystem resume/output-hotplug segfault. Interim: switched to upstream `swaylock` 1.8.5 (maintained; normal lock verified) + de-effected config/template — but lost blur/clock and it's the same fragile lineage. Real fix = the hyprlock sprint below. **Blocks distribution.** Full verified diagnosis + sources in `TROUBLESHOOTING.md` → "Freeze on resume".
+- [x] **Resume freeze — RESOLVED 2026-07-08 via hyprlock.** `swaylock-effects` segfaulted on resume (unmaintained fork hitting the known sway-ecosystem output-hotplug-during-resume bug). Migrated to hyprlock — a separate, maintained codebase (not the sway lineage) — which fixes the crash and restores blur. Verified across suspend/resume + dock/undock in initial testing; monitoring day-to-day for the intermittent case. No longer blocks distribution. Full history in `TROUBLESHOOTING.md` → "Freeze on resume" + `DECISIONS.md [2026-07-08]`; migration summary in the "Locker" section above.
 - [x] **Zen chrome color — RESOLVED (2026-07-01):** solid palette backgrounds *did* recolor the chrome but flattened Zen's per-workspace **gradient** to a flat fill (Monochrome → flat black). Reverted the zen template to **light-touch** (accent + text vars only, no bg fills) so the gradient survives. Conclusion: Zen owns its chrome color via the workspace gradient (`zen_workspaces` DB, set in Zen's UI) and userChrome can't cleanly override it — so Zen's main chrome does NOT follow the shell theme by CSS. **Real fix = drive the workspace gradient from the palette during the Zen restart window** (queued: theme-packs / Sprint 26 — see the Zen-gradient note there). Interim: user sets a palette-matched gradient manually.
 - [ ] **Test the auto day/night schedule end-to-end** — `ColorScheme` Dark/Light/Auto + schedule logic was built but never watched flip at a scheduled time.
 - [ ] **Visual pass on the light themes** — Latte/TokyoNightDay/GruvboxLight/DraculaAlucard are official palettes; **Nord light is hand-tuned** (contrast-audited OK, yellow darkened to #977100) — eyeball it on real content.

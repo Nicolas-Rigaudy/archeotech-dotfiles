@@ -23,7 +23,7 @@ This document contains all known issues, their symptoms, causes, and solutions. 
 
 ## Boot & System Issues
 
-### Freeze on resume — swaylock segfaults (lock screen / gray screen with cursor) — INTERIM MITIGATION 2026-07-03; hyprlock planned
+### Freeze on resume — swaylock segfaults (lock screen / gray screen with cursor) — RESOLVED 2026-07-08 (migrated to hyprlock)
 
 **Symptoms:** Reopening the laptop after lunch (resume from suspend) intermittently freezes on the swaylock lock page or a gray screen with only a mouse cursor; no input works, only a hard power-cycle recovers.
 
@@ -48,9 +48,11 @@ The compositor stays alive showing the last locked frame (→ gray/wallpaper + c
 
 **Interim mitigation applied (2026-07-03):** switched to upstream `swaylock` 1.8.5 (`paru -S swaylock` auto-removed `swaylock-effects`) — maintained, and normal `Super+L` locking verified working under MangoWC. Upstream errors on unknown options, so the config **and its generator template** (`scripts/themes/templates/swaylock.config.tmpl`) were de-effected: removed `clock`/`timestr`/`datestr`, `effect-blur`/`effect-vignette`, `grace*`, `fade-in`; replaced the fork's bare `indicator` with `indicator-idle-visible`. **Trade-offs:** lost blur/vignette/clock/fade-in, and a brief grey flash (swaylock's solid `color=`) before the `--image` wallpaper paints. Being upstream/maintained it's *less* likely to hit the resume segfault, but the ecosystem fragility means it's not guaranteed either.
 
-**Real fix — planned next: switch to hyprlock** (see ROADMAP "Locker: swaylock → hyprlock"). Separate, actively-maintained codebase (not the sway/swaylock lineage), does blur + clock, hyprlock config already exists for the Hyprland side. Needs: shell hyprlock config (blur + dynamic wallpaper via a `~/.cache/wallpaper/current` symlink + theme colors), a theme-switch template, and repointing `Super+L` + swayidle (idle + before-sleep) from swaylock → hyprlock. Then verify across suspend/resume + dock/undock.
+**RESOLVED 2026-07-08 — migrated to hyprlock.** hyprlock replaced swaylock on every trigger (`Super+L`, swayidle idle + before-sleep, wlogout). It's a separate, actively-maintained codebase (not the sway/swaylock lineage), so it doesn't inherit the segfault, and it restores blur + clock. Verified across suspend/resume + dock/undock in initial testing (laptop-only + 3-monitor); still monitoring day-to-day since the crash was *intermittent*. Pieces: `config/.config/hypr/hyprlock.conf` (blur/vignette + dynamic wallpaper via a `~/.cache/wallpaper/current` symlink maintained by `wallpaper-set.sh` + theme colors), `scripts/themes/templates/hyprlock.conf.tmpl` + `apply_hyprlock` in `theme-switch.py`, `scripts/hyprlock-launch.sh` (guard + trigger diagnostics → `~/.cache/hyprlock-trigger.log`) and `scripts/hyprlock-info.sh` (status/phrase labels). Design + rationale in `DECISIONS.md [2026-07-08]`.
 
-**Blocks distribution:** a locker that strands the session on resume is a showstopper for other machines — resolve (hyprlock, verified across resume) before packaging the repo for sharing. Diagnostics on recurrence: `coredumpctl list`, `~/.cache/swaylock-trigger.log`.
+**swaylock kept as a documented fallback** — package + `swaylock-launch.sh` + its theme template retained (not removed), to de-risk the intermittent resume case until hyprlock has many cycles of daily use. If hyprlock ever misbehaves, repoint the triggers back to `swaylock-launch.sh`.
+
+**No longer blocks distribution.** Diagnostics on recurrence: `coredumpctl list`, `~/.cache/hyprlock-trigger.log` (hyprlock) or `~/.cache/swaylock-trigger.log` (fallback).
 
 Sources: [jirutka/swaylock-effects (unmaintained)](https://github.com/jirutka/swaylock-effects) · [swaylock #90](https://github.com/swaywm/swaylock/issues/90) · [sway #6395](https://github.com/swaywm/sway/issues/6395) · [wlroots #2145](https://github.com/swaywm/wlroots/issues/2145)
 
