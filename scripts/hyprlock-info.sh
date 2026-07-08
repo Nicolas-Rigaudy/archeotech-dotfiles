@@ -29,6 +29,28 @@ case "$1" in
         for p in "${parts[@]}"; do out="${out:+$out   ·   }$p"; done
         echo "$out"
         ;;
+    phrase)
+        # A rotating line — re-picked on every call (each lock + each cmd update).
+        phrases=(
+            "Make it work, then make it right."
+            "The best way out is always through."
+            "Simplicity is the ultimate sophistication."
+            "Done is better than perfect."
+            "Focus is saying no."
+            "Slow is smooth, smooth is fast."
+            "First solve the problem, then write the code."
+            "Read the error message."
+            "Less, but better."
+            "Think in systems, act in steps."
+            "Perfection is the enemy of shipped."
+            "Measure twice, cut once."
+            "Stay curious."
+            "Trust the process."
+            "Small steps, every day."
+            "Leave it better than you found it."
+        )
+        echo "${phrases[$((RANDOM % ${#phrases[@]}))]}"
+        ;;
     *)
         echo ""
         ;;
