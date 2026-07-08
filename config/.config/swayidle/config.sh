@@ -48,7 +48,7 @@ if [ "$DIM_ENABLED" = "true" ]; then
 fi
 
 if [ "$LOCK_ENABLED" = "true" ]; then
-    ARGS+=(timeout "$LOCK_TIMEOUT" 'swaylock-launch.sh idle-timeout')
+    ARGS+=(timeout "$LOCK_TIMEOUT" 'hyprlock-launch.sh idle-timeout')
 fi
 
 if [ "$SLEEP_ENABLED" = "true" ]; then
@@ -56,6 +56,6 @@ if [ "$SLEEP_ENABLED" = "true" ]; then
            resume 'wlopm --on \*')
 fi
 
-ARGS+=(before-sleep 'swaylock-launch.sh before-sleep')
+ARGS+=(before-sleep 'hyprlock-launch.sh before-sleep')
 
 exec swayidle "${ARGS[@]}"

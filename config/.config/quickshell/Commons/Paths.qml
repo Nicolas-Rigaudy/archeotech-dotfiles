@@ -9,7 +9,7 @@ QtObject {
     readonly property string localBin:     home + "/.local/bin"
     readonly property string wallpaperSet: localBin + "/wallpaper-set.sh"
     readonly property string wallpaperPicker: localBin + "/wallpaper-picker.sh"
-    readonly property string swaylockLaunch: localBin + "/swaylock-launch.sh"
+    readonly property string hyprlockLaunch: localBin + "/hyprlock-launch.sh"
     readonly property string wlogoutLaunch:  localBin + "/wlogout-launch.sh"
     readonly property string listDesktopApps: home + "/Projects/archeotech-dotfiles/scripts/list-desktop-apps.sh"
     readonly property string wifiScan:        home + "/Projects/archeotech-dotfiles/scripts/wifi-scan.sh"

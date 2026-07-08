@@ -1,6 +1,6 @@
 {
     "label" : "lock",
-    "action" : "swaylock-launch.sh",
+    "action" : "hyprlock-launch.sh",
     "keybind" : "l"
 }
 {
