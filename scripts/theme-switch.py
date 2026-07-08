@@ -159,6 +159,16 @@ def apply_swaylock(theme: dict, vars: Dict[str, str]) -> None:
     atomic_write(out, render("swaylock.config.tmpl", sl_vars))
 
 
+def apply_hyprlock(theme: dict, vars: Dict[str, str]) -> None:
+    """Render hypr/hyprlock.conf from the template. hyprlock colors are hex
+    WITHOUT the leading '#' (wrapped in rgb()/rgba() in the template), so feed
+    render() a stripped-hex var map — same shape as apply_swaylock. No reload
+    needed; hyprlock re-reads its config on the next lock."""
+    hl_vars = {k: v.lstrip("#") for k, v in theme.get("colors", {}).items()}
+    out = HOME / ".config" / "hypr" / "hyprlock.conf"
+    atomic_write(out, render("hyprlock.conf.tmpl", hl_vars))
+
+
 def apply_fish(theme: dict, vars: Dict[str, str]) -> None:
     """Render fish's color vars from the palette, overwriting the frozen theme
     file fish wrote on its 4.3 migration (which was hardcoded to one flavor and
@@ -328,6 +338,7 @@ REGISTRY: List[tuple[str, Applier]] = [
     ("rofi",       apply_rofi),
     ("starship",   apply_starship),
     ("swaylock",   apply_swaylock),
+    ("hyprlock",   apply_hyprlock),
     ("fish",       apply_fish),
     ("gtk",        apply_gtk),
     ("vscode",     apply_vscode),
