@@ -20,7 +20,6 @@ $text    = rgb({{text}})
 $subtext = rgb({{subtext0}})
 $accent  = rgb({{lavender}})
 $shadow  = rgba({{crust}}cc)
-$shadowsm = rgba({{crust}}e6)
 $fail    = rgb({{maroon}})
 
 general {
@@ -111,9 +110,7 @@ label {
     color = $subtext
     font_size = 17
     font_family = $font
-    shadow_passes = 1
-    shadow_size = 1
-    shadow_color = $shadowsm
+    shadow_passes = 0
     position = 0, 92
     halign = center
     valign = center
@@ -126,9 +123,7 @@ label {
     color = $subtext
     font_size = 14
     font_family = $font
-    shadow_passes = 1
-    shadow_size = 1
-    shadow_color = $shadowsm
+    shadow_passes = 0
     position = 0, 45
     halign = center
     valign = bottom
