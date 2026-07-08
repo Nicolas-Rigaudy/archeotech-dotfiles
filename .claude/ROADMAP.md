@@ -186,6 +186,25 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ---
 
+### Repo split + hygiene — PRE-28 FOUNDATION (planned 2026-07-09)
+
+**Decision (2026-07-09):** split into **two repos** — a public **`archeotech` shell** (the product) and a private **`dotfiles`** (this machine). Matches Noctalia/Caelestia/DMS. Must land **before** Sprint 28 — packaging, install script, docs, and the v1.0 tag all build on the clean base. Full file-by-file inventory done 2026-07-09 (44M / 294 files; splits cleanly).
+
+**Guiding principle (refines the raw inventory):** public = what a *stranger* installs and extends; personal configs are **not** shipped as defaults — the public repo carries **example/reference** compositor snippets, not the actual mango/hypr config. Keeps it a clean product, not "adopt my setup."
+
+- **Public `archeotech`:** `config/.config/quickshell/` (audited clean — no hardcoded `/home/corvus`), theme system (`theme-switch.py` + `scripts/themes/templates/` + `config/.config/archeotech/themes/`), shell-integral scripts (wallpaper-set, hyprlock-launch/-info, wlogout-launch, bt-agent, battery-alert, wifi-scan, list-desktop-apps, zen-opacity-toggle, install/uninstall), `docs/*_API.md` + THEME_SPEC + install/setup guides, example modules (`hello`/`notes`), **1–2 default wallpapers only**, and **example** compositor configs (the shell's *required* mango/hypr settings: `blur_layer=0`, `archeotech-drawer` rules, `qs ipc` binds).
+- **Private `dotfiles`:** personal mango/hypr configs (keybinds + the eDP-1/HDMI-A-1/DP-3 monitor rules), kitty/fish/rofi/waybar/swaync/zathura/yazi/gtk/starship/etc, `system/` (sddm/snapper/logid), `mango-reload.sh` (the 3-monitor layout), the full personal wallpaper set (42M).
+- **Delete (dead — Fedora removed 2026-04-20):** `scripts/fedora-boot-fix/` + `scripts/fix-grub-and-sddm.sh` + `system/etc/grub.d/40_custom` (dead dual-boot entry).
+
+**Boundary fixes to do during the split (9 flagged; the load-bearing ones):**
+- Keybinds referencing `~/Projects/archeotech-dotfiles/scripts/...` → install symlinks to `~/.local/bin`, keybinds call those (already the install pattern for some scripts).
+- `Modules/Settings/Panes/DisplayPane.qml` hardcodes `eDP-1` in display presets → auto-detect / externalise output names (e.g. `~/.config/archeotech/outputs.json`). **Real distribution bug**, folds into the S28 hardcoded-path audit.
+- `project-jump.sh` / `dashboard-projects.sh` assume `~/Projects` + `~/Documents/repos` → make scan roots config-driven (ties into "Core → plugin / optional candidates") or move to personal.
+- mango startup hardcodes `~/Projects/archeotech-dotfiles/wallpapers/arasaka.png` fallback → portable `~/.config/archeotech/wallpapers/`.
+- `~/.cache/wallpaper/current` lock-wallpaper contract → already clean; just document in THEME_SPEC.
+
+**Theme-system boundary → theme-applier plugins:** the messiest coupling is `theme-switch.py` writing into external-app configs (kitty/rofi/gtk/vscode/obsidian/zen). **v1.0 minimum:** every applier **skips gracefully when its target app/config is absent** (gtk/obsidian already do) so the public shell ships them safely. **Post-v1.0 (see backlog):** extract each applier into a drop-in **theme-applier plugin**.
+
 ### Sprint 28 — Distribution & v1.0 Release
 
 **Goal:** Installable by a stranger on fresh Arch. Zero hardcoded paths. APIs documented. Community can publish plugins/themes. **v1.0 milestone.** (Only **1** hardcoded `/home/corvus` left — the audit is nearly done.)
@@ -280,6 +299,13 @@ Configure the hyprlock lock screen from a Settings pane — a phone-lockscreen f
 **Key constraint:** hyprlock is a *separate process* driven by a static text file (`~/.config/hypr/hyprlock.conf`) with no live QML/IPC — so this is **not** arbitrary QML widgets on the lock surface. It's a **config generator** that emits `hyprlock.conf` from a config model, the same mechanism `theme-switch.py` already uses to render that file (colors from the active `theme.json`).
 
 Fits existing patterns: swap today's fixed template for a config-driven generator, store choices in `Persistence.Config`, add a "Lock Screen" Settings pane (element show/hide toggles + layout presets + phrase-list editor + clock format), regenerate on change. The current hand-authored template — the "Console" layout (thin FiraCode-Light clock, date, rotating dev/inspiration phrase via `hyprlock-info.sh`, understated underline input, one bottom status bar `user · layout · battery · uptime`) — becomes the default preset the generator templates from. Self-contained small sprint; do it once the default lock is settled (it is, as of 2026-07-08).
+
+### Theme-applier plugins (user idea 2026-07-09; post-v1.0 refactor)
+
+Turn `theme-switch.py`'s hardcoded applier table into **drop-in theme-applier plugins** — the clean resolution to the theme-system split boundary (and it removes the standing "edit the Python table per app" coupling noted in `DECISIONS.md [2026-05-12]`). Each applier = a folder discovered like a module:
+- **Declarative** (covers rofi/starship/fish/swaylock/hyprlock — just render→write→reload): a manifest, no code — `{ target, template, output, color_transform: hash|strip, reload_cmd, skip_if_missing }`.
+- **Script escape-hatch** for the complex ones (gtk gsettings, vscode JSON-merge, obsidian vault-registry, zen userChrome, mango in-place sed): an executable fed the theme JSON on stdin.
+`theme-switch.py` becomes a thin **runner** that discovers + invokes appliers (keeping today's per-target failure isolation). Wins: core ships only official appliers (kitty/rofi/gtk); personal ones (obsidian/zen) become your own plugins, not core; community can ship appliers for apps you don't use; Theme Packs bundle them. **v1.0 doesn't need this** — the "skip-if-missing" minimum (see the Repo-split section) is enough to ship; this is the depth version. Rides on Sprint 27's plugin install mechanism.
 
 ### Core → plugin / optional candidates (for "super-customizable" + a lean default)
 Things currently baked into core that are really *personal* and should be extractable:
