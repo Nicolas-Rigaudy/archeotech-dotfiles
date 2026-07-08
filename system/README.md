@@ -12,9 +12,6 @@ This directory contains system-level configuration files that require root permi
 ### SDDM Configuration
 - `etc/sddm.conf` - SDDM login screen with Catppuccin Macchiato theme
 
-### GRUB Configuration
-- `etc/grub.d/40_custom` - Custom GRUB entries for Fedora dual-boot
-
 ## Deployment
 
 ### Automated Deployment (Recommended)
@@ -34,11 +31,6 @@ sudo chown root:root /etc/snapper/configs/root
 sudo cp system/etc/sddm.conf /etc/sddm.conf
 sudo chmod 644 /etc/sddm.conf
 sudo chown root:root /etc/sddm.conf
-
-# Deploy GRUB custom entries and regenerate config
-sudo cp system/etc/grub.d/40_custom /etc/grub.d/40_custom
-sudo chmod 755 /etc/grub.d/40_custom
-sudo grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
 ### Using Setup Scripts
@@ -72,14 +64,6 @@ sudo ./scripts/setup-snapper.sh
   - Catppuccin Macchiato cursor theme
   - Beautiful gradient background with mauve accents
 
-### GRUB Dual-Boot
-- **Configuration:** `/etc/grub.d/40_custom`
-- **Purpose:** Custom boot entries for Fedora dual-boot
-- **Issue Fixed:** Fedora kernels are in shared `/boot` (nvme0n1p3) but root is on separate btrfs partition (nvme0n1p7)
-- **Entries:**
-  - Fedora Linux 43 (kernel 6.17.8-300)
-  - Fedora Linux 42 (kernel 6.17.8-200, backup)
-
 ## Prerequisites
 
 ### For Snapper
@@ -96,10 +80,3 @@ See `scripts/setup-snapper.sh` for complete setup automation.
 3. Cursor theme installed: `paru -S catppuccin-cursors-macchiato`
 
 After deploying the config, reboot to see the theme.
-
-### For GRUB Dual-Boot
-1. GRUB installed: `pacman -S grub os-prober`
-2. Shared `/boot` partition between Arch and Fedora (nvme0n1p3)
-3. Fedora root on separate btrfs partition (nvme0n1p7)
-
-After deploying, the custom Fedora entries will appear in GRUB menu.

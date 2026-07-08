@@ -194,7 +194,7 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 - **Public `archeotech`:** `config/.config/quickshell/` (audited clean — no hardcoded `/home/corvus`), theme system (`theme-switch.py` + `scripts/themes/templates/` + `config/.config/archeotech/themes/`), shell-integral scripts (wallpaper-set, hyprlock-launch/-info, wlogout-launch, bt-agent, battery-alert, wifi-scan, list-desktop-apps, zen-opacity-toggle, install/uninstall), `docs/*_API.md` + THEME_SPEC + install/setup guides, example modules (`hello`/`notes`), **1–2 default wallpapers only**, and **example** compositor configs (the shell's *required* mango/hypr settings: `blur_layer=0`, `archeotech-drawer` rules, `qs ipc` binds).
 - **Private `dotfiles`:** personal mango/hypr configs (keybinds + the eDP-1/HDMI-A-1/DP-3 monitor rules), kitty/fish/rofi/waybar/swaync/zathura/yazi/gtk/starship/etc, `system/` (sddm/snapper/logid), `mango-reload.sh` (the 3-monitor layout), the full personal wallpaper set (42M).
-- **Delete (dead — Fedora removed 2026-04-20):** `scripts/fedora-boot-fix/` + `scripts/fix-grub-and-sddm.sh` + `system/etc/grub.d/40_custom` (dead dual-boot entry).
+- **Delete (dead — Fedora removed 2026-04-20): ✅ DONE 2026-07-09** — removed `scripts/fedora-boot-fix/`, `scripts/fix-grub-and-sddm.sh`, `system/etc/grub.d/40_custom` + their references in `update-system-configs.sh` / `system/README.md` / TROUBLESHOOTING.
 
 **Boundary fixes to do during the split (9 flagged; the load-bearing ones):**
 - Keybinds referencing `~/Projects/archeotech-dotfiles/scripts/...` → install symlinks to `~/.local/bin`, keybinds call those (already the install pattern for some scripts).

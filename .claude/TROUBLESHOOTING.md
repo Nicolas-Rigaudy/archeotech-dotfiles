@@ -103,14 +103,7 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 **Cause:**
 - Arch's SDDM is used instead of Fedora's display manager (systemd service init ordering issue)
 
-**Current Status:** Unresolved. Workaround: boot Fedora via BIOS boot menu (F9) — works perfectly.
-
-**Diagnosis scripts available:**
-```bash
-scripts/diagnose-fedora-boot.sh   # Check btrfs subvolumes and fstab
-scripts/fix-fedora-fstab.sh       # Fix /boot UUID in Fedora's fstab
-scripts/fix-fedora-efi.sh         # Fix /boot/efi UUID in Fedora's fstab
-```
+**Current Status:** Moot — Fedora partition removed 2026-04-20 (system is Arch-only). The dual-boot diagnosis/fix scripts (`scripts/fedora-boot-fix/`, `fix-grub-and-sddm.sh`) were deleted 2026-07-09 as part of the repo hygiene pass; recoverable from git history if ever needed.
 
 ---
 

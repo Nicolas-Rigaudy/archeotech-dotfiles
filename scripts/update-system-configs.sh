@@ -31,16 +31,6 @@ if [ -f "$DOTFILES_DIR/system/etc/sddm.conf" ]; then
     chown root:root /etc/sddm.conf
 fi
 
-# GRUB custom entries (Fedora dual-boot)
-if [ -f "$DOTFILES_DIR/system/etc/grub.d/40_custom" ]; then
-    echo "  → /etc/grub.d/40_custom"
-    cp "$DOTFILES_DIR/system/etc/grub.d/40_custom" /etc/grub.d/40_custom
-    chmod 755 /etc/grub.d/40_custom
-    chown root:root /etc/grub.d/40_custom
-    echo "  → Regenerating GRUB config..."
-    grub-mkconfig -o /boot/grub/grub.cfg
-fi
-
 # SDDM Catppuccin theme - Arch logo background
 SDDM_THEME_DIR="/usr/share/sddm/themes/catppuccin"
 SDDM_BG="$SDDM_THEME_DIR/backgrounds/flatppuccin_macchiato.png"
