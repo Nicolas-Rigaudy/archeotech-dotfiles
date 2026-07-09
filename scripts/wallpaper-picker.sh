@@ -1,7 +1,7 @@
 #!/bin/bash
 # wallpaper-picker.sh - Rofi wallpaper picker with thumbnail previews and logo selector
 
-WALLPAPER_DIR="$HOME/Projects/archeotech-dotfiles/wallpapers"
+WALLPAPER_DIR="$HOME/.config/archeotech/wallpapers"
 THUMB_DIR="$HOME/.cache/wallpaper/thumbs"
 WALLPAPER_SET="$HOME/.local/bin/wallpaper-set.sh"
 LOGO_STATE="$HOME/.cache/wallpaper/logo-active"

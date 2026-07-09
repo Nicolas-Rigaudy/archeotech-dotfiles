@@ -480,7 +480,7 @@ case "${1:-}" in
         # Pre-render every (wallpaper, logo) composite into the keyed cache.
         # Doesn't apply anything — purely fills the cache so future picks are
         # cache-hits. Optional 2nd arg: wallpaper directory to scan.
-        WALL_DIR="${2:-$HOME/Projects/archeotech-dotfiles/wallpapers}"
+        WALL_DIR="${2:-$HOME/.config/archeotech/wallpapers}"
         if [ ! -d "$WALL_DIR" ]; then
             echo "Directory not found: $WALL_DIR" >&2
             exit 1
