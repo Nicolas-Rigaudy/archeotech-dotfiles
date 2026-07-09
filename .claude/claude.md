@@ -1,5 +1,7 @@
 # Arch + MangoWC/Hyprland Dotfiles Project
 
+> **Repo split (2026-07-09):** the Archeotech Quickshell **shell** (bar/panels/launcher/theme system — the publishable product) now lives in a separate repo, **`~/Projects/archeotech-shell`** (public, run via `qs -c archeotech`). **This** repo (`archeotech-dotfiles`) is the private personal machine config. The `.claude/` knowledge base (this file, `ROADMAP.md`, `DECISIONS.md`, `ANALYSIS.md`, `STYLE_GUIDE.md`) **stays here** and still covers the shell — so shell-dev sessions edit code in `archeotech-shell` but read/update planning here. See `DECISIONS.md [2026-07-09]`. Much of this file below predates the split and describes the system as one repo.
+
 ## Project Overview
 
 This is a comprehensive Arch Linux desktop environment with MangoWC (primary) and Hyprland (backup) compositors, built from scratch. Every component is understood, documented, and reproducible. This project serves as both a daily driver system and a learning journey into Linux customization.

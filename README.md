@@ -8,6 +8,19 @@ Personal dotfiles for Arch Linux with MangoWC (primary) and Hyprland (backup) de
 
 ---
 
+> **The desktop shell lives in a separate repo.** As of 2026-07-09 the Archeotech
+> Quickshell shell (bar, panels, launcher, theme system — the publishable product)
+> was split out into **[archeotech-shell](https://github.com/Nicolas-Rigaudy/archeotech-shell)**.
+> This repo is now **only the personal machine config** (compositor keybinds + monitor
+> rules, kitty/fish/rofi/etc, system files, wallpapers). The shell is deployed
+> separately — its own `install.sh` symlinks it to `~/.config/quickshell/archeotech`
+> and it's launched with `qs -c archeotech` (see the mango config here for the
+> launch/IPC binds). See `.claude/DECISIONS.md [2026-07-09]` for the split rationale.
+>
+> _Note: sections below still describe the older waybar-era layout and are due a refresh._
+
+---
+
 ## Features
 
 - ✨ **MangoWC** - Modern Wayland compositor with scrolling layouts (primary)
@@ -115,7 +128,7 @@ archeotech-dotfiles/
 ## Documentation
 
 - 📖 **[Installation Guide](docs/INSTALLATION.md)** - Complete Arch + Hyprland setup
-- 🖥️ **[MangoWC Setup](docs/MANGOWC-SETUP.md)** - MangoWC installation & screen sharing setup
+- 🖥️ **MangoWC Setup** - moved to the [archeotech-shell repo](https://github.com/Nicolas-Rigaudy/archeotech-shell) (`docs/MANGOWC-SETUP.md` there)
 - ⌨️ **[MangoWC Keybindings](docs/KEYBINDS-MANGO.md)** - Primary compositor shortcuts
 - ⌨️ **[Hyprland Keybindings](docs/KEYBINDS.md)** - Backup compositor shortcuts
 - 📦 **[Package List](docs/PACKAGES.md)** - What's installed and why
@@ -168,7 +181,7 @@ Personal dotfiles - use at your own risk. Feel free to steal anything useful!
 
 ---
 
-**Last Updated:** 2025-12-04
+**Last Updated:** 2026-07-09 (shell split out to archeotech-shell)
 **Status:** ✅ Fully Functional
 **Primary Compositor:** MangoWC (scrolling layouts)
 **Backup Compositor:** Hyprland
