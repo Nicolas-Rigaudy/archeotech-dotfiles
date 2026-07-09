@@ -85,8 +85,6 @@ backup_existing_configs() {
         # Compositor configs
         "hypr"
         "mango"
-        # Shell (bar + control center + OSD — single quickshell process)
-        "quickshell"
         # Bar fallback (kept for Hyprland compatibility)
         "waybar"
         # Notifications (swaync — Phase 3 will replace with Quickshell)
@@ -162,21 +160,13 @@ install_local_scripts() {
     mkdir -p "$HOME/.local/bin"
 
     # Scripts managed in dotfiles repo but need to be in PATH
+    # Personal/machine scripts only. The shell + theme-system scripts moved to
+    # the archeotech-shell repo (deployed by its own install.sh into ~/.local/bin).
     LOCAL_SCRIPTS=(
-        "wallpaper-set.sh"
-        "wallpaper-picker.sh"
-        "battery-alert.sh"
-        "swaylock-launch.sh"
-        "hyprlock-launch.sh"
-        "hyprlock-info.sh"
-        "wlogout-launch.sh"
         "mango-reload.sh"
         "project-jump.sh"
-        "list-desktop-apps.sh"
-        "wifi-scan.sh"
-        "theme-switch.sh"
-        "bt-agent.py"
-        "zen-opacity-toggle.sh"
+        "show-keybinds.sh"
+        "swaylock-launch.sh"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do
@@ -208,7 +198,6 @@ verify_deployment() {
     CRITICAL_CONFIGS=(
         "hypr"
         "mango"
-        "quickshell"
         "waybar"
         "swaync"
         "kitty"
