@@ -142,7 +142,7 @@ Item {
         id: scanProc
         running: false
         command: ["bash", "-lc",
-            "find \"$HOME/.config/archeotech/wallpapers\" " +
+            "find -L \"$HOME/.config/archeotech/wallpapers\" " +
             "-maxdepth 1 -type f -regextype posix-extended " +
             "-iregex '.*\\.(jpe?g|png|webp)$' | sort"]
         property var _buf: []
