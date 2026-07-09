@@ -302,6 +302,12 @@ Mechanics deliberately mirror the swaylock approach so nothing new was invented:
 
 **Follow-up (ROADMAP Feature Backlog):** a "Lock Screen" Settings pane that regenerates `hyprlock.conf` from a config model (toggle/arrange elements, phone-lockscreen feel). hyprlock is a separate process with no live QML/IPC, so it's a **config generator**, not QML widgets on the lock surface — and today's template becomes the default preset.
 
+### [2026-07-09] Two-repo split: public `archeotech-shell` (product) vs private `archeotech-dotfiles` (this machine)
+
+Split the monorepo into a public shell repo and a private dotfiles repo (Caelestia/Noctalia model). **Public repo root *is* a named Quickshell config**, run via `qs -c archeotech` (not the default `~/.config/quickshell`) — the idiomatic publishable-shell layout: users `git clone` + `qs -c archeotech`, coexisting with other configs. Its own `install.sh` symlinks repo→`~/.config/quickshell/archeotech`, `themes/`+`scripts/assets`→`~/.config/archeotech/`, and scripts→`~/.local/bin`; the private repo keeps its existing `stow -t ~ config` package. **History: fresh start** for the public repo — zero risk of leaking personal paths/secrets from monorepo history, clean v1.0 slate; the private repo retains full history as the dev record. Public commits are authored as the user with **no Claude artifacts** (`.claude/` gitignored, no co-author trailers) — the user pushes, never the assistant.
+
+Non-obvious decisions made during execution: (1) **kitty theme confs are theme assets, not personal kitty prefs** — moved from `~/.config/kitty/themes/<name>.conf` into each theme package as `themes/<variant>/kitty.conf`; `apply_kitty` reads the co-located file (via a new `theme["_dir"]`), so a theme is self-contained and the kitty-config-dir coupling is gone. (2) **The runtime `~/.config/archeotech/wallpapers` stays a symlink to the *personal* set on this machine** while the public `install.sh` only seeds 2 non-IP defaults *if absent* — so my full 42M set isn't shipped and a stranger still gets a working picker; `find -L` in the picker follows the symlinked dir. (3) **Single launcher** — Quickshell does **not** dedupe per config, so two launch points (`config.conf` `exec-once` + `autostart.sh`) would double the bars + exclusion zones; kept `exec-once` as authoritative, disabled the `autostart.sh` line. (4) Strip-panel size is screen-clamped (`PanelHost` `Math.min(screenAxis, …)`) — looks smaller on the laptop panel than on a tall external; that's monitor-relative, not a split regression. Trade-off accepted: a cross-repo runtime coupling remains (e.g. `battery-alert.service` lives in private but `ExecStart`s the now-public `~/.local/bin/battery-alert.sh`) — fine on this machine, and the service is machine-level while the script is shell-integral.
+
 ---
 
 ## Process & methodology
@@ -312,5 +318,5 @@ Mechanics deliberately mirror the swaylock approach so nothing new was invented:
 
 ---
 
-**Last Updated:** 2026-07-08 (hyprlock lock-screen migration)
-**Total Decisions:** 38 (post-cleanup; previous file held 60 entries, dropped tactical/superseded/in-code items)
+**Last Updated:** 2026-07-09 (two-repo split: archeotech-shell / archeotech-dotfiles)
+**Total Decisions:** 39 (post-cleanup; previous file held 60 entries, dropped tactical/superseded/in-code items)

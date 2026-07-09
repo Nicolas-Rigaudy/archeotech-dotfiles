@@ -186,7 +186,11 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ---
 
-### Repo split + hygiene — PRE-28 FOUNDATION (planned 2026-07-09)
+### Repo split + hygiene — PRE-28 FOUNDATION ✅ SHIPPED 2026-07-09
+
+**Shipped** — split executed into two repos: public **`archeotech-shell`** (`~/Projects/archeotech-shell`, fresh `git init`, 161 files, repo root = a named Quickshell config run via `qs -c archeotech`, authored as the user, zero Claude artifacts, **not pushed** — user pushes) and private **`archeotech-dotfiles`** (this repo, pruned to 125 files — personal config only). See `DECISIONS.md [2026-07-09]`. All 9 boundary fixes landed (Paths→`~/.local/bin`, portable `~/.config/archeotech/{assets,wallpapers}`, config-driven `dashboard.scanRoots`, DisplayPane output auto-detect, kitty confs co-located into theme packages, launch/IPC → `qs -c archeotech`, single-launcher hardening, private show-keybinds/wallpaper-fallback repointed). Public ships shell + theme system + shell-integral scripts + docs + `examples/` compositor snippets + CI/release workflows + 2 non-IP default wallpapers. Deploy: public `install.sh` symlinks repo→`~/.config/quickshell/archeotech`, themes/assets→`~/.config/archeotech/`, scripts→`~/.local/bin`; private keeps its stow package for everything else. Dead code dropped in passing (`dashboard-*.sh`, rofi `wallpaper-picker.sh`). Remaining nice-to-have: strip internal-doc breadcrumbs (`ANALYSIS.md`/`ROADMAP` mentions) from public source comments.
+
+<details><summary>Original plan (2026-07-09 — collapsed, shipped)</summary>
 
 **Decision (2026-07-09):** split into **two repos** — a public **`archeotech` shell** (the product) and a private **`dotfiles`** (this machine). Matches Noctalia/Caelestia/DMS. Must land **before** Sprint 28 — packaging, install script, docs, and the v1.0 tag all build on the clean base. Full file-by-file inventory done 2026-07-09 (44M / 294 files; splits cleanly).
 
@@ -204,6 +208,8 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 - `~/.cache/wallpaper/current` lock-wallpaper contract → already clean; just document in THEME_SPEC.
 
 **Theme-system boundary → theme-applier plugins:** the messiest coupling is `theme-switch.py` writing into external-app configs (kitty/rofi/gtk/vscode/obsidian/zen). **v1.0 minimum:** every applier **skips gracefully when its target app/config is absent** (gtk/obsidian already do) so the public shell ships them safely. **Post-v1.0 (see backlog):** extract each applier into a drop-in **theme-applier plugin**.
+
+</details>
 
 ### Sprint 28 — Distribution & v1.0 Release
 
