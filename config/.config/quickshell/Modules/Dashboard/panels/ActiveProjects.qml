@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell.Io
 import "../../../Commons" as Commons
 import "../../../Services/Shell" as ShellServices
+import "../../../Services/Persistence" as Persistence
 
 Rectangle {
     id: root
@@ -23,8 +24,21 @@ Rectangle {
         }
     }
 
+    // Scan roots are config-driven (Persistence.Config "dashboard.scanRoots",
+    // an array of dirs; "~/" expands to $HOME). Default: ~/Projects. Add more
+    // (e.g. work repos) via config without editing the shell.
     function _refresh() {
         root.projects = []
+        var roots = Persistence.Config.get("dashboard.scanRoots", ["~/Projects"])
+        var scans = roots.map(function (r) {
+            return "scan \"" + String(r).replace(/^~\//, "$HOME/") + "\""
+        }).join("; ")
+        projectsProc.command = ["bash", "-c",
+            "scan(){ [ -d \"$1\" ] || return; for d in \"$1\"/*/; do [ -d \"$d/.git\" ] || continue; " +
+            "n=$(basename \"$d\"); b=$(git -C \"$d\" branch --show-current 2>/dev/null||echo '?'); " +
+            "x=$(git -C \"$d\" status --short 2>/dev/null|wc -l|tr -d ' '); " +
+            "echo \"$n|${b:-detached}|$x|$d\"; done; }; " + scans
+        ]
         if (!projectsProc.running) projectsProc.running = true
     }
 
@@ -48,13 +62,7 @@ Rectangle {
     Process {
         id: projectsProc
         running: false
-        command: ["bash", "-c",
-            "scan(){ [ -d \"$1\" ] || return; for d in \"$1\"/*/; do [ -d \"$d/.git\" ] || continue; " +
-            "n=$(basename \"$d\"); b=$(git -C \"$d\" branch --show-current 2>/dev/null||echo '?'); " +
-            "x=$(git -C \"$d\" status --short 2>/dev/null|wc -l|tr -d ' '); " +
-            "echo \"$n|${b:-detached}|$x|$d\"; done; }; " +
-            "scan \"$HOME/Projects\"; scan \"$HOME/Documents/repos\""
-        ]
+        command: ["bash", "-c", ""]   // built per-run from config in _refresh()
 
         property var _buf: []
         onRunningChanged: if (running) _buf = []
