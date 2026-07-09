@@ -40,7 +40,7 @@ Item {
     property string currentLogo: ""    // "", "arch", "rebel", "imperial"
 
     readonly property string _assetsBase:
-        Commons.Paths.home + "/Projects/archeotech-dotfiles/scripts/assets"
+        Commons.Paths.config + "/archeotech/assets"
 
     // Raw SVG text; the data URIs below recompute reactively so the logo tint
     // tracks the theme's text color (was hardcoded dark-lavender → invisible on
@@ -142,7 +142,7 @@ Item {
         id: scanProc
         running: false
         command: ["bash", "-lc",
-            "find \"$HOME/Projects/archeotech-dotfiles/wallpapers\" " +
+            "find \"$HOME/.config/archeotech/wallpapers\" " +
             "-maxdepth 1 -type f -regextype posix-extended " +
             "-iregex '.*\\.(jpe?g|png|webp)$' | sort"]
         property var _buf: []
