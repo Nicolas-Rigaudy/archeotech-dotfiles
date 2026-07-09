@@ -38,16 +38,25 @@ Item {
         }
     }
 
+    // Detect the internal panel by connector prefix (eDP/LVDS/DSI on laptops),
+    // falling back to the first output — no hardcoded connector name. `$int` is
+    // the internal display, `$ext` the newline-separated list of the rest.
+    readonly property string _outputsPrelude:
+        "outs=$(wlr-randr 2>/dev/null | grep '^[^ ]' | awk '{print $1}'); " +
+        "int=$(printf '%s\\n' \"$outs\" | grep -iE '^(eDP|LVDS|DSI)' | head -1); " +
+        "[ -z \"$int\" ] && int=$(printf '%s\\n' \"$outs\" | head -1); " +
+        "ext=$(printf '%s\\n' \"$outs\" | grep -vx \"$int\"); "
+
     function _applyDisplay(mode) {
         root.displayLayout = mode
         if (mode === "extend") {
-            run("wlr-randr --output eDP-1 --on --pos 0,0; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 1920,0; done")
+            run(_outputsPrelude + "wlr-randr --output \"$int\" --on --pos 0,0; for e in $ext; do wlr-randr --output \"$e\" --on --pos 1920,0; done")
         } else if (mode === "mirror") {
-            run("wlr-randr --output eDP-1 --on --mode 1920x1200 --pos 0,0; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 0,0; done")
+            run(_outputsPrelude + "wlr-randr --output \"$int\" --on --pos 0,0; for e in $ext; do wlr-randr --output \"$e\" --on --pos 0,0; done")
         } else if (mode === "laptop") {
-            run("wlr-randr --output eDP-1 --on; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --off; done")
+            run(_outputsPrelude + "wlr-randr --output \"$int\" --on; for e in $ext; do wlr-randr --output \"$e\" --off; done")
         } else if (mode === "external") {
-            run("wlr-randr --output eDP-1 --off; for ext in $(wlr-randr 2>/dev/null | grep '^[^ ]' | grep -v '^eDP-1' | awk '{print $1}'); do wlr-randr --output $ext --on --pos 0,0; done")
+            run(_outputsPrelude + "wlr-randr --output \"$int\" --off; for e in $ext; do wlr-randr --output \"$e\" --on --pos 0,0; done")
         }
     }
 
