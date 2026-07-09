@@ -97,7 +97,10 @@ def apply_quickshell(theme: dict, vars: Dict[str, str]) -> None:
 
 
 def apply_kitty(theme: dict, vars: Dict[str, str]) -> None:
-    src = HOME / ".config" / "kitty" / "themes" / f"{theme['kitty']['theme']}.conf"
+    # kitty colors ship co-located with the theme package (themes/<v>/kitty.conf),
+    # so a theme is self-contained and the applier skips gracefully if kitty
+    # isn't installed on this machine.
+    src = Path(theme["_dir"]) / "kitty.conf"
     dst = HOME / ".config" / "kitty" / "current-theme.conf"
     if not src.exists():
         warn(f"kitty theme file missing: {src}")
@@ -440,6 +443,9 @@ def main() -> None:
 
     with src.open() as f:
         theme = json.load(f)
+    # Expose the variant's own dir so appliers can read co-located assets
+    # (e.g. kitty.conf) — keeps each theme package self-contained.
+    theme["_dir"] = str(src.parent)
     vars = build_vars(theme)
 
     accent = sys.argv[2] if len(sys.argv) > 2 else ""
