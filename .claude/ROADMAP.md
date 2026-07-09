@@ -146,7 +146,7 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 - [x] **Plugin/Widget Manager** Settings pane (`PluginsPane.qml`) — installed modules (enable/disable via `plugins.disabled`, `verified` badge, uninstall user-dir only w/ confirm) + built-in widget catalogue; per-instance config forms live on the edit-mode chip gear (no global-default layer)
 - [x] Fix external-plugin import path — `qs.Commons` can't reach outside the config tree (verified w/ QS docs), so external `plugin:` widgets declare `property var appearance` and the loader injects the theme tokens; documented in `MODULE_API`
 - [ ] (optional) intra-overlay drag-and-drop reorder + spatial side mock
-- [ ] **(follow-up B) same widget on 2+ sides opens its panel on all of them** — `ShellState.stateMap` is keyed per-screen only (`{open: id}`), no side; add `side` to the entry + gate strip panel visibility on side match + thread clicked side through toggle
+- [x] **(follow-up B) same widget on 2+ sides opens its panel on all of them** — DONE (`ShellState` panel state now carries `side`; `""` = wildcard resolves to a primary host). See `DECISIONS.md [2026-07-02]`.
 - [x] **(follow-up C = vertical-orientation + holder-awareness)** — DONE. Phased 0–4; 0–2 (2026-07-02, commits `63d74bf`, `f8a5dff`), 3–4 (2026-07-03, uncommitted).
   - [x] **Phase 0 — responsive widgets/panels.** `BarPill` shared capsule owns the horizontal↔vertical fork (icon+value / icon-only; Noctalia/DMS pattern, no text rotation); 9 widgets migrated. ClockWidget stacks HH/MM vertically; WorkspacesWidget row→column. `Bar.qml` vertical path deleted the hardcoded icon Column — vertical bars drive the same zone models via ColumnLayouts. Dashboard/MediaPanel reflow on measured width (2→1 col / row→stack, scroll when tall-narrow); fixed `Layout` height/width bugs (plain `height:`/`width:` on layout children → 0 → overlap). Title/media stay horizontal-only (can't flow).
   - [x] **Phase 1 — `PanelHost`** (`Modules/Shell/Panels/PanelHost.qml`): reusable panel-content kernel (meta resolution + content loaders + size targets), holder-agnostic. Strip left on its own inline copy for now.
@@ -258,6 +258,8 @@ Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
 - [ ] **Settings panel widened 760→940** globally — check the other panes don't look sparse at the new width.
 
 ### Polish & Liveliness pass (research → adopt) — feels bland/cold vs Caelestia
+
+> **Scheduled BEFORE v1.0 (decided 2026-07-09).** The user wants the shell to feel lively/warm before it's tagged 1.0 — so this runs in the pre-v1.0 path (alongside/ahead of Sprint 28 distribution work), not as post-release polish.
 
 **Motivation (user, 2026-07-02):** next to Caelestia and other mature Quickshell shells, ours reads bland, strict, and cold — motion is minimal and mechanical rather than organic/lively, and the styling is flat. Want a deliberate pass on animation, micro-interaction, and warmth. Ties into the existing S26 follow-up C (holder-aware layout) and the `HoverCard`/`Strip` animation work already in flight.
 
