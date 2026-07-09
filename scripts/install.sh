@@ -175,9 +175,6 @@ install_local_scripts() {
         "list-desktop-apps.sh"
         "wifi-scan.sh"
         "theme-switch.sh"
-        "dashboard-stats.sh"
-        "dashboard-projects.sh"
-        "dashboard-notes.sh"
         "bt-agent.py"
         "zen-opacity-toggle.sh"
     )

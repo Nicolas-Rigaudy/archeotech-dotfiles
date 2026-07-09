@@ -14,7 +14,4 @@ QtObject {
     readonly property string listDesktopApps: localBin + "/list-desktop-apps.sh"
     readonly property string wifiScan:        localBin + "/wifi-scan.sh"
     readonly property string themeSwitch:     localBin + "/theme-switch.sh"
-    readonly property string dashboardStats:     localBin + "/dashboard-stats.sh"
-    readonly property string dashboardProjects:  localBin + "/dashboard-projects.sh"
-    readonly property string dashboardNotes:     localBin + "/dashboard-notes.sh"
 }
