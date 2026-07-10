@@ -5,25 +5,27 @@
 # This script reloads config then immediately re-applies the correct monitor layout
 # via wlr-randr so displays snap back to their proper configuration.
 #
+# Quickshell is intentionally NOT killed/relaunched here. It is a layer-shell
+# client that survives a MangoWC config reload and hot-reloads its own QML on
+# file change, so a restart is unnecessary — and restarting it from this keybind
+# path has caused vanished/degraded shells (the old relaunch even pointed at a
+# non-existent ~/.config/quickshell/shell.qml). If a manual restart is ever
+# needed: `qs -c archeotech kill; env QT_WAYLAND_DECORATION=none qs -c archeotech &`
+#
 # Usage: mango-reload.sh
 # Keybind: Super+Shift+R (replaces raw reload_config)
 
 set -e
 
-# Kill quickshell before reload so exec-once doesn't spawn a second instance
-pkill -x quickshell || true
-
 # Reload MangoWC config
 mmsg -s -d reload_config
-
-# Re-launch quickshell after reload (exec-once doesn't re-run on reload)
-sleep 0.3
-env QT_WAYLAND_DECORATION=none quickshell -p ~/.config/quickshell &
 
 # Give MangoWC a moment to re-initialize outputs after reload
 sleep 0.5
 
-# Re-apply monitor layout
+# Re-apply monitor layout (best-effort — never abort on a missing output).
+set +e
+
 # Detect which outputs are connected and apply rules accordingly
 OUTPUTS=$(mmsg -O 2>/dev/null)
 
