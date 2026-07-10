@@ -10,15 +10,21 @@
 
 set -e
 
-# Kill quickshell before reload so exec-once doesn't spawn a second instance
-pkill -x quickshell || true
+# Kill the shell before reload so exec-once doesn't spawn a second instance.
+# Target by config name — robust whether it was launched as `qs` or `quickshell`
+# (the process comm differs, so `pkill -x quickshell` alone misses a `qs`-started
+# instance). Fall back to pkill on both names.
+qs -c archeotech kill 2>/dev/null || pkill -x quickshell 2>/dev/null || pkill -x qs 2>/dev/null || true
 
 # Reload MangoWC config
 mmsg -s -d reload_config
 
-# Re-launch quickshell after reload (exec-once doesn't re-run on reload)
+# Re-launch the shell after reload (exec-once doesn't re-run on reload). Must be
+# `-c archeotech` to match the installed layout (~/.config/quickshell/archeotech/
+# shell.qml) and the exec-once launcher — NOT `-p ~/.config/quickshell`, which
+# resolves to a top-level shell.qml that doesn't exist.
 sleep 0.3
-env QT_WAYLAND_DECORATION=none quickshell -p ~/.config/quickshell &
+env QT_WAYLAND_DECORATION=none quickshell -c archeotech &
 
 # Give MangoWC a moment to re-initialize outputs after reload
 sleep 0.5
