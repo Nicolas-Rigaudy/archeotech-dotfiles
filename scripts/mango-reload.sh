@@ -10,23 +10,20 @@
 
 set -e
 
-# Kill the shell before reload so exec-once doesn't spawn a second instance.
-# Target by config name — robust whether it was launched as `qs` or `quickshell`
-# (the process comm differs, so `pkill -x quickshell` alone misses a `qs`-started
-# instance). Fall back to pkill on both names.
-qs -c archeotech kill 2>/dev/null || pkill -x quickshell 2>/dev/null || pkill -x qs 2>/dev/null || true
+# Kill quickshell before reload so exec-once doesn't spawn a second instance
+pkill -x quickshell || true
 
 # Reload MangoWC config
 mmsg -s -d reload_config
 
+# Re-launch quickshell after reload (exec-once doesn't re-run on reload)
+sleep 0.3
+env QT_WAYLAND_DECORATION=none quickshell -p ~/.config/quickshell &
+
 # Give MangoWC a moment to re-initialize outputs after reload
 sleep 0.5
 
-# Re-apply monitor layout (best-effort — must never abort the relaunch below,
-# so drop `set -e` here: a missing output / wlr-randr failure should not leave
-# the session with no shell).
-set +e
-
+# Re-apply monitor layout
 # Detect which outputs are connected and apply rules accordingly
 OUTPUTS=$(mmsg -O 2>/dev/null)
 
@@ -55,13 +52,3 @@ else
     wlr-randr \
         --output eDP-1 --mode 1920x1200 --pos 0,0 --transform normal
 fi
-
-# Re-launch the shell LAST — only after the monitor layout is final. Launching it
-# earlier makes it lay out its layer-shell panels against the transient
-# post-reload display scale (before wlr-randr re-applies modes), which renders
-# panels at the wrong scale (pixelated, janky) until the next reload.
-# Must be `-c archeotech` to match the installed layout
-# (~/.config/quickshell/archeotech/shell.qml) and the exec-once launcher — NOT
-# `-p ~/.config/quickshell`, which resolves to a top-level shell.qml that doesn't exist.
-sleep 0.3
-env QT_WAYLAND_DECORATION=none quickshell -c archeotech &
