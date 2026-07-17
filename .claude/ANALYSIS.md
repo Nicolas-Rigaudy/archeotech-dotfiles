@@ -1,6 +1,6 @@
 # Archeotech Dotfiles — Full System Analysis
 
-**Last Updated:** 2026-05-21  
+**Last Updated:** 2026-07-09 (added §18 — Polish & Liveliness motion/depth/warmth catalogue)  
 **Purpose:** Comprehensive research reference — ecosystem findings, confirmed QML APIs, source-inspected patterns, settings deep-dives. Sprint plan lives in `ROADMAP.md`.
 
 ---
@@ -2446,3 +2446,203 @@ unified Shape *is* the slide animation (via `_perp`/`_axis` Behaviors),
 emerging *from* the popup position rather than from the screen edge. Panel.qml
 stays in the tree as a reference; its `panelRoot.close()` / `panelOpen`
 interface is mirrored on the strip so existing content modules work unchanged.
+
+---
+
+## 18. Polish & Liveliness — Reference Motion/Depth/Warmth Catalogue (research spike 2026-07-09)
+
+**Why:** the shell reads bland/cold/flat next to Caelestia and other mature Quickshell
+shells (user, 2026-07-02). This is the Phase-1 research spike of the "Polish & Liveliness"
+pass (ROADMAP → Feature Backlog, scheduled pre-v1.0). Goal = catalogue **concrete adoptable
+techniques with exact values**, not vibes. Builds on §1 "Animation system" (which was
+high-level). Method: read-only shallow clones of the four reference shells, one deep-inspection
+agent per repo across 8 dimensions (easing/durations, spring/overshoot, stagger, hover/press,
+depth, colour warmth, empty/loading, icon+type), extracting `file:line` citations.
+
+**Repo caveats (read before trusting a number):**
+- **Caelestia** — tokens live in a **C++ plugin** (`plugin/src/Caelestia/Config/`), exposed to
+  QML as attached `Tokens.*`. Values are C++ defaults; concepts port to QML, the plumbing doesn't.
+- **end-4/dots-hyprland** — pure QML, the cleanest **M3-Expressive** reference; `ii/` (M3) +
+  `waffle/` (Fluent) run in parallel. Most directly copyable into our QML.
+- **DankMaterialShell** — pure QML, the most **explicitly tokenised** motion system (even a
+  user-facing "Typography & Motion" settings tab). Directly copyable.
+- **Noctalia** — ⚠️ the checkout is **v5, a from-scratch native C++/OpenGL-ES rewrite with ZERO
+  QML**. The old v4 Quickshell shell is *not* in this repo. Its numbers are **conceptual**
+  references (SDF shadows, a hand-rolled easing engine), NOT copy-paste QML. Notably v5 has **no
+  overshoot/spring** (its `EaseOutBack` is dead code), **no stagger**, and **no hover-scale/
+  ripple** — its polish is entirely colour-crossfade + SDF depth. Use it for the accent-tinted
+  hover idea and the shadow recipe, not for motion.
+
+### 18.1 Our current baseline (the gap, quantified — `~/Projects/archeotech-shell`)
+
+| Dimension | Current state | Verdict |
+|---|---|---|
+| Motion tokens (`Commons/Appearance.qml anim`) | 5 **bare durations** `fast:100, base:200, slow:300, spring:400, panel:240`; `spring:400` is a misnamed *duration*, not a curve. Usage: `anim.fast` ×102, `anim.panel` ×14, `anim.base` ×9 — **`anim.slow`/`anim.spring` used 0×** | Everything is a 100ms tween; no named curve presets |
+| Easing | `Easing.OutCubic` ×38, `OutBack` ×2, `Linear` ×1, `InOutQuad` ×1 — near-pure decelerate, `easing.type` hand-rolled per site | No overshoot idiom, no enter/exit asymmetry |
+| Behaviors | ~130+ `Behavior on` across ~20 files | Plumbing is fine; curves/durations are the flat part |
+| Micro-interaction | hover-`scale` in **1** file (WallpaperPickerBody); no press-depress anywhere; `BarPill` swaps icon→accent colour + optional fill (off by default "so bar pills stay flat") | **No shared hover/press primitive**; each widget hand-rolls |
+| Depth | **ZERO** — no `MultiEffect`/`DropShadow`/`RectangularShadow`/gradient/glow/elevation anywhere | Fully flat |
+| Warmth | `glassBg` = mantle@0.96, `glassBorder` = surface0@0.90; surfaces are pure palette greys; `accentAlpha`(0.15)/`accentBorder`(0.40) defined | No accent-tinted surfaces, no elevation tint |
+| Empty/loading | `Commons/Primitives/EmptyState.qml` exists; no skeleton/shimmer/spinner | — |
+
+Constraint (DECISIONS 2026-07-02): **never wrap interactive content in `layer.enabled`; antialiase
+Shapes with `Shape.CurveRenderer`.** Any animated interactive surface must honour this.
+
+### 18.2 Cross-repo synthesis — the concrete values to adopt
+
+**Motion curves (M3, consistent across Caelestia + end-4 + Dank — copy verbatim).** These are
+Qt `BezierSpline` control-point lists `[c1x,c1y, c2x,c2y, …, 1,1]`:
+```
+standard          : [0.2, 0, 0, 1, 1, 1]                                   // standard in/out
+standardAccel     : [0.3, 0, 1, 1, 1, 1]                                   // accelerate (exit)
+standardDecel     : [0, 0, 0, 1, 1, 1]                                     // decelerate (enter)
+emphasized        : [0.05,0, 2/15,0.06, 1/6,0.4, 5/24,0.82, 0.25,1, 1,1]   // M3 emphasized (multi-seg)
+emphasizedAccel   : [0.3, 0, 0.8, 0.15, 1, 1]
+emphasizedDecel   : [0.05, 0.7, 0.1, 1, 1, 1]
+// spring/overshoot (control-point y > 1 → overshoot-and-settle, NO physics engine):
+expressiveFastSpatial    : [0.42, 1.67, 0.21, 0.90, 1, 1]   // strong overshoot
+expressiveDefaultSpatial : [0.38, 1.21, 0.22, 1.00, 1, 1]   // moderate overshoot
+expressiveSlowSpatial    : [0.39, 1.29, 0.35, 0.98, 1, 1]
+expressiveEffects        : [0.34, 0.80, 0.34, 1.00, 1, 1]   // effects, NO overshoot
+```
+Cheap integer fallbacks (Dank): `standard ≈ Easing.OutCubic`, `emphasized ≈ Easing.OutQuart`.
+
+**Durations (converged ranges).** Effects (opacity/colour) are short, spatial (move/size) longer:
+`effects fast/med/slow = 150/200/300`; `spatial fast/default/slow = 350/500/650`; enter ≈ 400,
+exit ≈ 200. **The idiom everyone shares: enter slow+decelerate, exit fast+accelerate** ("enter
+gently, leave briskly"). Dank derives a whole family from one user-tunable `baseDuration` via
+multipliers (`fast=×0.4, normal=×0.8, large=×1.2, xl=×2.0`) — one slider scales all motion.
+
+**Spring/overshoot rule:** overshoot **only on enter + on spatial (position/size)** props; never
+on colour/opacity (they'd flash). Concrete uses: switch-thumb grows to 1.2× on press (Caelestia);
+button-group press *grows implicitWidth* and shoves neighbours (end-4 `clickBounce` 400ms); check
+icon pops `0.6→1.0` (Dank `emphasized` 200ms).
+
+**Shared hover/press primitive — a state-layer overlay (all three QML repos have one).** A single
+overlay `Rect`/`StyledRect` whose alpha = pointer state, animated ~100ms decel on colour:
+```
+hover α 0.08   pressed α 0.12   (M3 canonical; end-4 runs punchier 0.10/0.15–0.20)
+disabled: fill α 0.10, content α 0.38
+Behavior on color { duration ~100ms; curve standardDecel }
+```
+Plus optional scale conventions (Dank, exact): **press-depress `scale 0.98`**, hover-grow `1.05`,
+check/enter pop `0.6→1.0`, popup appear `0.9→1.0`. Ripple (Caelestia/end-4/Dank): radial gradient
+from click point to farthest corner, ~500–600ms, initial α 0.10, fade-out starting at 60% —
+optional/gated behind a setting in Dank.
+
+**Depth — two-shadow (key + ambient) derived from one elevation level.** Best recipes:
+- **Caelestia one-formula** (from a `level` 0–5 → dp `[0,1,3,6,8,12]`): `blur=(dp·5)^0.7`,
+  `spread=-0.3·dp+(0.1·dp)²`, `offset.y=dp/2`, shadow α 0.7; **animate `dp`** → free hover-lift.
+- **Dank 5-step ladder**: blur `4/8/12/16/20`, offset.y `1/4/6/8/10`, α `0.20→0.30`; **ambient
+  derived**: `ambientBlur=key·1.75, ambientSpread=1, ambientAlpha=key·0.5`.
+- **end-4 discipline**: one token `elevationMargin:10` is *both* the blur radius (×0.9) *and* the
+  layout margin every floating panel reserves so the shadow isn't clipped; key shadow #000@0.30.
+  Waffle variant: key(blur 10, offset 4, α 0.38) + **ambient as a 1px border** (no blur, α 0.25) —
+  GPU-cheap contact edge.
+- **QML mechanism:** `MultiEffect` (shadowEnabled) or `RectangularShadow`; NOT layered inside a
+  `layer.enabled` interactive item (hit-testing rule).
+
+**Warmth — accent-tinted surfaces, not grey.** (a) **Elevation→surface-tint** (M3 surface tint
+that intensifies with elevation): Dank alpha ladder `0.05/0.08/0.11/0.12/0.14` of primary over the
+surface. (b) **Accent-tinted hover** (Noctalia): map the hover state-layer to the **accent** colour
+at low alpha (~0.08–0.12) instead of white/grey. (c) **Surface containers** instead of flat greys:
+generate `surfaceContainerLow/High/Highest` by blending toward the accent, e.g.
+`blend(surfaceContainerHigh, primary, 0.45)` (Dank). (d) Use **premultiplied-alpha colour tweens**
+when animating between translucent and opaque colours to avoid the mid-transition flash (Dank
+`DankColorAnim`).
+
+**Stagger — nobody does per-index temporal stagger.** All four rely on Qt `ListView`
+`add`/`remove`/`displaced`/`move` Transitions: item pops in on `opacity+scale` (0→1, ~200–500ms),
+removed items slide out with overshoot, and **surviving items glide via `displaced`** — the
+"cascade" look comes from displacement, not `index*delay`. Caelestia's alternative: fade+`scale
+0.9` the *whole list* out, swap model via `PropertyAction`, fade back (avoids reflow jank). **This
+is our one genuine gap if we want true stagger — we'd add `index*delay` ourselves; the refs won't
+show us how.** Empty-state entrances worth stealing: Caelestia `scale 0.5→1`; end-4 `PagePlaceholder`
+fade + slide-up + icon-rotate `-30°→0`.
+
+**Icon + type rhythm.** Shared 4-based token ramps: spacing `4/8/12/16/(24)`, radii
+`8/12/16/24`+pill, type roughly `11–12 / 13–14 / 16 / 20 / 22–24`. Distinctive touches: animate the
+**Material Symbols variable `fill` axis 0→1** on toggle/selection (fills in rather than swapping
+glyph — Caelestia/end-4); bind icon `opsz` to pixel size for optical correctness (end-4); `grade:
+-25` to thin icons in dark mode (Caelestia); auto-swap to a tabular number font on all-digit strings
+(end-4 `StyledText`), and end-4's shared `StyledText` animates *every* text change (slide+fade) for
+free. (Our FiraCode is not a variable font with these axes — fill/opsz/grade need a variable icon
+font like Material Symbols; flag as a dependency if we want them.)
+
+### 18.3 Per-repo detail (condensed; full agent reports in scratchpad `ref-*.md` this session)
+
+**Caelestia** — `Tokens` C++ plugin. Durations `small200/normal400/large600/xl1000` + expressive
+spatial `350/500/650` & effects `150/200/300`, all ×global `scale`. Six M3 beziers as above.
+Shared `components/StateLayer.qml`: hover α0.08, ripple α0.1 farthest-corner 600ms. `effects/
+Elevation.qml`: single `RectangularShadow`, one-formula from `level` (dp `[0,1,3,6,8,12]`), animated
+dp = hover-lift. Surfaces = wallpaper-generated M3 tonal palette; translucency uses a
+luminance-relative re-tint not flat alpha. `LoadingIndicator` = analytic underdamped spring
+(stiffness 180, damping 0.6) driving shape-morph + velocity→scale via `FrameAnimation`. Type: role×
+size matrix (headline 32/28/24 … body 16/14/12); icons px÷1.33 → pt; `grade:-25` dark thinning;
+`fill 0→1` toggles. Spacing/rounding ramp `4/8/12/16/20/28/32/48`+pill.
+
+**end-4/dots-hyprland** — `modules/common/Appearance.qml:251-385`. Full `animationCurves` +
+semantic presets (`elementMoveEnter` 400 decel / `elementMoveExit` 200 accel / `clickBounce` 400
+overshoot / `elementMoveFast` 200 effects …) each bundling duration+curve+a reusable `Component`
+factory. State layers as `ColorUtils.mix` ratios: Layer1 hover 0.92→8%, active 0.85→15%; Layers2-4
+0.90/0.80. `solveOverlayColor` gives tonal-elevation surfaces; `colLayer0` mixes toward wallpaper
+primary; auto-transparency = quadratic on wallpaper vibrancy. Shadow: `StyledRectangularShadow`
+blur `0.9×elevationMargin(10)=9`, offset (0,1), spread 1, #000@0.30; `elevationMargin` doubles as
+reserved layout margin. Waffle = two-layer key+ambient(1px border). `RippleButton` 1200ms,
+standardDecel, farthest-corner. `MaterialSymbol` animates `fill` + binds `opsz`. `StyledListView`
+add(scale+opacity pop-in)/remove(slide+overshoot)/displaced. `StyledText` auto-number-font +
+animated text-change. **No stagger, no hover-scale (colour + bounce instead).**
+
+**DankMaterialShell** — `Common/{Anims,Appearance,Theme,AnimVariants}.qml`. Same six M3 beziers.
+User-tunable `baseDuration`(200) → whole family via multipliers; live speed tiers; a settings
+"Typography & Motion" tab exposes it. `DankAnim`/`DankColorAnim` = 9-line pre-configured animation
+subclasses (one-line call sites). Shared `Widgets/StateLayer.qml`: hover 0.08 / press 0.12,
+`Behavior on color` ~100ms decel; M3 tokens `stateLayerHover0.08/Focus0.12/Pressed0.12/Drag0.16`.
+Scales: press 0.98, hover 1.05, check 0.6→1, OSD 0.9→1. `DankRipple` gated by setting. `ElevationShadow`
+= single-pass shader, key+ambient from one level; 5-step blur `4/8/12/16/20`, α`0.20→0.30`, ambient
+= key·1.75/α·0.5, light-direction aware. Elevation→tint α `0.05/0.08/0.11/0.12/0.14`. `blend()`
+lerp for containers; premultiplied-alpha colour tween. `ListViewTransitions` singleton (add/remove/
+displaced/move) — **no per-index stagger**. `DankSpinner` (1568ms rot + 666ms 16°→270° arc),
+`DankBlink` pulse 0.3↔1.0 600ms. Rhythm: spacing 2/4/8/12/16/24, type 12/14/16/20/24, icons
+16/24/32, radii 8/12/16/24, one global `fontScale`.
+
+**Noctalia v5 (C++/GL, conceptual only)** — `src/ui/style.h`: `animFast100/Normal200/Slow400`;
+7-value polynomial easing engine (`EaseOutBack` exists but **dead code**). Global `MotionService`
+speed/enable multiplier; separate `animateTimer()` bypasses it for effects that must ignore speed.
+Convention **OutCubic in / InQuad out**. Shared `Button` = snapshot-from → lerp-to colours over
+100ms (cancel-in-flight-and-restart). **Hover maps to the `tertiary` accent role** → buttons lerp
+toward accent on hover (warmth, not grey). Depth = one über SDF frag shader: rounded rects with
+per-corner **concave** corners (the signature notched silhouette) + in-shader drop shadow (blur
+12px, #000@0.55×bg-opacity, with a same-shape **cutout** so shadow never paints under the surface).
+SDF ring-with-notch spinner 1200ms. No stagger, no scale/ripple. Rhythm: spacing 4/8/12/16, radii
+3/6/9/12 (3px step, live-scaled), heights 32/38/44, type 11/13/14/16/20.
+
+### 18.4 Phase-2 recommendations (adopt, don't clone — pending user approval)
+
+Maps the above onto the ROADMAP "Polish sprint" checklist. Ordered by leverage:
+
+1. **Named motion tokens in `Commons/Appearance.anim`** — add curve presets, not just durations.
+   Adopt the six M3 beziers (`standard`/`emphasized` + `*Accel`/`*Decel` + `expressive*Spatial`
+   overshoot + `expressiveEffects`). Provide reusable `Anim`/`ColorAnim` wrappers (Dank/end-4
+   `Component`-factory pattern) so call sites are one line. Keep our existing `fast/base/panel`
+   as aliases so the ×125 existing call sites don't churn. Retire the dead `slow`/`spring`
+   (rename `spring`→a real overshoot curve).
+2. **Enter/exit asymmetry on high-traffic transitions** — panel/strip expand, popup enter/exit,
+   tag switch, toggle: enter ≈400ms `emphasizedDecel`, exit ≈200ms `emphasizedAccel`; spatial
+   growth gets `expressiveDefaultSpatial` overshoot, colour/opacity stays `expressiveEffects`.
+3. **Shared micro-interaction primitive** (`Commons/Primitives/StateLayer.qml` or fold into
+   `BarPill`/a `Focusable` base) — hover α0.08 / press α0.12 overlay + optional `scale 0.98`
+   press-depress + `1.05` hover-grow, ~100ms decel. Respect the CurveRenderer/no-`layer.enabled`
+   rule. Replaces per-widget hand-rolling. (Ripple optional, behind a config toggle.)
+4. **Warmth & depth pass on the flat glass** — (a) accent-tinted hover (Noctalia idea): hover
+   overlay = accent@~0.10 not grey; (b) elevation→surface-tint ladder for stacked surfaces; (c)
+   a real shadow on floating panels/cards via `MultiEffect`/`RectangularShadow` using Caelestia's
+   one-formula (animate dp for hover-lift) or Dank's key+ambient ladder; reserve blur margin
+   (end-4 `elevationMargin` discipline) so it isn't clipped. Audit the pure-grey surface values.
+5. **Appearance stagger on lists/panels** (notifications, launcher results, settings rows) —
+   start with the free win (Qt `add`/`displaced` Transitions, scale+opacity pop-in), and add real
+   `index*delay` stagger ourselves (the refs don't provide it). Empty-state entrance `scale 0.5→1`.
+6. **Icon/type polish (optional, dependency-gated)** — `fill`/`opsz`/`grade` axis animation needs a
+   variable icon font (Material Symbols); we ship FiraCode Nerd Font. Either add Material Symbols
+   as an icon font or skip these. The animated-text-change and auto-number-font ideas work with
+   any font and are cheap wins.
