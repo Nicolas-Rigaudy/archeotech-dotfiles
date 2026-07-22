@@ -15,10 +15,20 @@
 
 set -e
 
-# Stop the shell first. Kill by config name — robust whether it was launched as
-# `qs` or `quickshell` (their process names differ, so `pkill -x quickshell`
-# alone misses a `qs`-started instance).
-qs -c archeotech kill 2>/dev/null || pkill -x quickshell 2>/dev/null || pkill -x qs 2>/dev/null || true
+# Stop the shell first. Run EVERY kill method unconditionally — the old
+# `A || B || C` chain stopped at the first that returned success, so if the IPC
+# kill "succeeded" but left another instance alive, the pkill fallbacks never
+# ran and each reload relaunched on top of a survivor → duplicate bars stacking.
+qs -c archeotech kill 2>/dev/null || true
+pkill -x quickshell 2>/dev/null || true
+pkill -x qs 2>/dev/null || true
+
+# Wait until every instance is actually gone (cap ~2s) so we never relaunch onto
+# a survivor. Breaks as soon as neither process name is running.
+for _ in $(seq 1 20); do
+    pgrep -x quickshell >/dev/null 2>&1 || pgrep -x qs >/dev/null 2>&1 || break
+    sleep 0.1
+done
 
 # Remember the active keyboard layout — reload_config re-reads xkb config and
 # resets it to the default (first in xkb_rules_layout), silently switching it
