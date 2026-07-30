@@ -33,10 +33,11 @@ done
 # Remember the active keyboard layout — reload_config re-reads xkb config and
 # resets it to the default (first in xkb_rules_layout), silently switching it
 # out from under you mid-session. Restored after the reload settles (below).
-PREV_KB=$(mmsg -g -k 2>/dev/null | head -1 | awk '{print $3}')
+# mmsg IPC rewrote flags → subcommands in mangowm 0.15 (get/watch/dispatch, JSON out).
+PREV_KB=$(mmsg get keyboardlayout 2>/dev/null | jq -r '.layout // empty' 2>/dev/null)
 
 # Reload MangoWC config
-mmsg -s -d reload_config
+mmsg dispatch reload_config
 
 # Give MangoWC a moment to re-initialize outputs after reload
 sleep 0.5
@@ -44,11 +45,13 @@ sleep 0.5
 # Re-apply monitor layout (best-effort — must never abort the relaunch below).
 set +e
 
-# Detect which outputs are connected and apply rules accordingly
-OUTPUTS=$(mmsg -O 2>/dev/null)
+# Detect which outputs are connected and apply rules accordingly. `get all-monitors`
+# also lists configured-but-disconnected monitors (active:false), so filter by .active
+# — a bare name grep would false-positive on an unplugged monitor.
+ACTIVE_OUTPUTS=$(mmsg get all-monitors 2>/dev/null | jq -r '.monitors[] | select(.active) | .name' 2>/dev/null)
 
-HAS_HDMI=$(echo "$OUTPUTS" | grep -q "HDMI-A-1" && echo "yes" || echo "no")
-HAS_DP3=$(echo "$OUTPUTS" | grep -q "DP-3" && echo "yes" || echo "no")
+HAS_HDMI=$(echo "$ACTIVE_OUTPUTS" | grep -qx "HDMI-A-1" && echo "yes" || echo "no")
+HAS_DP3=$(echo "$ACTIVE_OUTPUTS" | grep -qx "DP-3" && echo "yes" || echo "no")
 
 if [ "$HAS_HDMI" = "yes" ] && [ "$HAS_DP3" = "yes" ]; then
     # Work desk: 3-monitor layout
@@ -79,8 +82,8 @@ fi
 # never-matching name (e.g. config edit) can't loop forever.
 if [ -n "$PREV_KB" ]; then
     for _ in $(seq 1 8); do
-        [ "$(mmsg -g -k 2>/dev/null | head -1 | awk '{print $3}')" = "$PREV_KB" ] && break
-        mmsg -s -d switch_keyboard_layout 2>/dev/null
+        [ "$(mmsg get keyboardlayout 2>/dev/null | jq -r '.layout // empty' 2>/dev/null)" = "$PREV_KB" ] && break
+        mmsg dispatch switch_keyboard_layout 2>/dev/null
         sleep 0.1
     done
 fi
