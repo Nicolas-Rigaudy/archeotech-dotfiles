@@ -2646,3 +2646,92 @@ Maps the above onto the ROADMAP "Polish sprint" checklist. Ordered by leverage:
    variable icon font (Material Symbols); we ship FiraCode Nerd Font. Either add Material Symbols
    as an icon font or skip these. The animated-text-change and auto-number-font ideas work with
    any font and are cheap wins.
+
+## 19. Wallpaper & Theme Picker — cross-repo study + carousel redesign (2026-07-16)
+
+**Why:** the appearance quick-switcher (Super+W) read *bloated* (logo tiles + full colour-scheme
+picker + a dense row of small wallpaper thumbnails all crammed in one compact panel) and was
+*slow/jittery* to open (user, 2026-07-16). Studied the wallpaper + theme pickers of four reference
+shells (shallow read-only clones) to find what makes a picker feel fast and fluid, then redesigned
+ours around the findings.
+
+### 19.1 Cross-repo comparison
+
+| Shell | Structure | On screen | Model | Thumbnails | Live preview |
+|---|---|---|---|---|---|
+| **Caelestia** | two-tier: launcher **PathView** carousel + full "Wallpaper & style" nexus page (sub-tabs wallpaper/colours/style) | ~3–5 **large**, centred=focus | persistent `FileSystemModel` singleton (`services/Wallpapers.qml`) | native C++ `Caelestia.Images` (`IUtils.urlForPath`) disk cache | **yes** — centred item calls `Wallpapers.preview(path)`; colours via `wallpaper -p` print-only |
+| **end-4** | dedicated fullscreen selector | **4-col** grid, 4:3 | persistent `FolderListModel` singleton | **freedesktop** cache `~/.cache/thumbnails/{normal,large}/<md5>.png`, `magick -resize 256x256`, **async fade-in** 200ms | no — hover highlights, click applies |
+| **Dank** | **tabbed** settings (WallpaperTab + ThemeColorsTab) | 1 big preview card + file-browser modal | persistent singleton service | small async (`sourceSize 160`), no cache (OS page cache) | no — click-to-apply |
+| **Noctalia** (C++/GL) | launcher provider + settings dropdown | virtual grid, recycled tiles | **mtime-keyed** memoization | async decode thread pool, subscription callbacks | wallpaper: subtitle+preview; theme: **per-frame palette crossfade** (400ms, interruption-safe) |
+
+**Universal to all four:** a **persistent model** — the wallpaper list is scanned **once** and held; never
+re-scanned/rebuilt on open. This was our single biggest gap (old `WallpaperPickerBody` did
+`wallpapers = []` + full re-scan on every open).
+
+### 19.2 Mechanics adopted (all pure-QML — see 19.4)
+
+1. **Persistent `Wallpapers` service singleton** (`Services/Theming/Wallpapers.qml`) — scans + generates
+   thumbnails once, holds `list` + `thumbGen`; picker binds to it → instant open. Mirrors Caelestia's
+   service, minus the C++.
+2. **Cached thumbnails via ImageMagick** — `magick <src> -thumbnail 640x480 -strip -quality 82` into
+   `~/.cache/archeotech/wallpaper-thumbs/<basename>.jpg`, regenerated only when the source is newer
+   (`-nt`). Delegate loads the thumb; falls back to the full image until the thumb exists, then swaps
+   in when `thumbGen` bumps. (end-4's freedesktop shared-cache path is a viable alternative.)
+3. **Reusable `Carousel` (`Widgets/Appearance/Carousel.qml`)** — snap-to-centre `PathView`, straight
+   horizontal path, `cacheItemCount: 4` so only a handful of delegates materialise (light + instant),
+   centred item enlarged via `PathView.isCurrentItem`. Explicit `itemSpacing` (x-distance between item
+   centres) so spacing is controllable; caller sets it ≈ 0.86× item width for a slight overlap. Based
+   on Caelestia's `WallpaperList.qml`.
+4. **Preview-on-scroll, apply-on-click** — scrolling brings a wallpaper to centre (enlarges = the
+   preview, purely in-shell, no script); clicking the centred one applies via `wallpaper-set.sh`.
+   Deliberately does NOT live-apply on scroll (our `wallpaper-set.sh` is heavy: `magick` accent
+   extraction + logo compositing + awww transition, no print-only mode). Caelestia can live-preview
+   colours because its CLI has a `-p` print-only mode; a future `--print-color` on ours would enable
+   the same.
+
+### 19.3 The redesign — three carousels (decided w/ user 2026-07-16)
+
+Quick switcher (Super+W) → **three stacked carousels in the same style**: **Wallpaper / Theme / Logo**.
+This de-bloats (one focused thing per carousel, not four crammed blocks) *and* frees vertical room so
+the wallpaper items are large. Recommended theme-carousel UX (theme = family → flavor(carries mode) →
+optional accent; see `Services/Theming/ThemeCatalog.qml`):
+
+- **Theme carousel = families** (Catppuccin/Dracula/Tokyo Night/Gruvbox/Nord/Monochrome) as swatch-
+  preview cards — the big identity choice, browse + click to apply.
+- **Light/Dark/Auto** = a **segmented toggle** (ternary → toggle, not a carousel).
+- **Flavor** = a small **pill row**, shown only when a family has >1 flavor for the current mode
+  (e.g. Catppuccin dark = Frappé/Macchiato/Mocha).
+- **Accent** = a horizontal **swatch strip** of dots, only for accent-capable families (Catppuccin).
+
+Rationale: carousels for the *hero identity* choices (wallpaper, family, logo); compact controls
+(toggle/pills/dots) for quick *refinements*. Fluid to browse, quick to adjust.
+
+### 19.4 Does polish/fluidity require C++? No.
+
+end-4 and Dank are **100% QML** and are the most polished/copyable motion systems. The fluidity is
+Qt's animation framework (bezier easing, `Behavior`, `MultiEffect`/`RectangularShadow`, `PathView`).
+Caelestia's C++ (`Caelestia.Images`, `Caelestia.Models`) buys **perf infrastructure only** — native
+thumbnail cache + file models + fuzzy search — not visuals. Noctalia went full C++/GL and ended up
+with *less* motion (no spring/stagger/ripple). Going C++ would cost our zero-build, stow-and-go,
+"pure JSON + assets" model. Verdict: stay pure-QML; the one place C++ helps (image thumbnail cache)
+we replicate with an ImageMagick-via-`Process` cache.
+
+### 19.5 Gotchas / lessons (cost real debugging time — see DECISIONS 2026-07-16)
+
+- **`StandardPaths.writableLocation` returns a `file://` URL, not a plain path.** `Commons.Paths.cache`
+  is `file:///home/…`, so `"file://" + thumbPath` doubled to `file://file///…` and **every thumbnail
+  silently failed → fell back to decoding the full 4K/6K wallpaper** (the real cause of "still slow",
+  masked by the fallback). Strip the prefix for filesystem `source`s: `Paths.cache.replace(/^file:\/\//,"")`.
+- **Sync image decode (`asynchronous: false`) moves the cost onto the open animation** → smooth
+  thumbnails but a janky *open*. Keep `asynchronous: true`; make thumbs tiny + the model/view warm
+  instead. (Pure-async cascades one-by-one; the real fix is few large delegates + a warm cache.)
+- **New singletons / one-time scans don't reliably apply on QML hot-reload** — they need a full shell
+  restart. Hence the reload keybind must actually restart the shell (19.5 / DECISIONS).
+- **`PathView` has no `positionViewAtIndex`** (that's ListView/GridView) — set `currentIndex` (with
+  `StrictlyEnforceRange` + `preferredHighlightBegin: 0.5` it auto-centres).
+
+### 19.6 Status (2026-07-16)
+
+Shipped: persistent `Wallpapers` service, `Carousel` primitive, wallpaper carousel with working cached
+thumbnails (`file://` fix), reload keybind restores full shell restart. **Pending:** logo carousel +
+theme carousel (per 19.3), wallpaper item-size grows once the crammed logo/colour blocks move out.
