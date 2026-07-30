@@ -127,7 +127,12 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + M" "Exit MangoWC"
     add_bind "$SUPER + F" "Fullscreen"
     add_bind "$SUPER + $SHIFT + Space" "Toggle floating"
-    add_bind "$SUPER + T" "Toggle split direction"
+    echo "" >> "$TEMP_RAW"
+
+    echo "━━━━━━━━━━━━━━━━━━ WINDOW GROUPING ━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
+    add_bind "$SUPER + $ALT + Arrows" "Group window with neighbour"
+    add_bind "$SUPER + [ / ]" "Cycle tabs within group"
+    add_bind "$SUPER + $SHIFT + G" "Pop window out of group"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━━━ FOCUS & MOVE ━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
@@ -148,6 +153,11 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + $SHIFT + Tab" "Previous tag"
     echo "" >> "$TEMP_RAW"
 
+    echo "━━━━━━━━━━━━━━━━━━━━━━ OVERVIEW ━━━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
+    add_bind "Bottom-left corner" "Overview (also 4-finger swipe)"
+    add_bind "$ALT + Tab" "Overview + jump (type a label)"
+    echo "" >> "$TEMP_RAW"
+
     echo "━━━━━━━━━━━━━━━━━━━━━━ 󰕰 LAYOUTS ━━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
     add_bind "$SUPER + Space" "Scroller (horizontal scroll)"
     add_bind "$SUPER + $ALT + Space" "Tile (master-stack)"
@@ -155,7 +165,8 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + $ALT + M" "Monocle (fullscreen)"
     add_bind "$SUPER + $ALT + V" "Vertical scroller"
     add_bind "$SUPER + $ALT + D" "Deck (master + stacked)"
-    add_bind "$SUPER + $ALT + S" "Spiral"
+    add_bind "$SUPER + $ALT + S" "Dwindle (BSP auto-split)"
+    add_bind "$SUPER + T" "Cycle layout (next in rotation)"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━ 󱗜 GAPS ━━━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"

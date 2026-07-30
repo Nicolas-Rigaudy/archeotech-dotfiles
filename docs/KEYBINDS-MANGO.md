@@ -12,6 +12,8 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 - [Window Management](#window-management)
 - [Tag Navigation](#tag-navigation)
 - [Layout System](#layout-system)
+- [Overview & Window Grouping](#overview--window-grouping)
+- [Everyday Features](#everyday-features-mangowm-015)
 - [Monitor Management](#monitor-management)
 - [Screenshots & Media](#screenshots--media)
 - [Wallpaper & Logo System](#wallpaper--logo-system)
@@ -48,7 +50,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + M` | Exit MangoWC | Logout/quit compositor |
 | `Super + F` | Toggle fullscreen | Current window |
 | `Super + Shift + Space` | Toggle floating / snap back to tile | Float ↔ Tile — use this to re-tile a window you moved with the mouse |
-| `Super + T` | Toggle split | Change split direction |
+| `Super + T` | Cycle layout | Rotate to next layout (see Layout System) |
 
 ### Scratchpad
 
@@ -109,7 +111,8 @@ MangoWC supports multiple layout algorithms. This is one of its key features!
 | `Super + Alt + M` | Monocle layout | One window fullscreen |
 | `Super + Alt + V` | Vertical scroller | Vertical scrolling windows |
 | `Super + Alt + D` | Deck layout | Master with stacked secondary |
-| `Super + Alt + S` | Spiral layout | Spiral tiling pattern |
+| `Super + Alt + S` | Dwindle layout | BSP auto-split (replaces the removed spiral) |
+| `Super + T` | Cycle layout | Next in rotation: scroller → tile → dwindle → fair → grid → monocle |
 
 ### Gap Controls
 
@@ -118,6 +121,49 @@ MangoWC supports multiple layout algorithms. This is one of its key features!
 | `Super + =` | Increase gaps | +5px increment |
 | `Super + -` | Decrease gaps | -5px decrement |
 | `Super + 0` | Toggle gaps | On/off switch |
+
+---
+
+## Overview & Window Grouping
+
+### Overview (mangowm 0.15)
+
+| Trigger | Action |
+|---------|--------|
+| Bottom-left screen corner | Toggle overview (hot corner) |
+| 4-finger swipe up/down | Toggle overview |
+| `Alt + Tab` | Overview **jump mode** — type a window's label to focus it |
+
+In overview: left-click a window to focus, right-click to close.
+
+### Window Grouping (mangowm 0.15)
+
+Stack several windows into **one tiled slot with a tab bar** — like browser tabs, for any apps.
+
+| Keybind | Action |
+|---------|--------|
+| `Super + Alt + ←/→/↑/↓` | Pull the neighbouring window into the current group |
+| `Super + ]` / `Super + [` | Cycle to next / previous tab in the group |
+| `Super + Shift + G` | Pop the current window out of the group |
+
+---
+
+## Everyday Features (mangowm 0.15)
+
+Ambient behaviours — no keybind, always on after reload:
+
+| Feature | What you get |
+|---------|--------------|
+| **Bottom-left hot corner** | Cursor into the corner → overview |
+| **Cross-monitor focus** | `Super + arrows` focus crosses monitor edges |
+| **Cursor auto-hide** | Cursor hides on keypress + after 5s idle |
+| **Smart gaps** | Gaps disappear when a tag holds a single window |
+| **Borderless single** | No border with one window on the tag |
+| **Floating snap** | `Super`+drag a floating window near an edge/window → snaps (30px) |
+| **Drag-to-tile** | `Super`+drag a tiled window onto another → swaps them |
+| **Tag carousel** | `Super + Tab` past tag 9 wraps back to tag 1 |
+
+Mouse recap: `Super`+left-drag = move (floating snaps · tiled swaps) · `Super`+right-drag = resize.
 
 ---
 
@@ -289,9 +335,14 @@ Super + Shift + R
 - **What it does:** Master window with stacked secondaries
 - **Best for:** One main app with quick access to others
 
-### Spiral
-- **What it does:** Windows arranged in spiral pattern
-- **Best for:** Visual variety, many windows
+### Dwindle (BSP)
+- **What it does:** Each new window splits the focused one in half (binary space partition)
+- **Best for:** Organic, ratio-preserving tiling; pairs well with drag-to-tile
+- **Note:** replaced the removed `vertical_spiral` (gone in mangowm 0.15)
+
+### Fair
+- **What it does:** Keeps every window at an even size in a balanced grid
+- **Best for:** A middle ground between tile and grid; reach it via the `Super + T` cycle
 
 ---
 
