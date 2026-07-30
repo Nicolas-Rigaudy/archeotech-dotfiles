@@ -257,7 +257,7 @@ Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
 - [ ] **VSCode `colorCustomizations`** now regenerates bg from the palette for *every* theme — verify it doesn't clash on the non-Catppuccin VSCode themes (Gruvbox/Tokyo/Nord); gate to Catppuccin if it does.
 - [ ] **Settings panel widened 760→940** globally — check the other panes don't look sparse at the new width.
 
-### Wallpaper & Theme picker redesign (three carousels) — IN PROGRESS 2026-07-16
+### Wallpaper & Theme picker redesign (three carousels) — core SHIPPED 2026-07-17; only deferred upgrades open
 
 > Full cross-repo study + mechanics in `ANALYSIS.md §19`; debugging gotchas in `DECISIONS.md [2026-07-16]`. Triggered by the picker reading bloated + opening slow/jittery. Decided with the user: the **Super+W quick panel** becomes **three stacked carousels in one style** (Wallpaper / Theme / Logo); **Settings→Appearance keeps its fuller layout** (grid + schedule).
 
@@ -265,9 +265,9 @@ Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
 - [x] Reusable `Widgets/Appearance/Carousel.qml` — snap-to-centre `PathView`, centred item enlarged, `cacheItemCount:4` (light/instant), explicit `itemSpacing`
 - [x] Wallpaper carousel w/ **real** cached thumbnails — fixed the `file://` URL doubling (`Paths.cache` is a URL) that made every thumb fail → silently decode the full 4K/6K original
 - [x] `mango-reload.sh` restores full shell restart (Super+Shift+R) — required because new singletons / one-time scans don't apply on QML hot-reload
-- [ ] Restructure the Super+W quick panel into 3 stacked carousels (frees vertical room → wallpaper items get bigger; fixes "too small/too many")
-- [ ] Logo carousel (reuse `Carousel`)
-- [ ] Theme carousel = **families** (swatch-preview cards) + **Light/Dark/Auto segmented toggle** + **flavor pill row** (only when a family has >1 flavor for the mode) + **accent swatch strip** (Catppuccin only)
+- [x] Restructure the Super+W quick panel into 3 stacked carousels (`13aa275`) — freed room, bigger wallpaper items, fixed "too small/too many"
+- [x] Logo carousel — `Widgets/Appearance/LogoCarousel.qml` (reuses `Carousel`)
+- [x] Theme carousel — `Widgets/Appearance/ThemeCarousel.qml`: **families** (one tile per family, 4-colour swatch) + mode pills + flavor/accent rows above the carousel, built exactly per the §19.3 recommendation. Later polished onto GlassButton/StateLayer/3D cards (`d7cee9e`, `34146f0`; see `docs/POLISH_ROLLOUT.md`)
 
 **Deferred "feel" upgrades** (nice-to-have, from the §19 study):
 - [ ] Live **colour preview on scroll** — add `--print-color` to `wallpaper-set.sh` (extract accent, print, don't apply) + an in-shell preview palette (Caelestia `-p` pattern); our `wallpaper-set.sh` is heavy (magick + logo compose + awww) so live-apply-on-scroll is intentionally avoided
@@ -299,7 +299,7 @@ The "random" locks are **real lid-close → suspend** events (`systemd-logind: L
 - Warmth & depth: revisit the flat glass — layered shadow, subtle gradient/tint, accent-tinted surfaces; audit the "cold" pure-grey values.
 - Appearance stagger on lists/panels (notifications, launcher results, settings rows).
 
-**Phase-2 foundation partially landed (2026-07-16), then Launcher application reverted.** Committed to `Commons` and still present (but currently **unused** — no consumers): the M3 `curve` bezier presets + semantic durations in `Appearance.qml`, `Commons/Anim.qml` + `Commons/ColorAnim.qml` wrappers, and `Commons/Primitives/StateLayer.qml` (accent hover/press + optional scale). A first taste-test applying these to the Launcher (StateLayer + depth/warmth + list transitions) was **reverted** — the ListView enter/exit transitions thrashed the JS-array-reset-per-keystroke model, and the slice shipped without runtime verification. **Redo carefully, one small change at a time, verified live:** wire StateLayer into a couple of real widgets, keep list transitions off (or use a keyed `DelegateModel`), and roll shell-wide only after each piece is confirmed. (The `Carousel` from §19 already uses the centred-scale idiom — a good first real consumer.)
+**Phase-2 SHIPPED shell-wide (2026-07-17 → 07-22) — tracked in `docs/POLISH_ROLLOUT.md`.** The foundation (M3 `curve` presets + semantic durations in `Appearance.qml`, `Commons/Anim.qml`+`ColorAnim.qml`, `Commons/Primitives/StateLayer.qml`) plus new `GlassButton` + `SettingsCard` primitives are now used everywhere. Rolled out: **Launcher** (StateLayer hover/warmth/depth, two-line rows), **chrome liquid-glass sheen** (subtle vertical gradient, no blur), **Dashboard** (hero+bento rework), **Notifications** (toast + centre), **Round 3 full Settings redesign** (GlassButton/SettingsCard/StateLayer across every pane), **ToggleSwitch/SliderRow 3D**, accent 3D swatch dots. The initial Launcher list-transition thrash was found + fixed early (`0b875ab`). **Remaining polish (see POLISH_ROLLOUT.md):** Round 1 leftovers (CalendarPopup/WifiPopup/BtPopup, MediaPanel), Round 3 leftovers (EditOverlay/WidgetPalette buttons, a full consistency/spacing design pass, screenshot+playtest harness), and all of **Round 4** (Strip openers, `BarPill` active fill, Bar safe-only tweaks). Do NOT re-plan the shipped items here — POLISH_ROLLOUT.md is the live tracker.
 
 ### Layout loadouts / presets (user idea 2026-07-02)
 
