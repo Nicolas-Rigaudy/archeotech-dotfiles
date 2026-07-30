@@ -721,46 +721,38 @@ another_setting = value
 
 ### Git Commit Messages
 
-**Format:** Conventional Commits with scope (title only, no description)
+**Format:** `type[SCOPE]: description` — subject line only, no body.
 
-**Structure:**
-```
-type[SCOPE]: brief description (50 chars max)
-```
+**Types:** `new` (additions), `chg` (changes to existing), `fix` (bug fixes).
 
-**Types (keep it simple):**
-- `new` - New features, additions, implementations
-- `chg` - Changes to existing features, updates, modifications
-- `fix` - Bug fixes, corrections
+**Scope = the file type / area touched, in square brackets. ALWAYS include one —
+never a bare `fix:` / `chg:`.** The scopes actually in use (by frequency):
+- `[QML]` — Quickshell / QML
+- `[MD]` — docs / markdown (incl. `.claude/` notes)
+- `[CONF]` — config files (mango, kitty, rofi, fish, hypr, …)
+- `[SH]` — shell scripts
+- `[PY]` — python scripts (e.g. `theme-switch.py`)
+- `[ASSET]` — images / fonts / static assets
 
-**Scopes (technology/component-based):**
-- `[DOTFILES]` - General dotfiles/config changes
-- `[HYPR]` - Hyprland configuration
-- `[MANGOWC]` - MangoWC configuration
-- `[WAYBAR]` - Waybar configuration
-- `[KITTY]` - Kitty terminal configuration
-- `[FISH]` - Fish shell configuration
-- `[ROFI]` - Rofi launcher configuration
-- `[BASH]` - Shell scripts
-- `[QML]` - Quickshell / QML components
-- `[MD]` - Documentation (Markdown)
-- `[REPO]` - Repository structure changes
+Touching several? Combine with `/` inside one bracket: `[SH/CONF]`, `[QML/MD]`,
+`[QML/SH]`, `[PY/CONF]`, `[MD/CONF]`.
 
 **Rules:**
-- Always include scope in square brackets
-- Title only, no body/description
-- Keep under 50 characters total
-- Start description with lowercase
-- No period at the end
+- Always a `[SCOPE]` — this is the one hard rule.
+- Subject line only, no body.
+- Lowercase after the colon; no trailing period.
+- Descriptive > terse: there is **no** 50-char cap in practice — real subjects run
+  long and pack multiple related changes into one line separated by `;`.
+- **Check `git log` first and match the existing vocabulary — do not invent new
+  scopes** (this is a scope-by-file-type scheme, not `[MANGOWC]`/`[DOTFILES]`).
 
-**Examples:**
+**Examples (real):**
 ```
-new[MANGOWC]: add parallel compositor with complete config
-chg[HYPR]: update keybindings for azerty layout
-fix[BASH]: resolve stow symlink creation issue
-new[DOTFILES]: add gnu stow installation script
-chg[WAYBAR]: update modules for multi-monitor setup
-new[MD]: add installation guide and keybinds reference
+chg[QML]: dashboard cards 16px uniform padding; wider row highlight
+fix[QML]: panels claim activeFocus on open so Esc-to-close works
+chg[SH/CONF]: launch + IPC via qs -c archeotech (shell moved to its own repo)
+fix[SH]: port mango-reload.sh to mangowm 0.15 mmsg IPC
+chg[MD]: ROADMAP S28 testing pipeline + S29 Hyprland dual; DECISIONS Hyprland-to-v1.0
 ```
 
 ---
