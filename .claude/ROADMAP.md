@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last Updated:** 2026-07-02  
+**Last Updated:** 2026-07-30  
 **See also:** `ANALYSIS.md` — research, reference projects, confirmed QML APIs, settings ecosystem deep-dives.
 
 ---
@@ -15,7 +15,7 @@ Archeotech is a **fully composable, community-extensible Quickshell shell** targ
 3. **Visual builder** — drag-and-drop edit mode wires any module to any trigger (edge hover, bar icon, keyboard, desktop widget). Config persists to `DrawerConfig.json`, hot-reloads instantly.
 4. **Compositor abstraction** — `CompositorService` facade means one codebase runs on MangoWC, Hyprland, and Niri.
 
-**Target release:** v1.0 after Sprint 27 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
+**Target release:** v1.0 after Sprint 30 (Distribution). Subsequent sprints add depth (Go daemon, dev workflow, more themes).
 
 ---
 
@@ -186,13 +186,13 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 ---
 
-### Repo split + hygiene — PRE-28 FOUNDATION ✅ SHIPPED 2026-07-09
+### Repo split + hygiene — PRE-30 FOUNDATION ✅ SHIPPED 2026-07-09
 
 **Shipped** — split executed into two repos: public **`archeotech-shell`** (`~/Projects/archeotech-shell`, fresh `git init`, 161 files, repo root = a named Quickshell config run via `qs -c archeotech`, authored as the user, zero Claude artifacts, **not pushed** — user pushes) and private **`archeotech-dotfiles`** (this repo, pruned to 125 files — personal config only). See `DECISIONS.md [2026-07-09]`. All 9 boundary fixes landed (Paths→`~/.local/bin`, portable `~/.config/archeotech/{assets,wallpapers}`, config-driven `dashboard.scanRoots`, DisplayPane output auto-detect, kitty confs co-located into theme packages, launch/IPC → `qs -c archeotech`, single-launcher hardening, private show-keybinds/wallpaper-fallback repointed). Public ships shell + theme system + shell-integral scripts + docs + `examples/` compositor snippets + CI/release workflows + 2 non-IP default wallpapers. Deploy: public `install.sh` symlinks repo→`~/.config/quickshell/archeotech`, themes/assets→`~/.config/archeotech/`, scripts→`~/.local/bin`; private keeps its stow package for everything else. Dead code dropped in passing (`dashboard-*.sh`, rofi `wallpaper-picker.sh`). Remaining nice-to-have: strip internal-doc breadcrumbs (`ANALYSIS.md`/`ROADMAP` mentions) from public source comments.
 
 <details><summary>Original plan (2026-07-09 — collapsed, shipped)</summary>
 
-**Decision (2026-07-09):** split into **two repos** — a public **`archeotech` shell** (the product) and a private **`dotfiles`** (this machine). Matches Noctalia/Caelestia/DMS. Must land **before** Sprint 28 — packaging, install script, docs, and the v1.0 tag all build on the clean base. Full file-by-file inventory done 2026-07-09 (44M / 294 files; splits cleanly).
+**Decision (2026-07-09):** split into **two repos** — a public **`archeotech` shell** (the product) and a private **`dotfiles`** (this machine). Matches Noctalia/Caelestia/DMS. Must land **before** Sprint 30 — packaging, install script, docs, and the v1.0 tag all build on the clean base. Full file-by-file inventory done 2026-07-09 (44M / 294 files; splits cleanly).
 
 **Guiding principle (refines the raw inventory):** public = what a *stranger* installs and extends; personal configs are **not** shipped as defaults — the public repo carries **example/reference** compositor snippets, not the actual mango/hypr config. Keeps it a clean product, not "adopt my setup."
 
@@ -202,7 +202,7 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 **Boundary fixes to do during the split (9 flagged; the load-bearing ones):**
 - Keybinds referencing `~/Projects/archeotech-dotfiles/scripts/...` → install symlinks to `~/.local/bin`, keybinds call those (already the install pattern for some scripts).
-- `Modules/Settings/Panes/DisplayPane.qml` hardcodes `eDP-1` in display presets → auto-detect / externalise output names (e.g. `~/.config/archeotech/outputs.json`). **Real distribution bug**, folds into the S28 hardcoded-path audit.
+- `Modules/Settings/Panes/DisplayPane.qml` hardcodes `eDP-1` in display presets → auto-detect / externalise output names (e.g. `~/.config/archeotech/outputs.json`). **Real distribution bug**, folds into the S30 hardcoded-path audit.
 - `project-jump.sh` / `dashboard-projects.sh` assume `~/Projects` + `~/Documents/repos` → make scan roots config-driven (ties into "Core → plugin / optional candidates") or move to personal.
 - mango startup hardcodes `~/Projects/archeotech-dotfiles/wallpapers/arasaka.png` fallback → portable `~/.config/archeotech/wallpapers/`.
 - `~/.cache/wallpaper/current` lock-wallpaper contract → already clean; just document in THEME_SPEC.
@@ -211,7 +211,61 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 </details>
 
-### Sprint 28 — Distribution & v1.0 Release
+### Sprint 28 — Testing & Visual-Verification Pipeline (planned 2026-07-30)
+
+**Goal:** ship + test features faster and with higher quality before going public; cut the "Claude said done but the output was wrong and didn't verify" back-and-forth; and stand up the AI persona-tester idea (user's colleague's game-testing analogy). Full research + sources + honest limits in **`.claude/TESTING-PIPELINE-RESEARCH.md`** — don't re-derive here.
+
+**Why now / why pre-30:** de-risks the v1.0 release, and the same harness **auto-generates the Sprint 30 README screenshots** (bar/OSD/launcher/dashboard/settings/edit mode) and helps run the Pre-v1.0 QA checklist. Competitive note: Caelestia (leading QS shell) has **no CI/tests** — our existing `ci.yml` already beats it; this puts us ahead of the ecosystem.
+
+**Core loop PROVEN (2026-07-30):** `WLR_BACKENDS=headless mango -s` → `qs -c archeotech` → `grim` renders the full shell to a real 1280×720 PNG with **no GPU** (pixman software render). Diverges from standard Qt "use Xvfb / offscreen is X11-only" advice *because Quickshell is a Wayland client rendering into a headless wlroots compositor* — the compositor is the display. Reusable script: `archeotech-shell/scripts/shot.sh`.
+
+**⚠️ SAFETY RULE (learned the hard way):** the harness must tear down the nested compositor by **captured PID only** — NEVER `pkill -x mango` / `pkill quickshell` (matches the *real* session → logs you out, lost work twice on 2026-07-30). See memory `never-kill-mango-by-name`.
+
+**Blocks (each grounded + written up in the research doc):**
+- [ ] **B1 Visual verification** — headless render → PNG. ✅ proven; re-run safety-fixed `shot.sh` once (needs user watching).
+- [ ] **B1b Temporal capture** — grim burst for motion *correctness* (played? duration? oscillation/jitter?). **Hard limit:** motion *feel*/smoothness/fps is NOT verifiable headless (software render ≠ real GPU) → stays human + hardware recording (`wf-recorder`, not yet installed).
+- [ ] **B2 State-driving** — isolate *state* not the file (widgets need Commons+singletons). Drive via `qs ipc` (handlers already exist: launcher/settings/dashboard/wallpaper/media/editmode/osd/theme/notifications) + `mmsg`. No synthetic input needed. Cheap next step: read the `IpcHandler` bodies → state cookbook.
+- [ ] **B3 Visual regression** — ImageMagick `compare` (installed) vs committed goldens; crop-to-component + freeze inputs (fixed theme/static wallpaper/hidden clock) to beat nondeterminism; goldens must be generated by the same headless path (pixman AA drift).
+- [ ] **B4 QML logic tests** — greenfield; `qmltestrunner` present. Target pure logic (`ShellConfig._normEntry`, accent resolution, config parse). Caveat: Quickshell-importing singletons won't load under plain-Qt; extract pure JS where valuable; `-platform offscreen` may hit the X11/OpenGL limit → fall back to running inside the headless compositor.
+- [ ] **B5 CI** — extend existing `ci.yml` (bash/py/JSON) in an Arch container (`quickshell`+`mango`+`grim`, no Xvfb): `qmlformat --check` → `qmllint` → `qmltestrunner` → headless render smoke (PNG artifact) → visual diff (diff.png on fail). Retires the ci.yml "once a Quickshell CI image is available" placeholder. Open risk: confirm `quickshell` installs in-container.
+- [ ] **B6 AI persona-testers** — NOT novel: adapt **UXAgent** (CHI 2025) architecture (Persona Generator + LLM Agent + connector) to the shell — swap their browser connector for screenshot + a11y-tree + `qs ipc`. Personas judge static UX (clarity/contrast/discoverability/wording); can't feel motion from a still. Use **UXBench**'s actionability lens to keep findings triageable. Token-disciplined: small, targeted, on-demand — never a blanket sweep.
+- [ ] **B7 Verify-before-done loop** — before I claim a visual change done: drive state (B2) → `shot.sh` (B1) → diff (B3) or paste the image inline → only then "done", with the image attached. For motion: state the declared duration/curve, flag that feel needs your eyes/recording.
+
+**Scope discipline:** B1–B3 + B7 are the high-value core (visual verification + my own verify loop). B4/B5 harden for public. B6 (personas) is the ambitious layer — build last, on the proven B1/B2 foundation.
+
+---
+
+### Sprint 29 — Hyprland as 2nd Compositor (dual setup) ← pulled forward from post-v1.0
+
+**Goal:** the shell runs first-class on **Hyprland** as well as MangoWC, selectable at login (dual session, same `qs -c archeotech`). Builds the `CompositorService` facade the vision's pillar 4 always promised. See `DECISIONS.md [2026-07-30]` for why this moved ahead of v1.0.
+
+**Why now (revises the 2026-07-01 defer):** three inputs changed the calculus —
+1. **Audience** — Quickshell is compositor-agnostic; ~nobody runs MangoWC, most of the target users run Hyprland. A public shell that only runs on niche mango has almost no addressable market → Hyprland is table stakes for "anyone can install it," not post-v1.0 depth.
+2. **Dogfooding** — there's a `Services/Compositor/MangoWC.qml` but **no facade**. Running daily on *both* compositors is the only forcing function that makes the abstraction real.
+3. **Daily stability** — MangoWC hangs on dock-undock (wlroots output-hotplug freeze, 2026-07-30 — see QA below); Hyprland is the most battle-tested docking/multi-monitor wlroots setup → a robust fallback.
+
+**Scope discipline: Hyprland ONLY.** Niri/Sway stay post-v1.0 (see the trimmed Multi-Compositor entry below). Don't gold-plate to "all compositors."
+
+**Coupling surface (measured 2026-07-30):** shallow — **11 `mmsg` call sites across 9 QML files** (`shell.qml`, `Modules/OSD/Osd.qml`, `Modules/Settings/Panes/{ShellPane,AboutPane}.qml`, `Modules/Shell/ShellExclusions.qml`, `Services/Compositor/MangoWC.qml`, `Widgets/Bar/{TitleWidget,WorkspacesWidget}.qml`, `Widgets/Appearance/Carousel.qml`), 0 hyprctl. The Quickshell UI is already portable; only these route to the compositor.
+
+**CompositorService facade plan:**
+- [ ] `Services/Compositor/CompositorService.qml` — detect compositor at startup; expose a stable API: `activeWorkspace`/`workspaces`/`focusedWindow`/`activeWindowTitle` + `switchWorkspace()`/`focusWindow()`/`moveToWorkspace()` + signals `workspaceChanged`/`windowFocusChanged`/`outputsChanged`.
+- [ ] `MangoService.qml` — extract today's `MangoWC.qml` (the `mmsg -w` stream + dispatch) behind the API. No behaviour change.
+- [ ] `HyprlandService.qml` — **prefer the built-in `Quickshell.Hyprland` service** (workspaces/monitors/toplevels + event stream) over a raw `socket2` — much less custom code than mango needed. Fall back to `hyprctl` for dispatch gaps.
+- [ ] Route all 11 `mmsg` sites through `CompositorService.*` (delete direct mmsg from widgets).
+- [ ] Verify `ShellExclusions` — layer-shell exclusive zones are compositor-agnostic via Quickshell; confirm on Hyprland (the mango-specific bits are the reserve math, not the protocol).
+
+**Compositor config port (not QML — lives in dotfiles + public `examples/`):**
+- [ ] `hyprland.conf`: keybinds (from mango `config.conf`), `windowrulev2` (mango `windowrule=monitor:…` → Hyprland), monitor rules, blur (`decoration:blur` + `layerrule = blur, <shell namespace>` mirroring mango `blur_layer`).
+- [ ] Dual **SDDM session** — the Hyprland session autostarts `qs -c archeotech` + awww + portals (mirror `mango/autostart.sh`). Hyprland already installed + a `hyprland.conf` exists.
+- [ ] Reload parity — a Hyprland `mango-reload.sh` equivalent (`hyprctl reload` + shell restart) or a compositor-agnostic `shell-reload.sh`.
+- [ ] Public repo: ship the Hyprland `examples/` snippet alongside the mango one (repo-split already ships `examples/` compositor snippets).
+
+**Acceptance:** log into the Hyprland session → shell renders, workspaces widget tracks, panels/OSD/blur work; dock-undock does NOT freeze (the stability win). `docs/COMPOSITOR_SUPPORT.md` covers both.
+
+---
+
+### Sprint 30 — Distribution & v1.0 Release
 
 **Goal:** Installable by a stranger on fresh Arch. Zero hardcoded paths. APIs documented. Community can publish plugins/themes. **v1.0 milestone.** (Only **1** hardcoded `/home/corvus` left — the audit is nearly done.)
 
@@ -222,7 +276,7 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 - [ ] Script the per-variant theme symlinks (`~/.config/archeotech/themes/<v>` → repo) in `install.sh` for fresh-deploy reproducibility (theme.json + kitty confs are the committed source of truth; the one-shot light-theme generator is gone/not needed)
 - [ ] `docs/INSTALL.md` (fresh Arch + MangoWC, also Hyprland) + `docs/PLUGIN_API.md` + `CONTRIBUTING.md` (submit a plugin / theme)
 - [ ] Finalize `MODULE_API`/`WIDGET_API`/`THEME_SPEC`/`PANEL_API`
-- [ ] README harden — screenshots (bar, OSD, launcher, dashboard, settings, edit mode) + demo GIF (edit mode + theme/accent switch + plugin install)
+- [ ] README harden — screenshots (bar, OSD, launcher, dashboard, settings, edit mode) + demo GIF (edit mode + theme/accent switch + plugin install) — **auto-generatable via the Testing & Visual-Verification Pipeline harness (`shot.sh` + `qs ipc` state-driving)**
 - [ ] `v1.0.0` tag; GitHub description, topics, social preview
 
 ---
@@ -231,8 +285,8 @@ Built the native `WlSessionLock` + `PamContext` QML lock, then cancelled before 
 
 *These are real but matter for **other machines**, not the release. Deferred behind v1.0.*
 
-### Multi-Compositor Support (was Sprint 26)
-`CompositorService` facade so the shell runs on Hyprland/Niri/Sway, not just MangoWC. Ref: Noctalia `Services/Compositor/`. API: `switchWorkspace`/`focusWindow`/`activeWorkspace`/`focusedApp`/`activeWindowTitle`. Tasks: `CompositorService.qml` (detect on startup) + `MangoService`/`HyprlandService`/`NiriService`/`Blur.qml`; replace direct MangoWC calls (incl. S25's `MangoWC.setProportion`/`setDefaultProportion`) with `CompositorService.*`; verify ShellSurface + 4× ExclusionStrips + per-compositor blur namespace on Hyprland; `docs/COMPOSITOR_SUPPORT.md`.
+### Multi-Compositor Support — Niri/Sway (was Sprint 26; Hyprland pulled to Sprint 29)
+**Hyprland + the `CompositorService` facade moved to pre-v1.0 Sprint 29** (see `DECISIONS.md [2026-07-30]`). What remains here, post-v1.0: add **`NiriService`/`SwayService`** behind the same facade so the shell also runs on Niri/Sway. Ref: Noctalia `Services/Compositor/`. Tasks: implement the two services against the Sprint-29 API (`switchWorkspace`/`focusWindow`/`activeWorkspace`/`focusedApp`/`activeWindowTitle`); per-compositor blur namespace; extend `docs/COMPOSITOR_SUPPORT.md`. Cheap once the facade + Hyprland proved the pattern.
 
 ### Go Daemon (was Sprint 28)
 Only for raw Wayland protocols QML can't reach: `archeotech-daemon` Go binary (Unix socket, newline-JSON RPC) + `Services/ArcheotechDaemon.qml` (backoff reconnect). Handles `wlr-output-management` / `wlr-gamma-control` / `wlr-screencopy`. NOT audio/network/BT/notifications/lock (native QML).
@@ -249,13 +303,14 @@ Only for raw Wayland protocols QML can't reach: `archeotech-daemon` Go binary (U
 Well-defined features not yet scheduled into a sprint.
 
 ### Pre-v1.0 QA checklist (from the 2026-07-01 session audit)
-Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
+Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release. *Several of these (light-theme visual pass, Settings-width sparseness) become automatable via the **Testing & Visual-Verification Pipeline** — screenshot each state, eyeball or diff.*
 - [x] **Resume freeze — RESOLVED 2026-07-08 via hyprlock.** `swaylock-effects` segfaulted on resume (unmaintained fork hitting the known sway-ecosystem output-hotplug-during-resume bug). Migrated to hyprlock — a separate, maintained codebase (not the sway lineage) — which fixes the crash and restores blur. Verified across suspend/resume + dock/undock in initial testing; monitoring day-to-day for the intermittent case. No longer blocks distribution. Full history in `TROUBLESHOOTING.md` → "Freeze on resume" + `DECISIONS.md [2026-07-08]`; migration summary in the "Locker" section above.
 - [x] **Zen chrome color — RESOLVED (2026-07-01):** solid palette backgrounds *did* recolor the chrome but flattened Zen's per-workspace **gradient** to a flat fill (Monochrome → flat black). Reverted the zen template to **light-touch** (accent + text vars only, no bg fills) so the gradient survives. Conclusion: Zen owns its chrome color via the workspace gradient (`zen_workspaces` DB, set in Zen's UI) and userChrome can't cleanly override it — so Zen's main chrome does NOT follow the shell theme by CSS. **Real fix = drive the workspace gradient from the palette during the Zen restart window** (queued: theme-packs / Sprint 26 — see the Zen-gradient note there). Interim: user sets a palette-matched gradient manually.
 - [ ] **Test the auto day/night schedule end-to-end** — `ColorScheme` Dark/Light/Auto + schedule logic was built but never watched flip at a scheduled time.
 - [ ] **Visual pass on the light themes** — Latte/TokyoNightDay/GruvboxLight/DraculaAlucard are official palettes; **Nord light is hand-tuned** (contrast-audited OK, yellow darkened to #977100) — eyeball it on real content.
 - [ ] **VSCode `colorCustomizations`** now regenerates bg from the palette for *every* theme — verify it doesn't clash on the non-Catppuccin VSCode themes (Gruvbox/Tokyo/Nord); gate to Catppuccin if it does.
 - [ ] **Settings panel widened 760→940** globally — check the other panes don't look sparse at the new width.
+- [ ] **Dock-undock freeze — diagnosed 2026-07-30.** Unplugging the dock (removes HDMI-A-1/DP-3 while focus/windows live there) hangs MangoWC completely — screen frozen, *even the laptop's built-in kbd/trackpad dead*; recover only by replugging. Root cause = wlroots **output-hotplug hang** in the dwl/mango lineage (not our config; nothing crashes in logs — it's a hang). **Expected fixed by the `mangowc`→`mangowm` update (links wlroots 0.20, where hotplug fixes live) — verify after the switch + relogin.** If it persists: real MangoWC bug (draft upstream report) and a strong argument for the Sprint 29 Hyprland fallback. **Distribution-blocking for laptop+dock users.** (Same docked-laptop hotplug family as the lid-close item below.)
 
 ### Wallpaper & Theme picker redesign (three carousels) — core SHIPPED 2026-07-17; only deferred upgrades open
 
@@ -285,7 +340,7 @@ The "random" locks are **real lid-close → suspend** events (`systemd-logind: L
 
 ### Polish & Liveliness pass (research → adopt) — feels bland/cold vs Caelestia
 
-> **Scheduled BEFORE v1.0 (decided 2026-07-09).** The user wants the shell to feel lively/warm before it's tagged 1.0 — so this runs in the pre-v1.0 path (alongside/ahead of Sprint 28 distribution work), not as post-release polish.
+> **Scheduled BEFORE v1.0 (decided 2026-07-09).** The user wants the shell to feel lively/warm before it's tagged 1.0 — so this runs in the pre-v1.0 path (alongside/ahead of Sprint 30 distribution work), not as post-release polish.
 
 **Motivation (user, 2026-07-02):** next to Caelestia and other mature Quickshell shells, ours reads bland, strict, and cold — motion is minimal and mechanical rather than organic/lively, and the styling is flat. Want a deliberate pass on animation, micro-interaction, and warmth. Ties into the existing S26 follow-up C (holder-aware layout) and the `HoverCard`/`Strip` animation work already in flight.
 
@@ -306,6 +361,10 @@ The "random" locks are **real lid-close → suspend** events (`systemd-logind: L
 Save named snapshots of the whole bar/strip layout and switch between them in one click, instead of re-arranging widgets by hand. Cheap because `shell-config.json`'s `sides` block already *is* the full layout — a loadout is just a stored copy of it (+ optionally `corners`/`outerGap`). Sketch:
 - `ShellConfig.saveLoadout(name)` snapshots current `sides`/`corners`/`outerGap` into a `loadouts: { <name>: {...} }` map in the config (or a sidecar file); `applyLoadout(name)` writes it back through the existing `_mutate` path → hot-reloads live.
 - UI: a loadouts row in the Shell settings pane / edit-mode banner — save current, apply, rename, delete. Per-instance widget config (S26) rides along automatically since it lives in the entries.
+
+### Tiling-layout picker with visual previews (user idea 2026-07-30)
+
+A Quickshell panel to choose the **tiling layout** (scroller/tile/dwindle/grid/monocle/fair/…) from **visual thumbnails** — each a mini-diagram of little rectangles arranged the way that layout tiles windows — instead of memorising `Super+Alt+<key>` or cycling blind with `Super+T`. Fits the existing panel system (like the wallpaper/theme pickers): a `PanelRegistry` panel themed with tokens, a grid of layout cards, click/arrow-select → `setlayout` (via `CompositorService` once Sprint 29's facade lands, or the mango dispatch directly meanwhile), active layout highlighted. Each card's diagram is cheap static QML (`Rectangle`s in the layout's arrangement); nice-to-have: a one-line description on hover. **First real payoff of the Sprint 28 headless `shot.sh` harness** — build it and verify the render without touching the live session. Small, self-contained; rides on the `setlayout`/`switch_layout`/`circle_layout` already wired up.
 - Nice-to-haves: a couple of built-in presets (minimal / full / dev), export/import a loadout as JSON to share.
 
 ### Auto-hide sides in fullscreen (user idea 2026-07-03)
