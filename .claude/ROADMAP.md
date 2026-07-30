@@ -257,6 +257,32 @@ Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
 - [ ] **VSCode `colorCustomizations`** now regenerates bg from the palette for *every* theme — verify it doesn't clash on the non-Catppuccin VSCode themes (Gruvbox/Tokyo/Nord); gate to Catppuccin if it does.
 - [ ] **Settings panel widened 760→940** globally — check the other panes don't look sparse at the new width.
 
+### Wallpaper & Theme picker redesign (three carousels) — IN PROGRESS 2026-07-16
+
+> Full cross-repo study + mechanics in `ANALYSIS.md §19`; debugging gotchas in `DECISIONS.md [2026-07-16]`. Triggered by the picker reading bloated + opening slow/jittery. Decided with the user: the **Super+W quick panel** becomes **three stacked carousels in one style** (Wallpaper / Theme / Logo); **Settings→Appearance keeps its fuller layout** (grid + schedule).
+
+- [x] Persistent `Services/Theming/Wallpapers.qml` singleton — scan + thumbnail cache **once**, never re-scan on open (was the main slowness)
+- [x] Reusable `Widgets/Appearance/Carousel.qml` — snap-to-centre `PathView`, centred item enlarged, `cacheItemCount:4` (light/instant), explicit `itemSpacing`
+- [x] Wallpaper carousel w/ **real** cached thumbnails — fixed the `file://` URL doubling (`Paths.cache` is a URL) that made every thumb fail → silently decode the full 4K/6K original
+- [x] `mango-reload.sh` restores full shell restart (Super+Shift+R) — required because new singletons / one-time scans don't apply on QML hot-reload
+- [ ] Restructure the Super+W quick panel into 3 stacked carousels (frees vertical room → wallpaper items get bigger; fixes "too small/too many")
+- [ ] Logo carousel (reuse `Carousel`)
+- [ ] Theme carousel = **families** (swatch-preview cards) + **Light/Dark/Auto segmented toggle** + **flavor pill row** (only when a family has >1 flavor for the mode) + **accent swatch strip** (Catppuccin only)
+
+**Deferred "feel" upgrades** (nice-to-have, from the §19 study):
+- [ ] Live **colour preview on scroll** — add `--print-color` to `wallpaper-set.sh` (extract accent, print, don't apply) + an in-shell preview palette (Caelestia `-p` pattern); our `wallpaper-set.sh` is heavy (magick + logo compose + awww) so live-apply-on-scroll is intentionally avoided
+- [ ] Async **fade-in** on thumbnails (end-4, 200 ms opacity) so they bloom in, not pop
+- [ ] **Eager-warm** the Wallpapers service at shell startup so even the *first* open is instant
+- [ ] **Palette crossfade** on theme apply (Noctalia per-frame lerp, interruption-safe) instead of a snap
+- [ ] (alt) move thumb cache to the **freedesktop** shared path `~/.cache/thumbnails/…` (end-4) so file managers reuse it
+
+### Unexpected lock / suspend on lid-close while docked — NEEDS DECISION (diagnosed 2026-07-16)
+
+The "random" locks are **real lid-close → suspend** events (`systemd-logind: Lid closed. Suspending…` → kernel suspend entry, confirmed in the journal + `~/.cache/hyprlock-trigger.log`, all `trigger: before-sleep`). `logind.conf` is empty (all defaults), so it suspends on lid-close even with the 3 external monitors connected — it isn't detecting the desk as "docked". Fix needs a `logind` drop-in (sudo) + a behaviour call:
+- [ ] Decide lid behaviour: **never auto-suspend** (`HandleLidSwitch=ignore`, rely on swayidle's 30-min idle-suspend) vs **ignore-on-AC-only** (`HandleLidSwitchExternalPower=ignore`, still suspends on battery) vs keep as-is
+- [ ] Apply via `/etc/systemd/logind.conf.d/*.conf` + `systemctl restart systemd-logind`
+- [ ] (minor) `hyprlock-launch.sh` suspend-detection regex misses `Suspending…` / `Reached target Suspend`, so the trigger log logged `recent-suspend: none` when a suspend *did* happen — widen the pattern
+
 ### Polish & Liveliness pass (research → adopt) — feels bland/cold vs Caelestia
 
 > **Scheduled BEFORE v1.0 (decided 2026-07-09).** The user wants the shell to feel lively/warm before it's tagged 1.0 — so this runs in the pre-v1.0 path (alongside/ahead of Sprint 28 distribution work), not as post-release polish.
@@ -272,6 +298,8 @@ Loose ends from the S25 theming/Zen work — verify/fix before the v1.0 release:
 - Consistent micro-interactions via a shared primitive (hover scale/glow, press depress, active fill) instead of per-widget.
 - Warmth & depth: revisit the flat glass — layered shadow, subtle gradient/tint, accent-tinted surfaces; audit the "cold" pure-grey values.
 - Appearance stagger on lists/panels (notifications, launcher results, settings rows).
+
+**Phase-2 foundation partially landed (2026-07-16), then Launcher application reverted.** Committed to `Commons` and still present (but currently **unused** — no consumers): the M3 `curve` bezier presets + semantic durations in `Appearance.qml`, `Commons/Anim.qml` + `Commons/ColorAnim.qml` wrappers, and `Commons/Primitives/StateLayer.qml` (accent hover/press + optional scale). A first taste-test applying these to the Launcher (StateLayer + depth/warmth + list transitions) was **reverted** — the ListView enter/exit transitions thrashed the JS-array-reset-per-keystroke model, and the slice shipped without runtime verification. **Redo carefully, one small change at a time, verified live:** wire StateLayer into a couple of real widgets, keep list transitions off (or use a keyed `DelegateModel`), and roll shell-wide only after each piece is confirmed. (The `Carousel` from §19 already uses the centred-scale idiom — a good first real consumer.)
 
 ### Layout loadouts / presets (user idea 2026-07-02)
 
