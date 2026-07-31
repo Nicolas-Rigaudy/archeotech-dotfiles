@@ -50,7 +50,9 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 | `Super + M` | Exit MangoWC | Logout/quit compositor |
 | `Super + F` | Toggle fullscreen | Current window |
 | `Super + Shift + Space` | Toggle floating / snap back to tile | Float ↔ Tile — use this to re-tile a window you moved with the mouse |
+| `Super + Return` | Promote to master | Swap the focused window into the master slot (best on tile/center_tile) |
 | `Super + T` | Cycle layout | Rotate to next layout (see Layout System) |
+| `Super + Shift + T` | Layout picker | Quickshell visual grid of all layouts (see Layout System) |
 
 ### Scratchpad
 
@@ -64,7 +66,10 @@ The scratchpad terminal persists across tag switches. Size is 75% width × 85% h
 
 | Keybind | Action | Notes |
 |---------|--------|-------|
-| `Super + Arrow Keys` | Move focus | Between windows |
+| `Super + Arrow Keys` | Move focus (directional) | Between visible tiles — can't reach a window hidden *behind* another |
+| `Super + J` / `Super + Shift + J` | Cycle focus in stack | next / prev — reaches windows behind others (deck pile, every window in monocle) |
+| `Super + Z` | Focus last window | Jump back to the previously focused window (A/B toggle) |
+| `Super + A` | Overview | Exposé of all windows, click one to focus (`Alt + Tab` = overview + type-a-label to jump) |
 
 ### Window Movement/Swapping
 
@@ -112,7 +117,12 @@ MangoWC supports multiple layout algorithms. This is one of its key features!
 | `Super + Alt + V` | Vertical scroller | Vertical scrolling windows |
 | `Super + Alt + D` | Deck layout | Master with stacked secondary |
 | `Super + Alt + S` | Dwindle layout | BSP auto-split (replaces the removed spiral) |
-| `Super + T` | Cycle layout | Next in rotation: scroller → tile → dwindle → fair → grid → monocle |
+| `Super + Alt + R` | Right tile | Master-stack, master on the **right** |
+| `Super + Alt + C` | Center tile | Master-stack, master **centered**, stack on both sides |
+| `Super + Shift + T` | **Layout picker** | Quickshell visual grid of all 14 layouts — click, or arrows + Enter, to set; each card shows its keybind |
+| `Super + T` | Cycle layout | Rotates through **all 14** layouts (scroller, tile, dwindle, fair, grid, monocle, deck, center/right/vert tile, vert scroller/grid/deck/fair) |
+
+> **Default layout:** the per-tag `layout_name:scroller` tagrules were dropped (they re-fired on every reload and reset your live layout). A fresh/empty tag now opens in mango's built-in default (**tile**); use `Super + Space` or the picker for scroller. Reload now **preserves** whatever layout a tag is in.
 
 ### Gap Controls
 
