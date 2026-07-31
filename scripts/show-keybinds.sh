@@ -127,6 +127,7 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + M" "Exit MangoWC"
     add_bind "$SUPER + F" "Fullscreen"
     add_bind "$SUPER + $SHIFT + Space" "Toggle floating"
+    add_bind "$SUPER + Return" "Promote window to master"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━ WINDOW GROUPING ━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
@@ -136,7 +137,9 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━━━ FOCUS & MOVE ━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
-    add_bind "$SUPER + Arrows" "Move focus"
+    add_bind "$SUPER + Arrows" "Move focus (directional)"
+    add_bind "$SUPER + J / $SHIFT + J" "Cycle focus in stack (reach hidden)"
+    add_bind "$SUPER + Z" "Focus last window"
     add_bind "$SUPER + $SHIFT + Arrows" "Swap window"
     add_bind "$SUPER + $CTRL + Arrows" "Resize window"
     echo "" >> "$TEMP_RAW"
@@ -156,6 +159,7 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     echo "━━━━━━━━━━━━━━━━━━━━━━ OVERVIEW ━━━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
     add_bind "Bottom-left corner" "Overview (also 4-finger swipe)"
     add_bind "$ALT + Tab" "Overview + jump (type a label)"
+    add_bind "$SUPER + A" "Overview (click to focus)"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━━━━━ 󰕰 LAYOUTS ━━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"
@@ -166,7 +170,10 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + $ALT + V" "Vertical scroller"
     add_bind "$SUPER + $ALT + D" "Deck (master + stacked)"
     add_bind "$SUPER + $ALT + S" "Dwindle (BSP auto-split)"
-    add_bind "$SUPER + T" "Cycle layout (next in rotation)"
+    add_bind "$SUPER + $ALT + R" "Right tile (master right)"
+    add_bind "$SUPER + $ALT + C" "Center tile (master centered)"
+    add_bind "$SUPER + $SHIFT + T" "Layout picker (visual grid)"
+    add_bind "$SUPER + T" "Cycle layout (all 14)"
     echo "" >> "$TEMP_RAW"
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━ 󱗜 GAPS ━━━━━━━━━━━━━━━━━━━━━━━" >> "$TEMP_RAW"

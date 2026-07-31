@@ -36,6 +36,11 @@ done
 # mmsg IPC rewrote flags → subcommands in mangowm 0.15 (get/watch/dispatch, JSON out).
 PREV_KB=$(mmsg get keyboardlayout 2>/dev/null | jq -r '.layout // empty' 2>/dev/null)
 
+# NB: tiling layout is NOT captured/restored here. It used to be (reload re-applied
+# the scroller tagrules and reset it), but those tagrules were dropped from
+# config.conf, so reload now preserves the live layout on its own — no restore
+# needed, and no reset-then-snap-back stretch.
+
 # Reload MangoWC config
 mmsg dispatch reload_config
 
