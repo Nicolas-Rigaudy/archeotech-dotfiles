@@ -356,6 +356,26 @@ The "random" locks are **real lid-close → suspend** events (`systemd-logind: L
 
 **Phase-2 SHIPPED shell-wide (2026-07-17 → 07-22) — tracked in `docs/POLISH_ROLLOUT.md`.** The foundation (M3 `curve` presets + semantic durations in `Appearance.qml`, `Commons/Anim.qml`+`ColorAnim.qml`, `Commons/Primitives/StateLayer.qml`) plus new `GlassButton` + `SettingsCard` primitives are now used everywhere. Rolled out: **Launcher** (StateLayer hover/warmth/depth, two-line rows), **chrome liquid-glass sheen** (subtle vertical gradient, no blur), **Dashboard** (hero+bento rework), **Notifications** (toast + centre), **Round 3 full Settings redesign** (GlassButton/SettingsCard/StateLayer across every pane), **ToggleSwitch/SliderRow 3D**, accent 3D swatch dots. The initial Launcher list-transition thrash was found + fixed early (`0b875ab`). **Remaining polish (see POLISH_ROLLOUT.md):** Round 1 leftovers (CalendarPopup/WifiPopup/BtPopup, MediaPanel), Round 3 leftovers (EditOverlay/WidgetPalette buttons, a full consistency/spacing design pass, screenshot+playtest harness), and all of **Round 4** (Strip openers, `BarPill` active fill, Bar safe-only tweaks). Do NOT re-plan the shipped items here — POLISH_ROLLOUT.md is the live tracker.
 
+### mangowm 0.16.1 upgrade — follow-ups (2026-08-17)
+
+Updated mangowc 0.15.5 → **mangowm 0.16.1** (+ wlroots0.20 0.20.2, rofi 2.0.0) this
+morning. **mmsg IPC JSON shape is unchanged** — shell (`MangoWC.qml`) + reload script
+verified fine, no port needed (unlike the 0.15 migration). Config audited: the only
+silent breakage was two touchpad keys (`scroll_method`/`disable_while_typing` →
+`trackpad_*`), fixed in `config.conf`. Bound the new `dwindle_toggle_current_split`
+(Super+Alt+\). Open follow-ups:
+- [ ] **Test dock-undock** (wlroots 0.20.2) — is the output-hotplug freeze (diagnosed
+  2026-07-30, a main driver for the Hyprland fallback) resolved? If yes, record in
+  DECISIONS — de-risks mango-as-primary.
+- [ ] **Verify rofi 2.0** — Super+K cheat sheet + Super+R launcher still theme/render
+  correctly (major version; theme/CLI syntax may have shifted).
+- [ ] **Picker robustness** — drive the tiling-layout picker from `mmsg get layouts`
+  (new 0.16 IPC) instead of the hardcoded 14-layout list + symbol map.
+- [ ] Optional adopt: `tag_gather` (auto-drop empty tags), wildcard `tagrule=id:*`,
+  per-device `devicerule`, customizable tag count.
+- 0.16 bugfixes we benefit from: suspend-crash on certain monitors, keyboard-layout-set
+  crashes, kill-client crashes, screenshot rotation on rotated screens (our portrait DP-3).
+
 ### Flat ↔ glass aesthetic toggle (user idea 2026-07-31)
 
 A **Settings toggle** (not a keybind — user pref 2026-07-31) to flip the whole shell between the default "liquid glass" look and a **flatter** aesthetic: no sheen gradient, no drop shadows, flatter (less-translucent, un-tinted) cards. Mechanism lives at the token layer — `Appearance.flatMode` (persisted `appearance.flatMode`) drives `glassSheenTop/Bot` (→ flat fill), `surfaceCard` (→ opaque, no accent), and a new `shadowStrength` token (1→0) that shared primitives multiply into their shadow alpha. **Gated on the polish rollout:** only surfaces already on the shared tokens/primitives flip; un-migrated ones (CalendarPopup/WifiPopup/BtPopup, MediaPanel, EditOverlay, Strip/Bar openers — see `POLISH_ROLLOUT.md`) stay glassy until Round 1/4 finish routing their sheen+shadows through the tokens. **Spike shipped 2026-07-31** (token + `GlassButton`/`SettingsCard`/`DashCard` shadows + AppearancePane toggle) to eyeball flat-vs-glass on the migrated surfaces before committing to the full rollout.
