@@ -170,6 +170,7 @@ elif [ "$COMPOSITOR" = "mango" ]; then
     add_bind "$SUPER + $ALT + V" "Vertical scroller"
     add_bind "$SUPER + $ALT + D" "Deck (master + stacked)"
     add_bind "$SUPER + $ALT + S" "Dwindle (BSP auto-split)"
+    add_bind "$SUPER + $ALT + \\" "Flip dwindle split (h↔v)"
     add_bind "$SUPER + $ALT + R" "Right tile (master right)"
     add_bind "$SUPER + $ALT + C" "Center tile (master centered)"
     add_bind "$SUPER + $SHIFT + T" "Layout picker (visual grid)"

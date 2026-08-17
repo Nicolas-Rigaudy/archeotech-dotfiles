@@ -117,6 +117,7 @@ MangoWC supports multiple layout algorithms. This is one of its key features!
 | `Super + Alt + V` | Vertical scroller | Vertical scrolling windows |
 | `Super + Alt + D` | Deck layout | Master with stacked secondary |
 | `Super + Alt + S` | Dwindle layout | BSP auto-split (replaces the removed spiral) |
+| `Super + Alt + \` | Flip dwindle split | Toggle the focused window's split direction (h↔v) in dwindle |
 | `Super + Alt + R` | Right tile | Master-stack, master on the **right** |
 | `Super + Alt + C` | Center tile | Master-stack, master **centered**, stack on both sides |
 | `Super + Shift + T` | **Layout picker** | Quickshell visual grid of all 14 layouts — click, or arrows + Enter, to set; each card shows its keybind |
