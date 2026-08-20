@@ -95,4 +95,8 @@ fi
 
 # Relaunch the shell LAST — only after the monitor layout is final.
 sleep 0.3
-env QT_WAYLAND_DECORATION=none quickshell -c archeotech &
+# QT_QPA_PLATFORMTHEME=qt6ct → Qt resolves themed icons (tray/SNI icons like
+# cdx's user-busy) + gives the QApplication tray menu the qt6ct dark palette.
+# Persisted for fresh logins via environment.d/qt6ct.conf; set explicitly here
+# so a reload picks it up this session without a relogin.
+env QT_WAYLAND_DECORATION=none QT_QPA_PLATFORMTHEME=qt6ct quickshell -c archeotech &
