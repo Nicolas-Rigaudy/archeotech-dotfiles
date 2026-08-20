@@ -237,6 +237,48 @@ systemctl --user status pipewire pipewire-pulse wireplumber
 
 ---
 
+### pipewire-pulse "too many client application connections" → shell shows 0% volume, scroll/click dead, OSD 0% while audio still plays
+
+**Symptoms:**
+- Volume widget + OSD read 0% and don't respond to scroll/click, but audio is audible.
+- Journal spams `pipewire-pulse: too many client application connections: Connection refused`; `pactl info` fails.
+
+**Root cause:**
+Something opened many pulse client connections in a short time (in this project: repeated full-shell headless renders via `scripts/shot.sh` running `qs -c archeotech`, each of which connects to pipewire-pulse; rapid connect/disconnect exhausted `pulse.max-clients`, default 64, leaving stale slots). pipewire CORE is fine (playback works); only the PulseAudio compat layer — which pactl and the shell's Audio service use — refuses new clients.
+
+**Fix:**
+```bash
+systemctl --user restart pipewire pipewire-pulse wireplumber
+```
+A `pipewire-pulse` restart alone may not clear it.
+
+**Prevention:**
+Don't spam full-shell headless renders; prefer `qs -p <component>` harnesses (no Audio service, no pulse connection).
+
+---
+
+### Bluetooth headphones buzz / go mono after a pipewire restart
+
+**Symptoms:**
+- After restarting the pipewire stack, BT audio is buzzy/low quality.
+- `pactl list sinks short` shows the bluez sink as `1ch 16000Hz` (mono); `pactl list cards` Active Profile is `headset-head-unit` with no `a2dp-sink` available.
+
+**Root cause:**
+BlueZ reconnected the device in the HFP/HSP headset profile instead of high-fidelity A2DP.
+
+**Fix:**
+Reconnect the device to renegotiate A2DP — via BlueZ D-Bus:
+```bash
+busctl --system call org.bluez /org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX org.bluez.Device1 Disconnect
+busctl --system call org.bluez /org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX org.bluez.Device1 Connect
+```
+(or bluetoothctl) — then it comes back as `2ch 48000Hz`, Active Profile `a2dp-sink`. If needed, force it:
+```bash
+pactl set-card-profile bluez_card.XX... a2dp-sink
+```
+
+---
+
 ## Display & Monitor Issues
 
 ### External Monitor Not Detected
@@ -715,6 +757,39 @@ quickshell 2>&1 | head -50
 
 ---
 
+### System-tray / SNI icons render as a magenta-and-black checkerboard (missing texture)
+
+**Symptoms:**
+- Tray icons show a magenta/black checkerboard (placeholder texture) instead of the app's icon.
+
+**Cause:**
+The app sends a themed `IconName` (e.g. `user-busy`) and Qt has no icon theme configured (bare wlroots, no platform-theme plugin), so `QIcon::fromTheme` returns a placeholder. Note: Quickshell reports that placeholder Image as `status: Ready`, so an `Image.status`-based fallback in QML will NOT catch it.
+
+**Fix:**
+Install qt6ct, set `QT_QPA_PLATFORMTHEME=qt6ct` and `icon_theme=Papirus` (base Papirus has the `user-*` status icons; Papirus-Dark does not). Verify with a probe:
+```bash
+QT_QPA_PLATFORMTHEME=qt6ct qs -p  # a QML with Image { source: "image://icon/user-busy" }
+```
+and check the log has no `Could not load icon` warning.
+
+---
+
+### Tray right-click menu does nothing; log: "Cannot call QsMenuAnchor.open() ... not started in QApplication mode"
+
+**Symptoms:**
+- Right-clicking a tray icon does nothing; log shows `Cannot call QsMenuAnchor.open() ... not started in QApplication mode`.
+
+**Fix:**
+Add `//@ pragma UseQApplication` as the very first line of the root `shell.qml`, then restart qs. QsMenuAnchor (platform menus) needs QApplication (QtWidgets) mode.
+
+---
+
+### Reading the running shell's live log
+
+`/run/user/1000/quickshell/by-id/<id>/log.log` is the TEXT log (the sibling `.qslog` is binary). `grep -a TRAYDBG .../log.log`. Great for capturing `console.log` diagnostics (hover/click) from the LIVE shell without restarting it.
+
+---
+
 ## Hyprland Issues
 
 ### Hyprland Won't Start / Crashes on Launch
@@ -1106,6 +1181,22 @@ systemctl --user enable --now battery-alert.service
 ---
 
 ## General Troubleshooting Steps
+
+### Autostart/GUI apps can't find `~/.local/bin` binaries (e.g. `cdx`: "No such file or directory")
+
+**Symptoms:**
+- An autostarted app (or a terminal it spawns) fails to find a binary in `~/.local/bin` (e.g. `cdx`: `No such file or directory`), though it runs fine from an interactive shell.
+
+**Cause:**
+`~/.local/bin` was added to PATH only in `config.fish`, so the systemd session env (which autostart apps inherit) lacked it.
+
+**Fix:**
+`config/.config/environment.d/path.conf` with `PATH=$HOME/.local/bin:$PATH` (login-time). For the current session without relogin:
+```bash
+systemctl --user set-environment PATH="$PATH"  # from a fish shell
+```
+
+---
 
 ### Debugging Checklist
 

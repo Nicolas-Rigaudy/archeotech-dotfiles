@@ -335,6 +335,22 @@ Also bundled: `circle_layout` extended to all 14 (Super+T cycles everything), an
 
 ---
 
+## Shell — tray & Qt theming (2026-08-20)
+
+### [2026-08-20] System tray = Quickshell SystemTray host + `//@ pragma UseQApplication`
+
+The shell had no SNI host before (the bar "tray" was hand-built widgets), so no third-party StatusNotifierItem app could appear. Added `Widgets/Bar/TrayWidget.qml` over `Quickshell.Services.SystemTray` (which implements both the StatusNotifierHost AND the Watcher). Platform context menus via `QsMenuAnchor` require QApplication mode, so `shell.qml` gained `//@ pragma UseQApplication` (loads QtWidgets; a superset of QGuiApplication, no downside seen). Left-click opens the menu (most apps' `activate()` is a no-op on the Linux tray). Deliberately NOT added to the default `shell-config.json`: themed icon names only render with a Qt icon theme, so a stranger without qt6ct would get a magenta placeholder — it's a palette widget users place themselves.
+
+### [2026-08-20] qt6ct as the Qt platform theme, for SNI icon resolution on bare wlroots
+
+SNI apps send themed `IconName`s (cdx→`user-busy`, nm-applet, blueman); on bare wlroots Qt has no platform theme, so `QIcon::fromTheme` can't resolve them → magenta placeholder. Installed qt6ct + `QT_QPA_PLATFORMTHEME=qt6ct` (environment.d for login, plus explicit in `mango-reload.sh` so a reload applies it without a relogin), `icon_theme=Papirus`. Base Papirus (not Papirus-Dark, which inherits breeze-dark/hicolor and lacks the `user-*` status icons) has them. Used the `darker` color scheme so the QApplication tray menu is dark too. gsettings/kdeglobals alone did NOT work — Qt6 needs the platform-theme plugin to read an icon theme.
+
+### [2026-08-20] `$HOME/.local/bin` in the session PATH
+
+It was exported only in `config.fish` (interactive shells), so autostarted apps (cdx-tray) and the terminals they spawn couldn't find binaries there (e.g. `cdx` at `~/.local/bin/cdx`). Added `config/.config/environment.d/path.conf` (`PATH=$HOME/.local/bin:$PATH`); applies at login. General session-env gap, surfaced by cdx.
+
+---
+
 ## Process & methodology
 
 ### [2025-11-28] Dual-boot to Arch-only

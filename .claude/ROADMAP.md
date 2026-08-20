@@ -1026,14 +1026,14 @@ Captured mid-polish-pass so nothing's lost. Triaged; cross-refs to existing entr
 where the work already has a home (don't duplicate-track).
 
 **Features / gaps:**
-- [ ] **Real system tray (SNI host)** — the bar has NO StatusNotifierItem host; every
-  "tray" item (mic/vol/net/bt/battery/bell/gear/power) is a hand-built widget. So any
-  app that publishes a tray icon the standard way (CDX widget, Discord, Steam, nm-applet,
-  KeePassXC, …) has nothing to attach to → silently absent. Fix is small: a
-  `Widgets/Bar/SystemTrayWidget.qml` over Quickshell's built-in `Quickshell.Services.SystemTray`
-  (it IS a StatusNotifierHost) — iterate `SystemTray.items`, icon + left-click activate +
-  right-click `menu`; drops into the S18 registry like any widget. **Deployment must-have +
-  answers "common features we're missing".**
+- [x] **Real system tray (SNI host)** — SHIPPED 2026-08-20 (`6d3bd07`, shell repo). `Widgets/Bar/TrayWidget.qml`
+  over `Quickshell.Services.SystemTray` (host + watcher); one `Image` per item, left/right-click →
+  DBus context menu via `QsMenuAnchor`, scroll forwarded, empty-collapses (edit-mode placeholder).
+  Needed **`//@ pragma UseQApplication`** in `shell.qml` (platform menus). In the `WidgetRegistry`
+  palette but NOT the default `shell-config.json` (icon-theme dependency). Dotfiles side: **qt6ct**
+  platform theme + `$HOME/.local/bin` session PATH (`27a09d6`). Verified with cdx-manager. See
+  DECISIONS `[2026-08-20]`. Follow-ups: glass-themed `QsMenuOpener` menu (native QMenu is plain);
+  hover tooltip.
 - [ ] **Demo / onboarding mode** — first-run walkthrough that shows off features (edit mode,
   theme/accent switch, panels, plugin install). Doubles as the README demo GIF source (ties
   to Sprint 30 screenshots + the S28 shot.sh harness).

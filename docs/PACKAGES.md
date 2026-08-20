@@ -357,6 +357,7 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `qt5-wayland` | Qt5 Wayland | Qt5 apps on Wayland |
 | `qt6-wayland` | Qt6 Wayland | Qt6 apps on Wayland |
 | `qt5ct` | Qt5 config tool | Theme Qt5 apps |
+| `qt6ct` | Qt6 configuration tool | Theme Qt6 apps; sets the icon theme so Quickshell resolves SNI tray icon names (QT_QPA_PLATFORMTHEME=qt6ct, icon_theme=Papirus) |
 | `kvantum` | Qt theme engine | Advanced Qt theming |
 
 ---
