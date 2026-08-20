@@ -948,32 +948,44 @@ Full shell UI/UX pass (4-agent audit + visual checks). Fix in feel-gated slices,
 each screenshot-verified. Grouped by leverage — cross-cutting first (one fix
 cascades). `file:line` refs are anchors, re-verify before editing.
 
-### Slice 1 — vertical carousel overlap (CRITICAL, blocks the theme side-panel)
-- [ ] `Widgets/Appearance/Carousel.qml:19,49-56` — snap-path span unclamped
-  (`_half = itemSpacing·pathItemCount/2`) + `clip:false` → in a short side panel
-  the track needs ~975px, gets ~450px, top tiles bleed up through the mode/flavor/
-  accent rows. Clamp track span / `pathItemCount` to the cross-axis viewport. ONE
-  fix here fixes theme+wallpaper+logo vertical together.
-- [ ] `ThemeCarousel.qml:126,129-131,153` — drop `Layout.minimumHeight:200` (forces
-  overflow); size along-track off `strip.height/pathItemCount`, not panel width.
-- [ ] `Content/WallpaperPicker.qml:47,55-59` — the `z:1` glass header is a partial
-  workaround; removable once Carousel is clamped.
+### Slice 1 — vertical carousel overlap (CRITICAL, blocks the theme side-panel) ✅ DONE 2026-08-18 (`f144372`)
+Landed as: cap `pathItemCount` to what the along-track viewport holds (VERTICAL ONLY —
+horizontal keeps its 5-with-edge-peek) + force the count ODD so the centre-hero stays
+symmetric; size vertical tiles off panel HEIGHT (`_tileCross` ·0.5 → tile ≈ height/3) so
+~3 stack with a real gap instead of one tile crowding the rest. Live-confirmed both modes.
+- [x] `Widgets/Appearance/Carousel.qml` — `_maxOnPath` (odd, vertical-viewport-capped).
+- [x] `ThemeCarousel.qml` — dropped the ·200 vertical `minimumHeight`; shared `_tileCross`
+  height-cap; flavor `SegmentedControl` `iconOnly:false` (flavors have no glyphs → was blank).
+- [x] `WallpaperPickerBody.qml` — same `_tileCross` height-cap; **re-sync on `currentPath`**
+  so the picker opens on the CURRENT wallpaper (was opening on item 0; async read landed late).
+- [x] `Content/WallpaperPicker.qml` — removed the `z:1` glassBgLight occlusion backing +
+  `spacing:0` hack (redundant now the top card no longer peeks up).
 
 ### Slice 2 — selector unification + accent theming (your named contrast issue)
 - [x] `ColorSchemeBody` mode/flavor → `SegmentedControl`, family cards → accent
   BORDER + base-glyph ✓ badge (done 2026-08-18, uncommitted with this doc).
-- [ ] `Widgets/ButtonGroupRow.qml:44-56` → route through `SegmentedControl`
-  (cascades: Display, Power ×4, ConfigForm).
-- [ ] `ConnectionsPane.qml:623` — Wifi/BT tabs → `SegmentedControl`.
-- [ ] `AudioPane.qml:85-90,245-248` — default-device row: accentAlpha fill + white
-  text → unified selected language (base glyph on accent, or surface+accent border).
-- [ ] `LogoCarousel.qml:146,166` & `LayoutPickerBody.qml:193-199,227,239` — accent-
-  tint fill + accent glyph/label (accent-on-accent) → surface fill + accent border.
-- [ ] `PluginsPane.qml:125-138` — "Verified" badge accent-on-accentAlpha.
-- [ ] `ThemeCarousel` accent dots are flat while `ColorSchemeBody` dots are raised —
-  unify (pick one).
-- [ ] **Hardcoded `mauve`→`colors.accent`** (breaks accent picker): `WifiPopup.qml:194,223`,
-  `BtPopup.qml:88,159,207`, `BluetoothWidget.qml:12`, `ConnectionsPane.qml:232,256,308,410,516`.
+- [x] `Widgets/ButtonGroupRow.qml` → routed through `SegmentedControl` (2026-08-19, `30c0404`);
+  value↔index mapped at the boundary so Display, Power ×4, ConfigForm are untouched.
+- [x] `ConnectionsPane.qml` — Wifi/BT tabs → `SegmentedControl` (2026-08-19, `25f775b`);
+  dead `TabButton` component removed.
+- [x] **Selected-item language unified** (2026-08-19, `540c028`):
+  - `AudioPane` default sink+source rows: accentAlpha gradient → **surfaceWarm + accent border**
+    (matches the Settings sidebar selection; accent icon/label read clearly).
+  - `LogoCarousel` active tile + `LayoutPickerBody` active card: accentAlpha fill →
+    **surfaceWarm + accent border** (no more accent-on-accent).
+  - `PluginsPane` Verified badge: accentAlpha+accent text → **accent fill + base text**
+    (matches the ✓ theme-card badges).
+  - `ThemeCarousel` accent dots: flat → **raised** (sphere gradient + lift shadow + press
+    pulse), identical to ColorSchemeBody. Its shadow IS `× shadowStrength`-gated (correct);
+    ColorSchemeBody's ungated dot shadow stays a Slice-3 item.
+- [x] **Hardcoded `mauve`→`colors.accent`** (2026-08-19, `1595d5c`): WifiPopup, BtPopup,
+  BluetoothWidget, ConnectionsPane — all accent-semantic (connected/enabled/pair) now follow
+  the accent. Left the non-accent `mauve`s (`_cs.accent || "mauve"` default name, the `mauve`
+  token, SystemStatus RAM bar) untouched.
+- [x] **kitty tab bar followed the accent too** (2026-08-19, `05fa3c0`, shell repo
+  `theme-switch.py`) — `apply_accent` publishes the hex, `apply_kitty` substitutes
+  `active_tab_background`/`mark2_background`; was baked mauve, ignored the picker. (User-flagged:
+  their sapphire accent left kitty tabs purple.) Re-apply the accent to regenerate.
 
 ### Slice 3 — flat-mode sweep
 - [ ] Root cause `Commons/Appearance.qml:15-17` — spike wired only shadows, not
@@ -1008,6 +1020,50 @@ cascades). `file:line` refs are anchors, re-verify before editing.
 - [ ] **Fullscreen auto-hide broken (user 2026-08-18)** — bars + strips should hide when a
   window goes fullscreen; currently doesn't work. Trace the fullscreen signal → bar/strip
   visibility path (compositor fullscreen state via mmsg/Compositor service → shell surfaces).
+
+## Ideas + feature backlog (2026-08-18 — user brain-dump)
+Captured mid-polish-pass so nothing's lost. Triaged; cross-refs to existing entries
+where the work already has a home (don't duplicate-track).
+
+**Features / gaps:**
+- [ ] **Real system tray (SNI host)** — the bar has NO StatusNotifierItem host; every
+  "tray" item (mic/vol/net/bt/battery/bell/gear/power) is a hand-built widget. So any
+  app that publishes a tray icon the standard way (CDX widget, Discord, Steam, nm-applet,
+  KeePassXC, …) has nothing to attach to → silently absent. Fix is small: a
+  `Widgets/Bar/SystemTrayWidget.qml` over Quickshell's built-in `Quickshell.Services.SystemTray`
+  (it IS a StatusNotifierHost) — iterate `SystemTray.items`, icon + left-click activate +
+  right-click `menu`; drops into the S18 registry like any widget. **Deployment must-have +
+  answers "common features we're missing".**
+- [ ] **Demo / onboarding mode** — first-run walkthrough that shows off features (edit mode,
+  theme/accent switch, panels, plugin install). Doubles as the README demo GIF source (ties
+  to Sprint 30 screenshots + the S28 shot.sh harness).
+- [ ] **R&D: missing common + niche shell/OS features** — audit against Noctalia/Caelestia/DMS
+  + desktop-shell feature lists; pick worthwhile ones (tray above is one). Token-disciplined.
+- [ ] **R&D: r/unixporn + ricing communities** — inspiration pass for making the shell + full
+  setup cooler / more customizable / more appealing. Feed findings back into the polish pass.
+
+**Bugs:**
+- [ ] **Dashboard auto-closes when opened right after boot** — the S14 `openAuto` shows the
+  dashboard ~4s on login; opening it manually in that window likely collides with the
+  auto-hide timer and it snaps shut. Guard: cancel/ignore the auto-hide once the user opens
+  it manually.
+- [x] **Theme flavor selector labels missing in vertical** — FIXED 2026-08-18 (uncommitted).
+  Flavor pills were `iconOnly` in vertical but flavors have no glyphs → blank; now always
+  show text labels (`ThemeCarousel.qml`).
+
+**Polish:**
+- [ ] **Workspace indicators** — more visibility / contrast / a real 3D look when 3D
+  (non-flat) mode is on. `Widgets/Bar/WorkspacesWidget.qml`.
+- [ ] **Edit mode UX** — drag-and-drop boxes instead of chip lists (already noted as the
+  Sprint 26 optional "intra-overlay drag + spatial side mock" — pull it forward as part of
+  the polish pass).
+- [ ] **Edit mode + stragglers don't follow the 3D/glass theme** — EditOverlay/WidgetPalette
+  (and audit any other un-migrated panels) onto the shared GlassButton/StateLayer/tokens.
+  Overlaps the Design Polish Pass Round-3/4 leftovers above.
+
+**Already tracked elsewhere (cross-ref, not re-listed):**
+- Fullscreen hide of bars/strips → Slice 5, last item (above).
+- Deployment / repo cleanup / install / docs / screenshots → **Sprint 30** (Distribution & v1.0).
 
 ### Confirmed GOOD (don't touch)
 `StateLayer`, `PanelShadow`, `Anim`/`ColorAnim`, `DashCard`/`SettingsCard` shells,
