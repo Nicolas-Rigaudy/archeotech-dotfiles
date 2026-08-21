@@ -8,12 +8,14 @@
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-08-21 16:15:50
 
 # AI Context
 - Summary: Extends the plugin manifest with `official`/`verified`/`minShellVersion`/`dependencies` fields so the manager and install mechanism can trust and gate plugins.
 - Keywords: plugin, manifest, schema, official, verified, minshellversion, deps
 - Use when: Working on manifest field validation, compatibility gating, or the official/verified/badge logic.
 - Skip when: Working on the install CLI or plugins.json hosting (item_065) or the manager pane UI itself (item_063).
+- Note (adr_026): theme packs are a KIND of plugin — this same manifest (official/verified/minShellVersion/deps) gates packs too; minShellVersion also versions the theming style contract (item_081).
 
 # Problem
 - `module.json` has no way to mark a plugin as official or community-verified, so the manager pane cannot show a trust badge.

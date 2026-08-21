@@ -8,22 +8,23 @@
 > Complexity: High
 > Theme: Theming ecosystem
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-08-21 16:15:50
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
-- Keywords: named, theme, personalities, glass, base, variants
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Summary: Lightweight "personality" presets on the glass base — the SHALLOW end of the theme-pack spectrum (adr_026): token + shape-level variants (accent/mood/light touches) that don't need the full deep-pack machinery. The easy on-ramp and the model for community token-only packs, distinct from deep identity packs like item_082 (40K dataslate).
+- Keywords: named, theme, personalities, glass, base, variants, presets, lightweight-pack
+- Use when: Shipping quick base-glass variants/presets, or the easy on-ramp for community token packs.
+- Skip when: Building a deep identity pack (item_082) or the engine/distribution (item_081/021).
 
 # Problem
-- Named personalities (40k/Star Wars/cyberpunk/Shadow Spear) are wanted but must layer on the liquid-glass base, later
+- Named personalities (40k/Star Wars/cyberpunk/Shadow Spear flavors) are wanted as quick variants, but must layer on the liquid-glass base and shouldn't require the full deep-pack machinery for simple token/shape tweaks.
 
 # Scope
 - In:
-  - Personality variants on top of the main liquid-glass foundation
+  - Lightweight token/shape personality presets on the liquid-glass foundation (the shallow end of the adr_026 capability surface).
 - Out:
-  - Building them before the glass base is dialed in and approved
+  - Deep identity packs with custom FX/motion/textures (item_082 and future packs).
+  - Building them before the glass base is dialed in and approved.
 
 # Acceptance criteria
 - AC1: Named personalities exist as variants on the liquid-glass base

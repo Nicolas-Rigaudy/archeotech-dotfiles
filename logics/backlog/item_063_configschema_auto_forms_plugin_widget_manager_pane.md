@@ -8,12 +8,14 @@
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-08-21 16:15:50
 
 # AI Context
 - Summary: Adds a configSchema-driven auto-generated settings form, `{id, config}` zone entries with a back-compat shim, per-instance config injection through the widget loaders, and a Plugins/Widget Manager settings pane.
 - Keywords: configschema, auto, forms, plugin, widget, manager, pane
 - Use when: Wiring per-instance widget configuration or building/extending the Plugin/Widget Manager pane.
 - Skip when: Working on holder-aware panel layout or vertical-orientation widget rendering (see item_064).
+- Note (adr_026): the same configSchema -> ConfigForm pipeline renders THEME-PACK-scoped settings (item_081); the Manager pane also lists/enables/configures theme packs, not just widget plugins.
 
 # Problem
 - `configSchema` is declared in `module.json` and carried through `ModuleRegistry` but nothing consumes it, so users still hand-edit `shell-config.json` for per-widget settings.

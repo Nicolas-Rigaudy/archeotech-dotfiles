@@ -8,12 +8,14 @@
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-08-21 16:15:50
 
 # AI Context
 - Summary: Adds the `archeotech plugin install <name>` git-clone install mechanism and a repo-hosted `plugins.json` index (official + community catalog).
 - Keywords: archeotech, plugin, install, mechanism, plugins, json, index
 - Use when: Working on the plugin install CLI path or the plugins.json index format/hosting.
 - Skip when: Working on the manifest schema fields themselves (see item_066) or the Plugin Manager pane UI (item_063).
+- Note (adr_026): the install CLI + plugins.json index also cover THEME PACKS (a plugin kind), including the official Shadow Spears pack (item_082); distribution/tiers detail lives in item_021.
 
 # Problem
 - There is no install mechanism for plugins today; the only way to add a module is to manually drop a folder into the modules directory.
