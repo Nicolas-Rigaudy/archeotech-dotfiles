@@ -1,14 +1,14 @@
 ## item_063_configschema_auto_forms_plugin_widget_manager_pane - configSchema auto-forms + Plugin/Widget Manager pane
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:15:50
+> Indicators reviewed: 2026-08-21 17:25:48
 
 # AI Context
 - Summary: Adds a configSchema-driven auto-generated settings form, `{id, config}` zone entries with a back-compat shim, per-instance config injection through the widget loaders, and a Plugins/Widget Manager settings pane.
