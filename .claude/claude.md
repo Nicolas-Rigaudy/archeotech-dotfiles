@@ -29,7 +29,7 @@
 Format: `type[SCOPE]: description` — **subject line only, no body**.
 - Types: `new` (additions) / `chg` (changes) / `fix` (bug fixes).
 - **ALWAYS a `[SCOPE]`** by file-type/area — never a bare `fix:`/`chg:`. In use: `[QML]`, `[MD]`, `[CONF]`, `[SH]`, `[PY]`, `[ASSET]`; combine with `/` (`[SH/CONF]`, `[QML/MD]`).
-- Lowercase after the colon; no trailing period. No 50-char cap — subjects run long and pack related changes with `;`.
+- Lowercase after the colon; no trailing period. **Keep subjects short and to the point** — state the essence, don't enumerate every change; ~50–72 chars. Use `;` only to pack genuinely-related changes, not as a changelog.
 - **Check `git log` first and match the existing vocabulary — do not invent scopes** (scope-by-file-type, not `[MANGOWC]`/`[DOTFILES]`).
 - **Commit as the user** — you may create commits. **Never** add `Co-Authored-By: Claude` or any trailer/line that marks Claude as an author or contributor.
 - **Never `git push`** — leave pushing to the user.
