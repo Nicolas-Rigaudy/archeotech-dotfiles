@@ -1,880 +1,100 @@
-# Arch + MangoWC/Hyprland Dotfiles Project
+# archeotech-dotfiles — project instructions
 
-> **Repo split (2026-07-09):** the Archeotech Quickshell **shell** (bar/panels/launcher/theme system — the publishable product) now lives in a separate repo, **`~/Projects/archeotech-shell`** (public, run via `qs -c archeotech`). **This** repo (`archeotech-dotfiles`) is the private personal machine config. The `.claude/` knowledge base (this file, `ROADMAP.md`, `DECISIONS.md`, `ANALYSIS.md`, `STYLE_GUIDE.md`) **stays here** and still covers the shell — so shell-dev sessions edit code in `archeotech-shell` but read/update planning here. See `DECISIONS.md [2026-07-09]`. Much of this file below predates the split and describes the system as one repo.
+> **Repo split (2026-07-09):** the Archeotech Quickshell **shell** (bar/panels/launcher/theme system — the publishable product) lives in a separate repo, **`~/Projects/archeotech-shell`** (public, run via `qs -c archeotech`). **This** repo (`archeotech-dotfiles`) is the private personal machine config. Shell-dev sessions edit code in `archeotech-shell` but the `.claude/` knowledge base here still covers the shell.
 
-## Project Overview
-
-This is a comprehensive Arch Linux desktop environment with MangoWC (primary) and Hyprland (backup) compositors, built from scratch. Every component is understood, documented, and reproducible. This project serves as both a daily driver system and a learning journey into Linux customization.
-
-**Project Goals:**
-1. Build a fully functional, beautiful Arch + Wayland compositor system
-2. Understand every component and configuration decision
-3. Create reproducible dotfiles that can be deployed to any machine
-4. Document everything for future reference and learning
-5. Eventually deploy to personal Windows PC (dual-boot or full switch)
-
-**Current Status:** ✅ **FULLY FUNCTIONAL - Daily Driver Ready**
-- System installation complete (MangoWC primary, Hyprland backup)
-- Development environment working
-- Theming applied (Catppuccin Macchiato)
-- All core features operational
-- Comprehensive documentation in docs/ and .claude/ folders
+> **Planning lives in `logics/`** (logics-manager), not in this file — see `.claude/PLANNING.md`, `LOGICS.md`, and the root `CLAUDE.md`. The full pre-2026-08-21 knowledge base (shipped log, session-by-session changelog, detailed component tables, how-tos, locked-architecture prose) is archived verbatim in `.claude/PROJECT_HISTORY.md`.
 
 ---
 
-## System Specifications
+## How I want you to work (conventions)
+
+### Principles
+1. **Build from scratch** — reference projects for inspiration only, never wholesale.
+2. **Understand everything** — every config line should be comprehensible.
+3. **Reproducible** — everything in git, deployable via scripts.
+4. **Incremental** — one feature at a time, tested thoroughly.
+5. **Documented** — comment configs, log decisions.
+6. **Work-first** — productivity > aesthetics (but both are goals).
+
+### Design rules (the shell)
+1. **One palette per theme** — token-driven, switchable family/flavor/accent.
+2. **One rasi base** — all rofi menus import a shared base for colors/radius/font.
+3. **Glass aesthetic** — blur + transparency, consistent.
+4. **Icons everywhere** (Papirus) — no text-only menu entries.
+5. **Max 2 keystrokes** to reach any setting.
+6. **No fake toggles** — bind to real state (QML property writes), never fire-and-forget shell commands that desync.
+7. **Nothing hardcoded** — colors in one place.
+
+### Git commits (hard rules)
+Format: `type[SCOPE]: description` — **subject line only, no body**.
+- Types: `new` (additions) / `chg` (changes) / `fix` (bug fixes).
+- **ALWAYS a `[SCOPE]`** by file-type/area — never a bare `fix:`/`chg:`. In use: `[QML]`, `[MD]`, `[CONF]`, `[SH]`, `[PY]`, `[ASSET]`; combine with `/` (`[SH/CONF]`, `[QML/MD]`).
+- Lowercase after the colon; no trailing period. No 50-char cap — subjects run long and pack related changes with `;`.
+- **Check `git log` first and match the existing vocabulary — do not invent scopes** (scope-by-file-type, not `[MANGOWC]`/`[DOTFILES]`).
+- **Commit as the user** — you may create commits. **Never** add `Co-Authored-By: Claude` or any trailer/line that marks Claude as an author or contributor.
+- **Never `git push`** — leave pushing to the user.
 
-### Hardware
-- **Laptop:** HP EliteBook 860 16 inch G10 Notebook PC
-- **CPU:** 13th Gen Intel Core i7-1355U (12 cores, 5.00 GHz)
-- **RAM:** 32GB (30.98 GiB usable)
-- **GPU:** Intel Iris Xe Graphics @ 1.30 GHz (integrated)
-- **Storage:** 512GB Samsung MZVL4512HBLU-00BH1 NVMe SSD
-- **Built-in Display:** 1920x1200 @ 60Hz (16", BOE 0x0A32)
-- **Keyboard:** AZERTY (French) laptop keyboard
-- **External Keyboards:** QWERTY mechanical keyboard (work setup)
-
-### Display Configurations
-**Work Setup (3 monitors):**
-- eDP-1: 1920x1200 @ 60Hz (laptop, left)
-- HDMI-A-1: 1920x1080 @ 60Hz (landscape, middle)
-- DP-3: 1920x1080 @ 60Hz (portrait, right) - Iiyama PL2493H
-
-**Home Setup:**
-- Laptop screen only, OR
-- One 27" 2K monitor, OR
-- One ultrawide 1080p monitor, OR
-- TV via HDMI (any unknown display)
-
-**Monitor fallback rules (MangoWC):** Named rules for work setup; wildcard `HDMI.*` and `DP-.*` rules catch any other display (landscape, preferred native res, positioned at x:1920,y:60)
-
-### Storage Configuration
-- **Primary OS:** Arch Linux (232GB partition on nvme0n1p4)
-- **Games storage:** nvme0n1p7 (265GB — previously Fedora 42 KDE, wiped 2026-04-20, now dedicated game storage)
-  - Diablo 4 installed
-  - System is no longer dual-boot — Arch Linux only
-- **Shared:** EFI partition (nvme0n1p1, 360M)
-- **Bootloader:** GRUB with Catppuccin theme (fully clean — Fedora EFI entries and kernels removed 2026-04-22)
-- **Boot time:** ~5 seconds from GRUB to SDDM
-
----
-
-## Architecture & Core Decisions
-
-### System Architecture ✅
-| Component | Choice | Rationale |
-|-----------|--------|-----------|
-| **Distribution** | Arch Linux | Rolling release, full control, learn everything |
-| **Filesystem** | btrfs | Snapshots for safety, familiar from Fedora |
-| **Subvolumes** | @, @home, @snapshots, @cache, @log | Separate snapshots, exclude cache/logs from backups |
-| **Snapshots** | Snapper + snap-pac + grub-btrfs | Automatic snapshots on pacman operations, bootable from GRUB |
-| **Bootloader** | GRUB | Dual-boot friendly, themeable, auto-detects Fedora |
-| **AUR Helper** | paru | Faster (Rust-based), more modern than yay |
-| **Init System** | systemd | Default, no reason to change |
-
-### Desktop Environment ✅
-| Component | Choice | Rationale |
-|-----------|--------|-----------|
-| **Window Manager (Primary)** | MangoWC (latest) | Scrolling layout feature, modern Wayland compositor |
-| **Window Manager (Backup)** | Hyprland 0.52.1 | Fallback option, well-established compositor |
-| **Display Manager** | SDDM | Best for Wayland compositors, Catppuccin themes available |
-| **Status Bar** | Quickshell (QML) | Primary — unified process: bar + control center + OSD. Waybar kept for Hyprland fallback only. Target structure: Commons/ + Services/<Domain>/ + Modules/ + Widgets/ (Noctalia-style, no qmldir files). |
-| **App Launcher** | rofi-wayland | Most features, extensible |
-| **Notifications** | Quickshell native | `Quickshell.Services.Notifications.NotificationServer` — fully integrated in Sprint 6. swaync removed. |
-| **Wallpaper** | awww + wallpaper-set.sh | Animated transitions; custom script handles Arch logo overlay (note: package was renamed from swww → awww) |
-| **Wallpaper Picker** | rofi (thumbnail grid) | scripts/wallpaper-picker.sh — 3-col grid, logos row 1, wallpapers below, vertical scroll |
-| **Lock Screen** | swaylock (MangoWC) / hyprlock (Hyprland) | Compositor-specific lock screens |
-| **Idle Manager** | swayidle (MangoWC) / hypridle (Hyprland) | Pairs with lock screens |
-
-### Core Applications ✅
-| Type | Application | Notes |
-|------|-------------|-------|
-| **Terminal** | kitty 0.44.0 | GPU-accelerated, FiraCode Nerd Font (11pt) |
-| **Shell** | fish 4.2.1 | Friendly, already familiar |
-| **Prompt** | starship 1.24.1 | Beautiful cross-shell prompt |
-| **Browser** | zen-browser | Firefox-based, privacy-focused |
-| **Editor** | VSCode | All extensions synced |
-| **File Manager (GUI)** | thunar | 90% of Dolphin features, 30% of weight |
-| **File Manager (TUI)** | yazi | Modern (Rust), beautiful, image preview |
-| **Notes** | obsidian | Markdown-based knowledge management |
-| **Image Viewer** | imv | Wayland native, lightweight |
-| **PDF Viewer** | zathura | Vim-like keybinds, minimal |
-| **Video Player** | mpv | Best Linux video player |
-| **Archive Manager** | file-roller | GUI for zip/tar/etc |
-
-### Development Tools ✅
-| Tool | Version | Purpose |
-|------|---------|---------|
-| **Git** | Latest | Version control, configured with SSH keys |
-| **AWS CLI** | 1.43.2 | AWS management, SSO configured |
-| **Terraform** | 1.14.0 | Infrastructure as code |
-| **Python** | 3.13.7 | Primary development language |
-| **pip** | 25.3 | Python package manager |
-| **Docker** | 29.0.4 | Containerization |
-| **docker-compose** | Latest | Multi-container apps |
-
-### Theme System ✅
-| Component | Theme/Value | Notes |
-|-----------|-------------|-------|
-| **Color Scheme** | Catppuccin Macchiato | Soothing pastel, warmer than Mocha |
-| **Accent Color** | Mauve (#c6a0f6) | Primary accent throughout |
-| **GTK Theme** | catppuccin-macchiato-mauve-standard+default | For thunar, settings apps |
-| **Icon Theme** | Papirus-Dark | Good Catppuccin support |
-| **Cursor Theme** | catppuccin-macchiato-dark-cursors | Consistent theming |
-| **Font (UI)** | Noto Sans | System UI |
-| **Font (Terminal)** | FiraCode Nerd Font 11pt | With ligatures |
-| **Font (Monospace)** | FiraCode Nerd Font | For code editors |
-
----
-
-## User Context & Workflow
-
-### Professional Context
-- **Role:** Backend Software Developer + Cloud Architect Engineer
-- **Primary Stack:** Python, Terraform, AWS
-- **Daily Tools:** VSCode, Terminal (fish), AWS Console, GitLab, Teams
-- **Work Style:** Multi-monitor, frequent context switching between projects
-
-### Keyboard Layouts
-- **Primary:** AZERTY (French - laptop built-in keyboard)
-- **Secondary:** QWERTY (external mechanical keyboard at work)
-- **Switching:** Alt+Shift (both in Hyprland and SDDM)
-- **Keybinds:** Layout-aware (resolve_binds_by_sym = true)
-
-### Workflow Needs
-- Quick context switching between projects
-- AWS profile management and quick console access
-- Terraform workspace indicators
-- Git branch visibility
-- VPN status monitoring
-- Multi-monitor dock/undock handling (work ↔ home)
-- Screenshot and clipboard management
-
----
-
-## Project Philosophy & Principles
-
-### Core Principles
-1. **Build from Scratch** - No pre-made configs (use Hyde/Caelestia for inspiration only)
-2. **Understand Everything** - Every line of config should be comprehensible
-3. **Reproducible** - Everything in git, deployable via scripts
-4. **Incremental** - Add features one at a time, test thoroughly
-5. **Documented** - Comment configs, write README, track decisions
-6. **Work-First** - Productivity > aesthetics (but both are goals)
-
-### What to Steal (Inspiration Sources)
-- **Caelestia-dots:** Dynamic color extraction, Material 3 palettes, widget concepts
-- **Hyde (hyprdots):** Theme switching system, multiple layouts, visual selector
-- **end-4:** Clean animations, modern aesthetic, AGS widget ideas
-- **Adnan's dotfiles:** Minimalist Catppuccin implementation, clean structure
-
-### What NOT to Use
-- ❌ Pre-built dotfiles wholesale (defeats learning purpose)
-- ❌ Overly complex systems
-- ❌ Unmaintained packages
-- ❌ Anything not understood
-
----
-
-### Design Rules for This System
-
-1. **One color palette** — Catppuccin Macchiato everywhere. No exceptions.
-2. **One rasi base** — all rofi menus import a shared `base.rasi` for colors/radius/font
-3. **Glass aesthetic** — blur + transparency consistent with waybar pill style
-4. **Icons everywhere** — Papirus-Dark icons in all menus, no text-only entries
-5. **Max 2 keystrokes** to reach any setting from anywhere
-6. **No fake toggles** — toggles must reflect real state reliably; bind to actual QML property writes, not fire-and-forget shell commands that can desync
-7. **Nothing hardcoded** — colors in one place, easy to switch flavor (Mocha/Macchiato)
-
----
-
-## Current Implementation Status
-
-### ✅ COMPLETED (100%)
-
-#### System Installation
-- [x] Base Arch installation
-- [x] Partitioning (dual-boot with Fedora preserved)
-- [x] Btrfs with subvolumes configured
-- [x] GRUB bootloader with dual-boot detection
-- [x] User account created (corvus)
-- [x] NetworkManager configured
-- [x] Intel microcode installed
-- [x] All work files and configs migrated from Fedora
-
-#### Wayland Compositors & Desktop
-- [x] MangoWC (primary) - with scrolling layout configured
-- [x] Hyprland 0.52.1 (backup) - fully functional fallback
-- [x] SDDM with Catppuccin Macchiato theme (sddm-catppuccin-git)
-- [x] Multi-monitor configuration (3 screens, one portrait)
-- [x] Workspace per monitor assignments (1-3 laptop, 4-6 ext1, 7-9 ext2)
-- [x] Animations, blur, shadows, rounded corners configured
-- [x] Quickshell bar (replaces Waybar) — floating glass pill, per-screen, tags+title+clock+mic+volume+network+bt+battery+bell+gear+power, hover popups, MangoWC IPC
-- [x] Rofi launcher styled
-- [x] SwayNC notifications — replaces dunst (dunst config deleted), Catppuccin glass panel, DND toggle, notification history, bar bell icon
-- [x] awww wallpaper daemon with wallpaper collection in wallpapers/ (note: package was swww, renamed to awww)
-- [x] Rofi wallpaper picker with thumbnail grid (Super+W) - 3-col glass grid, logos on row 1, vertical scroll, Catppuccin Macchiato themed
-- [x] Waypaper installed as backup picker (configured with custom_command = wallpaper-set.sh)
-- [x] Multi-logo overlay system (wallpaper-set.sh) - Arch Linux, Rebel Alliance, Imperial Aquila logos; adaptive color from wallpaper, toggle Super+Shift+W, remembers last active logo; portrait screen support (DP-3), area-normalized sizing, shape-hugging drop shadow, SVG cropping for imperial
-- [x] Window rules for floating windows (waypaper, pavucontrol, bitwarden, file dialogs, calculator, browser popups)
-- [x] swaylock (MangoWC) and hyprlock (Hyprland) configured — swaylock uses dynamic wallpaper via swaylock-launch.sh
-- [x] SDDM login screen customized — Arch logo background (replaces cat), password masking immediate (no character reveal)
-- [x] swayidle (MangoWC) and hypridle (Hyprland) auto-lock
-- [x] All keybindings configured (see docs/KEYBINDS-MANGO.md and docs/KEYBINDS.md)
-- [x] xdg-desktop-portal configured for screen sharing (Teams, Zoom, etc.)
-
-#### Audio & Hardware
-- [x] PipeWire audio stack installed
-- [x] SOF firmware installed (was missing, caused no audio)
-- [x] Speakers working
-- [x] Microphone working
-- [x] Media keys configured (volume, brightness, play/pause)
-- [x] Bluetooth configured (blueman)
-
-#### Terminal & Shell
-- [x] Kitty terminal themed Catppuccin Macchiato
-- [x] Fish shell set as default
-- [x] Starship prompt configured
-- [x] Zoxide (smart cd) integrated
-- [x] Thefuck (command corrector) installed
-- [x] Eza, bat, btop, fastfetch utilities
-- [x] Navi (CLI cheatsheets)
-- [x] Atuin (shell history with sync capabilities)
-- [x] Gping (ping with graph visualization)
-- [x] Tealdeer (Rust tldr replacement)
-
-#### Development Environment
-- [x] Git configured with restored SSH keys
-- [x] AWS CLI with SSO authentication working
-- [x] Granted (AWS account switcher & console launcher)
-- [x] Terraform installed and working
-- [x] Python + pip configured
-- [x] Docker + docker-compose installed
-- [x] VSCode with all extensions synced (including Vim extension)
-- [x] Lazygit (TUI git client)
-- [x] All work repositories accessible
-
-#### Theming
-- [x] Catppuccin Macchiato applied system-wide
-- [x] GTK theme (catppuccin-macchiato-mauve)
-- [x] Icon theme (Papirus-Dark)
-- [x] Cursor theme (catppuccin-macchiato-dark)
-- [x] Kitty fully themed
-- [x] Waybar styled with Catppuccin
-- [x] Rofi dark theme
-- [x] SDDM login screen (Catppuccin Macchiato theme applied)
-- [x] Notifications themed — replaced dunst with swaync, Catppuccin Macchiato glass CSS
-- [x] GRUB Catppuccin Macchiato boot menu
-
-#### Utilities & Tools
-- [x] Screenshot tools (grim + slurp) with keybinds
-- [x] Color picker (wl-color-picker - compositor-agnostic)
-- [x] Clipboard history (cliphist) with rofi integration
-- [x] Power menu (wlogout) in waybar — Catppuccin themed, icon-only, full-span overlay; launched via `wlogout-launch.sh` for adaptive per-monitor margins
-- [x] Bluetooth applet (blueman-applet)
-- [x] Network applet (nm-applet)
-- [x] Volume control (pavucontrol)
-- [x] Brightness control (brightnessctl)
-- [x] Media control (playerctl)
-- [x] Image viewer (imv)
-- [x] PDF viewer (zathura)
-- [x] Archive tools (file-roller, unzip, unrar, p7zip)
-- [x] Snapshot management (snapper + snap-pac + grub-btrfs + snapper-gui)
-- [x] Battery alert script (swaync notifications at 50%/20%/10%/5% when discharging) - running as systemd user service (battery-alert.service); notify-only, does NOT suspend
-- [x] Settings hub (Super+,) — rofi menu: display submenu (extend/mirror/laptop-only/external-only/adjust), audio, network, bluetooth, wallpaper, night light, power profile, disk, power, lock; back navigation in all submenus
-- [x] Display layout switching via wlr-randr — extend/mirror/laptop-only/external-only from settings hub
-- [x] Cursor theme — catppuccin-macchiato-mauve-cursors set in mango.conf + environment.d/cursor.conf
-- [x] power-profiles-daemon — balanced/performance/power-saver switchable from settings hub
-- [x] wlsunset night light — off/4500K/3500K/2700K switchable from settings hub
-- [x] Project jump (`Super+Ctrl+P`) — rofi launcher scanning ~/Projects (personal 󱍽) and ~/Documents/repos (work 󰃖); opens VSCode + kitty terminal in selected repo
-- [x] Monitor window rules — VSCode → HDMI-A-1, kitty → DP-3 on open (scratchpad excluded); rules ignored when monitors absent
-- [x] logiops (AUR) — MX Master 3S For Business: DPI 1000, SmartShift threshold 13, gesture button (0xc3) with tap=rofi launcher / swipe gestures for workspace+monitor management, forward button (0xc4) with tap=toggle SmartShift; config at system/etc/logid.cfg → /etc/logid.cfg; wiggle mouse on service start (Bolt dongle quirk)
-
-
----
-
-## File Structure
-
-### Current Config Locations
-```
-~/.config/
-├── hypr/
-│   ├── hyprland.conf           # Main config (monitors, workspaces, keybinds, etc.)
-│   ├── hyprlock.conf           # Lock screen config
-│   └── hypridle.conf           # Idle management config
-├── waybar/
-│   ├── config                  # Waybar layout (JSON)
-│   ├── style.css               # Waybar styling (Catppuccin Macchiato)
-│   └── catppuccin-macchiato.css # Catppuccin color variables
-├── rofi/
-│   ├── config.rasi             # Rofi main config
-│   └── theme.rasi              # Rofi theme (dark)
-├── kitty/
-│   └── kitty.conf              # Terminal config with Catppuccin Macchiato colors
-├── fish/
-│   ├── config.fish             # Fish shell config
-│   └── conf.d/                 # Auto-sourced configs
-├── starship.toml               # Starship prompt config
-├── btop/                       # System monitor config
-├── gtk-3.0/                    # GTK3 theme settings
-├── gtk-4.0/                    # GTK4 theme settings
-└── yazi/                       # Terminal file manager config
-
-~/Projects/archeotech-dotfiles/wallpapers/
-└── *.jpg / *.png               # Wallpaper collection (auto-detected by picker)
-
-/etc/sddm.conf                  # Display manager config
-/usr/share/sddm/scripts/Xsetup  # SDDM keyboard layout script
-/etc/default/grub               # GRUB bootloader config
-```
-
-### Actual Dotfiles Repository Structure (Stow-based)
-```
-~/Projects/archeotech-dotfiles/
-├── .claude/
-│   ├── claude.md               # This file - main project knowledge
-│   ├── DECISIONS.md            # Log of all technical decisions made
-│   ├── TROUBLESHOOTING.md      # Known issues and solutions
-│   └── STYLE_GUIDE.md          # Creative direction and aesthetic intent
-├── config/                     # Stow package for .config
-│   └── .config/
-│       ├── hypr/               # Hyprland configs (MASTER COPY)
-│       ├── waybar/             # Waybar configs (MASTER COPY)
-│       ├── kitty/              # Kitty configs (MASTER COPY)
-│       ├── rofi/               # Rofi configs (MASTER COPY)
-│       ├── fish/               # Fish shell configs (MASTER COPY)
-│       ├── mango/              # MangoWC configs (MASTER COPY)
-│       ├── systemd/user/       # Systemd user services (battery-alert.service)
-│       ├── quickshell/         # Quickshell shell — target: Commons/+Services/<Domain>/+Modules/+Widgets/ (Sprint 1)
-│       ├── swaync/             # Notification center (config.json + style.css)
-│       ├── wlogout/            # Power menu config (layout, style.css, icons/)
-│       ├── waypaper/           # Waypaper config (backend=custom, points to wallpaper-set.sh)
-│       ├── starship.toml       # Starship prompt config
-│       ├── btop/               # System monitor config
-│       ├── yazi/               # File manager config
-│       ├── gtk-3.0/            # GTK3 theme
-│       ├── gtk-4.0/            # GTK4 theme
-│       ├── navi/               # CLI cheatsheets
-│       ├── lazygit/            # TUI git client
-│       └── atuin/              # Shell history
-├── system/                     # System-level configs (requires root)
-│   ├── etc/
-│   │   └── snapper/
-│   │       └── configs/
-│   │           └── root        # Snapper snapshot configuration
-│   └── README.md               # System config deployment guide
-├── scripts/
-│   ├── install.sh              # Deploy dotfiles with GNU Stow
-│   ├── uninstall.sh            # Remove symlinks
-│   ├── setup-snapper.sh        # Automated Snapper setup
-│   ├── wallpaper-set.sh        # Wallpaper setter with Arch logo overlay system
-│   ├── wallpaper-picker.sh     # Rofi thumbnail grid wallpaper picker
-│   ├── battery-alert.sh        # Battery monitor daemon (alerts at 20/10/5%, suspend at 3%)
-│   ├── wlogout-launch.sh       # wlogout with adaptive per-monitor margins (via xrandr + mmsg)
-│   ├── swaylock-launch.sh      # swaylock wrapper — reads ~/.cache/wallpaper/last-wallpaper for dynamic bg
-│   ├── mango-reload.sh         # Safe MangoWC reload — reloads config then re-applies monitor layout via wlr-randr
-│   ├── project-jump.sh         # Rofi project launcher — scans ~/Projects + ~/Documents/repos, opens VSCode + kitty
-│   └── assets/
-│       ├── arch-logo.svg       # Arch crystal logo (LOGO_COLOR/LOGO_OPACITY placeholders)
-│       ├── rebel-logo.svg      # Rebel Alliance logo (LOGO_COLOR/LOGO_OPACITY placeholders)
-│       ├── imperial-logo.svg   # Imperial Aquila logo (LOGO_COLOR/LOGO_OPACITY placeholders)
-│       ├── wallpaper-picker.rasi  # Rofi theme for wallpaper picker (Catppuccin glass, 3-col grid)
-│       └── panel.rasi          # Rofi theme for project-jump (Catppuccin glass, vertical list)
-├── wallpapers/                 # Wallpaper collection (tracked in git)
-├── docs/
-│   ├── INSTALLATION.md         # Step-by-step install guide
-│   ├── KEYBINDS.md             # Hyprland keybindings reference
-│   ├── KEYBINDS-MANGO.md       # MangoWC keybindings reference (primary)
-│   ├── PACKAGES.md             # Package list with explanations
-│   └── TOOLS.md                # Tool configurations and usage guide
-└── README.md                   # Project overview
-```
-
-### **IMPORTANT: GNU Stow Workflow**
-
-**How It Works:**
-- All config files live ONLY in `~/Projects/archeotech-dotfiles/config/.config/`
-- GNU Stow creates symlinks from `~/.config/` TO the repo
-- Editing `~/.config/hypr/hyprland.conf` edits the repo file directly
-- Changes are automatically tracked by git
-
-**Symlink Structure:**
-```
-~/.config/hypr/ -> ../Projects/archeotech-dotfiles/config/.config/hypr/
-~/.config/waybar/ -> ../Projects/archeotech-dotfiles/config/.config/waybar/
-~/.config/mango/ -> ../Projects/archeotech-dotfiles/config/.config/mango/
-~/.config/waypaper/ -> ../Projects/archeotech-dotfiles/config/.config/waypaper/
-... (all config dirs are symlinks)
-
-# Script symlinks (manual, managed by install.sh):
-~/.local/bin/wallpaper-set.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-set.sh
-~/.local/bin/wallpaper-picker.sh -> ~/Projects/archeotech-dotfiles/scripts/wallpaper-picker.sh
-~/.local/bin/battery-alert.sh -> ~/Projects/archeotech-dotfiles/scripts/battery-alert.sh
-~/.local/bin/swaylock-launch.sh -> ~/Projects/archeotech-dotfiles/scripts/swaylock-launch.sh
-~/.local/bin/mango-reload.sh -> ~/Projects/archeotech-dotfiles/scripts/mango-reload.sh
-
-# Systemd service (manual symlink — stow can't merge into existing systemd dir):
-~/.config/systemd/user/battery-alert.service -> ~/Projects/archeotech-dotfiles/config/.config/systemd/user/battery-alert.service
-```
-
-**Adding New Config Directories:**
-1. Create directory in repo: `mkdir -p ~/Projects/archeotech-dotfiles/config/.config/newapp/`
-2. Add config files to repo directory
-3. Create symlink: `ln -s ../Projects/archeotech-dotfiles/config/.config/newapp ~/.config/newapp`
-4. OR use stow: `cd ~/Projects/archeotech-dotfiles && stow -R config`
-5. Update `scripts/install.sh` to include the new directory in CONFIGS array
----
-
-## Documentation Structure
-
-This project maintains comprehensive documentation across multiple files:
-
-### Human-readable docs (`docs/`)
-- **[docs/KEYBINDS-MANGO.md](../docs/KEYBINDS-MANGO.md)** - Keybindings reference for MangoWC (primary)
-- **[docs/KEYBINDS.md](../docs/KEYBINDS.md)** - Keybindings reference for Hyprland (backup)
-- **[docs/PACKAGES.md](../docs/PACKAGES.md)** - Full package list with explanations
-- **[docs/TOOLS.md](../docs/TOOLS.md)** - Tool configurations and usage guide
-- **[docs/INSTALLATION.md](../docs/INSTALLATION.md)** - Step-by-step installation guide
-- **[docs/MANGOWC-SETUP.md](../docs/MANGOWC-SETUP.md)** - MangoWC setup, screen sharing, wallpaper system
-
-### Claude context (`.claude/`)
-- **[claude.md](claude.md)** - This file — system state, architecture, how things work
-- **[ANALYSIS.md](ANALYSIS.md)** - Full ecosystem research: reference projects, current audit, gap analysis, sprint roadmap, distribution plan
-- **[ROADMAP.md](ROADMAP.md)** - Living feature backlog and planned work
-- **[DECISIONS.md](DECISIONS.md)** - Technical decisions with rationale
-- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Known issues and solutions
-- **[STYLE_GUIDE.md](STYLE_GUIDE.md)** - Creative direction and aesthetic intent (Corvus persona)
-
-### System Configuration
-- **[system/README.md](../system/README.md)** - System-level configuration deployment guide
-
----
-
-## Common Tasks & How-To
-
-### Connecting to WiFi
-```bash
-# List available networks
-nmcli device wifi list
-
-# Connect to network
-nmcli device wifi connect "SSID" password "PASSWORD"
-
-# Connect with prompt for password
-nmcli --ask device wifi connect SSID
-
-# View saved connections
-nmcli connection show
-
-# Auto-connect is enabled by default for known networks
-```
-
-### Managing the Shell
-
-```bash
-# Restart Quickshell (bar + control center + OSD + notifications)
-pkill quickshell && quickshell &
-
-# Reload MangoWC config safely (re-applies monitor rules)
-~/.local/bin/mango-reload.sh
-
-# Reload Hyprland config
-hyprctl reload
-
-# Restart Waybar (Hyprland fallback only)
-pkill waybar && waybar &
-```
-
-### Managing Wallpapers
-```bash
-# Open rofi wallpaper picker (thumbnail grid)
-# Keybind: Super+W
-~/.local/bin/wallpaper-picker.sh
-
-# Set wallpaper directly (respects logo toggle state)
-~/.local/bin/wallpaper-set.sh ~/Projects/archeotech-dotfiles/wallpapers/image.jpg
-
-# Toggle logo overlay on/off (cycles: last active logo ↔ off)
-# Keybind: Super+Shift+W
-~/.local/bin/wallpaper-set.sh --toggle-logo
-
-# Activate a specific logo (arch | rebel | imperial)
-~/.local/bin/wallpaper-set.sh --toggle-logo arch
-~/.local/bin/wallpaper-set.sh --toggle-logo rebel
-~/.local/bin/wallpaper-set.sh --toggle-logo imperial
-
-# Re-apply last wallpaper (e.g. after reboot — called by MangoWC startup)
-~/.local/bin/wallpaper-set.sh --restore
-
-# Check current wallpaper and logo state
-~/.local/bin/wallpaper-set.sh --status
-
-# Scripts live in repo at scripts/ and are symlinked to ~/.local/bin/
-# Wallpapers stored in wallpapers/ (tracked in git)
-# Cache: ~/.cache/wallpaper/ (composed.png, thumbs/, last-wallpaper, etc.)
-```
-
-### Package Management
-```bash
-# Update system
-sudo pacman -Syu
-
-# Install package
-sudo pacman -S package-name
-
-# Install from AUR
-paru -S package-name
-
-# Search for package
-pacman -Ss search-term
-paru -Ss search-term
-
-# Remove package
-sudo pacman -Rs package-name
-
-# List installed packages
-pacman -Qe  # Explicitly installed
-pacman -Qq  # All packages
-```
-
-### Git Workflow
-```bash
-# All SSH keys are already configured
-# AWS credentials are in ~/.aws/
-
-# Clone with SSH
-git clone git@github.com:username/repo.git
-
-# Check git status
-git status
-
-# AWS SSO login
-aws sso login --profile profile-name
-
-# AWS identity check
-aws sts get-caller-identity --profile profile-name
-```
-
-### Monitor Management
-```bash
-# MangoWC (primary):
-mmsg -O  # List current outputs
-
-# Reload MangoWC config (monitor rules may not apply — log out/in if needed)
-~/.local/bin/mango-reload.sh
-
-# Hyprland (fallback):
-hyprctl monitors
-hyprctl reload
-
-# Monitors are auto-detected on dock/undock via MangoWC monitor rules in mango/config.conf
-```
-
-### Taking Screenshots
-```bash
-# Use keybinds (preferred):
-# Super+S = region
-# Super+P = fullscreen
-
-# Manual commands:
-grim ~/Pictures/Screenshots/$(date +%Y%m%d_%H%M%S).png  # Full
-grim -g "$(slurp)" ~/Pictures/Screenshots/$(date +%Y%m%d_%H%M%S).png  # Region
-
-# Screenshots are saved to ~/Pictures/Screenshots/
-# And automatically copied to clipboard
-```
-
-### Audio Troubleshooting
-```bash
-# Check audio devices
-pactl list sinks short
-pactl list sources short
-
-# Restart audio stack
-systemctl --user restart pipewire pipewire-pulse wireplumber
-
-# Check if audio hardware is detected
-aplay -l
-arecord -l
-
-# Volume control GUI
-pavucontrol
-```
-
-### Lock Screen & Idle
-```bash
-# MangoWC (primary):
-swaylock  # or ~/.local/bin/swaylock-launch.sh (uses current wallpaper as bg)
-# Idle managed by swayidle — config written by CC, launched via swayidle/config.sh
-
-# Hyprland (fallback):
-hyprlock
-hypridle
-```
-
-### Managing Snapshots
-```bash
-# List all snapshots
-sudo snapper list
-
-# Create manual snapshot
-sudo snapper create -d "Before system changes"
-
-# Compare two snapshots (see what changed)
-sudo snapper status 1..2
-
-# Show file differences between snapshots
-sudo snapper diff 1..2
-
-# Rollback to a snapshot (careful!)
-sudo snapper rollback <snapshot_number>
-# Then reboot to apply
-
-# Delete a snapshot
-sudo snapper delete <snapshot_number>
-
-# GUI interface (Wayland-compatible)
-pkexec snapper-gui
-
-# View snapshot in filesystem
-ls /.snapshots/<number>/snapshot/
-
-# Boot into snapshot (no system changes)
-# 1. Reboot
-# 2. In GRUB menu, go to "Arch Linux snapshots"
-# 3. Select snapshot to boot
-# 4. System boots read-only from that snapshot
-# 5. Can verify system state before committing rollback
-
-# Automatic snapshots happen:
-# - Before/after every pacman operation (snap-pac)
-# - Hourly (timeline snapshots)
-# - GRUB menu auto-updates with new snapshots (grub-btrfsd)
-```
-
----
-
-## Coding Standards & Best Practices
-
-### Configuration Files
-- **Comment everything:** Explain why, not just what
-- **Organize by section:** Use clear headers with separators
-- **One feature per commit:** Makes debugging easier
-- **Test before committing:** Always verify changes work
-- **Keep backups:** Before major config changes
-
-### Shell Scripts
-```bash
-#!/bin/bash
-# Always include shebang
-# Always include description comment at top
-# Use meaningful variable names
-# Check for errors with set -e
-# Provide usage information
-
-set -e  # Exit on error
-
-# Good variable names
-BACKUP_DIR="$HOME/.config-backup-$(date +%Y%m%d)"
-
-# Check for required commands
-command -v git >/dev/null 2>&1 || { echo "git required"; exit 1; }
-
-# Usage function
-usage() {
-    echo "Usage: $0 [options]"
-    echo "Options:"
-    echo "  -h, --help    Show this help message"
-    exit 0
-}
-```
-
-### Hyprland Config Style
-```conf
-################################################################################
-# SECTION NAME (ALL CAPS)
-################################################################################
-
-# Subsection description
-setting = value  # Inline comment explaining this specific value
-
-# Multi-line explanation when needed
-# to describe complex behavior or rationale
-# for specific settings
-
-another_setting = value
-```
-
-### Waybar Config Style
-```json
-{
-    "module-name": {
-        "property": "value",
-        "another-property": "value"
-    },
-    
-    "another-module": {
-        "property": "value"
-    }
-}
-```
-
-### Git Commit Messages
-
-**Format:** `type[SCOPE]: description` — subject line only, no body.
-
-**Types:** `new` (additions), `chg` (changes to existing), `fix` (bug fixes).
-
-**Scope = the file type / area touched, in square brackets. ALWAYS include one —
-never a bare `fix:` / `chg:`.** The scopes actually in use (by frequency):
-- `[QML]` — Quickshell / QML
-- `[MD]` — docs / markdown (incl. `.claude/` notes)
-- `[CONF]` — config files (mango, kitty, rofi, fish, hypr, …)
-- `[SH]` — shell scripts
-- `[PY]` — python scripts (e.g. `theme-switch.py`)
-- `[ASSET]` — images / fonts / static assets
-
-Touching several? Combine with `/` inside one bracket: `[SH/CONF]`, `[QML/MD]`,
-`[QML/SH]`, `[PY/CONF]`, `[MD/CONF]`.
-
-**Rules:**
-- Always a `[SCOPE]` — this is the one hard rule.
-- Subject line only, no body.
-- Lowercase after the colon; no trailing period.
-- Descriptive > terse: there is **no** 50-char cap in practice — real subjects run
-  long and pack multiple related changes into one line separated by `;`.
-- **Check `git log` first and match the existing vocabulary — do not invent new
-  scopes** (this is a scope-by-file-type scheme, not `[MANGOWC]`/`[DOTFILES]`).
-
-**Examples (real):**
 ```
 chg[QML]: dashboard cards 16px uniform padding; wider row highlight
-fix[QML]: panels claim activeFocus on open so Esc-to-close works
-chg[SH/CONF]: launch + IPC via qs -c archeotech (shell moved to its own repo)
 fix[SH]: port mango-reload.sh to mangowm 0.15 mmsg IPC
-chg[MD]: ROADMAP S28 testing pipeline + S29 Hyprland dual; DECISIONS Hyprland-to-v1.0
+chg[SH/CONF]: launch + IPC via qs -c archeotech (shell moved to its own repo)
 ```
 
----
+### Working on the system
+- Backup before major config changes (`.bak`); test incrementally; check syntax (shellcheck etc.); scripts `chmod +x` (755).
+- Reload after changes: `~/.local/bin/mango-reload.sh`; restart shell `pkill quickshell && quickshell &` (or `qs -c archeotech`).
+- **Catppuccin:** always fetch official themes from github.com/catppuccin — never hand-roll color schemes.
+- **`$HOME` gotcha:** in this sandboxed CC env `$HOME` is **not** `/home/corvus` — run `theme-switch.py` and anything HOME-sensitive with `HOME=/home/corvus`.
+- **Never wrap interactive QML content in a `layer.enabled` item** (it swallows hover hit-testing) — use `preferredRendererType: Shape.CurveRenderer` for AA. [DECISIONS 2026-07-02]
+- Before solving QML/compositor problems, check reference sources (source-inspected 2026-05-04): MangoWC IPC = `mmsg -w` (**not** `Quickshell.DWL` — that's a custom fork); MPRIS = `Quickshell.Services.Mpris`; Notifications = `Quickshell.Services.Notifications.NotificationServer`; Lock = `WlSessionLock`+`PamContext`. Full per-project findings in `.claude/ANALYSIS.md §2`.
+- When `rtk` is available, prefer it for noisy commands (raw command or `rtk proxy` when exact output matters).
 
-## End of Session — Documentation Checklist
-
-After any significant work, update these files before committing:
-
-1. **`.claude/claude.md`** — update "Last Updated", "Next Sprint", and shell status line
-2. **`docs/PACKAGES.md`** — add newly installed packages
-3. **`docs/KEYBINDS-MANGO.md`** / **`docs/KEYBINDS.md`** — add/update keybindings
-4. **`docs/TOOLS.md`** — document new tool configs/usage
-5. **`.claude/ROADMAP.md`** — move completed sprint to history table (one-line summary only); update "← NEXT" marker on next sprint
-6. **`docs/MANGOWC-SETUP.md`** — update if MangoWC setup steps changed
-7. **`.claude/DECISIONS.md`** — log any technical choices made (why X over Y)
-8. **`.claude/TROUBLESHOOTING.md`** — add any issues encountered and solved
-
-Then prepare a commit message following the Git Commit Messages format. Present it to the user — do not commit automatically. Do NOT include "Co-Authored-By: Claude" in commit messages.
-
----
-
-## Documentation Structure Rules
-
-**This was consolidated on 2026-05-19. Keep it clean.**
-
-### The five docs and what goes where
-
-| File | Purpose | What belongs here |
-|------|---------|-------------------|
-| `claude.md` | System state snapshot | Current status, architecture decisions, installed tools, keybinds, file structure. NOT plans. |
-| `ROADMAP.md` | Single planning doc | Sprint history table, upcoming sprint specs, feature backlog, ideas. ONE doc for all planning. |
-| `ANALYSIS.md` | Research reference | Source-inspected findings, confirmed APIs, QML patterns, settings ecosystem research. Not plans. |
-| `DECISIONS.md` | Decision log | Why X over Y, trade-offs accepted. Date-stamped entries. |
-| `TROUBLESHOOTING.md` | Known issues | Problems encountered and how they were solved. |
-
-### Rules that prevent the next rewrite
-
-1. **Never create a new `.claude/` doc without asking first.** There are exactly 5 files: `claude.md`, `ROADMAP.md`, `ANALYSIS.md`, `DECISIONS.md`, `TROUBLESHOOTING.md`. Any new doc is a red flag.
-
-2. **ROADMAP.md is the only planning doc.** If it's getting unwieldy, reorganize within it — do not create a parallel file.
-
-3. **Completed sprint → history table only.** When a sprint ships, add one row to the Sprint History table in ROADMAP.md. Do not leave the full spec in the file. Remove the `← NEXT` marker from the completed sprint and add it to the next one.
-
-4. **Ideas stay in ROADMAP.md under "Ideas & Someday".** Do not scatter backlog items across multiple files.
-
-5. **Research goes in ANALYSIS.md.** When new reference projects are studied or APIs confirmed, add a section to ANALYSIS.md. Do not inline research into ROADMAP.md sprint specs.
-
-6. **Lessons learned go in TROUBLESHOOTING.md or DECISIONS.md**, not in ROADMAP.md.
-
-7. **claude.md "Last Updated" and "Next Sprint" must be updated every session.** These two fields are the fastest way to orient a new conversation.
-
-8. **Do not copy content between docs.** If something needs to reference another doc, link to it with a section anchor. Duplication is what caused the rewrite in the first place.
+### End-of-session checklist
+After significant work, before committing:
+1. Update the relevant **logics** docs in the wave via `logics-manager` (status/progress/closeout) — **never hand-edit indicators/lineage/done status**; see `LOGICS.md`.
+2. `docs/PACKAGES.md` (new packages), `docs/KEYBINDS-MANGO.md` / `docs/KEYBINDS.md` (keybinds), `docs/TOOLS.md` (tool configs), `docs/MANGOWC-SETUP.md` (setup changes).
+3. Log technical choices as ADRs in `logics/architecture/`; add issues + fixes to `.claude/TROUBLESHOOTING.md`.
+4. Commit with a message in the format above (as the user, no Claude attribution). **Do not push** — leave that to the user.
 
 ---
 
-## Important Reminders for Claude Code
+## Current facts
 
-### When Working on Configs
-1. **Always backup before major changes:** Copy file to `.bak` extension
-2. **Test incrementally:** Make small changes, test, then continue
-3. **Check syntax:** Use appropriate validators (shellcheck for bash, etc.)
-4. **Verify permissions:** Some files need specific permissions (e.g., 755 for scripts)
-5. **Reload services:** Many changes require reloading (`mango-reload.sh`, `pkill quickshell && quickshell &`, etc.)
-6. **Use official Catppuccin themes:** Always fetch official themes from https://github.com/catppuccin/ repositories, never create custom color schemes
-7. **Check reference sources before solving QML/compositor problems:** All reference projects were source-inspected 2026-05-04. Key confirmed findings: MangoWC IPC uses `mmsg -w` subprocess (NOT `Quickshell.DWL` — DWL is in a custom fork, not upstream). MPRIS: `Quickshell.Services.Mpris`. Notifications: `Quickshell.Services.Notifications.NotificationServer`. Lock screen: `WlSessionLock` + `PamContext`. No qmldir files — Quickshell resolves from directory layout. See `.claude/ANALYSIS.md` §2 for full per-project findings.
-   - MangoWC IPC / multi-compositor → Noctalia Shell
-   - JsonAdapter / FileView / MPRIS / Notifications → end-4/dots-hyprland
-   - Unified panels / lock screen / C++ plugin → caelestia-dots/shell
-   - Lock screen PAM + WlSessionLock → Qylock
-   - Go backend IPC pattern (Unix socket + newline-JSON) → DankMaterialShell
+### Machine
+- HP EliteBook 860 G10 — i7-1355U, 32GB, Intel Iris Xe, 512GB NVMe, 1920×1200 16". AZERTY built-in keyboard; QWERTY external at work (Alt+Shift switch, layout-aware binds).
+- **Arch Linux only** — btrfs (`@ @home @snapshots @cache @log`), snapper + snap-pac + grub-btrfs, GRUB, paru, systemd, SDDM.
+- Displays: **work** = eDP-1 + HDMI-A-1 + DP-3 (portrait); **home** = laptop / 27" 2K / ultrawide / TV. MangoWC monitor rules with `HDMI.*` / `DP-.*` wildcards for unknown displays.
 
-### When Installing Packages
-1. **Check if already installed:** `pacman -Q package-name`
-2. **Understand what it does:** Don't install blindly
-3. **Note dependencies:** Some packages pull in many deps
-4. **Update package list:** Keep docs/PACKAGES.md updated
-5. **Test after install:** Ensure it works as expected
+### Stack
+- Compositor: **MangoWC** primary (scrolling layouts), **Hyprland** fallback (selectable at SDDM).
+- Shell: **Quickshell** (QML), `qs -c archeotech` — `Commons/ + Services/<Domain>/ + Modules/ + Widgets/` layout. (Code in the `archeotech-shell` repo.)
+- kitty + fish + starship; zen-browser; VSCode; rofi-wayland; PipeWire; blueman; awww wallpapers + `wallpaper-set.sh` (Arch/Rebel/Imperial logo overlay).
+- Theme: token-driven **family → flavor → accent** (default Catppuccin Macchiato + mauve), applied by `scripts/theme-switch.py` across ~11 targets. Spec: `docs/THEME_SPEC.md`.
 
-### When Troubleshooting
-1. **Check logs first:** `journalctl`, `dmesg`, service logs
-2. **Search known issues:** Check TROUBLESHOOTING.md
-3. **Test in isolation:** Disable other factors when debugging
-4. **Document solution:** Add to TROUBLESHOOTING.md when fixed
-5. **Understand root cause:** Don't just apply fixes blindly
+### User
+- Backend developer + Cloud architect (Python, Terraform, AWS). Multi-monitor, frequent project/context switching, dock/undock work↔home.
 
-### When Creating Scripts
-1. **Make executable:** `chmod +x script.sh`
-2. **Test thoroughly:** Try edge cases and error conditions
-3. **Add error handling:** Check for failures, provide useful messages
-4. **Document usage:** Add help text and examples
-5. **Follow standards:** Use coding style guide above
-
-### Project Context Preservation
-- **This file (claude.md) is the source of truth** for project status
-- **Update this file after every significant change**
-- **Keep "Current Status" section accurate** (move tasks as completed)
-- **Log all decisions in DECISIONS.md**
-- **Document all issues in TROUBLESHOOTING.md**
+### Repo layout & GNU Stow (important)
+- All config lives **only** in `config/.config/`; GNU Stow symlinks `~/.config/*` → the repo, so editing `~/.config/...` edits the repo file directly (git tracks it).
+- Scripts in `scripts/`, symlinked to `~/.local/bin/` by `install.sh`.
+- Add a config dir: create under `config/.config/`, add it to the `install.sh` CONFIGS array, then `stow -R config`.
+- Shell QML now lives in the separate `archeotech-shell` repo (no longer under `config/.config/quickshell/`).
 
 ---
 
----
+## Pointers
+- **Planning / workflow:** `logics/` corpus — start with `.claude/PLANNING.md`, `LOGICS.md`, `logics-manager status`.
+- **Architecture decisions:** `logics/architecture/` (ADRs) + archived `logics/external/DECISIONS.archived.md`.
+- **Roadmap / milestones:** `logics/roadmap/road_001_archeotech_shell.md` + archived `logics/external/ROADMAP.archived.md`.
+- **Research / confirmed APIs:** `.claude/ANALYSIS.md` (+ `TESTING-PIPELINE-RESEARCH.md`, `TILING-PICKER-RESEARCH.md`, `CAELESTIA_BLOB_RESEARCH.md`).
+- **Aesthetic direction:** `.claude/STYLE_GUIDE.md` (Corvus persona).
+- **Known issues:** `.claude/TROUBLESHOOTING.md`.
+- **Human docs:** `docs/` — INSTALLATION, KEYBINDS(-MANGO), PACKAGES, TOOLS, MANGOWC-SETUP.
+- **Full pre-restructure knowledge base + session changelog + detailed shell-architecture prose:** `.claude/PROJECT_HISTORY.md`.
 
-**Last Updated:** 2026-08-20 (**Design polish pass (Slices 1–2) + System Tray + qt6ct.** Planning lives in `.claude/ROADMAP.md` "Coherency / legibility audit backlog". **Slice 1** fixed the vertical appearance carousels: `Widgets/Appearance/Carousel.qml` caps `pathItemCount` to what the along-track viewport holds (VERTICAL only — horizontal keeps its 5-with-edge-peek) and forces it ODD so the centre-hero stays symmetric; tiles size off panel HEIGHT (`_tileCross`) so ~3 stack with a real gap instead of one giant tile; wallpaper picker now opens on the CURRENT wallpaper (was missing the async re-sync); flavor labels restored in the vertical ThemeCarousel (`f144372`). **Slice 2** unified the selected-item language shell-wide: `ButtonGroupRow` (cascades Display/Power×4/ConfigForm) + Connections Wi-Fi/BT tabs → shared `SegmentedControl`; hardcoded `mauve`→`colors.accent` in wifi/bt popups + ConnectionsPane; **kitty tab bar + system cursor now follow the accent picker** via `theme-switch.py` (`apply_kitty` substitutes `active_tab_background`/`mark2_background`, `apply_mango` writes `cursor_theme` + env.d `XCURSOR_THEME`); AudioPane/LogoCarousel/LayoutPicker selected = `surfaceWarm`+accent border (no accent-on-accent); PluginsPane "Verified" badge = accent fill + base glyph; ThemeCarousel accent dots raised to match ColorSchemeBody (`30c0404`,`1595d5c`,`05fa3c0`,`64043c7`,`25f775b`,`540c028`). **NEW — System Tray** (`Widgets/Bar/TrayWidget.qml`, `6d3bd07`): the shell had **no SNI host** (bar "tray" = hand-built per-service widgets), so no third-party StatusNotifierItem app could appear. Now a real host via `Quickshell.Services.SystemTray` (which also provides the `org.kde.StatusNotifierWatcher`) — one `Image` per item, left/right-click → the app's DBus context menu via `QsMenuAnchor`, scroll forwarded, empty-collapses (placeholder in edit mode). **Required `//@ pragma UseQApplication` in `shell.qml`** — QsMenuAnchor platform menus need QApplication (QtWidgets) mode. Registered in `WidgetRegistry` palette; **NOT** in the default `shell-config.json` (icon-theme dependency → magenta for users without a Qt theme; users place it themselves). **qt6ct** installed + `QT_QPA_PLATFORMTHEME=qt6ct` (env.d + explicit in `mango-reload.sh` so a reload applies it) → Qt resolves themed SNI icon names (SNI apps send `IconName` like cdx's `user-busy`; bare-wlroots Qt can't resolve them → magenta); `icon_theme=Papirus` (base, **not** Papirus-Dark which lacks the `user-*` icons), `darker` scheme (also darkens the native menu). gsettings/kdeglobals alone did NOT work — Qt6 needs the platform-theme plugin. **`$HOME/.local/bin` added to the session PATH** (`environment.d/path.conf`) — was fish-only, so autostart apps (cdx-tray) couldn't find `cdx`. Verified end-to-end with **cdx-manager** (colleague's project). Collateral fixed: pipewire-pulse client-exhaustion from repeated full-shell headless renders (restart the stack; use `qs -p` harnesses) + BT stuck in HFP after that restart (reconnect for A2DP). See DECISIONS/TROUBLESHOOTING `[2026-08-20]`. **Previous:** 2026-07-31 (**Tiling-layout picker shipped + layout-UX pass** — ROADMAP Feature-Backlog "Tiling-layout picker" built (`Widgets/Appearance/LayoutPickerBody.qml` + `Modules/Shell/Panels/Content/LayoutPicker.qml`, panel id `layout`, `Super+Shift+T`, bottom-strip opener): visual grid of all 14 mango layouts as static Rectangle mini-diagrams, per-layout keybind quicksheet + hover desc, arrows/Enter/click to `setlayout`; first real use of the `shot.sh` headless harness. Bundled: `circle_layout`→all 14 (Super+T cycles everything); new mango binds (Super+Return zoom→master, Super+J/Shift+J focusstack, Super+Z focuslast, Super+A overview, Super+Alt+R/C right/center_tile); **dropped the scroller tagrules** so reload preserves the live layout (fresh tags now default to tile — no global default-layout config exists); **fixed shell-wide click-outside-to-dismiss** to hit the panel card rect not the full edge (`Strip.panelRect` + `ShellSurface`); keyboard nav = grid claims focus + handles its own Esc. Docs updated: KEYBINDS-MANGO, ROADMAP (marked shipped), DECISIONS `[2026-07-31]`, TILING-PICKER-RESEARCH. Uncommitted-and-left-for-user: public `ColorSchemeBody.qml` + `docs/POLISH_ROLLOUT.md` (prior session), private `copilot.fish`. **Previous:** 2026-07-01 (**Sprint 26 core — Widget Extensibility & Plugin Manager (per-instance config).** The three gaps closed: (1) **Per-instance config** — `configSchema` is now consumed. Zone/strip entries in `shell-config.json` became `{id, config}` objects with a **read-time shim** (`ShellConfig._normEntry` — old bare-string files load unchanged, no migration). `zoneEntries`/`stripEntries`/`setEntryConfig` added; setters normalize. `Bar._syncZone` keys rows on `id + "#" + occurrence` (two same-id widgets coexist) and carries config as a **JSON string** in the ListModel (object roles mangle; string is diffable + `setProperty`-updatable in place → editing config doesn't reload the widget). `BarWidgetLoader`/`StripWidgetLoader` inject `config` (schema defaults merged) via a strict-safe `'x' in item` `onLoaded` guard. `ClockWidget` migrated as the proof (format/showSeconds; removed the now-dead ShellPane clock-format knob). Schema declared in `WidgetRegistry._builtinSchemas` for built-ins / `module.json` for plugins; **`ConfigForm.qml`** auto-generates the form (type→row: bool/int/enum/string) reusing Settings row widgets + new **`TextFieldRow`**. Per-instance editing = a **gear on each edit-mode chip** (`EditOverlay` now works in `{id,config}` entries throughout so config survives reorder/remove). (2) **Plugin/Widget Manager** — new **`PluginsPane`** (Settings→Plugins): installed modules w/ enable-disable (`plugins.disabled` in Persistence, hides from palette), `verified` badge, uninstall (user-dir only, 2-click confirm) + built-in widget catalogue. `ModuleRegistry` gained `isEnabled`/`setEnabled` + scans `verified`/`description`. (3) **External import** — `qs.Commons` can't reach outside the config tree (verified vs QS 0.3.0 docs), so external `plugin:` widgets declare `property var appearance` and the loader injects theme tokens (no symlink/stow contamination). Docs: `configSchema` spec + import story into `WIDGET_API.md` + `MODULE_API.md`. Verified live by user (two clocks w/ different formats ✓, config survives reorder ✓, Plugins enable/disable ✓). **Follow-up B SHIPPED** (`3dd92c5`): per-side panel toggle — `ShellState` gained a `side` (`{open,side}`), a strip shows the panel only when its `side` matches, strip icons thread their side through `toggleGlobal`; bar/IPC openers use wildcard `""` which each strip resolves to a single **primary host** (priority-ordered side that hosts the panel) so the gear/`Super+,` also open just one strip. **Hover jitter fixed** (pre-existing, same commit): the strip popup card had `layer.enabled` — a layered item's input hit-test swallowed ALL hover (the strip MouseArea never saw the cursor) and the icons inside flipped hover in lockstep with the card size → feedback oscillation ("jitter then stops"). Fix: drop the layer, use `preferredRendererType: Shape.CurveRenderer` for AA (smooth edges + correct hit-testing). **RULE (see DECISIONS 2026-07-02): never wrap interactive content in a `layer.enabled` item.** **Module theming corrected** (`ea49b1b`): bundled modules ALSO load via absolute `file://`, so `import "../../Commons"` fails for them too (was throwing on `hello`/`notes`) — ALL modules now use injected `appearance` (panel-content loader injects it too, not just bar/strip). **Settings open sped up** (`89dbf64`): `SettingsContent` was a `StackLayout` building all 9 panes synchronously on open — now lazy-loads (only the visible pane builds, latches loaded so re-switch stays instant). **Roadmap gained** (`b12bee5`): follow-up C (holder-aware/responsive widget+panel layouts incl. the strip↔bar unification idea), a **Polish & Liveliness** research sprint (shell feels bland/cold vs Caelestia — research spike → adopt organic motion/warmth; findings → ANALYSIS.md), **layout loadouts** (named layout presets, cheap since `sides` is the whole layout). **Still pending in S26:** (C) holder-aware layouts; optional drag-drop reorder; disable-a-module could also unload already-placed instances (currently only hides from palette). Regression caught + fixed mid-session: `PluginsPane` used `ScrollBar` without `import QtQuick.Controls` → cascaded "Type unavailable" up the singleton chain and blanked the whole shell (lint's syntax-only grep missed "is not a type"). **7 commits unpushed** (`341d7f3` zen-opaque from a prior session + this session's `7acb2dc`..`beca95a`). `shell-config.json` has one uncommitted test-layout line (an extra `settings` icon) — keep or discard. **Previous:** 2026-07-01 (**Post-S25 follow-up + planning session.** (1) **Roadmap re-sequenced** (see `DECISIONS.md [2026-07-01]`): the path to v1.0 is now **26 Widget Extensibility & Plugin Manager → 27 Dev-Workflow Official Plugin → 28 Distribution/v1.0**; multi-compositor + Go daemon pushed to *post-v1.0* (they only help *other* machines). Driver: per-instance widget config (`configSchema` declared but unconsumed) is the last thing forcing hand-edits of `shell-config.json`; dev-workflow becomes the first **official plugin** (Obsidian model) to dogfood the plugin API. New backlog: **theme-packs** (Warhammer/SW/Gundam/etc = palette+wallpaper+logo+Zen-gradient+persona), **core→plugin extraction candidates** (logos, machine-profiles, dashboard dev-bits, accent-for-all-families), **pre-v1.0 QA checklist**. (2) **Obsidian per-vault theme lock** — `.obsidian/.archeotech-theme-lock` marker keeps a vault's community theme + accent, only flips light/dark base; `apply_obsidian` honors it (shadow_spears → Fancy-a-Story). (3) **Zen refinements** — opacity `0.88/0.75` + **`noblur:1,appid:zen`** (the "washout"/grey was MangoWC blur rendering flat grey on the translucent window, independent of wallpaper); auto-restart default **off** + a Settings→Appearance→Behavior **toggle** (`colorScheme.restartZen`) + fixed the relaunch `pkill -f`→`-x` self-kill bug; `zen-colors.css.tmpl` **light-touch** (accent+text vars only — solid bg flattened the workspace gradient to flat black) **plus palette-styled context menus** (uniform dark fill, no white square / grey-body-blue-edge two-tone — outer `menupopup` mantle + `.menupopup-arrowscrollbox`/items transparent, radius 0, no border). **Zen conclusion (documented, closed):** Zen owns its chrome color via the workspace gradient (`zen_workspaces` DB); userChrome/Theme-API/accent-pref all fight or are subsumed by it — so Zen's main chrome can't follow the shell theme by CSS. Researched avenues (Pywalfox/Firefox-Theme-API, userChrome.js live-reload, `zen.theme.accent-color` [dead]) recorded in ROADMAP; the real fix (write the gradient from the palette during the restart window) is the **Sprint 26 theme-packs** feature. (4) **Light-theme contrast audit** — all legible; nord-light yellow darkened to `#977100`. **Stale profile locks** from the kill/relaunch churn caused a one-time "Zen closed unexpectedly" — cleared. 16 commits (`9f773f2`..`7f85551`) unpushed. Previous: 2026-06-24 **Sprint 25 — Hierarchical Theming — SHIPPED & committed** (`03ee980` theming, `113a947` mangowc/scroller/zen; pushed). Phase 1 + Phase 2 (accent picker) both done + cross-app verified; Catppuccin {latte,frappe,mocha} GTK packages + VSCode tokyo/gruvbox/nord exts installed. **Light flavors for all 6 families**: Catppuccin Latte + Tokyo Night Day, Gruvbox Light, Dracula Alucard, Nord light (hand-tuned), Monochrome light — each `theme.json` + light kitty `.conf`, generated from one palette spec (`scratchpad/gen_light_themes.py`), symlinked into `~/.config/archeotech/themes/`; ThemeCatalog lists both flavors per family. **Accent picker (Catppuccin-only)**: `theme-switch.py` takes optional `[accent]` arg → `apply_accent()` overrides mango focus/border, rofi border, GTK theme (`catppuccin-<flavor>-<accent>-standard+default`, installed-check + graceful fallback), VSCode `catppuccin.accentColor`, Obsidian accent, QML `accent` name; `Appearance.qml` accent/accentAlpha/accentBorder now read theme `accent` key (was hardcoded mauve); `ColorScheme.setAccent()`+`colorScheme.accent`+`_resolveAccent()`+`variant|accent` dedup key; `ColorSchemeBody` 14-swatch accent row (capability-gated via `ThemeCatalog.accentsFor()`). `docs/THEME_SPEC.md` updated (family/flavor/mode/accent + accent mechanics + new appliers). **Verified**: all 11 appliers OK on light+accent paths (kitty 0.9/0.6 opacity, Adwaita light GTK, obsidian moonstone, macchiato+blue→catppuccin-macchiato-blue GTK + VSCode accent); installed missing VSCode exts (tokyo-night/gruvbox/nord). **Follow-up fixes (from user testing):** VSCode bg froze (stale hardcoded `workbench.colorCustomizations` Macchiato pins) → `apply_vscode` now regenerates that block from the palette each switch; Settings panel widened 760→940 + spacing; Appearance switcher hid wallpapers → bottom panel 480→600 + compact ColorSchemeBody tightened (fixed); **Zen auto-relaunch** (`ColorScheme.qml`, debounced 2.5s, explicit picks only, `colorScheme.restartZen` default true). **Zen transparency = compositor-opacity + noblur (hardware ceiling; see ROADMAP for full diagnosis).** App-level ARGB glass (clean, like kitty/VSCode) needs the WebRender native compositor, **blocklisted on this Intel/Mesa GPU** (force-enabling → diamond artifacts + white sidebar). So MangoWC dims the whole Zen window: `windowrule=focused_opacity:0.88,unfocused_opacity:0.75,appid:zen` + **`windowrule=noblur:1,appid:zen`** (blur on a translucent window = flat grey layer independent of wallpaper — that was the "washout"). Looks slightly more washed than the app-level apps; not config-fixable. Zen opaque-internal (profile `user.js`: transparency off, acrylic off, mod transparent-content off, `gfx.webrender.compositor.force-enabled=false`). `zen-colors.css.tmpl`=variables-only. Toggle glass↔opaque = `scripts/zen-opacity-toggle.sh` bound `SUPER+SHIFT+O`. `environment.d/firefox-wayland.conf` forces Wayland. Revisit if Mesa lifts the WR-compositor blocklist. Zen `user.js`/prefs are profile state, not repo. **Manual follow-ups**: `paru -S catppuccin-gtk-theme-{latte,frappe,mocha}` (built but install needs sudo password — headless couldn't). **Side commit:** scroller proportion controls (ShellPane slider + MangoWC IPC + mango `focus_center=1`/`Super+O`). **HOME gotcha:** this CC env's `$HOME` is sandboxed — run theme-switch.py with `HOME=/home/corvus`. Previous Phase-1 detail: ColorScheme refactored to imperative `_apply()` (was reactive `onActiveVariantChanged` → binding-loop), `shell.qml` eager-inits the singleton via `effectiveMode`, fish/kitty/obsidian/zen appliers added, fish `fish_config theme choose` removed, kitty hardcoded opacity removed; `WallpaperPickerBody` logo SVG tint reactive to `colors.text` (was hardcoded `#cad3f5`, invisible on Latte). Previous: 2026-06-15 **Sprint 24 — Settings Depth COMPLETE.** Settings/IA restructure + Dissolved the catch-all **Control Center** entirely (deleted `ControlCenter.qml` ~1035 LOC + `CcIcon`): its WiFi/BT/audio/display duplicated the bar popups + `ConnectionsPane`; quick toggles already live on the bar. **Settings** stopped being a `FloatingWindow` and became a `PanelRegistry` panel on the **right** strip (`size 900`, `axisSize "full"`; new `Content/SettingsPanel.qml` wraps the existing sidebar+carousel) — opened by the bar gear, `Super+,`, `Super+Shift+S`, right strip icon. New standalone **`Content/MediaPanel.qml`** on the bottom strip (MPRIS player, extracted from CC; opened by bar media-marquee click / strip icon / `media` IPC). **DND** moved into the Notifications header (compact icon toggle; fixed a header overlap by switching the row to `Layout.preferredWidth` + elided title). **Appearance unified**: theme + wallpaper + logo now share extracted components `Widgets/Appearance/ThemeGridBody.qml` + `WallpaperPickerBody.qml`, hosted by both Settings→Appearance (full: + typography/geometry) and the bottom `Super+W` panel (now a compact **Appearance switcher**, not wallpaper-only — gets theme colors too). Rewired triggers: `main` IPC removed (was CC); `Super+,`→settings; bar gear/indicator→settings; `WifiPopup` needs-password→Settings Connections; deleted `Commons.State.settingsVisible`/`controlCenterOpenSection`. `shell-config.json`: right=`[settings,nc]`, bottom=`[dashboard,media,wallpaper]`. The original Sprint 24 "settings depth" tasks (Connections WiFi/BT sub-tabs, Audio sources, ColorScheme pane, settings search, Layout pane) are still pending — see `ROADMAP.md`. NOTE: a separate uncommitted Bluetooth connect/trust + spinner change was in the tree, left for its own commit. Previous: 2026-06-10 Sprint 23 Lock Screen CANCELLED — built then reverted a native `WlSessionLock`+`PamContext` QML lock; kept swaylock and made it theme-aware instead via a new `scripts/themes/templates/swaylock.config.tmpl` + `apply_swaylock` in `theme-switch.py` (stripped-hex var map; re-themes on every switch; Macchiato output byte-identical to the old hardcoded block). Fixed a launcher regression introduced by the QS 0.2.1-6→0.3.0 upgrade: apps wouldn't launch because `_launch` used a child `Process` torn down when the panel closed — now `Quickshell.execDetached(cmd)`; also `highlightMoveDuration 120→0` so the hover highlight tracks the cursor instantly. Added temporary trigger diagnostics to `swaylock-launch.sh` (backgrounded so it never delays the lock) logging caller-chain/battery/lid/suspend to `~/.cache/swaylock-trigger.log` to chase a "random lock on input" report — battery script ruled out (notify-only, no suspend). See `DECISIONS.md [2026-06-10]`. Previous: 2026-06-03 Sprint 22 — Adaptive Shell Frame. Replaced the 4 separate `CornerBlend` Items with a single `Modules/Shell/FrameBackground.qml` per screen: one `Shape`/`PathSvg` (WindingFill) draws the resting glass for every active side + their shared corners as one continuous fill — no translucent-overlap seams, dynamic concave fillets at junctions independent of side thickness. Bar/Strip bodies now transparent (host widgets only). `corners.pillMode` + `corners.pillGap` config flags + edit-mode "Framed ↔ Pill frame" banner toggle. Framed = hugs screen, sharp outer corners, rounded inner junctions, inner-only termination caps. Pill = whole frame floats by `pillGap` (also added to `ShellExclusions`), rounded outer corners + pill-shaped (both-corner) termination caps. `ShellExclusions` now reserves the breathing gap on off/holder edges too. Fixed `setSideType` to reset `size` to the type default (strip↔bar now actually changes geometry). Earlier same day: Sprint 21 Chunks 0+1+2 — edit mode (`Builder/`, `Super+Shift+E`), `holder` side type, `ModuleRegistry` + `plugin:<id>` routing + `docs/MODULE_API.md`. Sprint 21 Chunk 3 (desktop widgets) still deferred)
-**System Status:** ✅ Fully Functional — Daily Driver
-**Primary Compositor:** MangoWC (scrolling layouts), Hyprland as fallback
-**Shell:** Quickshell — Commons/Services/Modules/Widgets layout. Sprints 0–22 + 24 + 25 (hierarchical theming) + 26 core (per-instance widget config via `configSchema`→auto-form, Plugin Manager pane, external-plugin `appearance` injection) complete. One ShellSurface PanelWindow per monitor (Caelestia §15.2) hosts a single `FrameBackground` (draws all sides' glass + shared corners, S22) + transparent bar/strip Items + panels as sibling Items in one coordinate space. **No Control Center** (dissolved S24): bar = quick actions, Settings (right strip, was a FloatingWindow) = deep config, Media/Dashboard/Appearance = focused bottom-strip panels, NC = right strip. Panel ids: `settings`+`nc` (right), `dashboard`+`media`+`wallpaper` (bottom), `launcher` (left). Theme+wallpaper+logo share `Widgets/Appearance/{ThemeGridBody,WallpaperPickerBody}.qml` across Settings→Appearance and the bottom Appearance switcher. ShellExclusions reserves `sideSize + outerGap` (+`pillGap` in pill mode) per edge — and the bare gap even on off/holder edges. Panels mount inside the Strip card via a single Shape that animates between idle (0) / popup (`_popupExtra`) / panel (`_panelSize`) sizes. ShellConfig + ShellState singletons drive everything from `shell-config.json` (hot-reload). **Bar/strip composition is data-driven**: zones in `shell-config.json` map to widget ids; `BarWidgetLoader`/`StripWidgetLoader` resolve ids to QML files via filename convention (Noctalia pattern). Built-in primitives now in `Commons/Primitives/`; functional widgets in `Widgets/Bar/` + `Widgets/Strip/`. Stable `ListModel` per zone diffs config changes so stateful widgets (MPRIS marquee) survive hot-reload.
-**Next Sprint:** **Pre-1.0 design polish pass (in progress)** — feel-gated coherency/legibility slices in `.claude/ROADMAP.md` "Coherency / legibility audit backlog": Slice 1 (vertical carousels) ✅, Slice 2 (selector unification + accent theming) ✅; **remaining: Slice 3 (flat-mode sweep — gate accent gradients + missing `× shadowStrength`, incl. ColorSchemeBody dot shadow), Slice 4 (dedup `SectionLabel`, unify text fields, styled Dropdown/menu popups, close-button/app-tile unify, popup `layer.enabled`→CurveRenderer), Slice 5 (one-offs + tokens + fullscreen bar/strip auto-hide)**. Tray follow-ups (see ROADMAP "Ideas backlog"): optional glass-themed `QsMenuOpener` menu (native QMenu is functional but plain); hover tooltip. Verify slices headlessly via `scripts/shot.sh --qml <harness>` in BOTH glass and flat (use `qs -p` component harnesses, NOT full-shell renders — those exhaust pulse). (Older context:) **Sprint 26 — Widget Extensibility & Plugin Manager** — core (per-instance config + Plugin Manager pane + external-import fix) SHIPPED & verified; **follow-up B (per-side panels) + the pre-existing strip hover-jitter SHIPPED & verified** (see Last Updated). **Remaining in 26:** (C) holder-aware / responsive widget+panel layouts (dashboard/media/appearance break on side strips; includes the strip↔bar unification idea), then optional drag-drop reorder. After that the **Polish & Liveliness** research sprint (organic motion/warmth vs Caelestia) is queued in the backlog. Then **Sprint 27 — Dev-Workflow Official Plugin** (dogfoods the plugin API), **Sprint 28 — Distribution/v1.0**. Multi-compositor + Go daemon are now *post-v1.0* (they only help other machines — see `DECISIONS.md [2026-07-01]`). See ROADMAP.md §"Sprint 26". **Sprint 24 recap (shipped 2026-06-15):** IA restructure (`5ea1c64`), audio input/source selection (`7e7ecd5`), settings fuzzy search (`3de1452`); then a UX pass — de-windowed Settings sidebar (search top, nav, no brand/version chrome), shared `Settings/Widgets/SectionLabel`, Settings as a tall **card** (760×880, was full-edge), search Enter-picks-first, NC DND tooltip; **Bar pane → Shell pane** (`ShellPane.qml`): "Edit Layout" entry into the visual builder (UI access, not just `Super+Shift+E`) + a **FRAME** section (pill / corner radius / outer gap routed through new `ShellConfig.setCornerRadius`/`setOuterGap` so they can't desync the frame) — dropped the redundant module toggles (→ edit mode) and the desync-prone bar-height slider; **audio device aliasing + per-device volume cap** (`Audio.aliasFor`/`setAlias`/`volumeLimitFor`/`setVolumeLimit`, `Persistence.Config`-backed, AudioPane DEVICE OPTIONS — inline expand per device row, no dropdown); settings pane switching is now a **StackLayout** (no carousel flash/slide); **panels are global** (open/close affects all screens — strip icons `toggleGlobal`+`isOpenAnywhere`, all close paths `closeAllAcross`). **Bluetooth connectivity landed** (was the parallel lane, now merged + committed): trust-before-connect fix, single-flight busy state, all-tree device model, scan/pair/trust/remove via persistent `scripts/bt-agent.py` (dbus-python BlueZ agent), WiFi forget — in `ConnectionsPane`; plus bar-popup click-through input mask (`_anyPopupOpen`/`_popupBounds`→`_topBarPopupMask`) + title/media bar-layout fixes. **Connections finished** (`24f68ca`): segmented **WiFi | BT tabs** (`_tab` + `TabButton`, gated sections), **WiFi auto-join** toggle (`wifi-scan.sh` autoconnect field + `Network.setAutoconnect` + per-saved-row "Auto" pill), **BT per-device battery** (`org.bluez.Battery1 Percentage` in the device poll → "X% battery" in connected rows), fixed `Network.signalIcon` secure glyphs (was scattered non-wifi codepoints → tv/lamp-looking) + WifiRow button overlap (`width:`→`Layout.preferredWidth`). **Sprint 24 COMPLETE.** **ColorScheme deferred** → next sprint = `ROADMAP.md` "Hierarchical Theming System (family → flavor → accent)". **Lock bug (open):** swayidle auto-lock disabled (`~/.cache/swayidle.conf` `LOCK_ENABLED=false`) after random locks during active use; 90s idle **canary** → `~/.cache/swayidle-canary.log` + trigger labels in `swaylock-launch.sh` to root-cause (suspected MangoWC idle-notify not resetting on input — re-enable lock once fixed). Also pending: Sprint 21 Chunk 3 — desktop widget layer; full Pipewire audio-service migration (Sprint 3 backlog).
-**Locked architecture decisions (Sprints 17–20, do not deviate without re-reading `ANALYSIS.md` §15 + `DECISIONS.md`):**
-- One full-screen PanelWindow per monitor (`Variants { model: Quickshell.screens }`) — Caelestia §15.2
-- `FrameBackground` (glass + corners), bar, edge strips, panels = sibling Items in same coord space
-- 4× dedicated thin PanelWindows per monitor for `exclusiveZone` reservation; `exclusiveZone = sideSize + outerGap` (visible bar/strip is `sideSize`, extra `outerGap` becomes empty space between shell and tiled windows — owned by Quickshell, not MangoWC's `gappoh/gappov`)
-- Input passthrough = `QsWindow.mask` + `Intersection.Xor` (only reliable API)
-- Per-screen state = `stateMap` dict keyed by `screen.name` — Noctalia §15.3
-- Panel anim = single Shape animating `_perp` + `_axis` via Behaviors (popup-becomes-panel pattern); no separate `Panel.qml` mounted in ShellSurface
-- **Frame geometry = one unified `FrameBackground.qml` per screen** (S22, replaced the 4 separate `CornerBlend` Items): a single `Shape { ShapePath { fillRule: WindingFill; PathSvg } }`. Path = full-width horizontal bands + between-them vertical bands (no overlap → one clean translucent fill) + concave fillet wedges at active junctions. Bar/Strip bodies are transparent. `corners.pillMode` (false=framed hugs screen / true=floating rounded-rect, floats by `corners.pillGap`); inner-fillet radius = `corners.radius`, outer-corner radius = `radius` in pill / 0 in framed (radius-0 SVG arc renders as a line → sharp). Termination ends (neighbour off/holder) cap the inner corner always + the outer corner in pill (pill-shaped end); cap radii clamped to half the band thickness. SDF shader is Sprint 27 stretch.
-- **Widget mounting = filename convention** (Noctalia pattern, S18): `Widgets/Bar/<PascalId>Widget.qml` + `Widgets/Strip/<PascalId>Icon.qml`. `BarWidgetLoader`/`StripWidgetLoader` use `setSource(path, props)` for async load + required-property injection. Stable `ListModel` per zone preserves delegates on `shell-config.json` hot-reload (HyprPanel pattern).
-- **Widget contract** (`docs/WIDGET_API.md`): every widget gets a `barRoot`/`stripRoot` context property exposing `side`, `horizontal`, `screen`, and popup/state API. Plugin widgets (`plugin:<id>` namespace) reserved for Sprint 21 — same API surface, manifest-discovered.
-- **Theme system** (`docs/THEME_SPEC.md`, S19): `~/.config/archeotech/themes/<variant>/theme.json` is the single source of truth (colors + mango + kitty + rofi + gtk + vscode + obsidian + card metadata). `scripts/theme-switch.py` applies it across 8 targets with atomic temp+rename writes, `fcntl` lock for stampede prevention, failure-isolated appliers, and `{{key}}` template substitution for starship/rofi via templates in `scripts/themes/templates/`. AppearancePane card grid (DMS pattern) at the QML side; refresh via `qs ipc call theme reload` + per-app SIGUSR1/gsettings/jq.
-- **Panel sizing model** (`docs/PANEL_API.md`, S20): `PanelRegistry` entry = `{ content, side, size, axisSize }`. `size` = perpendicular depth, `axisSize` = along-strip extent. `axisSize` is numeric (px), `"auto"` (panel exposes `implicitAxis` property the Strip reads), or `"full"` (legacy, screen-wide). Strip floors at `iconRowWidth + 2*radius.md` and clamps to screen extent. Card stays centered on the screen axis (icons cluster around card center, so a centered card means icons never wobble between panels). `Commons.Appearance.anim.panel` (240 ms) is the shared duration for perp/axis growth.
-- Config schema = `shell-config.json` with per-side `{ type: "bar"|"strip"|"holder"|"none" }` + zones/icons/size + `outerGap` + `corners: { radius, pillMode, pillGap }` + perScreen overrides
-- Module Builder uses **click-to-assign** not drag-and-drop (Wayland cross-window drag unreliable — `ANALYSIS.md` line 2092)
-**MangoWC scroller tuning (Sprint 17 finding):** `scroller_structs=0` is required for windows to tile flush — the default of 20 reserves 20px on each side of the scroller area independent of `proportion`/`gappoh`. With structs=0 + `gappoh=0`/`gappov=0`, Quickshell's ShellExclusions is the single source of truth for the side gap.
-**Quickshell version:** 0.3.0 (installed 2026-06-10; was 0.2.1-6). The upgrade tightened `Process` child cleanup — child Processes are killed when their QML owner is destroyed, so "launch then close panel" now needs `Quickshell.execDetached()` (fixed in the launcher). `Quickshell.DWL` is still not upstream — stays on mmsg -w. Note the QS 0.3.0 native services now available but not yet adopted: `Pipewire`, `UPower`, `Pam`, `Greetd`, `Polkit` (see Sprint 3 backlog).
-**Reference sources:** All reference projects source-inspected 2026-05-04. Key confirmed APIs: MPRIS = `Quickshell.Services.Mpris`, Notifications = `Quickshell.Services.Notifications.NotificationServer`, Lock = `WlSessionLock` + `PamContext`, MangoWC IPC = mmsg -w (not DWL — DWL is a custom fork). See `.claude/ANALYSIS.md` §2 for full findings, §15 for architecture decisions.
+### Locked shell-architecture constraints (don't deviate without re-reading `ANALYSIS.md §15` + the ADRs)
+- One full-screen PanelWindow per monitor; a single `FrameBackground` (glass + corners) + transparent bar/strip + panels as sibling Items in one coord space; 4× thin PanelWindows reserve `exclusiveZone = sideSize + outerGap`.
+- Input passthrough = `QsWindow.mask` + `Intersection.Xor`. Per-screen state = `stateMap` keyed by `screen.name`.
+- Widget mounting = **filename convention** (`Widgets/Bar/<Id>Widget.qml`); stable `ListModel` per zone survives `shell-config.json` hot-reload; widget contract in `docs/WIDGET_API.md`.
+- Config = `shell-config.json`, per-side `{ type, zones, size, outerGap, corners }` (hot-reload); per-instance `{id, config}` via `configSchema` → `ConfigForm`.
+- MangoWC: `scroller_structs=0` + `gappoh/gappov=0` (ShellExclusions owns the side gap). Quickshell **0.3.0** — use `Quickshell.execDetached()` for launches; native `Pipewire/UPower/Pam/Greetd/Polkit` available but not yet adopted. Module Builder = **click-to-assign** (Wayland cross-window drag is unreliable).

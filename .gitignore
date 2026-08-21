@@ -36,3 +36,9 @@ __pycache__/
 # OS-specific
 Thumbs.db
 desktop.ini
+AGENTS.md
+LOGICS.md
+
+# logics-manager runtime cache
+logics/.cache/*
+!logics/.cache/.gitkeep
