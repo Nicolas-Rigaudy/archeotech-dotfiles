@@ -4,6 +4,7 @@
 > Related product: `prod_001_archeotech_shell`
 > Related request: `req_000_archeotech_shell_dotfiles`
 > Reminder: Update status, milestone scope, linked refs, risks, and success signals when you edit this doc.
+> Indicators reviewed: 2026-08-21 16:59:32
 
 # AI Context
 - Summary: Roadmap for Archeotech shell.
@@ -79,6 +80,14 @@ Plan the path from first usable increment to stable release for archeotech shell
 - Goal: Make every widget/module per-instance configurable and manageable from a GUI, removing the last need to hand-edit shell-config.json.
 - Scope: configSchema-driven auto-generated settings forms, `{id, config}` zone entries with back-compat shim, per-instance config injection through the widget loaders, a Plugins/Widget Manager settings pane, and responsive vertical-orientation widgets + holder-aware panels (bars can host panels).
 - Exit signal: Two clocks with different formats coexist, plugins enable/disable and configure from the manager pane, and every widget lays out correctly on any side (horizontal or vertical); only optional drag-reorder polish remains open.
+
+## 0.265 - Theming & Identity
+- `item_081_theming_capability_surface_engine_token_tree_component_style_registry_decorator_fx_motion_hooks_pack_scoped_settings`: Theming capability surface (engine)
+- `item_082_flagship_theme_pack_1_wh40k_shadow_spears_dataslate`: Flagship theme pack #1: WH40K Shadow Spears dataslate
+- `item_078_hud_framing_kit_angular_corners_corner_brackets_reticle_grids_mono_micro_labels`: HUD framing kit (angular corners, corner brackets, reticle grids, mono micro-labels)
+- Goal: Ship the themeable-platform capability surface (engine) and prove it with a flagship identity pack, so a whole visual identity swaps as a pack on the neutral glass base (adr_026).
+- Scope: the theming engine (token tree, component style registry, decorator/FX + motion hooks, pack-scoped settings); a reusable HUD framing kit (angular corners, brackets, reticle grids, mono micro-labels) that packs opt into; and the first deep flagship pack (WH40K Shadow Spears dataslate) bundled in-repo to dogfood the surface.
+- Exit signal: The neutral glass base and the WH40K pack are both selectable, tokens/component-styles/FX/motion cascade from the active pack, and the HUD kit renders only where a pack opts in.
 
 ## 0.27 - Dev Workflow: First Official Plugin
 
@@ -177,6 +186,7 @@ Plan the path from first usable increment to stable release for archeotech shell
 - `item_059_someday_reading_cs_books_setup`: Someday: reading & CS books setup
 - `item_058_someday_tools_to_evaluate`: Someday: tools to evaluate
 - `item_057_someday_visual_flair`: Someday: visual flair
+- `item_079_cava_audio_visualizer_element_bar_dashboard_lock_spectrum_opt_in`: cava audio-visualizer element (bar/dashboard/lock spectrum, opt-in)
 - `item_056_someday_music_media`: Someday: music & media
 - `item_055_someday_communication_productivity`: Someday: communication & productivity
 - `item_054_someday_browser_apps`: Someday: browser & apps

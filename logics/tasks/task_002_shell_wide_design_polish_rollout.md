@@ -1,7 +1,7 @@
 ## task_002_shell_wide_design_polish_rollout - Shell-wide design polish rollout
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 40%

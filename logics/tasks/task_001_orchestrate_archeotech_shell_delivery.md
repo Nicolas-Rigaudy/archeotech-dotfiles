@@ -1,7 +1,7 @@
 ## task_001_orchestrate_archeotech_shell_delivery - Orchestrate Archeotech shell delivery
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
