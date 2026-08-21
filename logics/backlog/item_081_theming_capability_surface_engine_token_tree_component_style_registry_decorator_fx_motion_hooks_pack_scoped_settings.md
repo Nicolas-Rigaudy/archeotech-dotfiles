@@ -4,11 +4,11 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 50%
+> Progress: 55%
 > Complexity: High
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:15:50
+> Indicators reviewed: 2026-08-21 17:57:25
 
 # AI Context
 - Summary: The runtime that makes deep theme packs possible (per adr_026): expand the token tree, add a versioned component style-delegate registry, decorator/FX overlay hooks, a motion-token set, asset/lexicon resolution, and pack-scoped settings via configSchema. This is the load-bearing engine; packs (item_082 etc.) are thin data on top of it.

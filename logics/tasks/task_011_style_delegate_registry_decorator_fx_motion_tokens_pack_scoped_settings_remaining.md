@@ -1,19 +1,21 @@
 ## task_011_style_delegate_registry_decorator_fx_motion_tokens_pack_scoped_settings_remaining - style-delegate registry + decorator/FX + motion tokens + pack-scoped settings (remaining)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
+> Owner: corvus
+> Indicators reviewed: 2026-08-21 17:57:25
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
-- Keywords: style, delegate, registry, decorator, motion, tokens, pack, scoped, settings, remaining
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Summary: Build the theming engine per adr_027 as additive LAYERS over the reactive `Appearance` singleton — NOT a per-component style-registry rewrite. Wave 1: pack `activePack` + reactive token overlay (pack tokens.json > base theme.json > fallback) at the singleton, + `base` reference pack. Wave 2: additive decorator/FX + frame-chrome at chrome mount points + motion-token overlay. Wave 3: curated `minShellVersion`-gated style-delegate seam (~6 components, filename-convention `<packDir>/styles/<ComponentId>.qml`) + `docs/STYLE_API.md`. Wave 4: pack-scoped settings via existing ConfigForm (item_063) under `packs.<id>.*`.
+- Keywords: style, delegate, registry, decorator, motion, tokens, pack, scoped, settings, overlay, activePack, minShellVersion, adr_027
+- Use when: Building any wave of the theming engine or the versioned style contract.
+- Skip when: Authoring a concrete pack (item_082 consumes this) or working plugin install/manifest plumbing (item_065/066).
 
 # Definition of Done (DoD)
 - [ ] The backlog scope is implemented.
@@ -29,8 +31,11 @@
 - AC2: The component style-delegate contract is versioned (minShellVersion-checkable) and documented for pack authors.
 
 # Plan
-- [ ] Use `python3 -m logics_manager flow progress task task_011_style_delegate_registry_decorator_fx_motion_tokens_pack_scoped_settings_remaining.md --progress <n>%` during multi-wave work.
-- [ ] Run `python3 -m logics_manager flow finish task task_011_style_delegate_registry_decorator_fx_motion_tokens_pack_scoped_settings_remaining.md` after implementation.
+- [ ] Wave 1 — Pack token overlay (backbone): `Appearance.activePack` (persisted via Config) + reactive merge (pack `tokens.json` > base `theme.json` > fallback) at the singleton; cache merged tokens on activePack change; load a pack's dir via injected-appearance (adr_016); ship the current glass look as the `base` reference pack. Verify headlessly with shot.sh (isolated fake-HOME) that a token-only pack reskins the whole shell.
+- [ ] Wave 2 — Decorator/FX + motion: additive overlay items (bg texture/shader, glow/sheen, frame chrome) at chrome mount points (FrameBackground, panel shells, bar frame), gated by activePack + global on/off; motion-token overlay over `Appearance.anim`/`curve`.
+- [ ] Wave 3 — Curated versioned style-delegate contract: delegate seam for ~6 load-bearing components (GlassButton, DashCard, SegmentedControl, BarPill, PanelShadow, one form Row); pack visual via `<packDir>/styles/<ComponentId>.qml` (base fallback); gate on `minShellVersion`; write `docs/STYLE_API.md`.
+- [ ] Wave 4 — Pack-scoped settings: pack `configSchema` → existing ConfigForm (item_063), persisted under `packs.<id>.*`, shown only when active; base 3D/flat toggle becomes a base-pack setting.
+- [ ] Use `flow progress task <this> --progress <n>%` at each wave boundary; `flow finish task <this>` after Wave 4.
 
 # Validation
 - (no validation recorded yet)
