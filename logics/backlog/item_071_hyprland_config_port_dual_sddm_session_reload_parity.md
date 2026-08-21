@@ -1,10 +1,10 @@
 ## item_071_hyprland_config_port_dual_sddm_session_reload_parity - Hyprland config port + dual SDDM session + reload parity
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -63,3 +63,8 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+- Task `task_006_hyprland_conf_keybinds_workspaces_blur_hotplug_reload_delivered` was finished via `logics-manager flow finish task` on 2026-08-21.
+
+# Tasks
+- `task_006_hyprland_conf_keybinds_workspaces_blur_hotplug_reload_delivered`
+- `task_007_dual_sddm_session_entry_hyprctl_reload_parity_remaining`

@@ -1,7 +1,7 @@
 ## task_003_configschema_auto_forms_plugin_widget_manager_pane - configSchema auto-forms + Plugin/Widget Manager pane
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 100%
@@ -42,9 +42,14 @@
 - AC3 (bare-string shim): RUNTIME-verified — a bare `"workspaces"` content entry loaded with no error; `_normEntry()`/`_sideContent()` at `Services/Shell/ShellConfig.qml:55-92`. The live config is already all-objects (migration effectively done).
 - AC4 (PluginsPane): `Modules/Settings/Panes/PluginsPane.qml` (enable/disable/uninstall + built-in catalogue), registered `Modules/Settings/PaneRegistry.qml:12`, enable/disable via `Services/Shell/ModuleRegistry.qml` `setEnabled()`. Code-verified.
 - Method: nested headless `mango` (`WLR_BACKENDS=headless` + `WLR_RENDERER=pixman`) + `grim` via `scripts/shot.sh`, against an isolated fake-HOME config copy — never the user's live session.
+- Finish workflow executed on 2026-08-21.
+- Linked backlog/request close verification passed.
 
 # Report
 - Delivered (pre-existing). This slice's scope was implemented during Sprint 26 before the Logics corpus tracked it; the backlog item was authored from a stale snapshot. No new code was written for this task — all four ACs are satisfied and verified as above. Follow-up: reconcile other Ready items against the shell code before promoting (corpus lagged the code here).
+- Finished on 2026-08-21.
+- Linked backlog item(s): `item_063_configschema_auto_forms_plugin_widget_manager_pane`
+- Related request(s): `req_000_archeotech_shell_dotfiles`
 
 # Links
 - Request: `req_000_archeotech_shell_dotfiles`

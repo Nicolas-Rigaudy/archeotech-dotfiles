@@ -1,10 +1,10 @@
 ## item_026_multi_monitor_compositor_utilities - Multi-monitor & compositor utilities
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 33%
 > Complexity: Medium
 > Theme: Multi-monitor
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -45,3 +45,10 @@
 # Priority
 - Priority: Medium
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_014_tiling_layout_picker_ui_keybinds_delivered`
+- `task_015_output_hotplug_auto_detect_tags_follow_monitor_gaming_mode_remaining`
+
+# Notes
+- Task `task_014_tiling_layout_picker_ui_keybinds_delivered` was finished via `logics-manager flow finish task` on 2026-08-21.

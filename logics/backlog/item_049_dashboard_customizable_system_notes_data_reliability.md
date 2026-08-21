@@ -35,6 +35,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Audit 2026-08-21: PARTIAL — SystemNotes widget exists (delivered); remaining: config-driven stat selection + data reliability. Keep Ready.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

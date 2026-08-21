@@ -35,6 +35,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Audit 2026-08-21: PARTIAL — partial token coverage (delivered); remaining: one-offs (popup shadow, album-art lift, 3D knob) + token completion. Keep Ready.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

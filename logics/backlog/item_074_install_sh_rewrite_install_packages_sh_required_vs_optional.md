@@ -1,10 +1,10 @@
 ## item_074_install_sh_rewrite_install_packages_sh_required_vs_optional - install.sh rewrite + install-packages.sh (required vs optional)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -63,3 +63,8 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+- Task `task_008_install_sh_backup_stow_deploy_verify_service_enable_delivered` was finished via `logics-manager flow finish task` on 2026-08-21.
+
+# Tasks
+- `task_008_install_sh_backup_stow_deploy_verify_service_enable_delivered`
+- `task_009_profile_flag_install_packages_sh_required_optional_split_remaining`

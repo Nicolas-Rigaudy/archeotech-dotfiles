@@ -35,6 +35,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Audit 2026-08-21: PARTIAL — applier REGISTRY table exists in theme-switch.py (delivered); remaining: refactor to declarative plugin manifests + failure isolation. Keep Ready.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

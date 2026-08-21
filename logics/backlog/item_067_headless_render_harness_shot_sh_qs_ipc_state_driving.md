@@ -1,10 +1,10 @@
 ## item_067_headless_render_harness_shot_sh_qs_ipc_state_driving - Headless render harness (shot.sh + qs-ipc state-driving)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -64,3 +64,8 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+- Task `task_004_shot_sh_nested_headless_capture_delivered_race_fixed_2026_08_21` was finished via `logics-manager flow finish task` on 2026-08-21.
+
+# Tasks
+- `task_004_shot_sh_nested_headless_capture_delivered_race_fixed_2026_08_21`
+- `task_005_qs_ipc_state_driving_golden_capture_remaining`

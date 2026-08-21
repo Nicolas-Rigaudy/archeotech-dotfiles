@@ -1,10 +1,10 @@
 ## item_073_hardcoded_path_audit_zero_home_corvus - Hardcoded-path audit (zero /home/corvus)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

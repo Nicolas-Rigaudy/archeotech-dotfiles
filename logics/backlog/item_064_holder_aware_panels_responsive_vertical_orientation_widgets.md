@@ -48,6 +48,7 @@
 - Architecture framing: Not needed
 - Architecture signals: (none detected)
 - Architecture follow-up: No architecture decision follow-up is expected based on current signals.
+- Audit 2026-08-21: PARTIAL — holder-aware contract in WidgetLoader (delivered); remaining: responsive vertical-orientation widget layouts. Keep Ready.
 
 # Links
 - Product brief(s): (none yet)

@@ -34,6 +34,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Audit 2026-08-21: PARTIAL — grim/slurp screenshots (delivered); remaining: swappy annotation + wf-recorder toggle + window-only. Keep Ready.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

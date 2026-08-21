@@ -1,10 +1,10 @@
 ## item_008_eager_warm_the_wallpapers_service_at_shell_startup - Eager-warm the Wallpapers service at shell startup
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Low
 > Theme: Picker feel
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

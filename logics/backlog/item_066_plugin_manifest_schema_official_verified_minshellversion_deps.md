@@ -1,10 +1,10 @@
 ## item_066_plugin_manifest_schema_official_verified_minshellversion_deps - Plugin manifest schema (official/verified/minShellVersion/deps)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -65,3 +65,8 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+- Task `task_012_manifest_verified_description_fields_delivered` was finished via `logics-manager flow finish task` on 2026-08-21.
+
+# Tasks
+- `task_012_manifest_verified_description_fields_delivered`
+- `task_013_official_minshellversion_dependencies_fields_validation_remaining`

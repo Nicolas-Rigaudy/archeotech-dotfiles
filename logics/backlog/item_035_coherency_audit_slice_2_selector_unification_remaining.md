@@ -1,10 +1,10 @@
 ## item_035_coherency_audit_slice_2_selector_unification_remaining - Coherency audit Slice 2 - selector unification (remaining)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Coherency audit
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

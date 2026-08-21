@@ -1,7 +1,7 @@
 ## item_063_configschema_auto_forms_plugin_widget_manager_pane - configSchema auto-forms + Plugin/Widget Manager pane
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 100%
@@ -64,6 +64,7 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+- Task `task_003_configschema_auto_forms_plugin_widget_manager_pane` was finished via `logics-manager flow finish task` on 2026-08-21.
 
 # Tasks
 - `task_003_configschema_auto_forms_plugin_widget_manager_pane`
