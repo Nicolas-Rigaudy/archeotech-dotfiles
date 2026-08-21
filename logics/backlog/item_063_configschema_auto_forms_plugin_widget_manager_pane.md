@@ -64,3 +64,6 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_003_configschema_auto_forms_plugin_widget_manager_pane`
