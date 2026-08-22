@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 25%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -38,7 +38,7 @@
 - [ ] Use `flow progress task <this> --progress <n>%` at each wave boundary; `flow finish task <this>` after Wave 4.
 
 # Validation
-- (no validation recorded yet)
+- Wave 1 (Layer A token overlay) delivered + headless-verified 2026-08-22. Appearance.activePack + tokens.json overlay (pack > base > fallback) in Commons/Appearance.qml; wired via shell.qml Binding to Config appearance.activePack; docs/THEME_PACK.md authoring reference. Proof: isolated fake-HOME + a test-crimson pack reskinned the whole shell (crimson glass frame, red accents) vs sapphire baseline with zero component edits and no QML errors (shot.sh). archeotech-shell commit c72080e.
 
 # Report
 - Not started.
