@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 25%
+> Progress: 35%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -39,6 +39,7 @@
 
 # Validation
 - Wave 1 (Layer A token overlay) delivered + headless-verified 2026-08-22. Appearance.activePack + tokens.json overlay (pack > base > fallback) in Commons/Appearance.qml; wired via shell.qml Binding to Config appearance.activePack; docs/THEME_PACK.md authoring reference. Proof: isolated fake-HOME + a test-crimson pack reskinned the whole shell (crimson glass frame, red accents) vs sapphire baseline with zero component edits and no QML errors (shot.sh). archeotech-shell commit c72080e.
+- Wave 1 Layer A now usable end-to-end (2026-08-23). Added Services/Shell/PackRegistry.qml (bundled packs/ + XDG discovery via Process+jq, mirrors ModuleRegistry), Appearance.activePackDir (dir resolved by PackRegistry in shell.qml — keeps Commons free of Services imports), a Theme Pack DropdownRow selector in AppearancePane bound to Config appearance.activePack, and a bundled example pack packs/angular (official Catppuccin palette + mauve accent + crisp radius; no hand-rolled colours). Headless proof: PackRegistry discovered angular, selecting it reskinned the shell (mauve accents + sharp corners) with no QML errors. archeotech-shell commit 880b0c2.
 
 # Report
 - Not started.
