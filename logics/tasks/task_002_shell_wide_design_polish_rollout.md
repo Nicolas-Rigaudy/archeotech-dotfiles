@@ -9,7 +9,7 @@
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: corvus
-> Indicators reviewed: 2026-08-21 09:37:33
+> Indicators reviewed: 2026-08-24 15:04:21
 
 # AI Context
 - Summary: The active, shell-wide "Polish & Liveliness" rollout — migrating every surface onto the 3D/glass/StateLayer treatment round by round. Already underway (several rounds landed).
@@ -48,6 +48,9 @@
 - request-AC3 -> This task. Proof: implementation is executable from the promoted backlog item.
 - backlog-AC1 -> This task. Proof: task remains bounded to the linked backlog scope.
 - backlog-AC2 -> This task. Proof: task provides the executable implementation surface.
+- request-AC4 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.
 
 # Validation
 - (no validation recorded yet)

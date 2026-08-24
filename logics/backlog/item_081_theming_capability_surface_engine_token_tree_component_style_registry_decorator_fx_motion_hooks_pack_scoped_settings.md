@@ -1,10 +1,10 @@
 ## item_081_theming_capability_surface_engine_token_tree_component_style_registry_decorator_fx_motion_hooks_pack_scoped_settings - Theming capability surface (engine): token tree, component style registry, decorator/FX + motion hooks, pack-scoped settings
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 98%
+> Progress: 100%
 > Complexity: High
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -57,6 +57,7 @@
 # Notes
 - Generated locally by logics-manager.
 - Task `task_010_expanded_token_tree_delivered` was finished via `logics-manager flow finish task` on 2026-08-21.
+- Task `task_011_style_delegate_registry_decorator_fx_motion_tokens_pack_scoped_settings_remaining` was finished via `logics-manager flow finish task` on 2026-08-24.
 
 # Tasks
 - `task_010_expanded_token_tree_delivered`

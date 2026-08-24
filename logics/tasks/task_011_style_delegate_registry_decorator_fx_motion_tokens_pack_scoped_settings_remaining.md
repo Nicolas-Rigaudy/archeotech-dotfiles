@@ -1,15 +1,15 @@
 ## task_011_style_delegate_registry_decorator_fx_motion_tokens_pack_scoped_settings_remaining - style-delegate registry + decorator/FX + motion tokens + pack-scoped settings (remaining)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: corvus
-> Indicators reviewed: 2026-08-21 17:57:25
+> Indicators reviewed: 2026-08-24 15:04:22
 
 # AI Context
 - Summary: Build the theming engine per adr_027 as additive LAYERS over the reactive `Appearance` singleton — NOT a per-component style-registry rewrite. Wave 1: pack `activePack` + reactive token overlay (pack tokens.json > base theme.json > fallback) at the singleton, + `base` reference pack. Wave 2: additive decorator/FX + frame-chrome at chrome mount points + motion-token overlay. Wave 3: curated `minShellVersion`-gated style-delegate seam (~6 components, filename-convention `<packDir>/styles/<ComponentId>.qml`) + `docs/STYLE_API.md`. Wave 4: pack-scoped settings via existing ConfigForm (item_063) under `packs.<id>.*`.
@@ -18,10 +18,10 @@
 - Skip when: Authoring a concrete pack (item_082 consumes this) or working plugin install/manifest plumbing (item_065/066).
 
 # Definition of Done (DoD)
-- [ ] The backlog scope is implemented.
-- [ ] Acceptance criteria are covered.
-- [ ] Validation passes.
-- [ ] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
+- [x] The backlog scope is implemented.
+- [x] Acceptance criteria are covered.
+- [x] Validation passes.
+- [x] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
 
 # Backlog
 - `item_081_theming_capability_surface_engine_token_tree_component_style_registry_decorator_fx_motion_hooks_pack_scoped_settings`
@@ -31,11 +31,11 @@
 - AC2: The component style-delegate contract is versioned (minShellVersion-checkable) and documented for pack authors.
 
 # Plan
-- [ ] Wave 1 — Pack token overlay (backbone): `Appearance.activePack` (persisted via Config) + reactive merge (pack `tokens.json` > base `theme.json` > fallback) at the singleton; cache merged tokens on activePack change; load a pack's dir via injected-appearance (adr_016); ship the current glass look as the `base` reference pack. Verify headlessly with shot.sh (isolated fake-HOME) that a token-only pack reskins the whole shell.
-- [ ] Wave 2 — Decorator/FX + motion: additive overlay items (bg texture/shader, glow/sheen, frame chrome) at chrome mount points (FrameBackground, panel shells, bar frame), gated by activePack + global on/off; motion-token overlay over `Appearance.anim`/`curve`.
-- [ ] Wave 3 — Curated versioned style-delegate contract: delegate seam for ~6 load-bearing components (GlassButton, DashCard, SegmentedControl, BarPill, PanelShadow, one form Row); pack visual via `<packDir>/styles/<ComponentId>.qml` (base fallback); gate on `minShellVersion`; write `docs/STYLE_API.md`.
-- [ ] Wave 4 — Pack-scoped settings: pack `configSchema` → existing ConfigForm (item_063), persisted under `packs.<id>.*`, shown only when active; base 3D/flat toggle becomes a base-pack setting.
-- [ ] Use `flow progress task <this> --progress <n>%` at each wave boundary; `flow finish task <this>` after Wave 4.
+- [x] Wave 1 — Pack token overlay (backbone): `Appearance.activePack` (persisted via Config) + reactive merge (pack `tokens.json` > base `theme.json` > fallback) at the singleton; cache merged tokens on activePack change; load a pack's dir via injected-appearance (adr_016); ship the current glass look as the `base` reference pack. Verify headlessly with shot.sh (isolated fake-HOME) that a token-only pack reskins the whole shell.
+- [x] Wave 2 — Decorator/FX + motion: additive overlay items (bg texture/shader, glow/sheen, frame chrome) at chrome mount points (FrameBackground, panel shells, bar frame), gated by activePack + global on/off; motion-token overlay over `Appearance.anim`/`curve`.
+- [x] Wave 3 — Curated versioned style-delegate contract: delegate seam for ~6 load-bearing components (GlassButton, DashCard, SegmentedControl, BarPill, PanelShadow, one form Row); pack visual via `<packDir>/styles/<ComponentId>.qml` (base fallback); gate on `minShellVersion`; write `docs/STYLE_API.md`.
+- [x] Wave 4 — Pack-scoped settings: pack `configSchema` → existing ConfigForm (item_063), persisted under `packs.<id>.*`, shown only when active; base 3D/flat toggle becomes a base-pack setting.
+- [x] Use `flow progress task <this> --progress <n>%` at each wave boundary; `flow finish task <this>` after Wave 4.
 
 # Validation
 - Wave 1 (Layer A token overlay) delivered + headless-verified 2026-08-22. Appearance.activePack + tokens.json overlay (pack > base > fallback) in Commons/Appearance.qml; wired via shell.qml Binding to Config appearance.activePack; docs/THEME_PACK.md authoring reference. Proof: isolated fake-HOME + a test-crimson pack reskinned the whole shell (crimson glass frame, red accents) vs sapphire baseline with zero component edits and no QML errors (shot.sh). archeotech-shell commit c72080e.
@@ -47,11 +47,24 @@
 - Wave 2 window-chrome round from user testing (2026-08-24): the theme now reaches the REAL windows (always the intended direction, not scope creep). (1) Per-window brackets: MangoWC extended to `watch all-clients` (live client geometry) + monitor offsets; new Modules/Shell/WindowBrackets.qml draws sharp/rounded corner brackets at EVERY visible window's corners on the Overlay surface (above windows), focused window full-strength + unfocused dimmed (brackets carry focus indication). Replaces the old 4-screen-corner brackets (removed from FrameFx). (2) Pack-driven window decoration: pack `window` block {cornerRadius, borderWidth} → MangoWC.applyWindowDecor seds mango border_radius/borderpx + `mmsg dispatch reload_config`, IDEMPOTENT (greps current values, only reloads on real change → no keyboard-layout cycle on matching-config startup; preserves layout across the reload). Wired from shell.qml on pack change. HUD pack now: sharp+borderless windows, sharp per-window brackets, no clashing accent border. (3) Glow was mistakenly rendered as a rim around the content hole (reading as ON the windows) — moved back ONTO the frame (bar/strip-side gradient bands, full-width top/bottom so corners are covered). Verified in nested mango WITH windows + a borderless/sharp mango config; sed/grep change-detection logic unit-checked. archeotech-shell commits b2a49f6, 933fe9a.
 - Wave 2 FX fixes from user testing (2026-08-24): (1) glow left a dark unglowed notch at each rounded corner (4 axis-aligned gradient bands didn't cover the corner arc) — replaced with a single blurred rounded-rect rim (MultiEffect) that follows the corner continuously; (2) HUD grid texture was invisible at opacity 0.06 — brighter/denser asset + opacity 0.18; (3) HUD brackets sat as sharp marks over the outer tiled windows' rounded corners (screen-frame motif, only 4 corners, inherent) — dropped from the HUD default (mechanism kept for packs that want it). Verified in a nested compositor WITH real kitty windows open (new: prior shots rendered an empty desktop, hiding frame↔window interaction). archeotech-shell commit b206e8c. Bundled HUD demo pack commit a2c3686.
 - Wave 2 (Layer B: frame shape + motion + decorator/FX) delivered + headless-verified 2026-08-24. (a) Frame corner connections follow the pack: ShellConfig.cornerRadius() consults Appearance.packFrameRadius() (pack `frame.cornerRadius` wins, user Settings→Shell value is fallback) — theme owns always-visible chrome per user call; FrameBackground rebuilds on pack change, ShellSurface _r binding tracks it. Verified: base round-12 fillet vs angular crisp-3 corner (commit d8e375a). (b) Motion tokens: Appearance.anim (durations) + curve (M3 beziers) route through _tok so a pack retunes shell-wide motion; defaults preserved (commit a9bf0da, also fixed the frame pack-rebuild signal handler name on_PackDataChanged). (c) Decorator/FX: new Modules/Shell/FrameFx.qml — additive, pack-gated overlay mounted once over FrameBackground (z:1), driven by pack `fx` block: tiled texture over the frame bands (content hole clean), accent rim glow (gradient, no blur), HUD corner brackets. Anchors to content-hole geometry FrameBackground now publishes (contentRect + cornerR). Verified with a test-hud pack (peach accent) — all three composite correctly, base look untouched with no fx (commits 71b7a16, 93b772c). Docs: THEME_PACK.md updated for Layer B (commit b2afc4b). NB: mid-build broken intermediate saves briefly broke the LIVE shell (repo is symlinked to ~/.config/quickshell/archeotech, hot-reloads) — recovered; lesson logged to keep watched-file saves valid.
+- Finish workflow executed on 2026-08-24.
+- Linked backlog/request close verification passed.
 
 # Report
 - Not started.
+- Finished on 2026-08-24.
+- Linked backlog item(s): `item_081_theming_capability_surface_engine_token_tree_component_style_registry_decorator_fx_motion_hooks_pack_scoped_settings`
+- Related request(s): `req_000_archeotech_shell_dotfiles`
 
 # Links
 - Request: `req_000_archeotech_shell_dotfiles`
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
+
+# AC Traceability
+- request-AC1 -> This task. Proof: the theming-pack engine (adr_027 Layers A-D) reskins the whole shell coherently through the reactive Appearance singleton — pack token overlay + decorator/FX + real-window decoration — with zero component churn; verified headlessly (HUD pack reskins shell + windows; archeotech-shell 83844d6).
+- request-AC3 -> This task. Proof: extensibility / theme-pack ecosystem — PackRegistry discovery (bundled + XDG), the versioned minShellVersion-gated component style-delegate contract (StyleDelegate + docs/STYLE_API.md), and pack-scoped configSchema settings that drive the look; verified pack switch + settings changes reskin live (86bd84e, 83844d6).
+- request-AC5 -> This task. Proof: polish/liveliness surface — pack-overridable motion tokens (Appearance.anim/curve) and decorator/FX (texture, glow, per-window brackets) + task_010's expanded token tree; verified via headless renders.
+- request-AC2 -> This task. Proof: out of this task's scope (widgets/tray/launcher/pickers); covered by their own tasks. This task adds only the Pack Settings + Theme Pack shell surfaces in Appearance.
+- request-AC4 -> This task. Proof: out of this task's scope (portability/compositor/profiles); covered by their own tasks.
+- request-AC6 -> This task. Proof: out of this task's scope (distribution/regression/release); covered by their own tasks — though this task's changes were headless-verified via the shot.sh harness.

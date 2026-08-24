@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-08-21 17:37:49
+> Indicators reviewed: 2026-08-24 15:04:21
 
 # AI Context
 - Summary: Implementation slice — consume the already-declared `configSchema` (currently carried through `ModuleRegistry` but unused) to auto-render `ConfigForm.qml` from existing row components; migrate zone entries to `{id, config}` with a read-time shim for old bare strings; inject per-instance config through `BarWidgetLoader`/`StripWidgetLoader` keyed so duplicate widgets don't collide; ship `PluginsPane.qml`. The same configSchema->ConfigForm pipeline later renders theme-pack settings (item_081), so keep it pack-agnostic.
@@ -55,3 +55,11 @@
 - Request: `req_000_archeotech_shell_dotfiles`
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
+
+# AC Traceability
+- request-AC1 -> This task. Proof deferred to slice closeout.
+- request-AC2 -> This task. Proof deferred to slice closeout.
+- request-AC3 -> This task. Proof deferred to slice closeout.
+- request-AC4 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.
