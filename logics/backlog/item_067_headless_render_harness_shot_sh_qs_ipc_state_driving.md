@@ -1,13 +1,14 @@
 ## item_067_headless_render_harness_shot_sh_qs_ipc_state_driving - Headless render harness (shot.sh + qs-ipc state-driving)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 50%
+> Progress: 100%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-02 11:25:41
 
 # AI Context
 - Summary: Delivers the safety-fixed headless render-to-PNG harness (shot.sh), qs-ipc state-driving, and temporal/burst capture for motion correctness.
@@ -53,8 +54,8 @@
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_000_archeotech_shell_dotfiles.md`
-- Primary task(s): (none yet)
+- Request: `req_000_archeotech_shell_dotfiles`
+- Primary task(s): `task_005_qs_ipc_state_driving_golden_capture_remaining`
 
 # Priority
 - Priority: Medium
@@ -65,6 +66,7 @@
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
 - Task `task_004_shot_sh_nested_headless_capture_delivered_race_fixed_2026_08_21` was finished via `logics-manager flow finish task` on 2026-08-21.
+- Task `task_005_qs_ipc_state_driving_golden_capture_remaining` was finished via `logics-manager flow finish task` on 2026-09-02.
 
 # Tasks
 - `task_004_shot_sh_nested_headless_capture_delivered_race_fixed_2026_08_21`
