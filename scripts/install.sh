@@ -10,8 +10,14 @@
 #   - Single source of truth (the repo)
 #
 # Usage:
-#   ./scripts/install.sh          # Deploy all configs
-#   ./scripts/install.sh --dry-run # Show what would be done
+#   ./scripts/install.sh                     # Deploy all configs
+#   ./scripts/install.sh --dry-run           # Show what would be done
+#   ./scripts/install.sh --profile full      # Install packages first, then deploy
+#   ./scripts/install.sh --profile minimal   # Required packages only, then deploy
+#
+# --profile {minimal|recommended|full} runs install-packages.sh before deploying
+# so a fresh Arch machine is one command from a working desktop. Omit it if the
+# packages are already installed.
 #
 ################################################################################
 
@@ -235,6 +241,59 @@ verify_deployment() {
     fi
 }
 
+verify_shell_can_launch() {
+    print_header "Verifying the Shell Can Launch"
+
+    # The compositor + Quickshell binaries must exist for the desktop to come up.
+    local ok=1
+    if command -v mango &> /dev/null; then
+        print_success "mango (compositor) is on PATH"
+    else
+        print_warning "mango not found — install packages first (--profile) or see docs/INSTALLATION.md"
+        ok=0
+    fi
+
+    if command -v qs &> /dev/null || command -v quickshell &> /dev/null; then
+        print_success "quickshell is on PATH"
+        # A syntax/load smoke test that never opens a window: list instances.
+        if qs list --all &> /dev/null; then
+            print_success "quickshell responds (qs list)"
+        fi
+    else
+        print_warning "quickshell not found — install packages first (--profile)"
+        ok=0
+    fi
+
+    # The archeotech shell CONFIG ships from the separate archeotech-shell repo.
+    if [[ -e "$HOME/.config/quickshell/archeotech/shell.qml" ]]; then
+        print_success "archeotech shell config is present"
+    else
+        print_warning "archeotech shell config not found at ~/.config/quickshell/archeotech"
+        print_info  "Install the shell from the archeotech-shell repo (its own install.sh)"
+        ok=0
+    fi
+
+    [[ $ok -eq 1 ]] && print_success "Shell prerequisites look good — it should launch."
+}
+
+first_run_experience() {
+    print_header "First-Run — Next Steps"
+
+    echo ""
+    echo "You're set up. To start using it:"
+    echo ""
+    echo "  1. Log out and pick a session at SDDM:"
+    echo "       • MangoWC (primary — scrolling layouts)"
+    echo "       • Hyprland (fallback — tiling)"
+    echo "  2. Reload the compositor after config edits:  Super+Shift+R"
+    echo "       (or run: mango-reload.sh)"
+    echo "  3. Switch theme family/flavor/accent:  theme-switch.py"
+    echo "  4. See your keybinds any time:  show-keybinds.sh  (or Super+/)"
+    echo ""
+    echo "Docs: docs/INSTALLATION.md · docs/KEYBINDS-MANGO.md · docs/PACKAGES.md"
+    echo ""
+}
+
 show_usage() {
     print_header "Dotfiles Deployed Successfully!"
 
@@ -260,10 +319,31 @@ echo ""
 
 # Parse arguments
 DRY_RUN=""
-if [[ "$1" == "--dry-run" ]]; then
-    DRY_RUN="--dry-run"
+PROFILE=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --dry-run) DRY_RUN="--dry-run"; shift ;;
+        --profile) PROFILE="$2"; shift 2 ;;
+        -h|--help) sed -n '3,22p' "$0"; exit 0 ;;
+        *) print_error "unknown argument: $1"; exit 2 ;;
+    esac
+done
+
+if [[ -n "$DRY_RUN" ]]; then
     print_warning "DRY RUN MODE - No changes will be made"
     echo ""
+fi
+
+# Install packages first when a profile is requested — a fresh machine goes from
+# clone to working desktop in one command. Skipped in dry-run.
+if [[ -n "$PROFILE" ]]; then
+    if [[ -n "$DRY_RUN" ]]; then
+        print_info "Would install packages with: install-packages.sh --profile $PROFILE"
+        "$SCRIPT_DIR/install-packages.sh" --dry-run --profile "$PROFILE"
+    else
+        print_header "Installing Packages (profile: $PROFILE)"
+        "$SCRIPT_DIR/install-packages.sh" --profile "$PROFILE"
+    fi
 fi
 
 check_requirements
@@ -278,7 +358,9 @@ if [[ -z "$DRY_RUN" ]]; then
     verify_deployment
     install_local_scripts
     enable_user_services
+    verify_shell_can_launch
     show_usage
+    first_run_experience
 fi
 
 print_success "Done!"
