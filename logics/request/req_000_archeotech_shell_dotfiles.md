@@ -7,7 +7,7 @@
 > Complexity: High
 > Theme: Desktop shell
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-02 14:27:43
+> Indicators reviewed: 2026-09-02 14:41:46
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)

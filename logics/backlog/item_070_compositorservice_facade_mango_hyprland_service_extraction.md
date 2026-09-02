@@ -1,13 +1,14 @@
 ## item_070_compositorservice_facade_mango_hyprland_service_extraction - CompositorService facade + Mango/Hyprland service extraction
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-02 14:41:47
 
 # AI Context
 - Summary: Builds a CompositorService facade with a stable API, extracts today's MangoWC code into MangoService, adds HyprlandService, and routes all 11 mmsg call sites through the facade.
@@ -54,8 +55,8 @@
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_000_archeotech_shell_dotfiles.md`
-- Primary task(s): (none yet)
+- Request: `req_000_archeotech_shell_dotfiles`
+- Primary task(s): `task_016_compositorservice_facade_mango_hyprland_service_extraction`
 
 # Priority
 - Priority: Medium
@@ -65,3 +66,7 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+- Task `task_016_compositorservice_facade_mango_hyprland_service_extraction` was finished via `logics-manager flow finish task` on 2026-09-02.
+
+# Tasks
+- `task_016_compositorservice_facade_mango_hyprland_service_extraction`
