@@ -1,14 +1,14 @@
 ## item_066_plugin_manifest_schema_official_verified_minshellversion_deps - Plugin manifest schema (official/verified/minShellVersion/deps)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 50%
+> Progress: 100%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:15:50
+> Indicators reviewed: 2026-09-02 14:27:44
 
 # AI Context
 - Summary: Extends the plugin manifest with `official`/`verified`/`minShellVersion`/`dependencies` fields so the manager and install mechanism can trust and gate plugins.
@@ -54,8 +54,8 @@
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_000_archeotech_shell_dotfiles.md`
-- Primary task(s): (none yet)
+- Request: `req_000_archeotech_shell_dotfiles`
+- Primary task(s): `task_013_official_minshellversion_dependencies_fields_validation_remaining`
 
 # Priority
 - Priority: Medium
@@ -66,6 +66,7 @@
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
 - Task `task_012_manifest_verified_description_fields_delivered` was finished via `logics-manager flow finish task` on 2026-08-21.
+- Task `task_013_official_minshellversion_dependencies_fields_validation_remaining` was finished via `logics-manager flow finish task` on 2026-09-02.
 
 # Tasks
 - `task_012_manifest_verified_description_fields_delivered`
