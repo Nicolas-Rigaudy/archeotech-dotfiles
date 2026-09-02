@@ -1,0 +1,31 @@
+name: compositor-config
+
+# Lint the compositor configs against the real compositor binaries, in an Arch
+# container that matches the target environment. This is the CI half of
+# ci/verify-compositor-configs.sh (which runs the same check locally via Docker).
+# Runs the job directly INSIDE an Arch container, so no docker-in-docker.
+
+on:
+  push:
+    paths:
+      - 'config/.config/hypr/**'
+      - 'ci/**'
+      - '.github/workflows/compositor-config.yml'
+  pull_request:
+    paths:
+      - 'config/.config/hypr/**'
+      - 'ci/**'
+  workflow_dispatch:
+
+jobs:
+  hyprland-verify:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install deps
+        run: pacman -Sy --noconfirm --needed hyprland git
+
+      - uses: actions/checkout@v4
+
+      - name: Verify hyprland.conf parses on real Hyprland
+        run: bash ci/hyprland-verify-native.sh config/.config/hypr/hyprland.conf
