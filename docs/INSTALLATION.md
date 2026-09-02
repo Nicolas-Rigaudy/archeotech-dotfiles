@@ -6,6 +6,26 @@ Complete step-by-step guide to install Arch Linux + MangoWC/Hyprland desktop env
 
 ---
 
+## Quick Start (already on Arch)
+
+Reinstalling on a machine that already runs Arch + `paru`? Skip the from-scratch
+guide — clone and run one command:
+
+```bash
+git clone https://github.com/Nicolas-Rigaudy/archeotech-dotfiles.git ~/Projects/archeotech-dotfiles
+cd ~/Projects/archeotech-dotfiles
+./scripts/install.sh --profile full     # install all packages, then deploy configs
+```
+
+`install.sh` backs up any existing `~/.config` entries first, deploys via GNU
+Stow, verifies the shell can launch, and ends with a first-run walkthrough. Use
+`--dry-run` to preview, or `--profile minimal` for required packages only. Then
+install the **shell** from the [`archeotech-shell`](https://github.com/Nicolas-Rigaudy/archeotech-shell)
+repo (its own `install.sh`). The rest of this document is the full from-scratch
+Arch install.
+
+---
+
 ## Table of Contents
 
 - [Pre-Installation](#pre-installation)
@@ -427,7 +447,22 @@ git clone https://github.com/Nicolas-Rigaudy/archeotech-dotfiles.git
 cd archeotech-dotfiles
 ```
 
-### 2. Deploy Configs with GNU Stow
+### 2. Install Packages (optional but recommended)
+
+`install-packages.sh` installs everything this setup uses via `paru`, split into
+**required** (the compositor + Quickshell shell won't run without them) and
+**optional** (apps, dev tooling, eye-candy):
+
+```bash
+./scripts/install-packages.sh                   # required, then prompt for optional
+./scripts/install-packages.sh --profile minimal # required only
+./scripts/install-packages.sh --profile full    # required + optional, no prompt
+./scripts/install-packages.sh --dry-run         # just list the two sets
+```
+
+Requires `paru` (see [Install AUR Helper](#3-install-aur-helper-paru) above).
+
+### 3. Deploy Configs with GNU Stow
 
 This repository uses GNU Stow to manage dotfiles through symlinks.
 
@@ -438,14 +473,18 @@ sudo pacman -S stow
 
 **Deploy all configs:**
 ```bash
-./scripts/install.sh
+./scripts/install.sh                 # deploy configs (packages already installed)
+./scripts/install.sh --profile full  # install packages FIRST, then deploy
+./scripts/install.sh --dry-run       # preview without touching anything
 ```
 
 This script will:
-- Check that Stow is installed
+- Check that Stow is installed (aborts before touching the filesystem if not)
+- With `--profile`, run `install-packages.sh` first
 - Backup any existing configs to `~/.config-backup-TIMESTAMP/`
 - Create symlinks from `~/.config/` → repo configs
-- Verify symlinks are working
+- Verify symlinks are working, then verify the shell can launch
+- End with a first-run walkthrough (session pick, reload keybind, theme switch)
 
 **How it works:**
 - Your configs are stored in the repo: `config/.config/hypr/`
@@ -458,7 +497,7 @@ This script will:
 ./scripts/uninstall.sh
 ```
 
-### 3. Configure Audio
+### 4. Configure Audio
 
 ```bash
 sudo pacman -S pipewire pipewire-pulse pipewire-alsa wireplumber sof-firmware
@@ -468,13 +507,18 @@ systemctl --user enable pipewire pipewire-pulse wireplumber
 systemctl --user start pipewire pipewire-pulse wireplumber
 ```
 
-### 4. Reboot
+### 5. Reboot
 
 ```bash
 reboot
 ```
 
 You should now boot into SDDM with Catppuccin theme and log into Hyprland!
+
+> **Note:** the archeotech Quickshell **shell** (bar/panels/launcher) ships from
+> the separate [`archeotech-shell`](https://github.com/Nicolas-Rigaudy/archeotech-shell)
+> repo — clone it and run its own `scripts/install.sh` to deploy the shell config
+> and themes. `install.sh` above warns if the shell config is not yet present.
 
 ---
 
