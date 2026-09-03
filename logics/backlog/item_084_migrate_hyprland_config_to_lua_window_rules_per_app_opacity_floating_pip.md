@@ -16,17 +16,17 @@
 - Skip when: Working on the MangoWC config, the CompositorService QML facade (item_070), or the shell itself.
 
 # Problem
-- Hyprland 0.56.2 (current in Arch extra) has moved window rules to a new Lua config (`hl.window_rule{...}`). The classic INI `windowrule = float, class:…` form is rejected outright ("invalid field float"), and `windowrulev2 = …` only parses with a deprecation error shown on every login — confirmed deterministically via `ci/verify-compositor-configs.sh`.
+- **Hard deadline:** Hyprland has announced the INI `.conf` format will be DISCONTINUED in **0.57** (the running 0.56.2 already shows this notice on login). The entire `hyprland.conf` — not just rules — must move to the new Lua config before then, or the Hyprland fallback breaks on the next major update.
+- 0.56.2 already moved window rules to Lua (`hl.window_rule{...}`): the classic INI `windowrule = float, class:…` is rejected outright ("invalid field float"), and `windowrulev2 = …` only parses with a per-login deprecation overlay — confirmed deterministically via `ci/verify-compositor-configs.sh`.
 - Consequently the Hyprland fallback currently ships with NO per-window rules: floating PiP, float+center for settings dialogs (pavucontrol/blueman/nm-editor/GTK portal), and per-app opacity (kitty/Code) were dropped for a clean session. Only global `decoration` opacity remains (all windows).
-- Hyprland is trending fully toward Lua (the upstream wiki now documents only Lua for rules), so an INI-only config is a dead end for anything rule-based.
 
 # Scope
 - In:
-  - Decide the migration shape: full `hyprland.lua` vs a verified INI-sources-Lua hybrid (the `source = rules.lua` hybrid verifies clean but was NOT proven to actually apply the rules — needs a bootable Hyprland test to confirm).
+  - Port the WHOLE `hyprland.conf` → `hyprland.lua` (monitors, binds, general/decoration/input, autostart, workspace rules) — the INI format is being removed in 0.57, so this is a full migration, not just rules.
   - Re-express the dropped rules in Lua: floating PiP (`match={title="Picture-in-Picture"}, float=true`), float+center for the settings dialogs, per-app opacity for kitty/Code, and the shell glass blur (`layerrule` blur on `archeotech-shell`).
   - Extend `ci/` to lint the Lua config (`Hyprland --verify-config` already accepts `.lua`).
 - Out:
-  - MangoWC config (its rules stay INI).
+  - MangoWC config (stays its own format).
   - The CompositorService/HyprlandService QML facade (item_070, already delivered).
   - Proving rules render live (needs a real Hyprland login or a bootable in-container Hyprland — see item_068 / ci/README gaps).
 
