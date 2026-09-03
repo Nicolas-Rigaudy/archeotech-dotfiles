@@ -2735,3 +2735,298 @@ we replicate with an ImageMagick-via-`Process` cache.
 Shipped: persistent `Wallpapers` service, `Carousel` primitive, wallpaper carousel with working cached
 thumbnails (`file://` fix), reload keybind restores full shell restart. **Pending:** logo carousel +
 theme carousel (per 19.3), wallpaper item-size grows once the crammed logo/colour blocks move out.
+
+
+
+
+## 20. Ambient-shell research sweep — animation, applets, creative design, fluidity (2026-09-03)
+
+**Why:** a focused pass over ~18 reference shells/tools/dotfiles (the raw link list below), chased for
+better **animation**, fuller **applets/widgets**, more **creative design**, and **fluidity** — the
+user-stated goals. Read-only shallow clones, source-inspected. Methodology per §18/§19: **mine patterns,
+never fork/clone wholesale** (principle #1). User steered the deep-dives by saying what they liked per
+source. Corpus captures already landed this session are cross-referenced in §20.4.
+
+**Sources.** Shells: **Hyprism**, **Serpantinum** (richest), **Brain_Shell**, **Caffyne** (Fabric/GTK/
+Python — architecture only), **Ambxst** (revisited, extends §12.5). Tools: **k4** (a major QS shell, not
+a tool), **hyprlax**, **rice-cooker**, **hyprmod**, **csakura**, **hyprdvd**, **Visor-BootManager**.
+Dotfiles: **pibble**, **dhrruvsharma/shell**, **vantage**, **hyprcraft**, **athena-eww** (eww/GTK),
+**JwpAT** (abandoned; hyprlock is flat, no depth effect). "hyprland fluid" = a unixporn post, no repo.
+
+### 20.1 Cross-source convergent patterns (highest leverage — the real payoff)
+
+**Panel/island MORPH — three complementary techniques (catalogue all three).**
+- **Hyprism single-driver** (`MorphOverlay.qml:30,175-184`): one animated scalar `morphProgress` 0→1;
+  width/height/radius all LERP a captured `morphFrom` snapshot → `morphTarget`. Interrupts re-base
+  smoothly (capture current interpolated geometry as new `from`, retarget, restart — `:87-101`).
+  `OutBack` overshoot + 16px margin. Content-aware: `geometryForMode()` binds to live result counts →
+  re-animates on every keystroke. Best for the **island compact↔expanded**. Strictly better than our
+  per-property Behaviors (guaranteed sync + graceful interrupt).
+- **Brain_Shell flare-shape + Behavior + mask-follows**: `PopupShape` Canvas draws a background that
+  **melts into the bar** via concave `quadraticCurveTo` flares on the two bar-touching corners (our
+  concave-corner language at panel level); a `sizer` animates `width/height` via `Behavior InOutCubic`
+  to a per-`page` lookup (`pageWidths/pageHeights`); `mask: Region{item: maskProxy}` tracks the sizer so
+  the **input region morphs with the shape** (verified per-frame reactive — `region.cpp:41-44` connects
+  item x/y/w/h → mask rebuild; caveat: ~1-frame input/visual lag, needs real-device smoke test). Best
+  for **panels tethered to the bar** morphing between pages.
+- **vantage pill→dot→panel** (`BarMorph.qml`): the bar pill **shrinks to a 6×6 dot**, then a separate
+  panel surface is **born at that dot and grows** to `targetSize(name)`; reverses on close. Two surfaces,
+  reads as one continuous shape. Best for **"a pill blooms into a panel."**
+
+**Swappable widget LOOKS — three shells converged INDEPENDENTLY** (strong signal for our widget
+contract, relates adr_010 + item_022): Serpantinum **faces** (Clock Analog/Digital/Minimal, Weather
+Compact/Full/Round, Music flat/Round — each a self-contained face `.qml` declaring `min/maxAspect`),
+driven by a data-driven **`WidgetRegistry`** (`type→{defaultVariant, variants:{id:{file,icon,label}}}`);
+Ambxst **variants**; dhrruvsharma **skins** (`workspacedisc/skins/` × 3). Takeaway: a widget should have
+**looks, not just presence** — user picks the face/skin.
+
+**GPU audio visualizer — 1×N data texture + swappable fragment shader** (dhrruvsharma
+`components/CavaShader.qml`, from zesis-shell GPL). CPU fills a tiny 1×N Canvas (red = bar height 0..1)
+→ `ShaderEffectSource` → a `.frag.qsb` shader **does all drawing** → fullscreen visualizer = ONE GPU
+quad, no per-frame CPU repaint. A **portable cava-shader pack** (`bar_spectrum`/`eye_of_phi`/
+`northern_lights`/`spectrogram`/`winamp_line_style`) appears identically in dhrruvsharma AND hyprcraft →
+swap `.frag` = different visualizer. **Beats** Serpantinum's per-frame Canvas bars for anything large.
+
+**User-facing motion system + live preview** (pibble `services/Anim.qml`). Named animation
+*personalities* the user picks — `bloom` (staggered spring cascade), `pop`, `fade`, `cascade`, `slide`,
+`none` — each parameterizing `fromScale/fromY/duration/easing`; exit mirrors entrance; **four
+independent off-switches** (tile/launch/menu/power) so muting one never flattens another. `Settings/
+AnimationsTab` + `AnimPreview` give a **live in-settings preview**. Extends our §18 motion tokens into a
+user feature.
+
+**Bake-expensive-effects-to-cache** (pibble `XrayBackdrop.qml`). A growing reveal-circle mask uncovers a
+**blurred+saturated wallpaper backdrop**, but the blur is **baked to cache** (matched to the compositor
+kernel, stored beside the thumbnail) → open = one texture upload, zero effect passes; `MultiEffect`
+live-blur only as fallback. **Relevant to adr_008** (we disabled compositor blur) — a cheap blurred
+backdrop without compositor blur. Same bake pattern powers the **depth-lockscreen** subject cutout.
+
+**Canvas as the "hero element" habit** (Serpantinum). Reach for `Canvas`+`requestPaint` wherever a list
+would be dull: the **orbital connection manager** (central core + orbiting device nodes linked by
+animated organic sine-perturbed energy STRANDS, 3 layered curves, 25ms repaint, distance falloff), the
+cosmic **calendar** (multi-axis 3D idle wobble + dashed orbit ring + per-second breathing), circular
+media visualizer, bristle-brush **DrawAction** whiteboard. Gate repaint on `visible`, cap to focused
+popup (Iris Xe). The single biggest "creativity" lever, all pure-QML.
+
+**UI sound + audio-reactive springs** (Serpantinum). `Sounds.qml` = full SFX system (`pw-play` via
+`execDetached`, mute/volume config, batched queue, one-shot + looping handles) — sliders tick, buttons
+click. **MusicPopup**: album disc scale/tilt/bounce driven by `bassLevel/kickLevel` via `SpringAnimation`
+(the art thumps to the kick); album-art **blur-crossfade** background (two layers ping-pong 800ms on
+track change). Nobody in §18 had UI sound.
+
+**Per-panel entrance choreography** — one `introState` scalar every child reads for opacity/scale/slide,
+so opening any applet is choreographed not instant (Serpantinum universal; Hyprism `introMain`; Brain_
+Shell `PopupSlide` w/ anti-flicker hover-close-delay + slide-out-then-hide). **Ambient idle motion**
+(orbiting blobs, multi-axis wobble, per-second breathing) keeps panels alive when idle.
+
+**Optimistic + demand-gated services.** Hyprism toggles set `pending`+`desired`→fire→4.5s timeout→real
+state confirms/fails via OSD (our "no fake toggles" rule done right). Cava/monitor services **refcount
+consumers** + only run the process when a consumer is visible AND relevant (Cava decay-timer so bars fall
+smoothly on pause). Pollers gated on `panel.visible`.
+
+### 20.2 Per-source condensed findings
+
+**Hyprism** — [MOTION] single-driver morph + content-aware auto-morph (§20.1). [APPLET] optimistic-toggle
+reconciliation; shared `Navigation.qml` grid nav + `takeInitialFocus()` + armed 240ms dismissal timer.
+[DESIGN] three-window island topology (strut reserves zone; morphing surface in a separate overlay whose
+mask tracks the child); sliding selection highlight (one rect reparented into `contentItem`,
+`mapToItem`-tracks current). [WIDGET] fit-to-viewport bento (author at one size, single `scale` to fit;
+enable/disable animates `height: visible?implicitHeight:0`). [DESIGN] palette cross-fade (lerp every role
+channel-by-channel 240ms — take for our family/flavor/accent switch). Skip: matugen source, sw render,
+variable font.
+
+**Serpantinum** (richest) — [WIDGET] faces + `WidgetRegistry` (§20.1). [DESIGN] geometric-primitive icons
+(FlipIcon chevron from Rects, rotate `OutBack` — crisp w/o a variable font). [MOTION] compound micro-
+interaction (pop+flash+color+sound per press). [SERVICE] `Sounds` SFX + `Cava` refcount/decay (§20.1).
+[APPLET] orbital connection manager (native `Quickshell.Networking/Bluetooth`, Canvas energy-strands);
+MusicPopup audio-reactive disc + blur-crossfade; cosmic calendar; VolumePopup canvas gradient;
+DrawAction whiteboard (bristle brush + destination-out eraser + replay undo/redo, FBO). [APPLET] first-run
+**guide** wizard incl. **Digital Wellbeing** (screen-time) + drag-drop widget **Redactor**.
+
+**Brain_Shell** — [APPLET] `PopupSlide` universal panel state machine (edge slide + hover/click open +
+anti-flicker close-delay + windowVisible sequencing). [WIDGET] `Speedometer` clean arc gauge (245° sweep,
+track+fill, active/off, size factor — for CPU/RAM/temp). [DESIGN] `SeamlessBarShape`/`PopupShape` Canvas
+concave-flare morph (§20.1). [FEATURE] screen-shader filter toggle (grayscale/sepia/night — but via
+Hyprland `decoration:screen_shader`+hyprctl, doesn't port to MangoWC). [FEATURE] Kanban/Tasks applet
+(work-first). Skip: matugen, Lua Hyprland config.
+
+**Caffyne** (Fabric/GTK — architecture only) — [APPLET] drag-drop bar editor: **global drag-state, not
+DnD payload** (`_dragging_key` module-global; payload carries only a `monitor:bar:section:index`
+locator) → sidesteps flaky Wayland cross-surface DnD; `DropPlaceholder`; `create_surface_from_widget`
+drag icon; **applet grouping** via group-zones + `INCOMPATIBLE_GROUPS` set. [PLUGIN] drop-a-folder plugin
+dirs (`~/.config/.../plugins/` w/ `NAME/BAR_WIDGET/...`) + live CSS hot-reload. [SERVICE] **MangoWC socket
+IPC** (see §20.6 — cross-checks adr_007). → Fed adr_028 + item_022.
+
+**Ambxst** (revisited, cf §12.5) — [DESIGN] surface-role styling engine: every surface is one
+`StyledRect{variant:"srPopup"}`; look 100% data from per-preset `theme.json` role recipes (gradient
+multi-stop radial/linear + border[token,width] + halftone dot-pattern + opacity + radius + itemColor,
+over semantic tokens via `Config.resolveColor`). GLSL shader packs ≤8 gradient stops in vec4 uniforms.
+[FEATURE] **presets = per-domain JSON bundles** ({theme,bar,dock,notch,desktop,...}) — swap = reskin
+everything (Frutiger Aero/Retro/Liquid Glass/Manga/GNOME). [FEATURE] in-shell `VariantEditor` w/ semantic
+color picker. [SERVICE] theme export generators (Gtk/Kitty/Discord/QtCt/Pywal). → Fed adr_027 note. Keep
+mechanism, drop matugen source.
+
+**k4** (major QS shell) — [APPLET] `K4Plugin` contract + **priority contention** for a SHARED island
+(idle 0·volume 40·clock 50·player 55·toast 59·panel 60·launcher 80·ask 90) + `transitorio` self-dismiss;
+**service/view lifecycle split** (Process/Timer/IPC at plugin scope, view mounts on demand); plugin-
+relative assets (`carpeta`+`fichero()`); content-driven size (measure-not-sum); **ships a coding-agent
+skill** to author plugins. → Fed adr_010 note.
+
+**pibble** — [MOTION] user-selectable motion personalities + live preview (§20.1). [DESIGN] parallax
+wallpaper carousel (cells by `rank`: fan `edgeOffset` + shrink `scale`; **parallax = oversized image in
+clipped cell shifted `−rank·75px`**; works for **video** wallpapers via a recycled decoder pool).
+[DESIGN] xray baked-blur reveal (§20.1). [MOTION] `ScrambleText`. Live-preview-everything settings
+(`AnimPreview/NotifPreview/VolumePreview/...`). Perf: bake to cache, hold pixmaps across opens, key
+`Image.source` on explicit prop not `visible` (~30ms hitch avoided). Skip pywal source.
+
+**dhrruvsharma/shell** — [DESIGN] GPU whole-screen cava visualizer (§20.1). [DESIGN] animated
+glassmorphic lockscreen (`PamContext`+`WlSessionLock`, blurred wallpaper `MultiEffect`, clock/auth
+animate position+scale on auth focus, on-lock weather + CavaBars, glass password pill). [WIDGET]
+`workspacedisc` × 3 skins; themed content modules (anime/manga/novel), `aikira` AI module. NOT the depth
+effect (just blur-behind-clock).
+
+**vantage** — [MOTION] pill→dot→panel morph (§20.1). [DESIGN] `HoloRings`, `PaletteEditor` (echoes Ambxst
+VariantEditor), floating-pill bar. pywal-driven (skip source).
+
+**hyprcraft** — aesthetic/cohesion reference: flat hyprlock (no depth); same portable cava-shader pack;
+monochrome-catppuccin cohesion via one SCSS palette across waybar/GTK/rofi = **our theme-switch.py model
+already** (design rule #1/#7). No new mechanics.
+
+**athena-eww** (eww/GTK) — [WIDGET] asymmetric **bento** dashboard (one tall sysinfo card + 3-then-2 card
+rows, nested boxes, `deflisten` streaming-script data = the NDJSON-sidecar twin). Layout reference only.
+
+**Tools** — **k4** (above). **hyprlax** (sandwichfarm) multi-layer parallax wallpaper daemon + DoF blur,
+driven by workspace switch + active-window-center; adopt as backend OR replicate multi-layer parallax
+(pair w/ pibble). **rice-cooker** (Tauri) non-destructive browse→preview→revert→commit rice switch (UX
+model). **hyprmod** (GTK4) live "tweak every option" settings app (ref for future settings task).
+**hyprdvd** window-bounce + screensaver mode (idle-mode idea). **csakura** terminal falling-petals
+(ambient-particle idea; personal CLI toy). **Visor-BootManager** (C/UEFI) slick boot menu (boot-aesthetic
+ref; we stay GRUB per adr_002).
+
+### 20.3 Recommendations — adopt, ranked by leverage (pending scheduling)
+
+1. **Panel/island morph system** — adopt Hyprism single-driver for the island; Brain_Shell flare-shape+
+   mask-follow for bar-tethered panels; vantage pill→dot for pill→panel. Unify our per-property Behaviors
+   behind a single interruptible driver where it matters.
+2. **Swappable widget faces/skins** — extend the widget contract (adr_010) so a widget declares variants
+   (`{id:{file,label,constraints}}`); user picks the look. Fold into item_022's registry work.
+3. **GPU cava visualizer** — 1×N data texture + the portable `.frag` pack; a bar widget + optional whole-
+   screen. Needs a real GLSL layer (also wanted by Ambxst/Brain_Shell findings).
+4. **User-facing motion personalities + live preview** — build on §18 motion tokens; independent off-
+   switches; `AnimPreview`-style live preview in settings.
+5. **Micro-interaction + UI-sound polish** — shared state-layer already planned (§18.4-3); add layered
+   press feedback (pop+flash) and an optional `Sounds` SFX service (gated setting).
+6. **Canvas signature viz primitive** — a reusable radial-nodes+strands component for network/BT/workspace
+   panels; per-panel `introState` entrance; subtle ambient idle motion.
+7. **Baked-blur backdrops** — reconsider adr_008: bake per-wallpaper blur to cache for cheap blurred
+   backdrops (launcher/lock) without compositor blur.
+8. **Applet grouping** — drop-onto-group-zone → combined pill + incompatibility set (in item_022 as AC4).
+9. **New applets** — Digital Wellbeing (screen-time), Kanban/Tasks, draw/annotation quick-action.
+
+### 20.4 Captured to the corpus this session
+
+- **adr_028** (+ **item_022** enriched) — Visual Builder **drag-and-drop**, intra-surface mock drag +
+  click-to-assign fallback (Caffyne mechanics). Narrows §14.4's click-only stance (cross-window only).
+- **adr_027** Consequences note — theming-engine **reference implementation** (Ambxst StyledRect role
+  recipes + presets + VariantEditor); seeds our style-delegate schema; keep versioning/gating they lack.
+- **adr_010** Consequences note — **plugin priority-contention + service/view lifecycle split** (k4).
+
+### 20.5 Future-work candidates (to groom into request[s] — candidates, not commitments)
+
+1. **Settings deep-dive** — comprehensive live-settings UX; ref **BlueManCZ/hyprmod**.
+2. **Nicer boot menu aesthetics** — polished GRUB theme (stay GRUB, adr_002); ref **IO-ZetZor/Visor**.
+3. **Idle / screensaver mode** — animate/dim on idle, restore on cursor move.
+4. **Quick-preview theme UX** — browse→live-preview→revert→commit; ref **rice-cooker** + §19 carousel.
+5. **Depth lockscreen** — iPhone/Samsung clock-behind-subject: `rembg` subject cutout baked in
+   `wallpaper-set.sh` → layered native lock (wallpaper→clock→cutout) + optional parallax. JwpAT does NOT
+   have it (flat lock); build from scratch (composes pibble bake + our wallpaper pipeline + native lock).
+
+### 20.6 Reference notes / corrections
+
+- **MangoWC IPC (cross-checks adr_007 / claude.md "mmsg -w").** Caffyne talks to MangoWC over the RAW
+  Unix socket at `$MANGO_INSTANCE_SIGNATURE`: request/response `get all-clients`/`get all-monitors` (one
+  JSON line), `dispatch <verb>,<args>` (`focusclient,id:X` · `view,{idx},0,{output}` · `switchkblayout`),
+  and a **persistent watch socket per topic** (`all-monitors`/`all-clients`) that PUSHES events — no
+  polling. `mmsg` is almost certainly a CLI over this. **We could connect directly via
+  `Quickshell.Io.Socket`** (lower latency, event-driven) instead of spawning `mmsg -w`. VERIFY the
+  `dispatch` grammar against our mango build before adopting (`echo 'get all-monitors' | socat -
+  UNIX-CONNECT:$MANGO_INSTANCE_SIGNATURE`).
+- **JwpAT "hyprlock depth" repo has NO depth effect** — 0 `image{}` layers in any of its 3 themes; flat
+  lock, abandoned. The effect is real but must be built (§20.5-5).
+- **Cava GLSL shader pack** (`bar_spectrum/eye_of_phi/northern_lights/spectrogram/winamp_line_style`) is
+  a portable set (identical in dhrruvsharma + hyprcraft) — reusable.
+- **Screen-shader filters** (Brain_Shell) use Hyprland `decoration:screen_shader`; don't port to MangoWC
+  — would need a MangoWC path or a fullscreen QS `ShaderEffect` overlay.
+
+# New links to analyze, new shell projects and tools, reddit and github links 
+
+## New shells
+
+- https://www.reddit.com/r/hyprland/comments/1vzdwgs/quickshell_hyprism_update_easier_installation/
+- https://github.com/kristyancarvalho/hyprism
+
+- https://www.reddit.com/r/hyprland/comments/1rleoku/morphing_animations_in_ui/
+- https://www.reddit.com/r/hyprland/comments/1th2stg/quickshell_can_do_some_pretty_insane_things/
+- https://www.reddit.com/r/hyprland/comments/1rj737s/a_beautiful_dashboard_with_weather_custom_modules/
+- https://www.reddit.com/r/hyprland/comments/1sfazlj/quickshell_hyprland_dots_arch_and_its_derivatives/
+- https://www.reddit.com/r/hyprland/comments/1ri9ioj/a_beautiful_connection_manager_on_hyprland/
+all from this shell
+- https://github.com/ilyamiro/serpantinum
+
+- https://www.reddit.com/r/hyprland/comments/1u1b2xq/brain_shell_v010_released/
+- https://github.com/Brainitech/Brain_Shell
+
+- https://www.reddit.com/r/LinuxPorn/comments/1tgks5q/a_drag_and_drop_wallpaper_thingy_for_the_shell/
+- https://caffyne.org/
+
+- https://axeni.de/ambxst/
+
+
+## Cool tools
+
+- https://www.reddit.com/r/hyprland/comments/1o5qo62/oc_from_popular_demands_hyprdvd_now_with_windows/
+- https://github.com/nevimmu/hyprdvd
+
+- https://www.reddit.com/r/hyprland/comments/1t6ex2b/rice_cooker_a_visual_toy_tool_for_ricing_hyprland/
+- https://github.com/amarsbar/rice-cooker
+
+- https://www.reddit.com/r/hyprland/comments/1s7nkrn/i_made_a_native_gtk4_settings_app_for_hyprland/
+- https://github.com/BlueManCZ/hyprmod
+
+- https://www.reddit.com/r/hyprland/comments/1uysrzj/csakura_falling_sakura_petals_in_your_terminal/
+- https://github.com/realstrawhat/csakura
+
+
+-https://www.reddit.com/r/hyprland/comments/1nh59j7/buttery_smooth_parallax_wallpaper_engine_for/
+- https://hyprlax.com/
+
+- https://www.reddit.com/r/hyprland/comments/1vwb5es/my_island_bar_can_now_become_a_dock/
+- https://github.com/k4ditano/k4
+
+- https://www.reddit.com/r/LinuxPorn/comments/1u86foo/cleanest_boot_menu/
+- https://github.com/IO-ZetZor/Visor-BootManager
+
+
+## Dotfiles for inspiration
+
+- https://www.reddit.com/r/hyprland/comments/1n8wzk5/hyprcraft_coffee_at_sunset/
+- https://github.com/zhaleff/hyprcraft
+
+- https://www.reddit.com/r/hyprland/comments/1tyv74j/hyprland_eww_here_is_how_it_looks_now_after_a/
+- https://github.com/haikal-hakim/athena-eww
+
+- https://www.reddit.com/r/hyprland/comments/1opmueg/hyprlock_depth/
+- https://github.com/JwpAT/hypr/
+
+- https://www.reddit.com/r/hyprland/comments/1v2cof0/my_first_rice_with_quickshell/
+- https://github.com/simeulinuxkaliaiwr/vantage
+
+- https://www.reddit.com/r/unixporn/comments/1uyf3wn/hyprland_fluid/
+
+- https://www.reddit.com/r/hyprland/comments/1seokvc/finally_100_quickshell_rice_now_replaced_rofi_as/
+- https://github.com/dhrruvsharma/shell
+
+- https://www.reddit.com/r/hyprland/comments/1vjqvrr/resizeable_wallpaper_carousel_with_parallax_effect/
+- https://github.com/kianblakley/pibble
+
+- https://www.reddit.com/r/LinuxPorn/comments/1v3lrh8/hyprland_material_3_design/
+- https://github.com/pctrade/end4-pC
