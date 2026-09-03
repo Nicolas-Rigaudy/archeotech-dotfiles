@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Lock screen
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-03 15:48:49
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -22,6 +22,7 @@
 # Scope
 - In:
   - Config-generator that emits hyprlock.conf from a config model; Settings pane for element toggles, layout presets, phrase list, clock format; store in Persistence.Config
+  - Candidate "depth" preset (ANALYSIS §20.5, user-endorsed 2026-09-03 — iPhone/Samsung clock-behind-subject): emit a foreground-cutout `image{}` layer positioned AFTER the clock label so the clock sits behind the subject. The cutout is baked per-wallpaper via `rembg`/background-remover in `wallpaper-set.sh` (same bake-to-cache pattern as pibble's xray blur; our pipeline already does magick accent + logo compositing). Optional parallax (shift bg vs fg by cursor). Graceful fallback: flat lock when no cutout exists. (Also buildable in the native Quickshell lock, adr_017, as stacked Items — note but hyprlock-config path fits this item's scope. JwpAT's linked repo does NOT implement this.)
 - Out:
   - Arbitrary QML widgets on the lock surface
 

@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 15:52:25
+> Indicators reviewed: 2026-09-03 15:48:49
 
 # AI Context
 - Summary: An opt-in cava audio-spectrum visualizer element, themed to tokens, mountable on the bar, dashboard, and/or lock screen. Reads cava output and renders a glass/HUD spectrum that pairs with the existing MPRIS media surface. Sourced from item_042 finding A2; a high-wow, on-theme (mecha-HUD/cyberdeck) addition feeding the polish + demo story.
@@ -24,6 +24,7 @@
   - A cava-backed spectrum widget (subprocess stream -> token-themed bars), opt-in per mount point (bar / dashboard / lock).
   - Config surface via configSchema; respects flat<->glass and the accent tokens.
   - Idle handling (no audio -> collapse/hide) to stay "quiet by default".
+  - Implementation technique (ANALYSIS §20.1, from dhrruvsharma/zesis-shell): prefer the GPU path for anything large/full-screen — CPU fills a 1xN data texture (red channel = bar height 0..1) via a ShaderEffectSource, a fragment shader (`.frag.qsb`) does all drawing, so the visualizer is one GPU quad, not a per-frame CPU repaint. A portable cava `.frag` pack (`bar_spectrum`/`eye_of_phi`/`northern_lights`/`spectrogram`/`winamp_line_style`) gives swappable visual styles for free. Refcount consumers + a decay timer (bars fall smoothly on pause) keep it cheap; gate the process on a visible consumer.
 - Out:
   - Bundling/installing cava itself (packaging note only; add to docs/PACKAGES.md).
   - Full media-panel redesign.

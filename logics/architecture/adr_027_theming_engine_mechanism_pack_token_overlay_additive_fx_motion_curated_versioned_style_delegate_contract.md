@@ -6,6 +6,7 @@
 > Related task: `task_011_style_delegate_registry_decorator_fx_motion_tokens_pack_scoped_settings_remaining`
 > Drivers: deliver adr_026's capability surface WITHOUT a big-bang component rewrite; preserve the reactive singleton binding chain (adr_004); reuse the plugin rails (adr_010/016/066/item_063); keep the versioned style API small and evolvable.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 11:06:48
 
 # Overview
 - The theming engine ships as additive LAYERS over the existing reactive `Appearance` singleton, staged conservatively per adr_026: (A) a pack TOKEN OVERLAY that reskins the whole shell with near-zero component edits; (B) additive DECORATOR/FX + MOTION overlays at a few chrome mount points; (C) a small, `minShellVersion`-gated component STYLE-DELEGATE contract added LAST; (D) pack-scoped settings via the existing ConfigForm pipeline. It explicitly rejects routing every component through a new style-registry lookup.
@@ -49,6 +50,13 @@ flowchart TB
 - Risk: two token sources (base `theme.json` + pack `tokens.json`) need a crisp precedence/fallback story or packs silently miss tokens — document + lint it. Layer C runs pack-authored QML, so trust tiers (item_066) + `minShellVersion` gating are mandatory before community packs.
 - Build order (waves): Wave 1 Layer A + base pack → Wave 2 Layer B → Wave 3 Layer C + `STYLE_API.md` → Wave 4 Layer D.
 - Linux theming conventions: aligns with XDG base dirs (packs under `$XDG_DATA_HOME`), freedesktop icon-theme inheritance-with-fallback (pack `inherits` + override›base›fallback precedence), Material-3 design-token layering (already in the token tree), data-driven themes for Layers A/B (base16/pywal/Stylix-style), and live reactive reload. Divergence: Layer C ships QML (no CSS layer in a QML shell) — mitigated by trust tiers + `minShellVersion` + base-delegate fallback, and deferred to last.
+- **Reference implementation (Ambxst, 2026-09-03 study — full writeup ANALYSIS §20 pending).** Ambxst ships this exact layering as working QML, materially de-risking the plan:
+  - *Validates Layers A+C:* every surface is one `StyledRect { variant: "<role>" }`; the look is 100% data-driven from a per-preset `theme.json` of named surface-role recipes (`srBg`/`srPopup`/`srPane`/`srPrimary`+`Focus`+`Over…`/`srError`…). Confirms a small CURATED role set (~20 roles) reskins the whole shell with zero per-widget edits — our style-delegate contract, proven.
+  - *Seeds our style-delegate SCHEMA* (per role): `{ gradient: [[token, stop]…], gradientType: linear|radial + angle + centerX/Y, border: [token, width], opacity, radius, itemColor (fg), + optional halftone dot-pattern layer }`. All colours are SEMANTIC TOKENS resolved at render (`Config.resolveColor`) — matches our token-source-agnostic stance (keep curated family/flavour/accent, drop their matugen source).
+  - *Validates Layer B additive-FX:* a multi-stop gradient GLSL shader (≤8 stops packed into vec4 uniforms, radial/linear) + halftone texture as per-surface additive layers — cheap, per-surface (no `layer.enabled`), independent of the disabled global blur (adr_008).
+  - *Validates Layer A packs-as-bundles:* a preset = a per-domain JSON bundle `{theme, bar, dock, notch, desktop, workspaces, lockscreen, overview, compositor, performance}`; global feel knobs (`animDuration`, `roundness`, `shadow*`, fonts, `lightMode`, `oledMode`) live in the theme bundle — matches our token/motion overlay + pack-scoped settings (Layers A/D).
+  - *Validates Layer D editor:* an in-shell `VariantEditor` edits the same recipes the renderer consumes, via a SEMANTIC-colour picker (pick token names, not hex) — a concrete model for our Theme-section ConfigForm.
+  - *Divergence/caution:* Ambxst has NO curated/versioned style API and no `minShellVersion` gating — any preset can restyle anything, the exact blast radius adr_026/this ADR guard against. Adopt their `StyledRect`+recipe mechanism; keep our curated role set + versioning + base-delegate fallback.
 
 # References
 - Related request: `req_001_theming_capability_surface_flagship_identity_packs`
