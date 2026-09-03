@@ -1,13 +1,14 @@
 ## item_071_hyprland_config_port_dual_sddm_session_reload_parity - Hyprland config port + dual SDDM session + reload parity
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 50%
+> Progress: 100%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-03 10:19:51
 
 # AI Context
 - Summary: Ports the compositor config (keybinds/window rules/monitor/blur) to Hyprland, adds a dual SDDM session, and gives reload parity with the MangoWC workflow.
@@ -52,8 +53,8 @@
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_000_archeotech_shell_dotfiles.md`
-- Primary task(s): (none yet)
+- Request: `req_000_archeotech_shell_dotfiles`
+- Primary task(s): `task_007_dual_sddm_session_entry_hyprctl_reload_parity_remaining`
 
 # Priority
 - Priority: Medium
@@ -64,6 +65,7 @@
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
 - Task `task_006_hyprland_conf_keybinds_workspaces_blur_hotplug_reload_delivered` was finished via `logics-manager flow finish task` on 2026-08-21.
+- Task `task_007_dual_sddm_session_entry_hyprctl_reload_parity_remaining` was finished via `logics-manager flow finish task` on 2026-09-03.
 
 # Tasks
 - `task_006_hyprland_conf_keybinds_workspaces_blur_hotplug_reload_delivered`
