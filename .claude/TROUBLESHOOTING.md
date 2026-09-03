@@ -473,6 +473,25 @@ Then: `hyprctl reload`
 
 ## MangoWC Issues
 
+### Undock/unplug freezes the compositor (output-hotplug teardown) — LIKELY RESOLVED in mango 0.16.0 (pending hardware confirmation)
+
+**Symptoms:** Unplugging the dock (removing external outputs) hangs MangoWC — historically even the built-in keyboard/trackpad went dead. Distribution-blocking for laptop+dock users. (Tracked as logics `item_005`.)
+
+**Investigation (2026-09-04, mango 0.16.2 + wlroots 0.20.2 + scenefx 0.5, Intel Iris Xe):**
+- The documented mango output-teardown **crash** family — issues [#1208](https://github.com/mangowm/mango/issues/1208) (live DisplayPort link drop → `wlr_output_finish` assertion at `output.c:401`), [#1230](https://github.com/mangowm/mango/issues/1230) (crash after suspend), [#1149](https://github.com/mangowm/mango/issues/1149) (NULL `selmon` deref on key event during output re-enumeration, only with `ov_tab_mode`) — was **fixed in mango 0.16.0** by commit `8169bfc` *"destroy output scene before remove output in layout"*. Release notes: *"Fixed a crash after system suspend on certain monitors."* We run **0.16.2**, so this family is already patched.
+- **wlroots 0.20.x point releases contain no output-teardown/hotplug fix** — the `wlr_output_finish` assertions are unchanged in 0.20.2. The real fix was mango-side teardown ordering, not a wlroots update. (So the original task premise "verify the wlroots 0.20.2 update resolves it" is moot — the mango version is what matters, and it's current.)
+- Repo moved `DreamMaoMao/mangowc` → **`mangowm/mango`**; issue search on the old URL returns nothing.
+
+**Open caveat — crash vs. hang:** all documented cases are *crashes* (session drops to SDDM). item_005 describes a *hang* (input fully dead, no crash). That is a **different signature**, not documented upstream — if it persists it may be a **kernel i915/DRM atomic-modeset stall** during connector teardown, below wlroots.
+
+**Verification protocol (run at the dock; safe):**
+1. First try the **safe-undock path**: disable external outputs *before* physically unplugging — `wlr-randr --output HDMI-A-1 --off` (and `--output DP-3 --off`), then unplug. This sidesteps the "live link drop mid-frame" path #1208 crashed on.
+2. If it still freezes, capture the failure mode — at freeze time try, in order: **VT-switch** `Ctrl+Alt+F3`, **SSH** in from your phone, **Magic SysRq**. Any responding ⇒ mango/wlroots-level (recoverable); *nothing* responding ⇒ suspect kernel i915/DRM.
+3. Collect evidence: `journalctl -b -1` around the freeze, `coredumpctl info mango` (distinguishes abort-vs-hang), `dmesg | grep -iE 'i915|drm|link'`, exact mango/wlroots/kernel versions.
+4. If it's a genuine *hang with no crash*, it is **unreported** — file at `github.com/mangowm/mango/issues` referencing #1230 + wlroots work item !4096, attaching the above.
+
+**Mitigation levers (Intel Iris Xe):** `wlr-randr --off` before undock (above); `WLR_DRM_NO_MODIFIERS=1` for hotplug black-screen/bandwidth quirks; `chvt` VT-switch to unstick an output-only freeze.
+
 ### XF86 Media Keys Don't Work (Volume, Brightness, Media)
 
 **Symptoms:**

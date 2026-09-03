@@ -11,10 +11,10 @@
 > Indicators reviewed: 2026-08-20 17:08:28
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
+- Summary: The undock-freeze bug. Investigation 2026-09-04 found the documented mango output-teardown crash family (#1208/#1230/#1149) was fixed in mango 0.16.0 (commit 8169bfc); we run 0.16.2 = already patched. wlroots 0.20.x point releases carry no output-teardown fix (fix was mango-side). Remaining unknown: our symptom is a *hang* not a *crash* — a different, undocumented signature possibly rooted in kernel i915/DRM. Full findings + verification protocol in `.claude/TROUBLESHOOTING.md` (MangoWC Issues).
 - Keywords: fix, dock, undock, freeze, wlroots, output, hotplug, mangowm
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Use when: The compositor hangs/crashes on dock removal or suspend/resume with external outputs.
+- Skip when: Investigating the layout re-apply on hotplug (that is task_015 / monitor-hotplug.sh, which assumes the compositor survives the event).
 
 # Problem
 - Unplugging the dock hangs MangoWC completely (even laptop kbd/trackpad dead); wlroots output-hotplug hang; distribution-blocking for laptop+dock users
@@ -34,6 +34,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Finding (2026-09-04): Documented crash family fixed in mango 0.16.0; current stack (0.16.2 + wlroots 0.20.2) already carries the fix. wlroots update was a red herring (no output-teardown fix in 0.20.x — fix was mango teardown-order commit 8169bfc). Cannot close: our symptom is a hang, not the documented crash, and hardware repro (physically unplug dock → session crash risk) has not been run on the current stack. Blocked on a user dock-test using the verification protocol in TROUBLESHOOTING.md. AC4's "robust fallback path" candidate = pre-undock `wlr-randr --off` of external outputs.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
