@@ -197,6 +197,37 @@ docker-compose up -d
 
 ## System Utilities
 
+### Multi-Monitor & Gaming Mode (MangoWC helpers)
+
+Three helper scripts in `scripts/` (symlinked to `~/.local/bin/`) cover the
+multi-monitor and performance controls on MangoWC:
+
+| Script | Role |
+|--------|------|
+| `monitor-apply.sh` | Single source of truth: reads active outputs via `mmsg get all-monitors` and applies the matching `wlr-randr` layout (work 3-mon / home 2-mon / DP fallback / laptop-only). Called by the two below. |
+| `monitor-hotplug.sh` | **Hotplug auto-detect daemon.** Streams `mmsg watch all-monitors` and re-applies the layout automatically on dock/undock (MangoWC applies `monitorrule=` on first sight but not the full positioning/transform on hotplug). Debounces the event burst; single-instance via `flock`. Started from `exec-once` in `config.conf`. |
+| `gaming-mode.sh` | Toggles blur/shadows/animations off for full-screen games. |
+
+**Tags follow monitors on undock** is handled by the compositor itself:
+MangoWC's `closemon()` reparents every client on a removed output to the
+surviving monitor and records its origin for restore on re-plug — no script
+needed. The hotplug daemon only corrects the physical layout.
+
+**Gaming mode** uses MangoWC's `setoption` IPC dispatcher, which writes a config
+key live (no `reload_config`, so no keyboard/monitor reset):
+
+```bash
+gaming-mode.sh          # toggle (Super+Ctrl+G)
+gaming-mode.sh on       # force effects off
+gaming-mode.sh off      # restore effects from config.conf
+gaming-mode.sh status   # print current mode
+```
+
+Gaming-OFF restores each key (`blur`, `shadows`, `layer_shadows`, `animations`,
+`layer_animations`) to its value in `config.conf` — no hardcoded defaults — so
+editing the config keeps the toggle honest. Current mode is tracked in
+`$XDG_RUNTIME_DIR/mango-gaming-mode.state`.
+
 ### Shell History - Atuin
 **Package:** `atuin`
 **Config:** [~/.config/atuin/config.toml](../config/.config/atuin/config.toml)

@@ -48,38 +48,10 @@ mmsg dispatch reload_config
 sleep 0.5
 
 # Re-apply monitor layout (best-effort — must never abort the relaunch below).
+# Shared with monitor-hotplug.sh via monitor-apply.sh (single source of truth
+# for output-detection → layout).
 set +e
-
-# Detect which outputs are connected and apply rules accordingly. `get all-monitors`
-# also lists configured-but-disconnected monitors (active:false), so filter by .active
-# — a bare name grep would false-positive on an unplugged monitor.
-ACTIVE_OUTPUTS=$(mmsg get all-monitors 2>/dev/null | jq -r '.monitors[] | select(.active) | .name' 2>/dev/null)
-
-HAS_HDMI=$(echo "$ACTIVE_OUTPUTS" | grep -qx "HDMI-A-1" && echo "yes" || echo "no")
-HAS_DP3=$(echo "$ACTIVE_OUTPUTS" | grep -qx "DP-3" && echo "yes" || echo "no")
-
-if [ "$HAS_HDMI" = "yes" ] && [ "$HAS_DP3" = "yes" ]; then
-    # Work desk: 3-monitor layout
-    # eDP-1: laptop (left), HDMI-A-1: landscape (middle), DP-3: portrait (right)
-    wlr-randr \
-        --output eDP-1    --mode 1920x1200 --pos 0,0     --transform normal \
-        --output HDMI-A-1 --mode 1920x1080 --pos 1920,60 --transform normal \
-        --output DP-3     --mode 1920x1080 --pos 3840,0  --transform 270
-elif [ "$HAS_HDMI" = "yes" ]; then
-    # Home: laptop + one external landscape
-    wlr-randr \
-        --output eDP-1    --mode 1920x1200 --pos 0,0     --transform normal \
-        --output HDMI-A-1 --mode 1920x1080 --pos 1920,60 --transform normal
-elif [ "$HAS_DP3" = "yes" ]; then
-    # DP-* fallback (unknown external, landscape)
-    wlr-randr \
-        --output eDP-1 --mode 1920x1200 --pos 0,0     --transform normal \
-        --output DP-3  --mode 1920x1080 --pos 1920,60 --transform normal
-else
-    # Solo: laptop only
-    wlr-randr \
-        --output eDP-1 --mode 1920x1200 --pos 0,0 --transform normal
-fi
+~/.local/bin/monitor-apply.sh
 
 # Restore the keyboard layout from before the reload. MangoWC has no "set layout
 # by name", so cycle switch_keyboard_layout until the active one matches again —

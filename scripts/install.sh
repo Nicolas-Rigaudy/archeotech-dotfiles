@@ -170,6 +170,9 @@ install_local_scripts() {
     # the archeotech-shell repo (deployed by its own install.sh into ~/.local/bin).
     LOCAL_SCRIPTS=(
         "mango-reload.sh"
+        "monitor-apply.sh"
+        "monitor-hotplug.sh"
+        "gaming-mode.sh"
         "shell-reload.sh"
         "project-jump.sh"
         "show-keybinds.sh"
