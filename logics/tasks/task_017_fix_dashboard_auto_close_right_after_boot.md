@@ -45,6 +45,7 @@
   - `shell.qml` — dashboard IPC `toggle()`/`open()` now clear `Commons.State.dashboardAutoOpen` (manual open cancels the boot auto-open intent).
   - `Dashboard.qml` — added a `Connections` on `Commons.State` that stops `autoDismiss` the instant `dashboardAutoOpen` goes false, closing the `open()`-while-open gap (no `panelOpenChanged` there).
 - Scope honoured: did not rewrite `openAuto` (out of scope); minimal, no new chrome.
+- Follow-up (2026-09-04, commit `0e4ebd6`): per user, the dashboard is a bottom-edge bar panel used to launch apps on login, so the 4s auto-dismiss was itself unwanted. Removed the auto-dismiss entirely (dropped the `autoDismiss` Timer + both `Connections`, `openAuto` now just opens, `dashboardAutoOpen` state deleted). Login still auto-shows; it stays until Esc/click-out. This supersedes `7107bca` and satisfies AC2 more completely (the dashboard always stays open, not just during the boot window).
 - Finished on 2026-09-04.
 - Linked backlog item(s): `item_043_fix_dashboard_auto_close_right_after_boot`
 - Related request(s): `req_000_archeotech_shell_dotfiles`
