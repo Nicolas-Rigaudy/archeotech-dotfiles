@@ -35,6 +35,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Coupling (2026-09-04): Kept fully independent from gaming mode (`gaming-mode.sh`, task_015). Auto-hide triggers on ANY fullscreen (video/presentation/game); disabling compositor effects stays a deliberate manual toggle. No auto-linking between the two.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
