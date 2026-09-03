@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: corvus
-> Indicators reviewed: 2026-09-02 14:41:47
+> Indicators reviewed: 2026-09-04 01:48:00
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -54,3 +54,8 @@
 
 # AC Traceability
 - request-AC4 -> This task. Proof: Added CompositorService.qml facade + extracted MangoService.qml (self-gated so inert under Hyprland) + new HyprlandService.qml on Quickshell.Hyprland; routed all MangoWC call sites (Osd, ShellPane, shell.qml, TitleWidget, WorkspacesWidget, LayoutPickerBody, WindowBrackets) through the facade. AC1: mmsg now appears only in MangoService.qml (grep-verified). AC2: both backends expose identical 9-method+focusedOutput surface (grep-verified); HyprlandService loaded error-free under a forced-Hyprland render. AC3: headless render with HYPRLAND_INSTANCE_SIGNATURE set selected HyprlandService (hyprland-socket warning), MangoService stayed inert (no mmsg), shell rendered unchanged with no QML errors; default render still shows mango workspace tags. qmllint clean; live session survived. Implemented in archeotech-shell 074235e + a38d858. Source: `074235e`
+- request-AC1 -> This task. Proof deferred to slice closeout.
+- request-AC2 -> This task. Proof deferred to slice closeout.
+- request-AC3 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.
