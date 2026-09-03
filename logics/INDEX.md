@@ -147,6 +147,10 @@
 | [item_085_idle_and_screensaver_mode](backlog/item_085_idle_and_screensaver_mode.md) | Idle and screensaver mode | Draft |  | 0 | backlog/item_085_idle_and_screensaver_mode.md |
 | [item_086_nicer_boot_menu_aesthetics_grub_theme](backlog/item_086_nicer_boot_menu_aesthetics_grub_theme.md) | Nicer boot menu aesthetics GRUB theme | Draft |  | 0 | backlog/item_086_nicer_boot_menu_aesthetics_grub_theme.md |
 | [item_087_settings_deep_dive_search_display_modes_deep_linking](backlog/item_087_settings_deep_dive_search_display_modes_deep_linking.md) | Settings deep-dive search display-modes deep-linking | Draft |  | 0 | backlog/item_087_settings_deep_dive_search_display_modes_deep_linking.md |
+| [item_088_bar_container_style_variants_continuous_pills_framed_floating_per_side](backlog/item_088_bar_container_style_variants_continuous_pills_framed_floating_per_side.md) | Bar container style variants continuous pills framed floating per side | Draft |  | 0 | backlog/item_088_bar_container_style_variants_continuous_pills_framed_floating_per_side.md |
+| [item_089_niri_and_sway_compositor_services_post_v1_0](backlog/item_089_niri_and_sway_compositor_services_post_v1_0.md) | Niri and Sway compositor services post v1_0 | Draft |  | 0 | backlog/item_089_niri_and_sway_compositor_services_post_v1_0.md |
+| [item_090_zen_browser_dynamic_chrome_theming_palette_follow_no_restart](backlog/item_090_zen_browser_dynamic_chrome_theming_palette_follow_no_restart.md) | Zen browser dynamic chrome theming palette follow no restart | Draft |  | 0 | backlog/item_090_zen_browser_dynamic_chrome_theming_palette_follow_no_restart.md |
+| [item_091_accent_picker_for_all_theme_families_with_gtk_fallback](backlog/item_091_accent_picker_for_all_theme_families_with_gtk_fallback.md) | Accent picker for all theme families with GTK fallback | Draft |  | 0 | backlog/item_091_accent_picker_for_all_theme_families_with_gtk_fallback.md |
 
 ## Tasks
 
