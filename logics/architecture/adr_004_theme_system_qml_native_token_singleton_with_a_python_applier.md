@@ -6,9 +6,21 @@
 > Related task: (none yet)
 > Drivers: The stack is QML-first, so it needs theming that binds natively yet still configures external apps.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:14
 
 # Overview
 - Every QML component reads color tokens from an Appearance singleton; theme-switch.py writes out external-app config as a side effect.
+
+```mermaid
+flowchart LR
+  TJ[theme.json]
+  AP[Appearance singleton tokens]
+  QC[QML components]
+  TS[theme-switch.py applier]
+  EXT[kitty rofi starship GTK VSCode Obsidian]
+  TJ --> AP --> QC
+  TJ --> TS --> EXT
+```
 
 # Context
 - Considered but rejected HyDE's wallbash -> .dcol -> per-app template pipeline.

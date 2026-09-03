@@ -6,9 +6,20 @@
 > Related task: (none yet)
 > Drivers: Need a desktop shell matching the curated Archeotech aesthetic that runs on MangoWC.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:15
 
 # Overview
 - Build the shell in-house, mining reference projects for patterns rather than forking Noctalia or AMBXST.
+
+```mermaid
+flowchart TD
+  REF[Reference shells Noctalia end-4 Caelestia]
+  PAT[Extract patterns not aesthetics]
+  RULE[Source-checking rule before workarounds]
+  OWN[Build-own Archeotech shell]
+  REF --> PAT --> OWN
+  RULE --> OWN
+```
 
 # Context
 - Noctalia has MangoWC support and polish; AMBXST is feature-rich but Hyprland-only.

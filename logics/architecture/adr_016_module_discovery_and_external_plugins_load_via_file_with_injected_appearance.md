@@ -6,9 +6,22 @@
 > Related task: (none yet)
 > Drivers: Third-party modules load from an absolute file:// path outside the config tree, where qs.Commons imports cannot resolve.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:16
 
 # Overview
 - Discover modules with a Process+jq scan and inject Commons.Appearance as an appearance property rather than relying on imports.
+
+```mermaid
+flowchart TD
+  SCAN[Process plus jq module scan rescan on edit-mode open]
+  BUILTIN[Built-ins in WidgetRegistry PanelRegistry]
+  PLUGIN[plugin id widgets discovered]
+  INJECT[Inject appearance property when declared]
+  META[Strip metaFor resolves plugin-panel meta]
+  SCAN --> PLUGIN --> INJECT
+  BUILTIN --> META
+  PLUGIN --> META
+```
 
 # Context
 - ModuleRegistry scans two roots (repo modules/ and user ~/.local/share/archeotech/modules/) with the standard Process+jq idiom, lowercase modules/ deliberately distinct from PascalCase Modules/.

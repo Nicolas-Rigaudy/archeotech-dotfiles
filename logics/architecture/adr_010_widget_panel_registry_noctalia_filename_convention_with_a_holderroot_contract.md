@@ -6,10 +6,20 @@
 > Related task: (none yet)
 > Drivers: The v1.0 goal is drop-a-folder-get-a-widget, and bar/strip widgets need one portable context contract.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
-> Indicators reviewed: 2026-09-03 11:12:18
+> Indicators reviewed: 2026-09-03 16:43:15
 
 # Overview
 - Resolve widget id to filename (Noctalia style) and give every widget one holderRoot context so it runs on any side.
+
+```mermaid
+flowchart LR
+  ZONE[shell-config zone widget id]
+  RESOLVE[Filename convention resolve pascal case]
+  LOADER[WidgetLoader setSource path props]
+  HOLDER[Injected holderRoot contract]
+  WIDGET[Widget runs on any side]
+  ZONE --> RESOLVE --> LOADER --> HOLDER --> WIDGET
+```
 
 # Context
 - Caelestia's DelegateChooser maps id->component but requires a registry edit per plugin.

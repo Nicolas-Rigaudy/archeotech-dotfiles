@@ -6,9 +6,23 @@
 > Related task: (none yet)
 > Drivers: Every setting must be reactive everywhere from a single source, and structural vs user-editable config must not mix.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:15
 
 # Overview
 - A Config.qml singleton wraps one config JSON with get/set on dotted string paths, splitting per-user state from architectural config by layer.
+
+```mermaid
+flowchart TD
+  CFG[config.json]
+  CS[Config singleton get set dotted keys 50ms debounce]
+  UI[UI state pins toggles sliders]
+  COMP[Components reactive bindings]
+  SC[shell-config.json]
+  EB[Edit-mode visual builder full-rewrite]
+  CFG --> CS --> COMP
+  CS --> UI
+  EB --> SC
+```
 
 # Context
 - end-4 and DMS independently converged on the singleton + JsonAdapter + dotted-key pattern.

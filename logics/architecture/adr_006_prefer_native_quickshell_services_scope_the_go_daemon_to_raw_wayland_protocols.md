@@ -6,9 +6,20 @@
 > Related task: (none yet)
 > Drivers: The point of Quickshell is one coherent process; external daemons undermine that, but some Wayland protocols are unreachable from QML.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:15
 
 # Overview
 - Use native Quickshell/QML APIs for everything with a working native binding and confine archeotech-daemon to protocols QML genuinely cannot reach.
+
+```mermaid
+flowchart TD
+  SHELL[Archeotech shell]
+  NATIVE[Quickshell native - Mpris Notifications Networking Pipewire]
+  DAEMON[archeotech-daemon Go]
+  RAW[wlr-output-management gamma-control screencopy]
+  SHELL --> NATIVE
+  SHELL --> DAEMON --> RAW
+```
 
 # Context
 - MPRIS, notifications, audio, battery, network, Bluetooth, WiFi radio all have working native QML/Quickshell APIs.

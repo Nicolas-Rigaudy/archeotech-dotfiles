@@ -6,9 +6,21 @@
 > Related task: (none yet)
 > Drivers: External apps for WiFi/BT broke visual cohesion, and popups floating outside the surface rect passed clicks through.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:15
 
 # Overview
 - Replace external tray apps with native Shape popups and extend the ShellSurface input mask to cover popup bounds on all sides.
+
+```mermaid
+flowchart TD
+  BAR[Bar exposes anyPopupOpen popupBounds]
+  MASK[ShellSurface Region input mask all sides]
+  POPUP[Native Shape popup not external app]
+  AA[CurveRenderer AA never layer.enabled]
+  BAR --> MASK
+  POPUP --> AA
+  POPUP --> MASK
+```
 
 # Context
 - Bar WiFi/BT icons used to launch nm-connection-editor / blueman-manager.

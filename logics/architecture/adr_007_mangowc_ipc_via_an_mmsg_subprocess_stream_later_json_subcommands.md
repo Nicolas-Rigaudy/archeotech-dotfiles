@@ -6,9 +6,19 @@
 > Related task: (none yet)
 > Drivers: MangoWC has no QML bindings and the only upstream-safe binding lives in a custom fork.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:15
 
 # Overview
 - Stream MangoWC events from mmsg over stdout into Quickshell, parsing line-by-line, staying off the non-upstream Quickshell.DWL fork.
+
+```mermaid
+flowchart LR
+  MM[mmsg -w JSON watch streams]
+  PR[Quickshell Process + SplitParser]
+  API[Compositor public API]
+  QS[Quickshell consumers - workspaces windows]
+  MM --> PR --> API --> QS
+```
 
 # Context
 - Noctalia's MangoWC backend uses Quickshell.DWL, which is not upstream — it lives in a custom fork.

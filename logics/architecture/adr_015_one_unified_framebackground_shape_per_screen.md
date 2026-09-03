@@ -6,9 +6,21 @@
 > Related task: (none yet)
 > Drivers: Translucent glass makes overlapping per-side pieces double their alpha and show seams, and different-thickness sides can't share a clean corner.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:16
 
 # Overview
 - Draw the whole resting frame as one filled SVG path per ShellSurface instead of separate per-side bodies plus corner pieces.
+
+```mermaid
+flowchart TD
+  GAP[sideGap and per-side types]
+  FRAME[One FrameBackground Shape PathSvg per screen]
+  BANDS[Horizontal vertical bands plus concave fillets]
+  HOST[Transparent Bar Strip containers]
+  W[Widgets only]
+  GAP --> FRAME --> BANDS
+  FRAME --> HOST --> W
+```
 
 # Context
 - Semi-transparent glass means any two overlapping pieces double alpha and show a visible seam.

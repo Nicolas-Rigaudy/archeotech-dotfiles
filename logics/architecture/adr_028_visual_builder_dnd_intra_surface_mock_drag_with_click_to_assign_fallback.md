@@ -6,9 +6,21 @@
 > Related task: (none yet)
 > Drivers: User prefers drag-and-drop over click-to-assign for the Module Builder; ANALYSIS §14.4 had rejected only cross-window drag and deferred intra-window DnD to backlog (item_022). Caffyne (Fabric/GTK) research 2026-09-03 supplied a proven, portable mechanism.
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+> Indicators reviewed: 2026-09-03 16:43:16
 
 # Overview
 - Adopt pointer drag-and-drop for the Visual Builder by dragging widget chips on a to-scale mock rendered inside the single EditOverlay surface (intra-surface, so Qt DnD is reliable); keep click-to-assign as the keyboard-accessible fallback. Supersedes only the DnD-half of ANALYSIS §14.4.
+
+```mermaid
+flowchart TD
+  OVERLAY[EditOverlay single surface]
+  MOCK[To-scale zone mock DropAreas]
+  STATE[draggedKey singleton not DnD payload]
+  DROP[Drop rewrites ShellConfig zones then hot-reload]
+  KB[Click-to-assign keyboard fallback]
+  OVERLAY --> MOCK --> STATE --> DROP
+  KB --> DROP
+```
 
 # Context
 - ANALYSIS §14.4 chose click-to-assign because *cross-window* drag on Wayland is unreliable (QML Drag/DropArea are single-window; documented cross-surface MIME/state-leak bugs). The DECISIONS note (2026-06-03) explicitly deferred *intra-window* DnD to backlog.

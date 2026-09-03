@@ -151,6 +151,7 @@
 | [item_089_niri_and_sway_compositor_services_post_v1_0](backlog/item_089_niri_and_sway_compositor_services_post_v1_0.md) | Niri and Sway compositor services post v1_0 | Draft |  | 0 | backlog/item_089_niri_and_sway_compositor_services_post_v1_0.md |
 | [item_090_zen_browser_dynamic_chrome_theming_palette_follow_no_restart](backlog/item_090_zen_browser_dynamic_chrome_theming_palette_follow_no_restart.md) | Zen browser dynamic chrome theming palette follow no restart | Draft |  | 0 | backlog/item_090_zen_browser_dynamic_chrome_theming_palette_follow_no_restart.md |
 | [item_091_accent_picker_for_all_theme_families_with_gtk_fallback](backlog/item_091_accent_picker_for_all_theme_families_with_gtk_fallback.md) | Accent picker for all theme families with GTK fallback | Draft |  | 0 | backlog/item_091_accent_picker_for_all_theme_families_with_gtk_fallback.md |
+| [item_092_author_overview_mermaid_diagrams_for_remaining_adrs](backlog/item_092_author_overview_mermaid_diagrams_for_remaining_adrs.md) | Author overview mermaid diagrams for remaining ADRs | Draft |  | 0 | backlog/item_092_author_overview_mermaid_diagrams_for_remaining_adrs.md |
 
 ## Tasks
 
