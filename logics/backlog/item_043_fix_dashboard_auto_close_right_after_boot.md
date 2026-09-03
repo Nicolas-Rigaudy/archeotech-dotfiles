@@ -1,14 +1,14 @@
 ## item_043_fix_dashboard_auto_close_right_after_boot - Fix dashboard auto-close right after boot
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: Low
 > Theme: Dashboard bug
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-04 01:47:24
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -44,3 +44,9 @@
 # Priority
 - Priority: Medium
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_017_fix_dashboard_auto_close_right_after_boot`
+
+# Notes
+- Task `task_017_fix_dashboard_auto_close_right_after_boot` was finished via `logics-manager flow finish task` on 2026-09-04.
