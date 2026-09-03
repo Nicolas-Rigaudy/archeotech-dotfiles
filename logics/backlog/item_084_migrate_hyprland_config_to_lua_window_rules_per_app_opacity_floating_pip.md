@@ -24,6 +24,7 @@
 - In:
   - Port the WHOLE `hyprland.conf` → `hyprland.lua` (monitors, binds, general/decoration/input, autostart, workspace rules) — the INI format is being removed in 0.57, so this is a full migration, not just rules.
   - Re-express the dropped rules in Lua: floating PiP (`match={title="Picture-in-Picture"}, float=true`), float+center for the settings dialogs, per-app opacity for kitty/Code, and the shell glass blur (`layerrule` blur on `archeotech-shell`).
+  - Per-monitor workspaces to match MangoWC's per-monitor tags (Hyprland workspaces are global by default; the current config splits 1-9 across monitors). Evaluate the `split-monitor-workspaces` plugin (via `hyprpm`, compiled per Hyprland version → needs `hyprpm update` on each Hyprland upgrade) vs. staying with the split, and wire the workspace binds accordingly.
   - Extend `ci/` to lint the Lua config (`Hyprland --verify-config` already accepts `.lua`).
 - Out:
   - MangoWC config (stays its own format).
