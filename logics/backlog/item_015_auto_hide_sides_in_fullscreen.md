@@ -1,14 +1,14 @@
 ## item_015_auto_hide_sides_in_fullscreen - Auto-hide sides in fullscreen
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: Medium
 > Theme: Compositor UX
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-04 02:09:40
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -41,8 +41,14 @@
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): (none yet)
 - Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Primary task(s): `task_018_auto_hide_sides_in_fullscreen`
 
 # Priority
 - Priority: Medium
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_018_auto_hide_sides_in_fullscreen`
+
+# Notes
+- Task `task_018_auto_hide_sides_in_fullscreen` was finished via `logics-manager flow finish task` on 2026-09-04.
