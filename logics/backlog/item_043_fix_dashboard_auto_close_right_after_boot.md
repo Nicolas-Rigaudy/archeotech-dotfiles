@@ -1,10 +1,10 @@
 ## item_043_fix_dashboard_auto_close_right_after_boot - Fix dashboard auto-close right after boot
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 50%
+> Progress: 100%
 > Complexity: Low
 > Theme: Dashboard bug
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
