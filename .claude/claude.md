@@ -8,6 +8,17 @@
 
 ## How I want you to work (conventions)
 
+### Durable feedback — read this first (do NOT use the auto-memory system)
+**Never write to Claude's file-based auto-memory** (`MEMORY.md` / the `memory/` dir under the Claude profile). The user can't see or control those. **All durable instructions, preferences, and learned gotchas go in these project MD files** (this file, `docs/`, `logics/`) where they're version-controlled and editable by the user. This overrides the default "save to memory" behavior. (Stated 2026-09-04, and before.)
+
+Standing feedback the user has given (keep/extend here, not in memory):
+- **Testing the shell = isolated, never the live session.** Use `~/Projects/archeotech-shell/scripts/shot.sh` (nested headless qs, pid-scoped, isolated D-Bus — live session untouched) for any visual check. **Never** `grim` the user's real output, **never** drive the live shell's IPC state to "see" a change (`qs ... ipc call ...` toggles their real bar), **never** `pkill`/restart their running shell, **never** boot a full compositor that sources autostart (it crashed their session to SDDM). If shot.sh can't reproduce a case, ask before touching the live screen. Editing shell QML already hot-reloads onto the live bar — so **no debug/scratch visuals in shell files** (a neon-green z-order marker once flashed on their real bar); reason it out or use an isolated copy.
+- **Theme-switch churn is not committed.** `theme-switch.py` rewrites tracked configs (gtk settings.ini, kitty/current-theme.conf, rofi/colors.rasi, mango/config.conf, environment.d/cursor.conf) on every family/flavor/accent change — the working tree is routinely dirty with recolors. Never `git add -A` here; stage specific paths and leave theme recolors unstaged unless the user says the palette is the intended default.
+- **Full reload vs hot-reload.** Plain `.qml`/token/gradient edits hot-reload live. Changes that don't (notably `pack.json` manifest edits — `PackRegistry` only scans at startup) need a full reload: tell the user to hit **SUPER+SHIFT+R** (`mango-reload.sh`) — don't hand them raw `pkill quickshell; qs &`.
+- **logics gotchas:** `logics-manager bootstrap` **deletes the project `.claude/` dir** (back up untracked `settings*.json` first). `flow close task` **cascades** — it auto-Dones every backlog item whose tasks are all done; to retire an umbrella/orchestration task use `sync update-indicators <ref> --status Obsolete` instead.
+- **Research one-at-a-time repo studies inline** (Read/Grep yourself); only spawn agents for genuine parallel fan-out, not a single agent I then block on.
+- **Sandbox `$HOME`** is not `/home/corvus` (see below); also `paru -S` in a background shell can't read the sudo password — have the user run installs via `!`.
+
 ### Principles
 1. **Build from scratch** — reference projects for inspiration only, never wholesale.
 2. **Understand everything** — every config line should be comprehensible.
@@ -42,7 +53,7 @@ chg[SH/CONF]: launch + IPC via qs -c archeotech (shell moved to its own repo)
 
 ### Working on the system
 - Backup before major config changes (`.bak`); test incrementally; check syntax (shellcheck etc.); scripts `chmod +x` (755).
-- Reload after changes: `~/.local/bin/mango-reload.sh`; restart shell `pkill quickshell && quickshell &` (or `qs -c archeotech`).
+- Reload after changes is the **user's** step: SUPER+SHIFT+R (`mango-reload.sh`). Do not `pkill`/restart the user's running shell yourself to "test" — verify in isolation via `shot.sh` (see Durable feedback above).
 - **Catppuccin:** always fetch official themes from github.com/catppuccin — never hand-roll color schemes.
 - **`$HOME` gotcha:** in this sandboxed CC env `$HOME` is **not** `/home/corvus` — run `theme-switch.py` and anything HOME-sensitive with `HOME=/home/corvus`.
 - **Never wrap interactive QML content in a `layer.enabled` item** (it swallows hover hit-testing) — use `preferredRendererType: Shape.CurveRenderer` for AA. [DECISIONS 2026-07-02]
