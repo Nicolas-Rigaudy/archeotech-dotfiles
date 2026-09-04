@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Aesthetic tokens
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-04 11:08:03
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -36,6 +36,7 @@
 - Product framing: Not needed
 - Architecture framing: Not needed
 - Audit 2026-08-21: PARTIAL — flatMode token gates shadowStrength (delivered); remaining: accent-gradient gating shell-wide. Keep Ready.
+- Finding 2026-09-04 (from item_036 flat/3D sweep): translucent NEUTRAL tile fills lose all contrast in flat mode. `surface0Alpha` (fixed 0.60) reads as a raised tile only over the frosted glass panel; in flat the panel is opaque `surfaceCard` (== opaque surface0), so a translucent surface0 tile collapses INTO its container and the tile box vanishes. This is an ELEVATION gap, not an opacity one — making the token merely opaque doesn't help (tile would still equal the panel); flat-mode raised tiles must step to a lighter tint above their container. QuickLaunch fixed locally (shell 0240347: flat → Qt.lighter(surfaceCard,1.12)); the SAME pattern still affects every other `surface0Alpha` tile-on-panel surface — Launcher, WallpaperPicker(Body), SettingsSidebar, LayoutPickerBody. Proper fix here = a flat-aware "raised tile" elevation token so the whole toggle flips these consistently, rather than N local patches.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
