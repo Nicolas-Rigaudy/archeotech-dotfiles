@@ -1,13 +1,14 @@
 ## item_094_bluetooth_service_event_driven_drop_3s_poll - Bluetooth service event-driven (drop 3s poll)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Low
 > Theme: Bar responsiveness
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-04 10:10:13
 
 # AI Context
 - Summary: Follow-up from item_093. `Services/Networking/Bluetooth.qml` polls device/connection state every 3s (busctl). The only remaining bar poller after the event-driven sweep — convert to a bluez D-Bus signal monitor (e.g. `dbus-monitor`/busctl watch on org.bluez PropertiesChanged) so connect/disconnect/battery update instantly.
@@ -41,7 +42,7 @@
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
 - Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): (none yet)
+- Primary task(s): `task_020_bluetooth_service_event_driven_drop_3s_poll`
 
 # Priority
 - Priority: Medium
@@ -49,3 +50,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_020_bluetooth_service_event_driven_drop_3s_poll` was finished via `logics-manager flow finish task` on 2026-09-04.
+
+# Tasks
+- `task_020_bluetooth_service_event_driven_drop_3s_poll`
