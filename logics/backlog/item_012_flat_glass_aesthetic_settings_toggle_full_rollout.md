@@ -1,14 +1,14 @@
 ## item_012_flat_glass_aesthetic_settings_toggle_full_rollout - Flat <-> glass aesthetic Settings toggle full rollout
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Aesthetic tokens
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-04 11:08:03
+> Indicators reviewed: 2026-09-04 15:31:20
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -42,8 +42,14 @@
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): (none yet)
 - Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Primary task(s): `task_022_flat_glass_aesthetic_settings_toggle_full_rollout`
 
 # Priority
 - Priority: High
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_022_flat_glass_aesthetic_settings_toggle_full_rollout`
+
+# Notes
+- Task `task_022_flat_glass_aesthetic_settings_toggle_full_rollout` was finished via `logics-manager flow finish task` on 2026-09-04.
