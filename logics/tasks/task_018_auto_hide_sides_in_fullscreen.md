@@ -53,6 +53,7 @@
   - `shell.qml` — `sides` IPC handler (`toggleHidden`/`hide`/`show`).
 - Dotfiles: `config.conf` keybind `Super+Shift+H` → `ipc call sides toggleHidden`; `docs/KEYBINDS-MANGO.md` updated.
 - Scope honoured: reused holder-mode reveal, no new collapsed chrome.
+- Follow-up fix (2026-09-04, commit `f5fd6c8`): the first pass only hid `Bar`/`Strip`, but the visible bar is largely the `FrameBackground` glass (a z:0 sibling in `ShellSurface`) + `FrameFx` — those stayed on screen in fullscreen. Gated both on `sidesHidden(screen)`. User-confirmed working (bar now clears in fullscreen). Lesson: the initial "validation" was code-reasoning only; the missed sibling was caught by actually exercising it.
 - Finished on 2026-09-04.
 - Linked backlog item(s): `item_015_auto_hide_sides_in_fullscreen`
 - Related request(s): `req_000_archeotech_shell_dotfiles`
