@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Aesthetic tokens
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-04 15:31:20
+> Indicators reviewed: 2026-09-06 11:21:32
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -37,6 +37,7 @@
 - Architecture framing: Not needed
 - Audit 2026-08-21: PARTIAL — flatMode token gates shadowStrength (delivered); remaining: accent-gradient gating shell-wide. Keep Ready.
 - Finding 2026-09-04 (from item_036 flat/3D sweep): translucent NEUTRAL tile fills lose all contrast in flat mode. `surface0Alpha` (fixed 0.60) reads as a raised tile only over the frosted glass panel; in flat the panel is opaque `surfaceCard` (== opaque surface0), so a translucent surface0 tile collapses INTO its container and the tile box vanishes. This is an ELEVATION gap, not an opacity one — making the token merely opaque doesn't help (tile would still equal the panel); flat-mode raised tiles must step to a lighter tint above their container. QuickLaunch fixed locally (shell 0240347: flat → Qt.lighter(surfaceCard,1.12)); the SAME pattern still affects every other `surface0Alpha` tile-on-panel surface — Launcher, WallpaperPicker(Body), SettingsSidebar, LayoutPickerBody. Proper fix here = a flat-aware "raised tile" elevation token so the whole toggle flips these consistently, rather than N local patches.
+- CORRECTION 2026-09-06 (owner intent): the premise above was WRONG. Flat mode must NOT be opaque — flat = translucent glass MINUS the 3D depth (no sheen/gradient, no shadows); transparency + blur stay on in both modes. 3D mode = translucent + full skeuomorphic depth. So the tile-vanishing "elevation gap" was a symptom of a deeper bug: `flatMode` was forcing OPACITY (glassBg/glassBgLight/surfaceCard/glassSheen went opaque). Fix: opacity is now a PACK-material decision — those branches key on `packMaterialFlat` (flat/matte packs), NOT the user `flatMode` toggle (shell e31e507). Once flat stays translucent the tiles read again, so the `surfaceRaised` token + all its usages were REVERTED (shell c62a63d); QuickLaunch/Launcher/WallpaperPicker(Body)/LayoutPicker back to `surface0Alpha`. Kept from the earlier pass: the 4 shadow gates + ThemeCarousel sheen flatten (those are depth, still correct). Toggle copy fixed to stop implying opacity/incomplete rollout (shell 1fdac3d). Verified via isolated shot.sh: flat card pixel moved from opaque srgb(54,58,79) to translucent srgb(49,50,71) ~ glass srgb(44,46,65). `depthFlat`/`shadowStrength` still gate depth as before.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
