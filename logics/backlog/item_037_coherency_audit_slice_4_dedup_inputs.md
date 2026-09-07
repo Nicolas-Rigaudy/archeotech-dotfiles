@@ -1,14 +1,14 @@
 ## item_037_coherency_audit_slice_4_dedup_inputs - Coherency audit Slice 4 - dedup + inputs
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Coherency audit
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-07 14:57:00
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -40,8 +40,14 @@
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): (none yet)
 - Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Primary task(s): `task_024_coherency_audit_slice_4_dedup_inputs`
 
 # Priority
 - Priority: Medium
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Tasks
+- `task_024_coherency_audit_slice_4_dedup_inputs`
+
+# Notes
+- Task `task_024_coherency_audit_slice_4_dedup_inputs` was finished via `logics-manager flow finish task` on 2026-09-07.
