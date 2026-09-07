@@ -30,11 +30,13 @@ fi
 # the stream goes quiet for this long, instead of thrashing wlr-randr per event.
 SETTLE=0.4
 
-# Track the active-output set so we only act on real topology changes, not on
-# every cursor-crossing or focus event that `watch all-monitors` also emits.
+# Track the CONNECTED-output set so we only act on real topology changes, not on
+# every focus event that `watch all-monitors` also emits. Uses wlr-randr (focus-
+# independent) — NOT `mmsg select(.active)`, whose `.active` means *focused*, so
+# every monitor focus-switch looked like a topology change and re-applied the
+# layout (which flipped the portrait screen to landscape on focus).
 active_set() {
-    mmsg get all-monitors 2>/dev/null \
-        | jq -r '[.monitors[] | select(.active) | .name] | sort | join(",")' 2>/dev/null
+    wlr-randr 2>/dev/null | awk '/^[^[:space:]]/{print $1}' | sort | paste -sd, -
 }
 
 apply() {

@@ -6,20 +6,23 @@
 #   - mango-reload.sh          (after a manual config reload)
 #   - monitor-hotplug.sh       (automatically, on every output change)
 #
-# Detection uses MangoWC IPC: `mmsg get all-monitors` lists configured monitors
-# including disconnected ones (active:false), so we filter by .active — a bare
-# name grep would false-positive on an unplugged-but-configured monitor.
+# Detection uses `wlr-randr`, which lists exactly the CONNECTED outputs,
+# independent of focus. NB: do NOT use `mmsg get all-monitors | select(.active)`
+# — in MangoWC `.active` means the *focused* monitor, not connected, so focusing
+# the portrait screen looked like a "DP-3 only" topology and mis-applied the
+# landscape layout to it (flipping it out of portrait). wlr-randr lists a
+# connected output whether or not it is focused, and drops it when unplugged.
 #
 # Idempotent and best-effort: safe to run repeatedly; never aborts a caller.
 #
-# Usage: monitor-apply.sh          Apply layout for the currently-active outputs.
+# Usage: monitor-apply.sh          Apply layout for the currently-connected outputs.
 
 set +e  # best-effort — a wlr-randr hiccup must never abort a caller mid-reload
 
-ACTIVE_OUTPUTS=$(mmsg get all-monitors 2>/dev/null | jq -r '.monitors[] | select(.active) | .name' 2>/dev/null)
+CONNECTED=$(wlr-randr 2>/dev/null | awk '/^[^[:space:]]/{print $1}')
 
-HAS_HDMI=$(echo "$ACTIVE_OUTPUTS" | grep -qx "HDMI-A-1" && echo "yes" || echo "no")
-HAS_DP3=$(echo "$ACTIVE_OUTPUTS" | grep -qx "DP-3" && echo "yes" || echo "no")
+HAS_HDMI=$(echo "$CONNECTED" | grep -qx "HDMI-A-1" && echo "yes" || echo "no")
+HAS_DP3=$(echo "$CONNECTED" | grep -qx "DP-3" && echo "yes" || echo "no")
 
 if [ "$HAS_HDMI" = "yes" ] && [ "$HAS_DP3" = "yes" ]; then
     # Work desk: 3-monitor layout
