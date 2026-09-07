@@ -508,7 +508,9 @@ Then: `hyprctl reload`
 
 ## MangoWC Issues
 
-### Undock/unplug freezes the compositor (output-hotplug teardown) — LIKELY RESOLVED in mango 0.16.0 (pending hardware confirmation)
+### Undock/unplug freezes the compositor (output-hotplug teardown) — RESOLVED in mango 0.16.0 (hardware-confirmed 2026-09-07)
+
+**RESOLVED 2026-09-07 (item_005 closed).** Hardware repro finally run on the current stack — **mango 0.16.2 + wlroots 0.20.2 + kernel 7.2.2**, dual external (HDMI-A-1 + DP-3) + eDP-1. Multiple **raw** dock unplugs (no pre-disable): **no freeze, no hang, no crash.** The upstream mango teardown-order fix (commit `8169bfc`, released 0.16.0) resolves the item_005 hang on this hardware. No shell/script change was required; the planned pre-undock `wlr-randr --off` safe-undock fallback was **not** needed and not built. Verification protocol below retained for the record / future regressions.
 
 **Symptoms:** Unplugging the dock (removing external outputs) hangs MangoWC — historically even the built-in keyboard/trackpad went dead. Distribution-blocking for laptop+dock users. (Tracked as logics `item_005`.)
 
