@@ -13,7 +13,7 @@ This directory contains system-level configuration files that require root permi
 - `etc/sddm.conf` - SDDM login screen with Catppuccin Macchiato theme
 
 ### logind Lid-Switch Policy
-- `etc/systemd/logind.conf.d/10-archeotech-lid.conf` - Suspend on lid-close only when on battery **and** undocked; on AC/docked logind takes no action (stays awake, does **not** lock). Fixes surprise-suspends at the desk (logics item_011). Applied automatically on next boot, or immediately via `sudo systemctl restart systemd-logind` (can drop your session — reboot is safer).
+- `etc/systemd/logind.conf.d/10-archeotech-lid.conf` - Lid-close policy: **battery+undocked → suspend**, **on-AC-not-docked → lock** (stay awake), **docked → ignore** (stay awake, no lock). Fixes surprise-suspends at the desk (logics item_011). Applied automatically on next boot, or immediately via `sudo systemctl restart systemd-logind` (can drop your session — reboot is safer).
 
 ## Deployment
 
