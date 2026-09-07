@@ -1,13 +1,14 @@
 ## item_095_coherency_slice_5_tail_osd_popup_shadow_album_art_lift - Coherency Slice 5 tail: OSD popup shadow + album-art lift
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 80
 > Confidence: 75
-> Progress: 0%
+> Progress: 100%
 > Complexity: Low
 > Theme: Coherency audit
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-07 17:38:44
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -43,7 +44,7 @@
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
 - Request: (to be linked)
-- Primary task(s): (none yet)
+- Primary task(s): `task_026_coherency_slice_5_tail_osd_popup_shadow_album_art_lift`
 
 # Priority
 - Priority: Medium
@@ -51,3 +52,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_026_coherency_slice_5_tail_osd_popup_shadow_album_art_lift` was finished via `logics-manager flow finish task` on 2026-09-07.
+
+# Tasks
+- `task_026_coherency_slice_5_tail_osd_popup_shadow_album_art_lift`
