@@ -12,6 +12,9 @@ This directory contains system-level configuration files that require root permi
 ### SDDM Configuration
 - `etc/sddm.conf` - SDDM login screen with Catppuccin Macchiato theme
 
+### logind Lid-Switch Policy
+- `etc/systemd/logind.conf.d/10-archeotech-lid.conf` - Suspend on lid-close only when on battery **and** undocked; stay awake (lock only) on AC/docked. Fixes surprise-suspends at the desk (logics item_011). Apply with `sudo systemctl restart systemd-logind` (ends the session).
+
 ## Deployment
 
 ### Automated Deployment (Recommended)
@@ -31,6 +34,12 @@ sudo chown root:root /etc/snapper/configs/root
 sudo cp system/etc/sddm.conf /etc/sddm.conf
 sudo chmod 644 /etc/sddm.conf
 sudo chown root:root /etc/sddm.conf
+
+# Deploy logind lid-switch policy
+sudo install -d -m 755 /etc/systemd/logind.conf.d
+sudo cp system/etc/systemd/logind.conf.d/10-archeotech-lid.conf /etc/systemd/logind.conf.d/
+sudo chmod 644 /etc/systemd/logind.conf.d/10-archeotech-lid.conf
+sudo systemctl restart systemd-logind   # applies it (ends the session)
 ```
 
 ### Using Setup Scripts

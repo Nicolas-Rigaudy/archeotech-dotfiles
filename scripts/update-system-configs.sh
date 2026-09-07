@@ -31,6 +31,16 @@ if [ -f "$DOTFILES_DIR/system/etc/sddm.conf" ]; then
     chown root:root /etc/sddm.conf
 fi
 
+# logind lid-switch policy (item_011): no surprise-suspend while docked/on AC
+if [ -f "$DOTFILES_DIR/system/etc/systemd/logind.conf.d/10-archeotech-lid.conf" ]; then
+    echo "  → /etc/systemd/logind.conf.d/10-archeotech-lid.conf"
+    install -d -m 755 /etc/systemd/logind.conf.d
+    cp "$DOTFILES_DIR/system/etc/systemd/logind.conf.d/10-archeotech-lid.conf" /etc/systemd/logind.conf.d/10-archeotech-lid.conf
+    chmod 644 /etc/systemd/logind.conf.d/10-archeotech-lid.conf
+    chown root:root /etc/systemd/logind.conf.d/10-archeotech-lid.conf
+    echo "    (run 'sudo systemctl restart systemd-logind' to apply — may end the session)"
+fi
+
 # SDDM Catppuccin theme - Arch logo background
 SDDM_THEME_DIR="/usr/share/sddm/themes/catppuccin"
 SDDM_BG="$SDDM_THEME_DIR/backgrounds/flatppuccin_macchiato.png"

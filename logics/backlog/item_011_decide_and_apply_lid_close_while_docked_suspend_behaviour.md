@@ -1,10 +1,10 @@
 ## item_011_decide_and_apply_lid_close_while_docked_suspend_behaviour - Decide and apply lid-close-while-docked suspend behaviour
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Low
 > Theme: Stability
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -34,6 +34,9 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Decision (2026-09-07): Policy = "stay awake when plugged in". Suspend on lid-close only when on battery AND undocked; ignore on external/AC power and when docked. Keys off AC power (reliably detected) rather than logind's flaky docked-detection, which is the real cause of the surprise-suspends (HandleLidSwitchDocked=ignore is already the default but never fires because logind doesn't count monitors behind hubs/adapters).
+- Implementation (2026-09-07): drop-in `system/etc/systemd/logind.conf.d/10-archeotech-lid.conf` (HandleLidSwitch=suspend / HandleLidSwitchExternalPower=ignore / HandleLidSwitchDocked=ignore), deployed by `scripts/update-system-configs.sh`, documented in `system/README.md`. Applied via `sudo systemctl restart systemd-logind` (user step; ends session).
+- Sub-scope dropped: "widen hyprlock-launch.sh suspend regex" is obsolete post-hyprlock migration — the current stack uses hypridle `before_sleep_cmd = loginctl lock-session`, which locks before *any* suspend uniformly, so there is no trigger-disambiguation regex to widen.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
