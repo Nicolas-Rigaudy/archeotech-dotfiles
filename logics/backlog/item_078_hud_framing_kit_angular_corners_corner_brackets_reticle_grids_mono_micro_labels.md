@@ -48,8 +48,8 @@
 - Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
 
 # Priority
-- Priority: High
-- Rationale: Highest fit-to-effort from the item_042 ricing pass; cheap, on-brand, strong coherency + wow win feeding the polish rollout.
+- Priority: Medium
+- Rationale: Highest fit-to-effort from the item_042 ricing pass (cheap, on-brand, strong coherency + wow win), but sits in 0.265 after the current 0.26 milestone; lowered from High (2026-09-07) so it doesn't outrank current-milestone work in the next-action signal. Re-raise when 0.265 opens.
 
 # Notes
 - Generated locally by logics-manager.

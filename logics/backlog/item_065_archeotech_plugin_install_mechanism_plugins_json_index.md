@@ -41,8 +41,8 @@
 - request-AC3 -> This backlog slice. Proof: the git-clone install mechanism and plugins.json index are the milestone 0.27 delivery that dogfoods the plugin ecosystem.
 
 # Priority
-- Priority: High
-- Rationale: The install mechanism is the core deliverable of 0.27 and blocks dogfooding the plugin ecosystem end to end.
+- Priority: Medium
+- Rationale: Core deliverable of 0.27, but that milestone sits after 0.26/0.265; lowered from High (2026-09-07) so it doesn't outrank current-milestone work in the next-action signal. Re-raise when 0.27 opens.
 
 # Decision framing
 - Product framing: Not needed
