@@ -38,6 +38,7 @@
 - Audit 2026-08-21: PARTIAL — partial token coverage (delivered); remaining: one-offs (popup shadow, album-art lift, 3D knob) + token completion. Keep Ready.
 - Delivered (2026-09-07, task_025, archeotech-shell): recessedTrack token promoted + deduped across 3 call sites (9fe34bc); raised 3d slider knob (b939760); media seek off-by-4 fix (84f7de3); AND two user-reported media-panel one-offs surfaced during the work — panel size 220->250 so playback controls clear the strip dock (verified via MPRIS-mock repro), and progress bar now shows for length-less players (elapsed only, no total/seek) instead of hiding entirely. All shot-verified via a reusable MPRIS-mock + `HOME=/home/corvus ./scripts/shot.sh` harness.
 - Deferred to [[item_095_coherency_slice_5_tail_osd_popup_shadow_album_art_lift]] (2026-09-07): OSD popup shadow + album-art lift — visual one-offs needing a runtime state (volume event / artUrl) not cheaply producible in isolation; split out so this slice closes on what's delivered rather than being done blind.
+- Follow-up (2026-09-07, shell b2e8651): the 3d slider knob's gloss + sheen edge were not flat-mode-gated; fixed to gate on `depthFlat` (plain flat dot in flat mode), verified via an isolated flat-mode shot. The two drop shadows (album-art, OSD) were already correctly gated via shadowStrength.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

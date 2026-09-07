@@ -2,13 +2,13 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: Ready
-> Understanding: 90%
+> Understanding: 95%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 60%
 > Complexity: High
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:15:51
+> Indicators reviewed: 2026-09-02 10:37:54
 
 # AI Context
 - Summary: The first concrete, end-to-end theme pack on the item_081 engine: a WH40K Shadow Spears (the owner's own chapter) ritualistic dataslate / Inquisition-document identity — parchment/dataslate textures, gothic type, ornamental framing, purity-seal motifs, ritual motion. Doubles as the proof-of-architecture (hardest pack = best stress test) and a flagship traction post (item_080 content strategy).
@@ -40,6 +40,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Governed by `adr_026_theming_architecture_skin_structure_boundary_and_versioned_capability_surface`.
+- Register/sub-pack direction (2026-09-02): the faction registers must re-livery the WHOLE interface per each institution's design language — not just swap the palette. Each register = a distinct sub-theme (structure/shape/motifs/type emphasis), sharing the stable core. Current tokens carry colour-only overrides = placeholder; full per-faction re-livery is deferred future scope (candidate for its own backlog item). IP: the WH40K/GW faction names (Space Marine/Inquisition/Mechanicus) and 'Shadow Spears' are Games Workshop IP — MUST be renamed to IP-safe, non-trademarked names before any commit/push. Pack display name already changed to 'Grimdark'; register + palette names still need renaming.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
@@ -48,8 +49,8 @@
 - Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
 
 # Priority
-- Priority: High
-- Rationale: Proof-of-architecture for the engine + the distinctive, authentic flagship launch identity.
+- Priority: Medium
+- Rationale: Moved to the first post-1.0 drop (roadmap 2026-09-03) — the theming ENGINE ships in v1, the flagship pack follows; so it is no longer top-of-list v1 work. Still the proof-of-architecture + distinctive launch identity when it lands.
 
 # Notes
 - Generated locally by logics-manager.
