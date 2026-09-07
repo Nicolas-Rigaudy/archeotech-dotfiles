@@ -40,7 +40,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Governed by `adr_026_theming_architecture_skin_structure_boundary_and_versioned_capability_surface`.
-- Register/sub-pack direction (2026-09-02): the faction registers must re-livery the WHOLE interface per each institution's design language — not just swap the palette. Each register = a distinct sub-theme (structure/shape/motifs/type emphasis), sharing the stable core. Current tokens carry colour-only overrides = placeholder; full per-faction re-livery is deferred future scope (candidate for its own backlog item). IP: the WH40K/GW faction names (Space Marine/Inquisition/Mechanicus) and 'Shadow Spears' are Games Workshop IP — MUST be renamed to IP-safe, non-trademarked names before any commit/push. Pack display name already changed to 'Grimdark'; register + palette names still need renaming.
+- Register/sub-pack direction (2026-09-02): the faction registers must re-livery the WHOLE interface per each institution's design language — not just swap the palette. Each register = a distinct sub-theme (structure/shape/motifs/type emphasis), sharing the stable core. Current tokens carry colour-only overrides = placeholder; full per-faction re-livery is deferred future scope (candidate for its own backlog item). IP: RESOLVED (verified 2026-09-07) — the shipped pack is IP-safe: pack name 'Grimdark', registers renamed to Legion/Ordos/Forge, and no GW/WH40K trademark strings remain anywhere in `packs/grimdark`. Only this planning doc's title/slug still carries the old 'wh40k_shadow_spears' name (internal, never shipped); rename it if/when convenient but it's not an IP exposure.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
