@@ -335,6 +335,41 @@ Then: `hyprctl reload`
 
 ---
 
+### Portrait monitor flips to landscape / mirrors another screen when focused (MangoWC)
+
+**Symptoms:**
+- DP-3 (portrait) is correct at boot, then reverts to landscape and lands at the
+  same position as HDMI-A-1 (mirror) — often the instant you focus that monitor.
+- `mmsg get all-monitors` shows the portrait output at `x:1920,y:60,1920x1080`
+  (HDMI's slot) instead of `x:3840,y:0,1080x1920`.
+
+**Cause:**
+- `monitor-apply.sh` / `monitor-hotplug.sh` detected outputs with
+  `mmsg get all-monitors | jq 'select(.active)'`. In MangoWC **`active` means the
+  *focused* monitor, not connected** — only one monitor is `active:true` at a time.
+- Focusing the portrait screen flips its `active` to true and HDMI's to false, so
+  the hotplug daemon sees the "active set" change (looks like a topology change)
+  and re-runs the layout; `monitor-apply.sh` then sees `HAS_HDMI=no, HAS_DP3=yes`
+  and takes the single-external **landscape** branch → DP-3 to `1920,60` landscape.
+
+**Fix (shell 36d9f66):**
+Detect **connected** outputs with `wlr-randr` (focus-independent, drops unplugged
+outputs) instead of `mmsg select(.active)`, in both scripts:
+```bash
+# monitor-apply.sh — connected set, not focused
+CONNECTED=$(wlr-randr 2>/dev/null | awk '/^[^[:space:]]/{print $1}')
+# monitor-hotplug.sh — change-guard on the connected set
+active_set() { wlr-randr 2>/dev/null | awk '/^[^[:space:]]/{print $1}' | sort | paste -sd, -; }
+```
+Restart the daemon so it picks up the new logic (it caches the script at exec):
+`pkill -f monitor-hotplug.sh; ~/.local/bin/monitor-apply.sh; ~/.local/bin/monitor-hotplug.sh &`
+
+**Generalised lesson:** MangoWC's `all-monitors` `.active` field is *focus*, not
+*connection*. For "what is plugged in" always use `wlr-randr` (or output presence),
+never `.active`. This was a latent gap in the item_026 multi-monitor work.
+
+---
+
 ### Workspaces Not Staying on Assigned Monitors
 
 **Symptoms:**
@@ -1437,4 +1472,4 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 ---
 
-**Last Updated:** 2026-06-02
+**Last Updated:** 2026-09-07
