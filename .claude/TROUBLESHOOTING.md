@@ -1474,4 +1474,24 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 ---
 
-**Last Updated:** 2026-09-07
+### Strips all render the same length regardless of icon count
+
+**Symptom:** left/right/bottom strips (in the live frame, not edit mode) no longer size to their icon count — every strip is the same, over-long, and its icons sit too far apart.
+
+**Cause:** `Strip.qml` floored its along-axis body at `_expanded` (`_bodyAxis = max(_expanded, _iconsLen + 2*padLong)`), and `ShellConfig.setSideType` wrote `expanded: 240` on every strip/holder flip. Once a side had been flipped to strip via the builder's type switch, `240` dominated `_iconsLen`, pinning the body to 240px (and spreading icons across it). `_defaults` used `expanded: 44`, so the bug only surfaced after a type-flip. `sideExpanded`/`expanded` is used *nowhere else* — it was effectively a vestigial length floor.
+
+**Fix (commit `5e07889`):** decouple `_bodyAxis` from `_expanded` — floor at one icon (`max(_iconSize + 2*_padLong, _iconsLen + 2*_padLong)`) so strips always size to their icons; this repairs already-written `expanded:240` configs without a rewrite. Also changed `setSideType`'s seed from `240` → `44` for consistency with `_defaults`.
+
+---
+
+### "Windows suddenly have huge margins to the frame" after builder/testing
+
+**Symptom:** tiled windows gain large gaps to the shell frame and each other, seemingly after shell edits.
+
+**Cause:** **not a shell bug** — it's runtime MangoWC gaps. `SUPER + =` is bound to `incgaps 5` (and `SUPER + -` to `-5`); a stray press grows live inner gaps. `incgaps` is runtime-only, never persisted, so `config.conf` still shows `gappih/gappiv=8`, `gappoh/gappov=0`, and the shell exclusion (`sideSize + outerGap`, in `ShellExclusions.qml`) is unchanged.
+
+**Fix:** `SUPER + SHIFT + R` (full reload) re-sources `config.conf` and resets live gaps; or tap `SUPER + -` to wind them back down. Rule of thumb: window-to-frame spacing is compositor gaps + shell exclusion — neither is touched by strip/bar/builder QML edits, so check runtime gaps first.
+
+---
+
+**Last Updated:** 2026-09-08
