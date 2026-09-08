@@ -16,6 +16,7 @@
 - Use when: Working on the plugin install CLI path or the plugins.json index format/hosting.
 - Skip when: Working on the manifest schema fields themselves (see item_066) or the Plugin Manager pane UI (item_063).
 - Note (adr_026): the install CLI + plugins.json index also cover THEME PACKS (a plugin kind), including the official Shadow Spears pack (item_082); distribution/tiers detail lives in item_021.
+- Note (builder entry point, 2026-09-08): the edit-mode Widget Library (EditOverlay) already links out to the Plugins settings pane (PaneRegistry id `plugins`) via its "Manage & get more widgets" footer. That footer is the intended in-shell entry point for the browse/install flow this item delivers — wire the index/install UI into the Plugins pane, not into the edit-mode library (which stays a drag-to-add composer). Trust badges come from item_066; installed plugins auto-appear in the library via ModuleRegistry rescan (ANALYSIS §12.7 DelegateChooser + module.json).
 
 # Problem
 - There is no install mechanism for plugins today; the only way to add a module is to manually drop a folder into the modules directory.
