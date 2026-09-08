@@ -1,6 +1,6 @@
 ## adr_028_visual_builder_dnd_intra_surface_mock_drag_with_click_to_assign_fallback - Visual Builder DnD intra-surface mock drag with click-to-assign fallback
 > Date: 2026-09-03
-> Status: Proposed
+> Status: Accepted
 > Related request: `req_000_archeotech_shell_dotfiles`
 > Related backlog: `item_022_visual_builder_drag_and_drop_spatial_zone_representation`
 > Related task: (none yet)
@@ -39,6 +39,7 @@ flowchart TD
 
 # Consequences
 - First time we animate DnD (and possibly an input mask) in-surface. Qt DropArea within one window is reliable, but requires a real-device smoke test on MangoWC + Hyprland (grim/manual, not the headless fake-HOME) before closeout.
+- Verified (2026-09-08): live smoke test on MangoWC passed — drag add/reorder/cross-side, invalid-drop reject, drag-back-to-remove, and the config write + hot-reload all work on the real session (delivered via task_027/028/029). Hyprland edit-mode verification defers to milestone 0.29 (the shell runs first-class on MangoWC today; the CompositorService facade / Hyprland session lands in 0.29).
 - Cross-monitor widget placement still needs click-to-assign; the mock could later add a per-monitor switcher rather than cross-surface drag.
 - Grouping adds an incompatibleGroups contract that widget authors must be aware of (relates to the plugin/registry contract, ADR 010/016).
 - §14.4's click-only stance remains valid for the cross-window case; this ADR narrows it, it does not fully replace it.
