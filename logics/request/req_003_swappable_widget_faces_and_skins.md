@@ -7,7 +7,7 @@
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-09 15:37:33
+> Indicators reviewed: 2026-09-09 17:52:50
 
 # AI Context
 - Summary: Give every widget interchangeable "faces"/skins (visual variants) selectable per instance via a data-driven variant registry — the user picks a widget's LOOK, not just whether it is present. Candidate work from ANALYSIS.md §20 (three shells converged on this independently).
@@ -25,9 +25,9 @@
 - Relates: adr_010 (filename-convention registry — the seam to extend), item_022 (builder registry + face picker home), item_063 (Done — ConfigForm/plugin manager), holder_aware_panels (responsive faces), adr_022 (per-instance config).
 
 # Acceptance criteria
-- AC1: `WidgetRegistry` exposes a variant contract — `variantsFor(id)` returns `{variantId:{file,label,constraints}}`, `defaultVariant(id)` returns the fallback, and `widgetFile(id,isStrip,variantId)` resolves a face's `.qml` — extending the adr_010 filename convention with NO per-plugin registry edit (a dropped face file + declaration is enough). Verify: a widget with ≥2 declared faces resolves each face's file by id, and an unknown/absent variantId falls back to the default without error.
-- AC2: The user picks a widget's face per instance from ConfigForm (item_063) and the Builder EditOverlay (item_022); the choice is written to the instance's per-instance config under a reserved key (adr_022), persists across a `shell-config.json` reload, and hot-swaps the live face via `WidgetLoader.onConfigChanged` WITHOUT remounting the holder. Verify in isolation with `HOME=/home/corvus ./scripts/shot.sh`: changing a face updates the rendered widget and survives reload.
-- AC3: At least two multi-face reference widgets ship, each face a self-contained `.qml` declaring its own aspect constraints: (a) Clock — analog / digital / minimal; (b) a system-stat widget — radial gauge vs. horizontal bars. Verify: both appear in the face picker with all faces selectable and each renders correctly headless.
+- AC1: A **host-agnostic face contract** — a face declares `{id, file, label, constraints}`, and a host resolves the declared faces + renders the selected one via a `Loader` slot, falling back to the default on an unknown/absent face id. Proven first on the **DashCard content slot** (the primary, high-value surface — `DashCard._content`), and the same pattern is reusable by the bar `WidgetRegistry` (`variantsFor`/`defaultVariant`/variant-aware `widgetFile`) as a secondary application. Verify: a card/widget with ≥2 declared faces resolves each by id and falls back cleanly.
+- AC2: The user picks a face and the choice **persists + hot-swaps live** without a full remount. For cards, face selection persists in a dashboard/card config store (relates item_046 customizable grid / item_049); for bar widgets, in per-instance config under a reserved key (adr_022) surfaced by ConfigForm (item_063) / Builder EditOverlay (item_022). Verify in isolation with `HOME=/home/corvus ./scripts/shot.sh`: switching a face updates the rendered surface and survives a reload.
+- AC3: At least two multi-face reference targets ship on **large content surfaces** (dashboard cards / panels — where layout genuinely varies and config can't express the difference), each face a self-contained `.qml`: (a) the **SystemStatus** dashboard card — labelled `bars` vs. radial `gauges` vs. `compact` sparkline over the same cpu/ram/disk/bat data; (b) the **MediaPanel** — `full` (art + transport side-by-side) vs. `compact` (small art + play/pause). Verify: each face is selectable and renders correctly headless via `HOME=/home/corvus ./scripts/shot.sh --state dashboard|media`. NOTE: bar-icon faces are explicitly de-scoped as the proof — a bar clock's 12/24h+seconds is already config, not a face; faces earn their keep only where the variants are structurally different render trees.
 
 # Definition of Ready (DoR)
 - [x] Problem statement is explicit and user impact is clear.
@@ -36,10 +36,11 @@
 - [x] Dependencies and known risks are listed.
 
 # Dependencies & Risks
-- Depends on: adr_010 (filename-convention registry — the seam extended), adr_022 (per-instance `{id,config}` — where face selection persists), item_063 (Done — ConfigForm/plugin-manager pane, the picker's primary home), item_022 (Builder EditOverlay — secondary picker home). Relates item_064 (holder-aware panels — faces must honour vertical/horizontal orientation + aspect constraints).
-- Risk: reserved face key could collide with a widget's own config field — namespace it (e.g. `__face`) and exclude it from the widget-authored schema surfaced in ConfigForm.
-- Risk: async `setSource` remount on face change would flicker/reset widget state — mitigate by treating face as config-driven where possible, or by scoping the remount to the loaded item so the holder/layout slot is preserved (WidgetLoader already re-applies config live via `onConfigChanged`).
-- Risk: faces with incompatible aspect constraints on a narrow vertical bar could clip — constraints must be advisory to the holder (item_064), and the picker should surface which faces fit the current side.
+- Primary surface = **dashboard cards / panels** (`DashCard._content`, `Modules/Shell/Panels/Content/*`) — where the alternatives are structurally different render trees (SystemStatus bars/gauges/compact; MediaPanel full/compact) and config genuinely can't express them. Bar-icon faces are the secondary, lower-value application.
+- Depends on: `DashCard` (the content-slot seam), adr_010 (bar registry convention — the secondary seam), adr_022 (per-instance `{id,config}` — bar-widget face persistence). Relates item_046 (dashboard customizable grid — likely home for card-face persistence), item_049 (system-notes/data), item_063 (Done — ConfigForm), item_022 (Builder EditOverlay), item_064 (holder-aware panels — advisory face constraints).
+- OPEN QUESTION: cards are singletons composed directly in `Dashboard.qml` (no per-instance config today) — decide where a card's face persists (a small dashboard/card settings key vs. riding item_046's grid config). The bar path already has per-instance config; the card path does not yet.
+- Risk: reserved face key could collide with a widget's own config field — namespace it (e.g. `__face`) and exclude it from the widget-authored schema.
+- Risk: remounting the face on change flickers/resets state — swap only the inner content `Loader.source`, keeping the card/holder shell + data props mounted (the data-bearing component owns cpu/ram/etc.; faces are pure presentation bound to it).
 - Risk (scope creep): "skins" can bleed into theme-pack restyle (req_001) — keep faces = structural layout variants, not palette/ornament; those stay in the theming engine.
 
 # Companion docs

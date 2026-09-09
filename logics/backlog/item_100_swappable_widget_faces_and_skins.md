@@ -8,11 +8,11 @@
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-09 15:38:29
+> Indicators reviewed: 2026-09-09 17:53:15
 
 # AI Context
-- Summary: Deliver the swappable-face capability end to end — extend `WidgetRegistry` with a variant contract (adr_010 seam), add a face picker to ConfigForm + Builder EditOverlay writing to per-instance config (adr_022), and ship two multi-face reference widgets (Clock; a system-stat gauge/bars) as proof. The headline "change a widget's look, not just its presence" feature for roadmap 0.26.
-- Keywords: swappable, widget, faces, skins, variant, registry, ConfigForm, face-picker
+- Summary: Deliver swappable faces on the shell's large content surfaces (dashboard cards / panels) — a host-agnostic face contract proven on `DashCard._content`, with SystemStatus (bars/gauges/compact) + MediaPanel (full/compact) as reference targets; bar-widget faces reuse the same contract secondarily. The headline "change a widget's LOOK, not just its presence" feature for roadmap 0.26, value-gated by a gauges spike.
+- Keywords: swappable, faces, DashCard, SystemStatus, MediaPanel, gauges, variant, registry
 - Use when: extending WidgetRegistry's resolver, wiring a face picker into ConfigForm/EditOverlay, or authoring multi-face reference widgets.
 - Skip when: adding a new widget TYPE; theme-pack visual restyle (req_001); the DnD builder mechanics themselves (item_022); motion plumbing (req_002).
 
@@ -22,24 +22,27 @@ Scope IN: a variant/face registry extension of adr_010; per-widget face declarat
 Scope OUT: new widget types; the DnD spatial builder itself (item_022); theme/pack visual restyle (req_001); motion plumbing (req_002).
 
 # Scope
-- In:
-  - Variant contract on `WidgetRegistry` (`variantsFor`/`defaultVariant`/variant-aware `widgetFile`) extending the adr_010 filename convention
-  - Reserved namespaced face key in per-instance config (adr_022); live face swap via `WidgetLoader.onConfigChanged`, persisted across `shell-config.json` reload
-  - Face picker in ConfigForm (item_063) and Builder EditOverlay (item_022)
-  - Two multi-face reference widgets: Clock (analog/digital/minimal) + a system-stat widget (radial gauge vs. horizontal bars), each face a self-contained `.qml` with aspect constraints
+- In (primary — large content surfaces, where faces earn their keep):
+  - A host-agnostic face contract: a face declares `{id,file,label,constraints}`; a host resolves declared faces + renders the selected one via a content `Loader`, with clean default fallback. Proven on the `DashCard._content` slot.
+  - Reference target A — **SystemStatus card**: `bars` (labelled % rows, today) / `gauges` (radial arcs) / `compact` (sparkline strip), same cpu/ram/disk/bat data.
+  - Reference target B — **MediaPanel**: `full` (art + transport side-by-side) / `compact` (small art + play/pause).
+  - Face selection persists + hot-swaps live (swap inner content source only; keep the data-bearing shell mounted).
+- In (secondary — reuse the same pattern on the bar):
+  - `WidgetRegistry` variant contract (`variantsFor`/`defaultVariant`/variant-aware `widgetFile`, adr_010) + `__face` reserved key in per-instance config (adr_022) + a face-picker row in ConfigForm/EditOverlay.
 - Out:
-  - New widget TYPES; theme/pack restyle (req_001); DnD builder mechanics (item_022); motion plumbing (req_002)
+  - Bar-icon faces as the *proof* (a clock's 12/24h+seconds is already config, not a face); new widget TYPES; theme/pack restyle (req_001); DnD builder mechanics (item_022); motion plumbing (req_002)
   - Full holder-aware responsive reflow (item_064) — faces only declare advisory constraints here
+  - Building the dashboard customizable-grid config store (item_046) — card-face persistence uses the minimum needed and defers the grid work
 
 # Acceptance criteria
-- AC1: `WidgetRegistry` exposes a variant contract — `variantsFor(id)` returns `{variantId:{file,label,constraints}}`, `defaultVariant(id)` returns the fallback, and `widgetFile(id,isStrip,variantId)` resolves a face's `.qml` — extending the adr_010 filename convention with NO per-plugin registry edit (a dropped face file + declaration is enough). Verify: a widget with ≥2 declared faces resolves each face's file by id, and an unknown/absent variantId falls back to the default without error.
-- AC2: The user picks a widget's face per instance from ConfigForm (item_063) and the Builder EditOverlay (item_022); the choice is written to the instance's per-instance config under a reserved key (adr_022), persists across a `shell-config.json` reload, and hot-swaps the live face via `WidgetLoader.onConfigChanged` WITHOUT remounting the holder. Verify in isolation with `HOME=/home/corvus ./scripts/shot.sh`: changing a face updates the rendered widget and survives reload.
-- AC3: At least two multi-face reference widgets ship, each face a self-contained `.qml` declaring its own aspect constraints: (a) Clock — analog / digital / minimal; (b) a system-stat widget — radial gauge vs. horizontal bars. Verify: both appear in the face picker with all faces selectable and each renders correctly headless.
+- AC1: A host-agnostic face contract — a face declares `{id,file,label,constraints}`; a host resolves declared faces + renders the selected one via a content `Loader`, falling back to the default on unknown/absent id. Proven first on the `DashCard._content` slot; the same pattern is reusable by the bar `WidgetRegistry` (`variantsFor`/`defaultVariant`/variant-aware `widgetFile`, adr_010). Verify: a card/widget with ≥2 declared faces resolves each by id and falls back cleanly.
+- AC2: Face selection persists + hot-swaps live without a full remount (swap only the inner content source; keep the data-bearing shell + props mounted). Cards persist in a minimal dashboard/card settings key (relates item_046); bar widgets persist in per-instance config under a reserved `__face` key (adr_022), surfaced by ConfigForm (item_063) / Builder EditOverlay (item_022). Verify in isolation with `HOME=/home/corvus ./scripts/shot.sh`: switching a face updates the rendered surface and survives reload.
+- AC3: At least two multi-face reference targets ship on large surfaces: (a) **SystemStatus card** — `bars` / `gauges` / `compact` over the same cpu/ram/disk/bat data; (b) **MediaPanel** — `full` / `compact`. Verify each face renders headless via `HOME=/home/corvus ./scripts/shot.sh --state dashboard|media`.
 
 # AC Traceability
-- request-AC1 -> This backlog slice. Proof: AC1: `WidgetRegistry` exposes a variant contract — `variantsFor(id)` returns `{variantId:{file,label,constraints}}`, `defaultVariant(id)` returns the fallback, and `widgetFile(id,isStrip,variantId)` resolves a face's `.qml` — extending the adr_010 filename convention with NO per-plugin registry edit (a dropped face file + declaration is enough). Verify: a widget with ≥2 declared faces resolves each face's file by id, and an unknown/absent variantId falls back to the default without error.
-- request-AC2 -> This backlog slice. Proof: AC2: The user picks a widget's face per instance from ConfigForm (item_063) and the Builder EditOverlay (item_022); the choice is written to the instance's per-instance config under a reserved key (adr_022), persists across a `shell-config.json` reload, and hot-swaps the live face via `WidgetLoader.onConfigChanged` WITHOUT remounting the holder. Verify in isolation with `HOME=/home/corvus ./scripts/shot.sh`: changing a face updates the rendered widget and survives reload.
-- request-AC3 -> This backlog slice. Proof: AC3: At least two multi-face reference widgets ship, each face a self-contained `.qml` declaring its own aspect constraints: (a) Clock — analog / digital / minimal; (b) a system-stat widget — radial gauge vs. horizontal bars. Verify: both appear in the face picker with all faces selectable and each renders correctly headless.
+- request-AC1 -> This backlog slice. Proof: host-agnostic face contract proven on `DashCard._content`, reusable by the bar `WidgetRegistry`; ≥2 faces resolve by id with clean default fallback.
+- request-AC2 -> This backlog slice. Proof: face selection persists + hot-swaps live by swapping only the inner content source (cards → dashboard settings key; bar widgets → `__face` per-instance config), verified headless.
+- request-AC3 -> This backlog slice. Proof: SystemStatus (bars/gauges/compact) + MediaPanel (full/compact) ship as multi-face reference targets, each face self-contained, verified via shot.sh state-driving.
 
 # Decision framing
 - Product framing: Not needed
