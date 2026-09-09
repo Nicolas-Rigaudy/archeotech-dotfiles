@@ -1,14 +1,14 @@
 ## item_100_swappable_widget_faces_and_skins - Swappable widget faces and skins
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 35%
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-09 17:53:15
+> Indicators reviewed: 2026-09-09 17:59:31
 
 # AI Context
 - Summary: Deliver swappable faces on the shell's large content surfaces (dashboard cards / panels) — a host-agnostic face contract proven on `DashCard._content`, with SystemStatus (bars/gauges/compact) + MediaPanel (full/compact) as reference targets; bar-widget faces reuse the same contract secondarily. The headline "change a widget's LOOK, not just its presence" feature for roadmap 0.26, value-gated by a gauges spike.

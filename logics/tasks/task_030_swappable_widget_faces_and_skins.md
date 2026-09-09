@@ -1,14 +1,15 @@
 ## task_030_swappable_widget_faces_and_skins - Swappable widget faces and skins
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 35%
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-09 17:53:15
+> Indicators reviewed: 2026-09-09 18:04:51
+> Owner: corvus
 
 # AI Context
 - Summary: Implement swappable faces on the shell's LARGE content surfaces (dashboard cards / panels) where layout genuinely varies and config can't express it. Primary seam = `DashCard._content`; reference targets = SystemStatus card (bars/gauges/compact) + MediaPanel (full/compact). Bar-widget faces are a secondary reuse of the same contract. Value-gated by a Wave-0 gauges spike. Verify headless via `HOME=/home/corvus ./scripts/shot.sh --state dashboard|media`.
@@ -52,10 +53,14 @@
 - [ ] Run `logics-manager flow finish task task_030_swappable_widget_faces_and_skins.md` after implementation.
 
 # Validation
-- (no validation recorded yet)
+- Wave 0 SPIKE (value gate): rendered bars-vs-gauges preview headless — gauges confirmed genuinely useful on a roomy card (structurally different tree config can't express). User approved proceeding.
+- Wave 1 (face contract + first faces): implemented in `archeotech-shell` (commit on `main`): `DashCard` gained a `faces`/`face` contract + inner `faceLoader`; `SystemStatus` now delegates presentation to faces `bars` (default, extracted verbatim) + `gauges`.
+  - Regression: `shot.sh --state dashboard` (default) renders SystemStatus bars identical to pre-change; all other cards unaffected → backward-compatible contract confirmed.
+  - Gauges: temporarily selected `face:"gauges"`, `shot.sh --state dashboard` rendered 2×2 radial gauges with live data, fully themed via Commons, no QML errors; reverted to default before commit.
+  - `--qml` harness can't resolve the `Commons` singleton (only the full `-c` config does) — verified via the real config instead.
 
 # Report
-- Not started.
+- In progress (35%). Wave 0 (value gate) + Wave 1 (DashCard face contract + SystemStatus bars/gauges) landed and verified headless. Next: Wave 2 — `compact` sparkline face + MediaPanel full/compact; then Wave 3 persistence.
 
 # Links
 - Request: `req_003_swappable_widget_faces_and_skins`
