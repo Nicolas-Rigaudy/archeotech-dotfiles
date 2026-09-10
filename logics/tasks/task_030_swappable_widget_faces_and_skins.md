@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-10 10:25:44
+> Indicators reviewed: 2026-09-10 10:43:13
 > Owner: corvus
 
 # AI Context
@@ -64,8 +64,14 @@
   - SystemStatus now ships FOUR faces: `gauges` (default), `bars`, `sparkline` (auto-scaled trend), `compact` (dense numbers).
   - Polling: 1s cadence, visibility-gated (`running: _dashOpen`) — zero idle cost; history buffer (_histMax 60) feeds the sparkline. Chose in-memory + fast-warm over disk persistence (matches reference shells per ANALYSIS §20; they don't persist stat history).
   - Sparkline auto-scales to each series' own min/max with a span floor (flat series stay centered, not amplified).
-- Wave 3 (persist) + Wave 4 (dashboard picker) DONE: `DashCard` header shows a face-cycle pill (only when >1 face); the choice persists under `dashboard.faces.<title>` in `Persistence.Config` and restores on load. Verified the persistence LOAD path headlessly (injected `dashboard.faces["SYSTEM STATUS"]="sparkline"` → fresh session loaded sparkline + pill read "Sparkline"; config restored). The literal tap-to-cycle can't be headless-tested (shot.sh injects no input) but uses the same Config round-trip.
-- Pending: MediaPanel `full`/`compact` (AC3 second reference target); secondary bar-widget path (WidgetRegistry `__face`); Wave 5 docs (WIDGET_API + adr_010) + closeout.
+- Wave 3 (persist) + Wave 4 (picker) DONE, then reworked on user UX feedback:
+  - Switched from a header cycle-pill to **swipe the card body** (DragHandler, ≥40px horizontal, guarded against stray/warp events) + **page-dots** (tap a dot to jump). No header chrome — keeps the card uncluttered. Incoming face slides in (faceEnter). Choice persists under `dashboard.faces.<title>` in `Persistence.Config`, restores on load.
+  - Verified persistence LOAD headlessly (inject config → fresh session loads that face; page-dot reflects it; config restored). Swipe/tap gesture itself isn't headless-testable (shot.sh injects no input); logic + persistence round-trip verified.
+  - Found + fixed: headless renders were spuriously persisting a face (stray pointer event) — added no-op/relevance guards to `_selectFace` + the DragHandler; cleaned the user's real config; confirmed post-render config stays clean.
+  - `sparkline` reworked to fill the card height (faceLoader fillHeight) so charts read as real trends, not stranded thin lines; cleaner line + end-dot + soft fill.
+  - `compact` dropped (deleted the file) — a fixed-height bento card can't shrink, so compact can't earn its keep until item_046 (variable card sizes). Recoverable from git.
+- SystemStatus now ships 3 faces: gauges (default) / bars / sparkline.
+- Pending: MediaPanel `full`/`compact` (AC3 second reference target); secondary bar-widget path; Wave 5 docs (WIDGET_API + adr_010) + closeout.
 
 # Links
 - Request: `req_003_swappable_widget_faces_and_skins`
