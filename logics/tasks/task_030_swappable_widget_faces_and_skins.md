@@ -4,11 +4,11 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 55%
+> Progress: 75%
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-10 10:18:33
+> Indicators reviewed: 2026-09-10 10:25:44
 > Owner: corvus
 
 # AI Context
@@ -64,7 +64,8 @@
   - SystemStatus now ships FOUR faces: `gauges` (default), `bars`, `sparkline` (auto-scaled trend), `compact` (dense numbers).
   - Polling: 1s cadence, visibility-gated (`running: _dashOpen`) — zero idle cost; history buffer (_histMax 60) feeds the sparkline. Chose in-memory + fast-warm over disk persistence (matches reference shells per ANALYSIS §20; they don't persist stat history).
   - Sparkline auto-scales to each series' own min/max with a span floor (flat series stay centered, not amplified).
-- Pending: MediaPanel `full`/`compact` (AC3 second reference target); then Wave 3 persist face choice, Wave 4 picker UI.
+- Wave 3 (persist) + Wave 4 (dashboard picker) DONE: `DashCard` header shows a face-cycle pill (only when >1 face); the choice persists under `dashboard.faces.<title>` in `Persistence.Config` and restores on load. Verified the persistence LOAD path headlessly (injected `dashboard.faces["SYSTEM STATUS"]="sparkline"` → fresh session loaded sparkline + pill read "Sparkline"; config restored). The literal tap-to-cycle can't be headless-tested (shot.sh injects no input) but uses the same Config round-trip.
+- Pending: MediaPanel `full`/`compact` (AC3 second reference target); secondary bar-widget path (WidgetRegistry `__face`); Wave 5 docs (WIDGET_API + adr_010) + closeout.
 
 # Links
 - Request: `req_003_swappable_widget_faces_and_skins`
