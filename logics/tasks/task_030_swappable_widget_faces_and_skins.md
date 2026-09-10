@@ -4,11 +4,11 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 35%
+> Progress: 55%
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-09 18:04:51
+> Indicators reviewed: 2026-09-10 10:18:33
 > Owner: corvus
 
 # AI Context
@@ -60,7 +60,11 @@
   - `--qml` harness can't resolve the `Commons` singleton (only the full `-c` config does) — verified via the real config instead.
 
 # Report
-- In progress (35%). Wave 0 (value gate) + Wave 1 (DashCard face contract + SystemStatus bars/gauges) landed and verified headless. Next: Wave 2 — `compact` sparkline face + MediaPanel full/compact; then Wave 3 persistence.
+- In progress (55%). Wave 0 (value gate) + Wave 1 (DashCard face contract) + Wave 2 SystemStatus half landed and verified headless.
+  - SystemStatus now ships FOUR faces: `gauges` (default), `bars`, `sparkline` (auto-scaled trend), `compact` (dense numbers).
+  - Polling: 1s cadence, visibility-gated (`running: _dashOpen`) — zero idle cost; history buffer (_histMax 60) feeds the sparkline. Chose in-memory + fast-warm over disk persistence (matches reference shells per ANALYSIS §20; they don't persist stat history).
+  - Sparkline auto-scales to each series' own min/max with a span floor (flat series stay centered, not amplified).
+- Pending: MediaPanel `full`/`compact` (AC3 second reference target); then Wave 3 persist face choice, Wave 4 picker UI.
 
 # Links
 - Request: `req_003_swappable_widget_faces_and_skins`
