@@ -1,14 +1,14 @@
 ## item_100_swappable_widget_faces_and_skins - Swappable widget faces and skins
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 92%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-09 17:59:31
+> Indicators reviewed: 2026-09-10 16:16:55
 
 # AI Context
 - Summary: Deliver swappable faces on the shell's large content surfaces (dashboard cards / panels) — a host-agnostic face contract proven on `DashCard._content`, with SystemStatus (bars/gauges/compact) + MediaPanel (full/compact) as reference targets; bar-widget faces reuse the same contract secondarily. The headline "change a widget's LOOK, not just its presence" feature for roadmap 0.26, value-gated by a gauges spike.
@@ -55,8 +55,8 @@ Scope OUT: new widget types; the DnD spatial builder itself (item_022); theme/pa
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_003_swappable_widget_faces_and_skins.md`
-- Primary task(s): (none yet)
+- Request: `req_003_swappable_widget_faces_and_skins`
+- Primary task(s): `task_030_swappable_widget_faces_and_skins`
 
 # Priority
 - Priority: High
@@ -66,6 +66,7 @@ Scope OUT: new widget types; the DnD spatial builder itself (item_022); theme/pa
 - Hybrid rationale: Derived from request `req_003_swappable_widget_faces_and_skins` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_003_swappable_widget_faces_and_skins.md`.
 - Generated locally by logics-manager.
+- Task `task_030_swappable_widget_faces_and_skins` was finished via `logics-manager flow finish task` on 2026-09-10.
 
 # Tasks
 - `task_030_swappable_widget_faces_and_skins`

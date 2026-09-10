@@ -33,6 +33,7 @@
 | [adr_027_theming_engine_mechanism_pack_token_overlay_additive_fx_motion_curated_versioned_style_delegate_contract](architecture/adr_027_theming_engine_mechanism_pack_token_overlay_additive_fx_motion_curated_versioned_style_delegate_contract.md) | Theming engine mechanism: pack token overlay, additive FX/motion, curated versioned style-delegate contract | Proposed |  |  | architecture/adr_027_theming_engine_mechanism_pack_token_overlay_additive_fx_motion_curated_versioned_style_delegate_contract.md |
 | [adr_028_visual_builder_dnd_intra_surface_mock_drag_with_click_to_assign_fallback](architecture/adr_028_visual_builder_dnd_intra_surface_mock_drag_with_click_to_assign_fallback.md) | Visual Builder DnD intra-surface mock drag with click-to-assign fallback | Accepted |  |  | architecture/adr_028_visual_builder_dnd_intra_surface_mock_drag_with_click_to_assign_fallback.md |
 | [adr_029_flat_mode_gates_depth_only_opacity_is_a_pack_material_decision](architecture/adr_029_flat_mode_gates_depth_only_opacity_is_a_pack_material_decision.md) | Flat mode gates depth only; opacity is a pack-material decision | Accepted |  |  | architecture/adr_029_flat_mode_gates_depth_only_opacity_is_a_pack_material_decision.md |
+| [adr_030_swappable_widget_panel_faces_via_shared_facehost](architecture/adr_030_swappable_widget_panel_faces_via_shared_facehost.md) | Swappable widget/panel faces via shared FaceHost | Accepted |  |  | architecture/adr_030_swappable_widget_panel_faces_via_shared_facehost.md |
 
 ## Product briefs
 
@@ -54,7 +55,7 @@
 | [req_000_archeotech_shell_dotfiles](request/req_000_archeotech_shell_dotfiles.md) | Archeotech shell & dotfiles | Draft |  |  | request/req_000_archeotech_shell_dotfiles.md |
 | [req_001_theming_capability_surface_flagship_identity_packs](request/req_001_theming_capability_surface_flagship_identity_packs.md) | Theming capability surface & flagship identity packs | Ready |  |  | request/req_001_theming_capability_surface_flagship_identity_packs.md |
 | [req_002_motion_and_fluidity_system](request/req_002_motion_and_fluidity_system.md) | Motion and fluidity system | Draft |  |  | request/req_002_motion_and_fluidity_system.md |
-| [req_003_swappable_widget_faces_and_skins](request/req_003_swappable_widget_faces_and_skins.md) | Swappable widget faces and skins | Ready |  |  | request/req_003_swappable_widget_faces_and_skins.md |
+| [req_003_swappable_widget_faces_and_skins](request/req_003_swappable_widget_faces_and_skins.md) | Swappable widget faces and skins | Done |  |  | request/req_003_swappable_widget_faces_and_skins.md |
 | [req_004_creative_applets_and_canvas_visualizations](request/req_004_creative_applets_and_canvas_visualizations.md) | Creative applets and canvas visualizations | Draft |  |  | request/req_004_creative_applets_and_canvas_visualizations.md |
 
 ## Backlog
@@ -160,7 +161,7 @@
 | [item_097_wysiwyg_bar_strip_shaped_builder_mock_edit_in_place_at_edges](backlog/item_097_wysiwyg_bar_strip_shaped_builder_mock_edit_in_place_at_edges.md) | WYSIWYG bar/strip-shaped builder mock (edit-in-place at edges) | Done |  | 100% | backlog/item_097_wysiwyg_bar_strip_shaped_builder_mock_edit_in_place_at_edges.md |
 | [item_098_custom_pill_containers_arbitrary_n_separators_containers_per_side_with_chosen_widgets](backlog/item_098_custom_pill_containers_arbitrary_n_separators_containers_per_side_with_chosen_widgets.md) | Custom pill containers — arbitrary N separators/containers per side with chosen widgets | Draft |  | 0% | backlog/item_098_custom_pill_containers_arbitrary_n_separators_containers_per_side_with_chosen_widgets.md |
 | [item_099_visual_builder_ux_overhaul_always_visible_widget_library](backlog/item_099_visual_builder_ux_overhaul_always_visible_widget_library.md) | Visual builder UX overhaul + always-visible widget library | Done |  | 100% | backlog/item_099_visual_builder_ux_overhaul_always_visible_widget_library.md |
-| [item_100_swappable_widget_faces_and_skins](backlog/item_100_swappable_widget_faces_and_skins.md) | Swappable widget faces and skins | Ready |  | 0% | backlog/item_100_swappable_widget_faces_and_skins.md |
+| [item_100_swappable_widget_faces_and_skins](backlog/item_100_swappable_widget_faces_and_skins.md) | Swappable widget faces and skins | Done |  | 100% | backlog/item_100_swappable_widget_faces_and_skins.md |
 
 ## Tasks
 
@@ -195,7 +196,7 @@
 | [task_027_visual_builder_drag_and_drop_spatial_zone_representation](tasks/task_027_visual_builder_drag_and_drop_spatial_zone_representation.md) | Visual Builder drag-and-drop + spatial zone representation | Done | corvus | 100% | tasks/task_027_visual_builder_drag_and_drop_spatial_zone_representation.md |
 | [task_028_wysiwyg_bar_strip_shaped_builder_mock_edit_in_place_at_edges](tasks/task_028_wysiwyg_bar_strip_shaped_builder_mock_edit_in_place_at_edges.md) | WYSIWYG bar/strip-shaped builder mock (edit-in-place at edges) | Done | corvus | 100% | tasks/task_028_wysiwyg_bar_strip_shaped_builder_mock_edit_in_place_at_edges.md |
 | [task_029_visual_builder_ux_overhaul_always_visible_widget_library](tasks/task_029_visual_builder_ux_overhaul_always_visible_widget_library.md) | Visual builder UX overhaul + always-visible widget library | Done | corvus | 100% | tasks/task_029_visual_builder_ux_overhaul_always_visible_widget_library.md |
-| [task_030_swappable_widget_faces_and_skins](tasks/task_030_swappable_widget_faces_and_skins.md) | Swappable widget faces and skins | Ready |  | 0% | tasks/task_030_swappable_widget_faces_and_skins.md |
+| [task_030_swappable_widget_faces_and_skins](tasks/task_030_swappable_widget_faces_and_skins.md) | Swappable widget faces and skins | Done | corvus | 100% | tasks/task_030_swappable_widget_faces_and_skins.md |
 
 ## Runbooks
 

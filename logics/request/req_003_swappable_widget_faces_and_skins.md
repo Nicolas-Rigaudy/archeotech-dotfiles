@@ -1,13 +1,13 @@
 ## req_003_swappable_widget_faces_and_skins - Swappable widget faces and skins
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 85
 > Confidence: 80
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-09-09 17:52:50
+> Indicators reviewed: 2026-09-10 16:16:54
 
 # AI Context
 - Summary: Give every widget interchangeable "faces"/skins (visual variants) selectable per instance via a data-driven variant registry — the user picks a widget's LOOK, not just whether it is present. Candidate work from ANALYSIS.md §20 (three shells converged on this independently).

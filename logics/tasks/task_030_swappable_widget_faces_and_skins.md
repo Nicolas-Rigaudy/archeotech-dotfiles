@@ -1,14 +1,14 @@
 ## task_030_swappable_widget_faces_and_skins - Swappable widget faces and skins
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 92%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-10 12:41:11
+> Indicators reviewed: 2026-09-10 16:16:54
 > Owner: corvus
 
 # AI Context
@@ -29,10 +29,10 @@
 - adr_010 (bar registry convention) · adr_022 (per-instance config). Verify with `HOME=/home/corvus ./scripts/shot.sh` (isolated nested session; never the live shell).
 
 # Definition of Done (DoD)
-- [ ] The backlog scope is implemented.
-- [ ] Acceptance criteria are covered.
-- [ ] Validation passes.
-- [ ] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
+- [x] The backlog scope is implemented.
+- [x] Acceptance criteria are covered.
+- [x] Validation passes.
+- [x] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
 
 # Backlog
 - `item_100_swappable_widget_faces_and_skins`
@@ -49,8 +49,8 @@
 - Wave 3 — Persist + live swap (AC2): persist the card face choice in a minimal dashboard/card settings key (relates item_046, don't build the full grid); swap only the inner content source so the card shell + data props stay mounted (no flicker/reset). Confirm persistence across reload.
 - Wave 4 — Picker UI (AC2): expose the face choice in the dashboard's edit affordance; then (secondary) wire the same contract into the bar path — `WidgetRegistry.variantsFor`/`defaultVariant` + `__face` in per-instance config + a face-picker row in `ConfigForm.qml` / `EditOverlay.qml`.
 - Wave 5 — Docs + closeout: update `docs/WIDGET_API.md` (face contract) + adr_010; record validation, then `logics-manager flow finish task`.
-- [ ] Use `logics-manager flow progress task task_030_swappable_widget_faces_and_skins.md --progress <n>%` during multi-wave work.
-- [ ] Run `logics-manager flow finish task task_030_swappable_widget_faces_and_skins.md` after implementation.
+- [x] Use `logics-manager flow progress task task_030_swappable_widget_faces_and_skins.md --progress <n>%` during multi-wave work.
+- [x] Run `logics-manager flow finish task task_030_swappable_widget_faces_and_skins.md` after implementation.
 
 # Validation
 - Wave 0 SPIKE (value gate): rendered bars-vs-gauges preview headless — gauges confirmed genuinely useful on a roomy card (structurally different tree config can't express). User approved proceeding.
@@ -58,6 +58,9 @@
   - Regression: `shot.sh --state dashboard` (default) renders SystemStatus bars identical to pre-change; all other cards unaffected → backward-compatible contract confirmed.
   - Gauges: temporarily selected `face:"gauges"`, `shot.sh --state dashboard` rendered 2×2 radial gauges with live data, fully themed via Commons, no QML errors; reverted to default before commit.
   - `--qml` harness can't resolve the `Commons` singleton (only the full `-c` config does) — verified via the real config instead.
+- Faces verified headless via shot.sh --state dashboard|media: SystemStatus gauges/bars/sparkline + MediaPanel full/compact each render; persistence load-path verified (config-inject → fresh session loads face); user-approved live 2026-09-10. No QML errors; config stays clean.
+- Finish workflow executed on 2026-09-10.
+- Linked backlog/request close verification passed.
 
 # Report
 - In progress (55%). Wave 0 (value gate) + Wave 1 (DashCard face contract) + Wave 2 SystemStatus half landed and verified headless.
@@ -75,8 +78,16 @@
 - SystemStatus reference target (AC3-a) COMPLETE + user-verified live: gauges/bars/sparkline faces, drag-swipe + two-finger VERTICAL scroll (MangoWC drops horizontal scroll to layer surfaces — matched the proven Carousel.qml handler: vertical axis, pixelDelta for touchpad) + page-dot tap, two-loader carousel slide (stable order via bound current face), persisted choice, live 1s poll while dashboard open.
 - AC3-b MediaPanel + FaceHost extraction DONE: extracted a reusable `Modules/Shell/FaceHost.qml` (the host-agnostic face contract — faces list + persistence + carousel slide + drag-swipe + vertical-scroll + page-dots) and used it for BOTH surfaces. MediaPanel now ships `full` (art+info+seek+transport) and `compact` (small art + inline transport) faces, persisted under `media.face`, verified rendering headless (forced available). Then MIGRATED `DashCard` onto FaceHost (−163 lines, no behaviour change — SystemStatus gauges/sparkline re-verified identical). AC1's "host-agnostic, reusable" claim is now literally proven (one component, two very different hosts).
 - Pending: secondary bar-widget path (optional, lower value); Wave 5 docs (WIDGET_API + adr_010) + closeout.
+- Finished on 2026-09-10.
+- Linked backlog item(s): `item_100_swappable_widget_faces_and_skins`
+- Related request(s): `req_003_swappable_widget_faces_and_skins`
 
 # Links
 - Request: `req_003_swappable_widget_faces_and_skins`
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
+
+# AC Traceability
+- request-AC1 -> This task. Proof: one shared `Modules/Shell/FaceHost.qml` resolves declared faces by id with clean default fallback, embedded in BOTH `DashCard` (SystemStatus) and `MediaPanel` — literally host-agnostic (adr_030). Each face resolves + renders headless via `shot.sh --state dashboard|media`.
+- request-AC2 -> This task. Proof: choice persists in `Persistence.Config` (`dashboard.faces.<title>` / `media.face`), restored on load — verified headless (injected a face into config → fresh session came up on it, page-dot reflects it); live swap is a bound-Loader carousel, no full remount. User-verified live.
+- request-AC3 -> This task. Proof: two reference targets shipped — SystemStatus (`gauges`/`bars`/`sparkline`) + MediaPanel (`full`/`compact`, panel resizes via `implicitPerp`); each face rendered headless via shot.sh and approved live.
