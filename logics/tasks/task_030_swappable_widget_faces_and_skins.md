@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-10 10:43:13
+> Indicators reviewed: 2026-09-10 11:18:21
 > Owner: corvus
 
 # AI Context
@@ -71,7 +71,8 @@
   - `sparkline` reworked to fill the card height (faceLoader fillHeight) so charts read as real trends, not stranded thin lines; cleaner line + end-dot + soft fill.
   - `compact` dropped (deleted the file) — a fixed-height bento card can't shrink, so compact can't earn its keep until item_046 (variable card sizes). Recoverable from git.
 - SystemStatus now ships 3 faces: gauges (default) / bars / sparkline.
-- Pending: MediaPanel `full`/`compact` (AC3 second reference target); secondary bar-widget path; Wave 5 docs (WIDGET_API + adr_010) + closeout.
+- UX polish round (user feedback): fixed sparkline OVERFLOW (its implicit height now ≈ gauges so switching never grows the card / overlaps the toolbar); livelier sparkline (span floor 12→6, buffer 60→40, ~1.3s/sample while open); added **touchpad two-finger swipe** (WheelHandler, accumulate + cooldown) alongside drag-swipe; replaced the fade transition with a **real two-loader carousel** (outgoing slides out while incoming slides in). Static render + config-clean + no-errors verified headless; the carousel MOTION and swipe/touchpad GESTURES can't be headless-tested (no input injection) — pending user live check.
+- Pending: live-verify swipe/touchpad/carousel feel; MediaPanel `full`/`compact` (AC3 second target); secondary bar-widget path; Wave 5 docs (WIDGET_API + adr_010) + closeout.
 
 # Links
 - Request: `req_003_swappable_widget_faces_and_skins`
