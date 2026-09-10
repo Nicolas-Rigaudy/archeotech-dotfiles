@@ -4,11 +4,11 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 80%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Widgets
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-10 12:27:27
+> Indicators reviewed: 2026-09-10 12:41:11
 > Owner: corvus
 
 # AI Context
@@ -73,7 +73,8 @@
 - SystemStatus now ships 3 faces: gauges (default) / bars / sparkline.
 - UX polish round (user feedback): fixed sparkline OVERFLOW (its implicit height now ≈ gauges so switching never grows the card / overlaps the toolbar); livelier sparkline (span floor 12→6, buffer 60→40, ~1.3s/sample while open); added **touchpad two-finger swipe** (WheelHandler, accumulate + cooldown) alongside drag-swipe; replaced the fade transition with a **real two-loader carousel** (outgoing slides out while incoming slides in). Static render + config-clean + no-errors verified headless; the carousel MOTION and swipe/touchpad GESTURES can't be headless-tested (no input injection) — pending user live check.
 - SystemStatus reference target (AC3-a) COMPLETE + user-verified live: gauges/bars/sparkline faces, drag-swipe + two-finger VERTICAL scroll (MangoWC drops horizontal scroll to layer surfaces — matched the proven Carousel.qml handler: vertical axis, pixelDelta for touchpad) + page-dot tap, two-loader carousel slide (stable order via bound current face), persisted choice, live 1s poll while dashboard open.
-- Pending: MediaPanel `full`/`compact` (AC3-b second target); secondary bar-widget path; Wave 5 docs (WIDGET_API + adr_010) + closeout.
+- AC3-b MediaPanel + FaceHost extraction DONE: extracted a reusable `Modules/Shell/FaceHost.qml` (the host-agnostic face contract — faces list + persistence + carousel slide + drag-swipe + vertical-scroll + page-dots) and used it for BOTH surfaces. MediaPanel now ships `full` (art+info+seek+transport) and `compact` (small art + inline transport) faces, persisted under `media.face`, verified rendering headless (forced available). Then MIGRATED `DashCard` onto FaceHost (−163 lines, no behaviour change — SystemStatus gauges/sparkline re-verified identical). AC1's "host-agnostic, reusable" claim is now literally proven (one component, two very different hosts).
+- Pending: secondary bar-widget path (optional, lower value); Wave 5 docs (WIDGET_API + adr_010) + closeout.
 
 # Links
 - Request: `req_003_swappable_widget_faces_and_skins`
