@@ -1,23 +1,28 @@
 ## item_044_workspace_indicators_3d_polish - Workspace indicators 3D polish
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Low
 > Theme: Polish
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
 > Indicators reviewed: 2026-08-20 17:08:28
 
 # AI Context
-- Summary: (unfilled: replace before this doc is used)
-- Keywords: workspace, indicators, polish
-- Use when: (unfilled: replace before this doc is used)
-- Skip when: (unfilled: replace before this doc is used)
+- Summary: Give WorkspacesWidget tag dots real visibility/contrast + a raised-glass 3D read in glass mode; delivered.
+- Keywords: workspace, indicators, polish, tag-dots, sheen, glass, 3d
+- Use when: Touching WorkspacesWidget bead styling or per-state (empty/occupied/selected) contrast.
+- Skip when: Changing tag/workspace switching logic (out of scope).
 
 # Problem
 - Workspace indicators lack visibility/contrast and a real 3D look in non-flat mode
+
+# Outcome (2026-09-11)
+- Delivered in archeotech-shell commit `e94770f` (WorkspacesWidget.qml). Glass mode now gives each bead a raised-glass read via three levers (the token sheen alone was too subtle at dot size): a `RectangularShadow` lift, a top-lit `sheen.knob` gradient, and a specular gloss cap.
+- Per-state hierarchy tuned live with the user: empty = dim + matte `surface1` (delineated by soft shadow, no hard border), occupied = brighter + glossy `overlay1` (differs from empty on both brightness and sheen), selected = accent pill with a softened gloss cap. Steel packs keep their metal shading; depthFlat collapses all depth cues.
+- Verified empty/selected headless via shot.sh; occupied state eyeballed live by the owner (un-mockable headless — only one window in the isolated session).
 
 # Scope
 - In:
