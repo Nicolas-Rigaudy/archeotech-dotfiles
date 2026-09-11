@@ -171,15 +171,17 @@ done
 pactl set-sink-mute @DEFAULT_SINK@ 0 && pactl set-sink-volume @DEFAULT_SINK@ 60%
 ```
 
-**Mute LED / mute icon stuck ON, independent of the sink:** the EliteBook mute LED is GPIO-driven by the **internal codec's ALSA `Master` mute** (card 0 `sofhdadsp`), *not* the PipeWire default sink. If you mute while on the internal speakers, then bluetooth becomes the default sink, the internal `Master` stays muted (LED lit) and the sink-mute key can't clear it. Fix directly:
+**Mute LED tracks the internal codec, not the active sink:** the EliteBook mute-key LED is GPIO-driven by the **internal codec's ALSA `Master` mute** (card 0 `sofhdadsp`), *not* the PipeWire default sink. So with a bluetooth headset as the default sink, muting it never touched `Master` → the LED never lit when muted, and a stale `Master` mute (from a past mute-on-internal) left the LED stuck lit while playing. Manual reset:
 ```bash
 amixer -c 0 sset 'Master' unmute; amixer -c 0 sset 'Headphone' unmute
 # (built-in mic: amixer -c 0 sset 'Capture' unmute)
 ```
+This is now handled automatically — `Audio.qml` mirrors the default-sink mute onto `Master` on every change (see permanent fixes), so the LED means "muted" regardless of output device.
 
 **Permanent fixes (shipped 2026-09-11):**
 - `Audio.qml` migrated off pactl entirely to **native `Quickshell.Services.Pipewire`** (default sink/source via a `PwObjectTracker`, volume/mute as property writes, device lists from `Pipewire.nodes`). No subprocess is spawned per change, so nothing can orphan or exhaust connections — and it's instant/event-driven instead of polled. (This closed a real gap: `task_019` had *claimed* volume was already event-driven; it wasn't.)
 - `scripts/mango-reload.sh` now runs `pkill -f 'pactl subscribe'` after killing the shell and before relaunch, reaping any legacy/crash orphan on every `SUPER+SHIFT+R`.
+- `Audio.qml` mirrors the default-sink mute onto the internal codec's ALSA `Master` (one-shot `amixer -c 0`) whenever `muted` changes, so the mute-key LED lights when muted and clears when unmuted — for both the `XF86AudioMute` keybind and the bar widget — no matter which output device is default.
 
 ### No Audio / No Soundcards Found
 
