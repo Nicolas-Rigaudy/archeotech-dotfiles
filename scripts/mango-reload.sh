@@ -30,6 +30,15 @@ for _ in $(seq 1 20); do
     sleep 0.1
 done
 
+# Reap orphaned audio watcher subprocesses. The shell's audio service used to
+# spawn a long-lived `pactl subscribe`; a crash or hard-kill of Quickshell (a
+# broken hot-reload during shell dev, a session crash) reparents that child to
+# init instead of tearing it down, and it keeps its PipeWire-Pulse client slot
+# forever. Enough of them accumulate to exhaust the connection limit → the
+# server refuses every new client → no volume/OSD/device detection until reboot.
+# The shell is already dead here, so any survivor is definitionally an orphan.
+pkill -f 'pactl subscribe' 2>/dev/null || true
+
 # Remember the active keyboard layout — reload_config re-reads xkb config and
 # resets it to the default (first in xkb_rules_layout), silently switching it
 # out from under you mid-session. Restored after the reload settles (below).

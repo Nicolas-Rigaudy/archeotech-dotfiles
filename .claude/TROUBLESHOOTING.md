@@ -155,6 +155,32 @@ Then regenerate GRUB config.
 
 ## Audio Problems
 
+### Total audio loss after a while — no devices, volume stuck at 0, mute LED stuck, no mute icon — RESOLVED 2026-09-11 (`pactl subscribe` client leak)
+
+**Symptoms:** All audio dies at once — `pactl info`/`wpctl status` from the shell fail with `Connection failure: Connection terminated`; outputs/inputs empty; the OSD and bar volume widget stay at 0 and don't respond; the keyboard mute LED stays lit; the mute icon disappears from OSD/bar. Often triggered by an unrelated event (bluetooth connect, a screen lock) that just happens to be the moment it tips over.
+
+**Root cause:** the shell's audio service (`archeotech-shell/Services/Media/Audio.qml`) used to watch for changes with a **long-lived `pactl subscribe` subprocess**. On a crash or hard-kill of Quickshell (a broken hot-reload during shell dev, a session crash, `pkill -9`) that child reparented to init instead of being torn down, and **held a PipeWire-Pulse client slot forever**. They accumulate across shell-dev sessions (found **63 orphans**, some ~3 days old) until PipeWire-Pulse hits its client limit and logs `mod.protocol-pulse: too many client application connections: Connection refused` — then it refuses *every* new client, so the OSD, bar widget and device enumeration all go dark. A secondary bug amplified it: `subscribe.onExited: running = true` (no backoff) busy-looped reconnecting once the server started refusing, flooding the journal and saturating the last slots.
+
+**Immediate recovery (no reboot needed):**
+```bash
+# 1. Reap the orphaned watchers (they're owned by init; the live shell's own is spared)
+for p in $(pgrep -x pactl); do
+  [ "$(ps -o ppid= -p "$p" | tr -d ' ')" = "1" ] && kill "$p"
+done
+# 2. Unmute + sane volume on the (now reachable) default sink
+pactl set-sink-mute @DEFAULT_SINK@ 0 && pactl set-sink-volume @DEFAULT_SINK@ 60%
+```
+
+**Mute LED / mute icon stuck ON, independent of the sink:** the EliteBook mute LED is GPIO-driven by the **internal codec's ALSA `Master` mute** (card 0 `sofhdadsp`), *not* the PipeWire default sink. If you mute while on the internal speakers, then bluetooth becomes the default sink, the internal `Master` stays muted (LED lit) and the sink-mute key can't clear it. Fix directly:
+```bash
+amixer -c 0 sset 'Master' unmute; amixer -c 0 sset 'Headphone' unmute
+# (built-in mic: amixer -c 0 sset 'Capture' unmute)
+```
+
+**Permanent fixes (shipped 2026-09-11):**
+- `Audio.qml` migrated off pactl entirely to **native `Quickshell.Services.Pipewire`** (default sink/source via a `PwObjectTracker`, volume/mute as property writes, device lists from `Pipewire.nodes`). No subprocess is spawned per change, so nothing can orphan or exhaust connections — and it's instant/event-driven instead of polled. (This closed a real gap: `task_019` had *claimed* volume was already event-driven; it wasn't.)
+- `scripts/mango-reload.sh` now runs `pkill -f 'pactl subscribe'` after killing the shell and before relaunch, reaping any legacy/crash orphan on every `SUPER+SHIFT+R`.
+
 ### No Audio / No Soundcards Found
 
 **Symptoms:**
