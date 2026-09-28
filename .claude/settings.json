@@ -1,0 +1,88 @@
+{
+  "env": {
+    "ARCHEOTECH_SHELL": "/home/corvus/Projects/archeotech-shell",
+    "QMLLINT": "/usr/lib/qt6/bin/qmllint"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git -C /home/corvus/Projects/archeotech-shell status:*)",
+      "Bash(git -C /home/corvus/Projects/archeotech-shell log:*)",
+      "Bash(git -C /home/corvus/Projects/archeotech-shell diff:*)",
+      "Bash(git -C /home/corvus/Projects/archeotech-shell show:*)",
+      "Bash(logics-manager status:*)",
+      "Bash(logics-manager health:*)",
+      "Bash(logics-manager lint:*)",
+      "Bash(logics-manager audit:*)",
+      "Bash(logics-manager sync read-doc:*)",
+      "Bash(logics-manager sync context-pack:*)",
+      "Bash(logics-manager sync search-docs:*)",
+      "Bash(logics-manager sync list-docs:*)",
+      "Bash(logics-manager flow list:*)",
+      "Bash(logics-manager flow show:*)",
+      "Bash(/usr/lib/qt6/bin/qmllint:*)",
+      "Bash(magick identify:*)",
+      "Bash(magick compare:*)",
+      "Bash(magick montage:*)",
+      "Bash(/home/corvus/Projects/archeotech-shell/scripts/shot.sh:*)",
+      "Bash(./scripts/shot.sh:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(pkill:*)",
+      "Bash(killall:*)",
+      "Bash(grim:*)",
+      "Bash(logics-manager bootstrap:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/qml-syntax-gate.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/qml-lint.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-summary.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

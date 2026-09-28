@@ -1,5 +1,5 @@
 # Claude Code internal settings (not dotfiles)
-.claude/settings.json
+# .claude/settings.json is versioned (project hooks + permissions); machine-local overrides go in settings.local.json
 .claude/settings.local.json
 .claude/projects/
 
