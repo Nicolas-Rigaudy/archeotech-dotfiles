@@ -1,14 +1,14 @@
 ## item_108_toast_osd_and_network_service_hardening - Toast, OSD and network service hardening
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 20%
+> Progress: 100%
 > Complexity: Low
 > Theme: Services
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 15:27:46
+> Indicators reviewed: 2026-09-28 15:58:28
 
 # AI Context
 - Summary: Toast, OSD and network service hardening. Toasts restart each other's timeouts on every arrival or dismiss and ignore the focused monitor (shell.qml:227-330)
@@ -45,7 +45,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_040_toast_osd_and_network_service_hardening`
 
 # Priority
 - Priority: Medium
@@ -53,3 +53,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_040_toast_osd_and_network_service_hardening`
+
+# Notes
+- Task `task_040_toast_osd_and_network_service_hardening` was finished via `logics-manager flow finish task` on 2026-09-28.
