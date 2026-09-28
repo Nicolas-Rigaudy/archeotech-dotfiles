@@ -1,14 +1,15 @@
 ## task_031_orchestrate_2026_09_28_audit_upgrade_program - Orchestrate 2026-09-28 audit upgrade program
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:57:16
+> Indicators reviewed: 2026-09-28 15:27:45
+> Owner: claude
 
 # AI Context
 - Summary: Orchestrates req_005 delivery across milestones 0.30 to 1.0 in road_001 order.
@@ -124,7 +125,7 @@
 - (no validation recorded yet)
 
 # Report
-- Not started.
+- 2026-09-28 checkpoint: 0.30 Safety net done except item_103 activation (owner runs archeotech-live.sh init). 0.31: item_105, item_106, item_107 done and landed (archeotech-shell 1c22858, 45a3cc7, b35817f); next item_108, item_109, item_068, item_049. Resume note: .claude/handoffs/RESUME.md; per-item method: .claude/skills/shell-item/SKILL.md.
 
 # Links
 - Request: `req_005_2026_09_28_audit_upgrade_program`

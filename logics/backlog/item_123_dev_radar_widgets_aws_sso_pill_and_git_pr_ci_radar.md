@@ -1,14 +1,14 @@
 ## item_123_dev_radar_widgets_aws_sso_pill_and_git_pr_ci_radar - Dev radar widgets: AWS SSO pill and git/PR/CI radar
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: Medium
 > Theme: Dev workflow
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Dev radar widgets: AWS SSO pill and git/PR/CI radar. No visibility of SSO token expiry, open PRs, review requests or CI status without leaving the desktop.

@@ -1,14 +1,14 @@
 ## item_091_accent_picker_for_all_theme_families_with_gtk_fallback - Accent picker for all theme families with GTK fallback
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: In progress
 > Understanding: 70
 > Confidence: 70
-> Progress: 0
+> Progress: 20%
 > Complexity: Medium
 > Theme: Theming
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Expose the accent picker for ALL theme families (not just Catppuccin), with graceful GTK fallback. QML/terminal/rofi/mango accent already works for any palette colour; only GTK needs per-accent packages. Migrated from ROADMAP.archived (core->plugin / "super-customizable" candidates).

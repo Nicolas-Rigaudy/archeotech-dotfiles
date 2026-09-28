@@ -1,14 +1,14 @@
 ## item_117_retire_angular_and_hud_test_packs_to_test_fixtures - Retire Angular and HUD test packs to test fixtures
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: Low
 > Theme: Theming engine
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Retire Angular and HUD test packs to test fixtures. Angular renders almost identical to Base and HUD only recolours the accent

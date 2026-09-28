@@ -1,14 +1,14 @@
 ## item_129_additional_add_on_identity_packs_cyberpunk_and_gundam - Additional add-on identity packs: cyberpunk and gundam
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: High
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Additional add-on identity packs: cyberpunk and gundam. Owner direction: real identity packs (Grimdark/Warhammer, cyberpunk, gundam, ...) ship as add-ons through community pack support, not as built-ins.

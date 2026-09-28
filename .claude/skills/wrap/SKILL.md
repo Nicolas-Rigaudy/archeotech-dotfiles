@@ -18,4 +18,5 @@ description: End-of-session wrap-up for archeotech work - update logics docs, do
    `git log` for vocabulary. In archeotech-shell use `git commit -m "..." -- <paths>` so
    anything the owner pre-staged is not swept in. Leave theme-switch churn unstaged.
    No Claude attribution. Never push.
-5. **Report.** What changed, commits, anything left dirty and why, the next item.
+5. **Resume note.** Update `.claude/handoffs/RESUME.md` (where things stand, next items, pending owner decisions, owner WIP not to touch) so a fresh session can continue.
+6. **Report.** What changed, commits, anything left dirty and why, the next item.

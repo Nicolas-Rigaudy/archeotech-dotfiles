@@ -1,14 +1,14 @@
 ## item_112_surface_recipes_and_pack_chrome_out_of_core_primitives - Surface recipes and pack chrome out of core primitives
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: High
 > Theme: Theming engine
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Surface recipes and pack chrome out of core primitives. frameChamfer doubles as the 'is this Grimdark' switch (72 references in 20 files)

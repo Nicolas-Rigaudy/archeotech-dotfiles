@@ -1,14 +1,14 @@
 ## item_065_archeotech_plugin_install_mechanism_plugins_json_index - archeotech plugin install mechanism + plugins.json index
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:45
 
 # AI Context
 - Summary: Adds the `archeotech plugin install <name>` git-clone install mechanism and a repo-hosted `plugins.json` index (official + community catalog).

@@ -1,14 +1,14 @@
 ## item_083_theming_engine_ornament_asset_overlay_fx_pack_font_hook_flagship_gap - Theming engine: ornament asset-overlay FX + pack font hook (flagship gap)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 85
 > Confidence: 80
-> Progress: 0%
+> Progress: 20%
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:57:15
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Engine gap surfaced by the Shadow Spears flagship (item_082): the Layer-B decorator/FX vocabulary was geometric primitives only (colored brackets, edge glow, tiled texture) + a single shell-wide font — which can reskin colour/shape/motion but CANNOT express WH40K's identity (iconography, ornament, gothic type). Adds: (1) an ornament asset-overlay FX (`fx.ornaments` — pack SVG/PNG at frame anchors, "corners" auto-rotated); (2) a pack display-font hook (`font.displayFile`/`displayFamily` → `Appearance.font.display`, body stays mono); and confirms packs may carry their own full `colors` palette. Non-IP/open assets only (no GW-owned icons).

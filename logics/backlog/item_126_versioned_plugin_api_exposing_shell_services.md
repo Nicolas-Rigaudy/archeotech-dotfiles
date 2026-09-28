@@ -1,14 +1,14 @@
 ## item_126_versioned_plugin_api_exposing_shell_services - Versioned plugin API exposing shell services
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: High
 > Theme: Extensibility
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Versioned plugin API exposing shell services. Plugins get no audio, media, network, compositor or storage access

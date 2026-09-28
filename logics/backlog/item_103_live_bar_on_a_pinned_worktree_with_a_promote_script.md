@@ -4,11 +4,11 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 50%
+> Progress: 60%
 > Complexity: Low
 > Theme: Tooling
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 13:41:51
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Live bar on a pinned worktree with a promote script. ~/.config/quickshell/archeotech symlinks to the dev checkout, so every save hot-reloads onto the live bar

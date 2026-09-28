@@ -2,6 +2,8 @@
 
 > **Repo split (2026-07-09):** the Archeotech Quickshell **shell** (bar/panels/launcher/theme system — the publishable product) lives in a separate repo, **`~/Projects/archeotech-shell`** (public, run via `qs -c archeotech`). **This** repo (`archeotech-dotfiles`) is the private personal machine config. Shell-dev sessions edit code in `archeotech-shell` but the `.claude/` knowledge base here still covers the shell.
 
+> **Starting a session? Read `.claude/handoffs/RESUME.md` first** — current state, next items, open owner decisions. Shell items are implemented with the `/shell-item` skill; renders with `/shot`.
+
 > **Planning lives in `logics/`** (logics-manager), not in this file — see `.claude/PLANNING.md`, `LOGICS.md`, and the root `CLAUDE.md`. The full pre-2026-08-21 knowledge base (shipped log, session-by-session changelog, detailed component tables, how-tos, locked-architecture prose) is archived verbatim in `.claude/PROJECT_HISTORY.md`.
 
 ---

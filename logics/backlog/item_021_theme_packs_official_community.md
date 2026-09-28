@@ -1,14 +1,14 @@
 ## item_021_theme_packs_official_community - Theme Packs (official + community)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: High
 > Theme: Theming ecosystem
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:45
 
 # AI Context
 - Summary: The DISTRIBUTION + tiers slice of the theme-pack system (rescoped 2026-08-21 under adr_026): bundling a whole identity as an installable pack and the official/verified/community tier model. The deep capability surface is item_081, the manifest schema is item_066, install mechanics are item_065, and the Manager UI is item_063 — this item owns the "installable, curated catalog" concern.

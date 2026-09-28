@@ -1,14 +1,14 @@
 ## item_068_visual_regression_vs_goldens_qml_logic_tests_arch_container_ci - Visual-regression vs goldens + QML logic tests + Arch-container CI
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:45
 
 # AI Context
 - Summary: Adds ImageMagick visual-regression diffing against committed goldens, greenfield QML logic tests, and extends CI to run in an Arch container.

@@ -1,14 +1,14 @@
 ## item_111_designed_light_themes_with_their_own_surface_recipe - Designed light themes with their own surface recipe
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: Medium
 > Theme: Design system
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Designed light themes with their own surface recipe. Light themes are recoloured dark themes: cards render darker and greyer than their panel, shadows sink toward black, secondary text is about 2:1 (Tokyo Night Day worst)

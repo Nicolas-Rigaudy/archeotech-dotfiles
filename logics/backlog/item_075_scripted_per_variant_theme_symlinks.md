@@ -1,14 +1,14 @@
 ## item_075_scripted_per_variant_theme_symlinks - Scripted per-variant theme symlinks
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:45
 
 # AI Context
 - Summary: Scripts the per-variant theme symlinks (`~/.config/archeotech/themes/<variant>` → repo) inside install.sh instead of relying on manual linking.

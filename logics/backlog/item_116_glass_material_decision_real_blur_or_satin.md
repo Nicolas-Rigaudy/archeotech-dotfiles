@@ -1,14 +1,14 @@
 ## item_116_glass_material_decision_real_blur_or_satin - Glass material decision: real blur or satin
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: Low
 > Theme: Design system
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Glass material decision: real blur or satin. Quickshell layer blur is off (adr_008) and panels are 96% opaque, so the documented glass aesthetic is not what renders.

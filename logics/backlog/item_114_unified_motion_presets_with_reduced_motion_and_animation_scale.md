@@ -1,14 +1,14 @@
 ## item_114_unified_motion_presets_with_reduced_motion_and_animation_scale - Unified motion presets with reduced motion and animation scale
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 20%
 > Complexity: Medium
 > Theme: Motion
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:27:46
 
 # AI Context
 - Summary: Unified motion presets with reduced motion and animation scale. 46 hand-set OutCubic easings vs 35 uses of the shared Anim wrappers plus 29 literal durations
