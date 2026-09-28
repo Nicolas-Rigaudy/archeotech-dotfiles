@@ -2,9 +2,9 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: In progress
-> Understanding: 90%
-> Confidence: 85%
-> Progress: 60%
+> Understanding: 95%
+> Confidence: 90%
+> Progress: 80%
 > Complexity: Low
 > Theme: Tooling
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -23,12 +23,14 @@
 - In:
   - A .live worktree the symlink points to, plus a promote script (fast-forward .live to a chosen commit) and a follow mode for when the owner wants hot-reload
   - Document the flow in docs and .claude/claude.md
+  - preview <worktree|branch> / back: point the bar at any worktree of the shell repo (uncommitted work included) and return to the pinned .live
 - Out:
   - Changing the shell's config path resolution
 
 # Acceptance criteria
 - AC1: Editing a file in the main checkout does not change the running bar until promote is run.
 - AC2: promote followed by SUPER+SHIFT+R shows the new commit.
+- AC3: preview <worktree|branch> followed by SUPER+SHIFT+R runs that worktree, and saves there hot-reload; back returns the bar to .live.
 
 # AC Traceability
 - request-AC1 -> This backlog slice. Proof: AC1: Editing a file in the main checkout does not change the running bar until promote is run.
@@ -37,6 +39,7 @@
 - Product framing: Not needed
 - Architecture framing: Not needed
 - 2026-09-28: mechanism delivered and verified in isolation (task_034); item stays In progress until the owner runs archeotech-live.sh init + SUPER+SHIFT+R on the real bar (AC2). After that, the Commons qmldir deferred from item_102 can land safely.
+- 2026-09-28 (later): added `preview <worktree|branch>` and `back` to scripts/archeotech-live.sh. preview accepts a path or a branch name (resolved via `git worktree list`), refuses non-worktrees of the shell repo and trees without shell.qml; back requires the .live worktree; status reports PREVIEW (branch, dirty count) and BROKEN when a previewed worktree was removed. Verified in a throwaway clone with ARCHEOTECH_HOME/ARCHEOTECH_SHELL overrides (init, preview by branch and path, bad branch, foreign repo, non-repo dir, missing arg, back, deleted-worktree status, follow). AC3 on the real bar is the owner's step, like AC2. Documented in .claude/claude.md (Live bar vs dev checkout).
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
