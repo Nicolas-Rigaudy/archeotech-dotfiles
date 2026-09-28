@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:56:47
+> Indicators reviewed: 2026-09-28 15:35:18
 
 # AI Context
 - Summary: The first concrete, end-to-end theme pack on the item_081 engine: a WH40K Shadow Spears (the owner's own chapter) ritualistic dataslate / Inquisition-document identity — parchment/dataslate textures, gothic type, ornamental framing, purity-seal motifs, ritual motion. Doubles as the proof-of-architecture (hardest pack = best stress test) and a flagship traction post (item_080 content strategy).
@@ -47,7 +47,7 @@
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): `adr_026_theming_architecture_skin_structure_boundary_and_versioned_capability_surface`
 - Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Primary task(s): `task_039_post_1_0_holding`
 
 # Priority
 - Priority: Medium
@@ -55,3 +55,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_039_post_1_0_holding`

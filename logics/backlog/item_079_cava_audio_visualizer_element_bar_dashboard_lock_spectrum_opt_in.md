@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-03 15:48:49
+> Indicators reviewed: 2026-09-28 15:35:18
 
 # AI Context
 - Summary: An opt-in cava audio-spectrum visualizer element, themed to tokens, mountable on the bar, dashboard, and/or lock screen. Reads cava output and renders a glass/HUD spectrum that pairs with the existing MPRIS media surface. Sourced from item_042 finding A2; a high-wow, on-theme (mecha-HUD/cyberdeck) addition feeding the polish + demo story.
@@ -46,7 +46,7 @@
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): (none yet)
 - Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Primary task(s): `task_039_post_1_0_holding`
 
 # Priority
 - Priority: Medium
@@ -54,3 +54,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_039_post_1_0_holding`

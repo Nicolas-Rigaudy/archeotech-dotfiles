@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:56:47
+> Indicators reviewed: 2026-09-28 15:35:18
 
 # AI Context
 - Summary: A reusable framing primitive — angular/clipped corner cuts, corner brackets + tick marks, thin reticle/technical-grid overlays, all-caps monospace micro-labels — offered as QML helpers + tokens. NOT a global treatment: it is a capability that the **Gundam cockpit-HUD theme pack** (and partly the cyberdeck pack) turns on. The neutral glassmorphism base does NOT use it. Sourced from item_042 finding A1; a building block for the themeable-shell direction (see item_021 theme packs).
@@ -46,7 +46,7 @@
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): (none yet)
 - Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Primary task(s): `task_039_post_1_0_holding`
 
 # Priority
 - Priority: Medium
@@ -54,3 +54,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_039_post_1_0_holding`
