@@ -17,6 +17,7 @@ BLOCK = [
     'bash -c "pkill quickshell"', "sh -c 'grim out.png'", "bash -c 'theme-switch.py nord'",
     "HOME=/tmp/fh theme-switch.py x", "python3 scripts/theme-switch.py --family nord",
     "~/.local/bin/theme-switch.sh archeotech-latte",
+    "bash <<'EOF'\npkill quickshell\nEOF",
 ]
 ALLOW = [
     "git status", "git add logics .claude/PLANNING.md", "git add ./scripts/shot.sh",
@@ -24,6 +25,7 @@ ALLOW = [
     "git commit --amend --no-edit", "grep -rn grim scripts/", "qs ipc --pid 123 call settings open",
     "./scripts/shot.sh --state launcher out.png", "mango -h",
     "grep -n pkill scripts/theme-switch.py", "cat scripts/theme-switch.sh | head",
+    "python3 - <<'EOF'\ns = 'the real `~/.local/bin/theme-switch.sh` runs pkill -USR1 kitty'\nEOF\ngit status",
     "cat logics/x.md | grep push", "echo mango", "rg 'qs -c archeotech' docs",
     'logics-manager sync append-note t --text "blocks pkill/killall shell, qs ipc, grim, theme-switch on the real HOME"',
 ]

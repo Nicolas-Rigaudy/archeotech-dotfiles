@@ -12,7 +12,15 @@ import re
 import sys
 
 cmd = json.load(sys.stdin).get("tool_input", {}).get("command", "")
-c = " ".join(cmd.split())  # normalise whitespace / newlines
+# Heredoc bodies are data fed to a program's stdin (a Python edit script, a file
+# being written), not commands this shell runs; drop them before matching.
+# `bash <<EOF` / `sh <<EOF` bodies ARE scripts, so those are kept.
+def _strip_heredocs(text):
+    def repl(m):
+        return m.group(0) if re.search(r"\b(?:ba|z)?sh\s*$", m.group(1)) else m.group(1) + "<<HEREDOC"
+    return re.sub(r"([^\n]*?)<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?\n\s*\2\b", repl, text, flags=re.S)
+cmd_body = _strip_heredocs(cmd)
+c = " ".join(cmd_body.split())  # normalise whitespace / newlines
 # Rules match with quoted strings blanked, so prose inside a commit message or a
 # logics note ("don't push", "pkill") is not mistaken for a command. The inner
 # script of `bash -c '...'` / `sh -c "..."` is checked too, so wrapping a

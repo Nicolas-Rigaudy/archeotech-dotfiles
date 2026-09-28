@@ -872,6 +872,16 @@ Add `//@ pragma UseQApplication` as the very first line of the root `shell.qml`,
 
 `/run/user/1000/quickshell/by-id/<id>/log.log` is the TEXT log (the sibling `.qslog` is binary). `grep -a TRAYDBG .../log.log`. Great for capturing `console.log` diagnostics (hover/click) from the LIVE shell without restarting it.
 
+### Config writes before config.json loads (settings reset risk) — fixed 2026-09-28
+**Symptom:** a setting occasionally reverted, or config.json lost keys after a restart; `Config.ready` consumers read defaults.
+**Cause:** `Services/Persistence/Config.qml` set `ready = true` on the FileView's first `textChanged`, which fires with empty text before the file is read. `ColorScheme._bootResolve` (gated on `ready`) then wrote `colorScheme.family` into empty data and the 50 ms save debounce raced the real load.
+**Fix:** `ready` flips on `FileView.loaded()` / `loadFailed()` only (archeotech-shell 45a3cc7). Probe after the fix: 0 `Config.set` calls before load.
+
+### Headless renders signalled the live kitty — fixed 2026-09-28
+**Symptom:** none visible (kitty just re-read its unchanged config), but a live-session touch.
+**Cause:** the nested shell in `shot.sh` ran the real theme-switch script at boot whenever `--theme/--pack` made it re-apply; theme-switch runs `pkill -USR1 -x kitty`, which matches by process name, fake HOME or not.
+**Fix:** `shot.sh` builds the fake `~/.local/bin` as an allowlist and stubs live-session scripts (theme-switch, lock/logout, reload scripts), logging calls to `log/stubs.log` (f34fbb2). Never run theme-switch yourself; the guard hook blocks executing it.
+
 ---
 
 ## Hyprland Issues
@@ -1522,4 +1532,4 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 ---
 
-**Last Updated:** 2026-09-08
+**Last Updated:** 2026-09-28
