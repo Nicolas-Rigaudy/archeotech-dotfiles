@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-02 10:37:54
+> Indicators reviewed: 2026-09-28 12:56:47
 
 # AI Context
 - Summary: The first concrete, end-to-end theme pack on the item_081 engine: a WH40K Shadow Spears (the owner's own chapter) ritualistic dataslate / Inquisition-document identity — parchment/dataslate textures, gothic type, ornamental framing, purity-seal motifs, ritual motion. Doubles as the proof-of-architecture (hardest pack = best stress test) and a flagship traction post (item_080 content strategy).
@@ -41,6 +41,7 @@
 - Product framing: Not needed
 - Architecture framing: Governed by `adr_026_theming_architecture_skin_structure_boundary_and_versioned_capability_surface`.
 - Register/sub-pack direction (2026-09-02): the faction registers must re-livery the WHOLE interface per each institution's design language — not just swap the palette. Each register = a distinct sub-theme (structure/shape/motifs/type emphasis), sharing the stable core. Current tokens carry colour-only overrides = placeholder; full per-faction re-livery is deferred future scope (candidate for its own backlog item). IP: RESOLVED (verified 2026-09-07) — the shipped pack is IP-safe: pack name 'Grimdark', registers renamed to Legion/Ordos/Forge, and no GW/WH40K trademark strings remain anywhere in `packs/grimdark`. Only this planning doc's title/slug still carries the old 'wh40k_shadow_spears' name (internal, never shipped); rename it if/when convenient but it's not an IP exposure.
+- 2026-09-28 owner decision: Grimdark ships as an installable add-on pack via community pack support (item_021/item_065), not built in. Its chrome must first move out of core (item_112). Scheduled 1.1.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

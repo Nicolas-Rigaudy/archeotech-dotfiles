@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Visual builder
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-28 12:53:19
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -34,13 +34,17 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28: kept as the bar-layout facet that a Context (item_122) can apply. Scheduled 0.60.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): (none yet)
-- Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 
 # Priority
 - Priority: Medium
-- Rationale: Set by scaffold input or defaulted for grooming.
+- Rationale: Bar-layout facet that Contexts applies (2026-09-28 audit)
+
+# Tasks
+- `task_031_orchestrate_2026_09_28_audit_upgrade_program`

@@ -8,7 +8,7 @@
 > Complexity: Low
 > Theme: Picker feel
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-28 12:53:19
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -38,9 +38,12 @@
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): (none yet)
-- Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 
 # Priority
 - Priority: Low
-- Rationale: Set by scaffold input or defaulted for grooming.
+- Rationale: Portability nicety (2026-09-28 audit)
+
+# Tasks
+- `task_031_orchestrate_2026_09_28_audit_upgrade_program`

@@ -1,14 +1,14 @@
 ## item_001_test_the_auto_day_night_schedule_end_to_end - Test the auto day/night schedule end-to-end
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Low
 > Theme: Theming QA
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-28 12:56:46
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -35,6 +35,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28 audit: folded into item_068 as a time-driven golden scenario (auto mode flip at a scheduled boundary).
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

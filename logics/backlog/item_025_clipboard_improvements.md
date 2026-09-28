@@ -1,14 +1,14 @@
 ## item_025_clipboard_improvements - Clipboard improvements
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Low
 > Theme: Utilities
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-28 12:56:46
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -35,6 +35,7 @@
 - Product framing: Not needed
 - Architecture framing: Not needed
 - Audit 2026-08-21: PARTIAL — image clipboard via cliphist (delivered); remaining: pin/permanent entries. Keep Ready.
+- 2026-09-28 audit: superseded by item_118 launcher command palette (clipboard provider incl. image entries and pinning).
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

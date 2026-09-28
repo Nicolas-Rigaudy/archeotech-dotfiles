@@ -6,7 +6,7 @@
 > Related task: (none yet)
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:56:18
+> Indicators reviewed: 2026-09-28 12:56:48
 
 # Overview
 - Turns Archeotech from a single fixed identity into a themeable-shell PLATFORM: a neutral glassmorphism BASE plus swappable, community-authorable identity PACKS (WH40K dataslate, Gundam-HUD, cyberdeck, later others). A pack reskins the presentation layer as deeply as feasible but never mutates the interaction contract — "everything visual can change; how it works stays put" (adr_026).
@@ -37,6 +37,7 @@ flowchart TD
 - Out: the stable core (keybinds/IA/config semantics/behaviour/sandbox); non-theming features (dev-tooling plugin, testing harness, Hyprland, release plumbing); the shell-wide design-polish rollout (its own effort).
 
 # Key product decisions
+- 2026-09-28 (adr_032): Base is the only built-in pack. All identity packs ship as add-ons through community pack support (item_021, item_065). Angular and HUD were test-only and become engine test fixtures (item_117). Pack chrome must move out of core into surface recipes and style delegates first (item_112).
 - Skin/structure boundary with a versioned public style contract gated by `minShellVersion` (adr_026).
 - A theme pack IS a kind of plugin — same install/discovery/manifest rails as widgets, loaded via the adr_016 file:// + injected-appearance mechanism.
 - Trust tiers (official/verified/community) gate injected-QML packs; the base theme is formalised as the reference pack.

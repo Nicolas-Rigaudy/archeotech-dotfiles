@@ -1,13 +1,14 @@
 ## item_083_theming_engine_ornament_asset_overlay_fx_pack_font_hook_flagship_gap - Theming engine: ornament asset-overlay FX + pack font hook (flagship gap)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Ready
 > Understanding: 85
 > Confidence: 80
 > Progress: 0%
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-28 12:57:15
 
 # AI Context
 - Summary: Engine gap surfaced by the Shadow Spears flagship (item_082): the Layer-B decorator/FX vocabulary was geometric primitives only (colored brackets, edge glow, tiled texture) + a single shell-wide font — which can reskin colour/shape/motion but CANNOT express WH40K's identity (iconography, ornament, gothic type). Adds: (1) an ornament asset-overlay FX (`fx.ornaments` — pack SVG/PNG at frame anchors, "corners" auto-rotated); (2) a pack display-font hook (`font.displayFile`/`displayFamily` → `Appearance.font.display`, body stays mono); and confirms packs may carry their own full `colors` palette. Non-IP/open assets only (no GW-owned icons).
@@ -39,12 +40,13 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28: reset from In progress (0%) to Ready; engine gap for add-on packs, lands after surface recipes (item_112). Scheduled 1.1.
 
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: (to be linked)
-- Primary task(s): (none yet)
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 
 # Priority
 - Priority: Medium
@@ -52,3 +54,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_031_orchestrate_2026_09_28_audit_upgrade_program`

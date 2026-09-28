@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:01:07
+> Indicators reviewed: 2026-09-28 12:56:47
 
 # AI Context
 - Summary: A reusable framing primitive — angular/clipped corner cuts, corner brackets + tick marks, thin reticle/technical-grid overlays, all-caps monospace micro-labels — offered as QML helpers + tokens. NOT a global treatment: it is a capability that the **Gundam cockpit-HUD theme pack** (and partly the cyberdeck pack) turns on. The neutral glassmorphism base does NOT use it. Sourced from item_042 finding A1; a building block for the themeable-shell direction (see item_021 theme packs).
@@ -40,6 +40,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28: the HUD pack is retired as test-only (item_117); the framing kit stays as an opt-in engine capability for add-on packs (cyberpunk, gundam - item_129). Scheduled 1.1.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

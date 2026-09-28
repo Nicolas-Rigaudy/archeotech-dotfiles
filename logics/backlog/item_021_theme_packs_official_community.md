@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Theming ecosystem
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:15:49
+> Indicators reviewed: 2026-09-28 12:53:19
 
 # AI Context
 - Summary: The DISTRIBUTION + tiers slice of the theme-pack system (rescoped 2026-08-21 under adr_026): bundling a whole identity as an installable pack and the official/verified/community tier model. The deep capability surface is item_081, the manifest schema is item_066, install mechanics are item_065, and the Manager UI is item_063 — this item owns the "installable, curated catalog" concern.
@@ -39,13 +39,17 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Governed by `adr_026_theming_architecture_skin_structure_boundary_and_versioned_capability_surface`.
+- 2026-09-28 owner decision: all identity packs other than Base (Grimdark/Warhammer, cyberpunk, gundam, ...) ship as add-ons through this community pack support; this is a 1.0 requirement.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`
 - Architecture decision(s): `adr_026_theming_architecture_skin_structure_boundary_and_versioned_capability_surface`
-- Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): `task_001_orchestrate_archeotech_shell_delivery`
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 
 # Priority
-- Priority: Medium
-- Rationale: Set by scaffold input or defaulted for grooming.
+- Priority: High
+- Rationale: Owner decision: identity packs ship as community add-ons (2026-09-28 audit)
+
+# Tasks
+- `task_031_orchestrate_2026_09_28_audit_upgrade_program`

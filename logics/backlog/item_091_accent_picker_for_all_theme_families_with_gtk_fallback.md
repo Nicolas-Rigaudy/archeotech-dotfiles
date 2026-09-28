@@ -8,6 +8,7 @@
 > Complexity: Medium
 > Theme: Theming
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-28 12:53:19
 
 # AI Context
 - Summary: Expose the accent picker for ALL theme families (not just Catppuccin), with graceful GTK fallback. QML/terminal/rofi/mango accent already works for any palette colour; only GTK needs per-accent packages. Migrated from ROADMAP.archived (core->plugin / "super-customizable" candidates).
@@ -39,12 +40,15 @@
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): relates adr_004 (theme applier), adr_003 (palette + accent)
-- Request: `req_000_archeotech_shell_dotfiles`
-- Primary task(s): (none yet)
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 
 # Priority
 - Priority: Medium
-- Rationale: Default until groomed.
+- Rationale: Accent must work across all families before 1.0 (2026-09-28 audit)
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_031_orchestrate_2026_09_28_audit_upgrade_program`

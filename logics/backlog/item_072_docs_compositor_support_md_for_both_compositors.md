@@ -8,6 +8,7 @@
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-28 12:53:19
 
 # AI Context
 - Summary: Writes docs/COMPOSITOR_SUPPORT.md documenting setup and behavior parity for both MangoWC and Hyprland.
@@ -35,8 +36,8 @@
 - request-AC4 -> This backlog slice. Proof: docs/COMPOSITOR_SUPPORT.md is the exit-signal documentation deliverable for milestone 0.29.
 
 # Priority
-- Priority: Low
-- Rationale: Documentation-only task that depends on item_070 and item_071 landing first; no code risk.
+- Priority: Medium
+- Rationale: Documents MangoWC and Hyprland support for 1.0 (2026-09-28 audit)
 
 # Decision framing
 - Product framing: Not needed
@@ -49,8 +50,8 @@
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_000_archeotech_shell_dotfiles.md`
-- Primary task(s): (none yet)
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 
 # Priority
 - Priority: Medium
@@ -60,3 +61,6 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_031_orchestrate_2026_09_28_audit_upgrade_program`

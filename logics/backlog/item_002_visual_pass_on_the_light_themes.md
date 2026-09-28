@@ -1,14 +1,14 @@
 ## item_002_visual_pass_on_the_light_themes - Visual pass on the light themes
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Low
 > Theme: Theming QA
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-28 12:56:46
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -35,6 +35,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28 audit: superseded by item_111 (designed light themes with their own surface recipe); render matrix showed light themes are recoloured, not designed.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

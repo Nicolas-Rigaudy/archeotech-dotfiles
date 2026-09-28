@@ -1,13 +1,14 @@
 ## item_069_ai_persona_testers_verify_before_done_loop - AI persona-testers + verify-before-done loop
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-28 12:56:47
 
 # AI Context
 - Summary: Adapts the UXAgent persona-tester architecture to the shell (screenshot + a11y-tree + qs ipc connector) and formalizes the verify-before-done loop before claiming a visual change complete.
@@ -49,6 +50,7 @@
 - Architecture framing: Not needed
 - Architecture signals: (none detected)
 - Architecture follow-up: No architecture decision follow-up is expected based on current signals.
+- 2026-09-28 audit: replaced by item_102 (verify-before-done skill, visual-verifier and qml-reviewer agents) plus item_068 goldens; persona testers judged low value for a solo dev.
 
 # Links
 - Product brief(s): (none yet)

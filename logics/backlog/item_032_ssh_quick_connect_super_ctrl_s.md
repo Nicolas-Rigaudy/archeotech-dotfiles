@@ -1,14 +1,14 @@
 ## item_032_ssh_quick_connect_super_ctrl_s - SSH quick connect (Super+Ctrl+S)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Low
 > Theme: Utilities
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-20 17:08:28
+> Indicators reviewed: 2026-09-28 12:56:47
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -34,6 +34,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28 audit: superseded by item_118 launcher command palette (SSH hosts provider).
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

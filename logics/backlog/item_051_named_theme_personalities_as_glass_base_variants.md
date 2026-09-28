@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Theming ecosystem
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:15:50
+> Indicators reviewed: 2026-09-28 12:56:47
 
 # AI Context
 - Summary: Lightweight "personality" presets on the glass base — the SHALLOW end of the theme-pack spectrum (adr_026): token + shape-level variants (accent/mood/light touches) that don't need the full deep-pack machinery. The easy on-ramp and the model for community token-only packs, distinct from deep identity packs like item_082 (40K dataslate).
@@ -36,6 +36,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28: personalities layer on the Corvus Dataslate base (item_115) via surface recipes (item_112). Scheduled 1.1.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

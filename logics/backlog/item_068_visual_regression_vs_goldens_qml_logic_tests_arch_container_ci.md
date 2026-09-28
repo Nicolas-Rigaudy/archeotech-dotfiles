@@ -8,6 +8,7 @@
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-28 12:53:19
 
 # AI Context
 - Summary: Adds ImageMagick visual-regression diffing against committed goldens, greenfield QML logic tests, and extends CI to run in an Arch container.
@@ -39,8 +40,8 @@
 - request-AC6 -> This backlog slice. Proof: visual regression, QML logic tests, and CI hardening are the B3/B4/B5 blocks of milestone 0.28's testing pipeline.
 
 # Priority
-- Priority: Medium
-- Rationale: Hardens the pipeline for public use but depends on item_067 landing first and is not the minimum viable verify loop.
+- Priority: High
+- Rationale: Golden matrix + CI is the 0.31 exit test; everything after depends on it (2026-09-28 audit)
 
 # Decision framing
 - Product framing: Not needed
@@ -49,12 +50,13 @@
 - Architecture framing: Not needed
 - Architecture signals: (none detected)
 - Architecture follow-up: No architecture decision follow-up is expected based on current signals.
+- 2026-09-28 audit: absorbs item_001 and item_004 as scenarios; start from .claude/audits/2026-09-28/render-matrix.sh (themes x packs x modes x panel states, contact sheets) and add image diff plus automated text-contrast checks. Depends on item_101.
 
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_000_archeotech_shell_dotfiles.md`
-- Primary task(s): (none yet)
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 
 # Priority
 - Priority: Medium
@@ -64,3 +66,6 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_031_orchestrate_2026_09_28_audit_upgrade_program`

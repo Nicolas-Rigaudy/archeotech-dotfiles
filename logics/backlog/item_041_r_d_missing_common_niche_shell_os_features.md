@@ -1,10 +1,10 @@
 ## item_041_r_d_missing_common_niche_shell_os_features - R&D: missing common + niche shell/OS features
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Research
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -34,6 +34,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Delivered by the 2026-09-28 features audit (.claude/audits/2026-09-28/audit-features.md): inventory, 6-shell competitor matrix, ranked ideas; resulting work is req_005 items 118-125.
 
 # Links
 - Product brief(s): `prod_001_archeotech_shell`

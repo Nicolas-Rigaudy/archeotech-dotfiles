@@ -6,6 +6,7 @@
 > Related task: `task_001_orchestrate_archeotech_shell_delivery`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-09-28 12:56:47
 
 # Overview
 A composable, community-extensible Quickshell desktop shell with a drop-in module/theme system, visual builder, and multi-compositor abstraction, targeting a publishable v1.0.
@@ -47,6 +48,7 @@ flowchart TD
 - Guardrails: nothing hardcoded (zero `/home/corvus` paths, colors in one token source); every surface token-driven; no fake toggles (bind to real state); build from scratch, reference projects for patterns only.
 
 # Key product decisions
+- 2026-09-28 (adr_032, prod_003): Corvus Dataslate is the base identity; identity packs (Grimdark, cyberpunk, gundam) ship as add-ons after 1.0 rather than being a non-goal; Contexts is the 1.0 headline; delivery re-sequenced in road_001 (safety net first) and personal items moved to road_002.
 - Build the shell in-house, mining reference projects for patterns (not aesthetics) rather than forking — see `logics/architecture/` ADRs.
 - One full-screen PanelWindow per monitor with a single `FrameBackground`; widgets mount by filename convention; `shell-config.json` drives composition with hot-reload.
 - Theme is a single token source applied by `scripts/theme-switch.py` across ~11 targets (atomic writes, failure-isolated appliers).

@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-08-21 16:15:50
+> Indicators reviewed: 2026-09-28 12:53:19
 
 # AI Context
 - Summary: Adds the `archeotech plugin install <name>` git-clone install mechanism and a repo-hosted `plugins.json` index (official + community catalog).
@@ -42,8 +42,8 @@
 - request-AC3 -> This backlog slice. Proof: the git-clone install mechanism and plugins.json index are the milestone 0.27 delivery that dogfoods the plugin ecosystem.
 
 # Priority
-- Priority: Medium
-- Rationale: Core deliverable of 0.27, but that milestone sits after 0.26/0.265; lowered from High (2026-09-07) so it doesn't outrank current-milestone work in the next-action signal. Re-raise when 0.27 opens.
+- Priority: High
+- Rationale: Install-by-URL is how add-on identity packs ship (2026-09-28 audit)
 
 # Decision framing
 - Product framing: Not needed
@@ -56,8 +56,8 @@
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_000_archeotech_shell_dotfiles.md`
-- Primary task(s): (none yet)
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 
 # Priority
 - Priority: Medium
@@ -67,3 +67,6 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_031_orchestrate_2026_09_28_audit_upgrade_program`
