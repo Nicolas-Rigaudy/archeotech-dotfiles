@@ -8,6 +8,7 @@ Commons singletons lacking a qmldir) are dropped until that qmldir lands.
 """
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -22,7 +23,11 @@ if not path.endswith(".qml") or not os.path.exists(path) or not os.path.exists(Q
 
 r = subprocess.run([QMLLINT, os.path.basename(path)], cwd=os.path.dirname(path),
                    capture_output=True, text=True, timeout=30)
-hits = [l for l in (r.stdout + r.stderr).splitlines() if any(k in l for k in KEEP)]
+# "Cannot assign binding of type <Singleton> to QObject" is the same qmldir gap
+# (Connections { target: SomeSingleton }); drop it too until the qmldir lands.
+SINGLETON_NOISE = re.compile(r"Cannot assign binding of type \w+ to QObject")
+hits = [l for l in (r.stdout + r.stderr).splitlines()
+        if any(k in l for k in KEEP) and not SINGLETON_NOISE.search(l)]
 if hits:
     print(f"qmllint (Qt6) on {path}:\n" + "\n".join(hits[:15]), file=sys.stderr)
     sys.exit(2)  # PostToolUse: exit 2 feeds stderr back to Claude (file already saved)
