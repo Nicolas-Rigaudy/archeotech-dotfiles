@@ -13,10 +13,14 @@ import sys
 
 cmd = json.load(sys.stdin).get("tool_input", {}).get("command", "")
 c = " ".join(cmd.split())  # normalise whitespace / newlines
-# git rules match with quoted strings blanked, so a commit message that mentions
-# "push" or "-a" is not mistaken for the flag; kill/ipc/grim rules keep the full
-# line so `bash -c "pkill qs"` is still caught.
-unquoted = re.sub(r"'[^']*'|\"(?:[^\"\\]|\\.)*\"", "''", c)
+# Rules match with quoted strings blanked, so prose inside a commit message or a
+# logics note ("don't push", "pkill") is not mistaken for a command. The inner
+# script of `bash -c '...'` / `sh -c "..."` is checked too, so wrapping a
+# forbidden command in a shell string does not slip past.
+QUOTED = r"'([^']*)'|\"((?:[^\"\\]|\\.)*)\""
+unquoted = re.sub(QUOTED, "''", c)
+inner = [a or b for a, b in re.findall(r"\b(?:ba|z)?sh\s+-c\s+(?:" + QUOTED + ")", c)]
+targets = [unquoted] + inner
 
 # A command-position anchor: start of line or after ; & | ( && || $( `
 AT = r"(?:^|[;&|(`]\s*|\$\(\s*)(?:\w+=\S*\s+)*"
@@ -43,15 +47,15 @@ RULES = [
 ]
 
 for pat, why in RULES:
-    target = unquoted if pat.startswith(r"\bgit\b") else c
-    if re.search(pat, target):
+    if any(re.search(pat, t) for t in targets):
         print(f"BLOCKED by archeotech guard: {why}\n  cmd: {cmd[:200]}", file=sys.stderr)
         sys.exit(2)
 
 # theme-switch rewrites tracked configs and reloads the LIVE compositor/shell,
 # unless HOME points somewhere other than the real home.
-if re.search(r"theme-switch\.(py|sh)\b", c):
-    m = re.search(r"\bHOME=(\S+)", c)
+ts = next((t for t in targets if re.search(r"theme-switch\.(py|sh)\b", t)), None)
+if ts is not None:
+    m = re.search(r"\bHOME=(\S+)", ts)
     if not m or m.group(1).rstrip("/") in ("/home/corvus", "~", "$HOME"):
         print("BLOCKED by archeotech guard: theme-switch applies to the LIVE session. "
               "Ask the user, or run it with HOME=<fake home> for an isolated test.\n"
