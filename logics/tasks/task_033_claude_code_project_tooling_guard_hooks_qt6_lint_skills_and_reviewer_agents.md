@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-09-28 13:39:10
+> Indicators reviewed: 2026-09-28 13:41:49
 
 # AI Context
 - Summary: Versioned Claude Code project tooling in the dotfiles .claude/: live-session guard hook, Qt6 QML syntax gate and lint, /shot /verify /wrap skills, qml-reviewer and visual-verifier agents, permissions allowlist.
@@ -56,3 +56,8 @@
 
 # AC Traceability
 - request-AC1 -> This task. Proof: guard-hook half of AC1 delivered in archeotech-dotfiles 45109bf - every forbidden live-session command is blocked (22 regression cases plus live in-session blocks), with QML syntax gating before saves reach the live bar; the render-isolation half is task_032.
+- request-AC2 -> This task. Proof deferred to slice closeout.
+- request-AC3 -> This task. Proof deferred to slice closeout.
+- request-AC4 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.
