@@ -1,14 +1,14 @@
 ## item_106_bar_and_strip_widget_instantiation_fixes - Bar and strip widget instantiation fixes
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Low
 > Theme: Shell
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 14:08:14
 
 # AI Context
 - Summary: Bar and strip widget instantiation fixes. Bar.qml horizontal (l.286/317/341) and vertical (l.421/439/459) Repeaters share the same zone models and are only hidden with visible, so tray, marquee, clock timers and plugins are instantiated twice (verified).
@@ -44,7 +44,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_036_bar_and_strip_widget_instantiation_fixes`
 
 # Priority
 - Priority: High
@@ -52,3 +52,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_036_bar_and_strip_widget_instantiation_fixes`
+
+# Notes
+- Task `task_036_bar_and_strip_widget_instantiation_fixes` was finished via `logics-manager flow finish task` on 2026-09-28.

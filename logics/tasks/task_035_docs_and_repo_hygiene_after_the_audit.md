@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: claude
-> Indicators reviewed: 2026-09-28 13:47:11
+> Indicators reviewed: 2026-09-28 14:08:12
 
 # AI Context
 - Summary: Post-audit docs hygiene: SHELL_VISUAL_DEV.md rewritten around isolated shot.sh, internal handoff docs moved out of the public shell repo, stale facts fixed, LICENSE added.
@@ -57,3 +57,8 @@
 
 # AC Traceability
 - request-AC1 -> This task. Proof: supports AC1 by removing the docs that taught live grim and live qs ipc verification (grep of all shell and dotfiles docs clean) and pointing sessions at the isolated shot.sh; shell e990f49, dotfiles 0388150.
+- request-AC2 -> This task. Proof deferred to slice closeout.
+- request-AC3 -> This task. Proof deferred to slice closeout.
+- request-AC4 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.
