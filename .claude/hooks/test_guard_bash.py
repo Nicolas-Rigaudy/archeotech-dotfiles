@@ -15,12 +15,15 @@ BLOCK = [
     "git commit -am wip", "git commit -a -m x", "logics-manager bootstrap",
     "theme-switch.py catppuccin", "HOME=/home/corvus theme-switch.py x",
     'bash -c "pkill quickshell"', "sh -c 'grim out.png'", "bash -c 'theme-switch.py nord'",
+    "HOME=/tmp/fh theme-switch.py x", "python3 scripts/theme-switch.py --family nord",
+    "~/.local/bin/theme-switch.sh archeotech-latte",
 ]
 ALLOW = [
     "git status", "git add logics .claude/PLANNING.md", "git add ./scripts/shot.sh",
     "git commit -q -m 'fix: add -a flag doc' -- x", 'git commit -m "don\'t push yet" -- x',
     "git commit --amend --no-edit", "grep -rn grim scripts/", "qs ipc --pid 123 call settings open",
-    "./scripts/shot.sh --state launcher out.png", "mango -h", "HOME=/tmp/fh theme-switch.py x",
+    "./scripts/shot.sh --state launcher out.png", "mango -h",
+    "grep -n pkill scripts/theme-switch.py", "cat scripts/theme-switch.sh | head",
     "cat logics/x.md | grep push", "echo mango", "rg 'qs -c archeotech' docs",
     'logics-manager sync append-note t --text "blocks pkill/killall shell, qs ipc, grim, theme-switch on the real HOME"',
 ]

@@ -51,15 +51,16 @@ for pat, why in RULES:
         print(f"BLOCKED by archeotech guard: {why}\n  cmd: {cmd[:200]}", file=sys.stderr)
         sys.exit(2)
 
-# theme-switch rewrites tracked configs and reloads the LIVE compositor/shell,
-# unless HOME points somewhere other than the real home.
-ts = next((t for t in targets if re.search(r"theme-switch\.(py|sh)\b", t)), None)
-if ts is not None:
-    m = re.search(r"\bHOME=(\S+)", ts)
-    if not m or m.group(1).rstrip("/") in ("/home/corvus", "~", "$HOME"):
-        print("BLOCKED by archeotech guard: theme-switch applies to the LIVE session. "
-              "Ask the user, or run it with HOME=<fake home> for an isolated test.\n"
-              f"  cmd: {cmd[:200]}", file=sys.stderr)
-        sys.exit(2)
+# Running theme-switch always touches the LIVE session: it rewrites tracked
+# configs under $HOME and, whatever $HOME is, sends SIGUSR1 to every kitty by
+# process name. Only EXECUTING it is blocked (command position, optionally via an
+# interpreter); reading or grepping the file is fine. Renders go through shot.sh,
+# which stubs it.
+TS_EXEC = AT + r"(?:(?:python3?|bash|sh)\s+)?\S*theme-switch\.(?:py|sh)\b"
+if any(re.search(TS_EXEC, t) for t in targets):
+    print("BLOCKED by archeotech guard: theme-switch applies to the LIVE session "
+          "(configs + a kitty signal, even with a fake HOME). Ask the user; for "
+          f"renders use scripts/shot.sh, which stubs it.\n  cmd: {cmd[:200]}", file=sys.stderr)
+    sys.exit(2)
 
 sys.exit(0)
