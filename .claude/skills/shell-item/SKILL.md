@@ -30,18 +30,24 @@ One item per run. Nothing touches the live bar until the verified change lands o
    apply its should-fixes, re-verify.
 5. **Land by path.** Commit on the branch with `git commit -m "…" -- <paths>`, then
    on main: `git -C <wt> diff <base> HEAD -- <paths> | git apply`, `git add` new
-   files, `git commit -m "…" -- <paths>` (main has the owner's WIP and a staged
-   deletion — never a bare commit), check `git diff --quiet <branch> HEAD -- <paths>`,
+   files, `git commit -m "…" -- <paths>` (the owner may have WIP or staged work on
+   main — never a bare commit), check `git diff --quiet <branch> HEAD -- <paths>`,
    then `git worktree remove` + `git branch -D`. Message style: `fix[QML]: …`.
 6. **Close out** (each step is a CLI call; never hand-edit indicators/status/lineage):
    `sync append-note <task> --section validation` (the real commands and numbers),
    `--section report`; `flow repair ac-traceability req_005_…` (writes placeholder
-   lines for all six request ACs) then rewrite the task's `# AC Traceability` to the
-   one AC it actually proves; `flow repair gates <task>`; `flow progress task <task>
+   lines for all six request ACs — into EVERY task of the request, including closed
+   ones: `git status logics` afterwards and `git checkout --` the already-committed
+   tasks it touched) then rewrite this task's `# AC Traceability` to the one AC it
+   actually proves; `flow repair gates <task>`; `flow progress task <task>
    --progress 100%`; `flow closeout <task> --validation-command "…"
    --validation-result passed --lint`; `flow close backlog <item>`; commit `logics/`.
    An item whose acceptance needs the owner (e.g. a live reload) stays In progress
    with a decision note saying what is pending.
+
+Also never let `flow repair links` loose without reading its diff: on
+2026-09-28 it rewrote prod_001's header (Status -> Settled, 60-item backlog list cut
+to one). Restore anything it changes outside the chain you are working on.
 
 Never: run theme-switch, grim, `qs ipc` without `--pid`, `qs -c archeotech`, mango,
 pkill — the guard hook blocks these; if it blocks something legitimate, fix the
