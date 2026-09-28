@@ -37,6 +37,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28 (task_037, archeotech-shell 45a3cc7): the config-overwrite race is fixed at its root - Config.ready now waits for FileView loaded()/loadFailed(); ColorScheme._bootResolve (the early writer, via ColorScheme.qml:110/126) already gated on ready, so 0 writes before load after the fix. Remaining scope here: the queued/detached command runner (MangoService, ColorScheme, Brightness, PowerPane cmdRunner) and theme-switch re-running on every boot with a pack active.
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`

@@ -1,14 +1,14 @@
 ## item_107_no_fake_toggles_sweep_controls_bound_to_real_state - No-fake-toggles sweep: controls bound to real state
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Settings
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 14:27:44
 
 # AI Context
 - Summary: No-fake-toggles sweep: controls bound to real state. ToggleSwitch.qml:74 assigns checked on click, breaking the checked: root.checked binding in ToggleRow.qml:51, so switches detach from real state after one click (verified).
@@ -46,7 +46,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_037_no_fake_toggles_sweep_controls_bound_to_real_state`
 
 # Priority
 - Priority: High
@@ -54,3 +54,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_037_no_fake_toggles_sweep_controls_bound_to_real_state`
+
+# Notes
+- Task `task_037_no_fake_toggles_sweep_controls_bound_to_real_state` was finished via `logics-manager flow finish task` on 2026-09-28.

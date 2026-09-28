@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: claude
-> Indicators reviewed: 2026-09-28 14:08:13
+> Indicators reviewed: 2026-09-28 14:27:43
 
 # AI Context
 - Summary: Bar zone Repeaters get a model only for the active orientation (no double instantiation); Strip gains the no-op hover-card API; WidgetLoader retries plugin widgets after the module scan.
@@ -55,3 +55,8 @@
 
 # AC Traceability
 - request-AC2 -> This task. Proof: one of the audit-verified bugs (double-instantiated bar widgets) fixed in archeotech-shell 1c22858, measured 34 -> 21 loads with every widget once; plugin cold-start blank fixed and shown by render. The rest of AC2 (other bugs, golden matrix) is covered by sibling items.
+- request-AC1 -> This task. Proof deferred to slice closeout.
+- request-AC3 -> This task. Proof deferred to slice closeout.
+- request-AC4 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.
