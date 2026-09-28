@@ -1,14 +1,14 @@
 ## item_101_isolate_shot_sh_fully_and_render_any_worktree - Isolate shot.sh fully and render any worktree
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Tooling
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 13:32:20
 
 # AI Context
 - Summary: Isolate shot.sh fully and render any worktree. shot.sh starts mango without -c, so with HOME=/home/corvus it runs the owner's full autostart inside the nested session, including `qs -c archeotech ipc call dashboard openAuto` which selects by config name and can...
@@ -45,7 +45,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_032_isolate_shot_sh_fully_and_render_any_worktree`
 
 # Priority
 - Priority: High
@@ -53,3 +53,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_032_isolate_shot_sh_fully_and_render_any_worktree`
+
+# Notes
+- Task `task_032_isolate_shot_sh_fully_and_render_any_worktree` was finished via `logics-manager flow finish task` on 2026-09-28.
