@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: claude
-> Indicators reviewed: 2026-09-28 14:27:43
+> Indicators reviewed: 2026-09-28 15:15:34
 
 # AI Context
 - Summary: ToggleSwitch made a controlled component; the four Notifications settings wired; Config.ready fixed to wait for config.json; Theme tab, AWS readout and Power pane stop showing controls or values that do nothing.
@@ -57,3 +57,8 @@
 
 # AC Traceability
 - request-AC2 -> This task. Proof: audit-verified fake toggles and the fake notification settings fixed in archeotech-shell 45a3cc7, each shown by A/B renders or a harness against unfixed main; the Config.ready race behind the config.json overwrite risk fixed and probed. Other AC2 bugs and the golden matrix are sibling items.
+- request-AC1 -> This task. Proof deferred to slice closeout.
+- request-AC3 -> This task. Proof deferred to slice closeout.
+- request-AC4 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.

@@ -1,14 +1,14 @@
 ## item_105_service_command_runner_queue_and_startup_gating - Service command runner queue and startup gating
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Services
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 15:15:35
 
 # AI Context
 - Summary: Service command runner queue and startup gating. MangoService._cmd (MangoService.qml:278), ColorScheme.qml:71-88 and Brightness.qml:67-75 reuse one Process
@@ -43,7 +43,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_038_service_command_runner_queue_and_startup_gating`
 
 # Priority
 - Priority: High
@@ -51,3 +51,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_038_service_command_runner_queue_and_startup_gating`
+
+# Notes
+- Task `task_038_service_command_runner_queue_and_startup_gating` was finished via `logics-manager flow finish task` on 2026-09-28.
