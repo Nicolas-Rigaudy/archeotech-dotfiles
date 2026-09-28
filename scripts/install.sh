@@ -177,6 +177,7 @@ install_local_scripts() {
         "project-jump.sh"
         "show-keybinds.sh"
         "swaylock-launch.sh"
+        "archeotech-live.sh"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do
