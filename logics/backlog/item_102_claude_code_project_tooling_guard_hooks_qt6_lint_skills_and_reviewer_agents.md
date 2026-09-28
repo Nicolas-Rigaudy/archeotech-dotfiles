@@ -1,14 +1,14 @@
 ## item_102_claude_code_project_tooling_guard_hooks_qt6_lint_skills_and_reviewer_agents - Claude Code project tooling: guard hooks, Qt6 lint, skills and reviewer agents
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Tooling
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 13:38:53
 
 # AI Context
 - Summary: Claude Code project tooling: guard hooks, Qt6 lint, skills and reviewer agents. No hooks, agents, skills or permission allowlist exist in either repo
@@ -41,12 +41,13 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-28: the Commons qmldir for singletons is deferred until item_103 moves the live bar onto a pinned worktree, because a qmldir mistake would break the live bar on hot-reload. Lint filters singleton noise until then.
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_033_claude_code_project_tooling_guard_hooks_qt6_lint_skills_and_reviewer_agents`
 
 # Priority
 - Priority: High
@@ -54,3 +55,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_033_claude_code_project_tooling_guard_hooks_qt6_lint_skills_and_reviewer_agents`
+
+# Notes
+- Task `task_033_claude_code_project_tooling_guard_hooks_qt6_lint_skills_and_reviewer_agents` was finished via `logics-manager flow finish task` on 2026-09-28.

@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: claude
-> Indicators reviewed: 2026-09-28 13:32:19
+> Indicators reviewed: 2026-09-28 13:38:51
 
 # AI Context
 - Summary: Make scripts/shot.sh fully isolated (fake HOME, private runtime dir, minimal mango -c config, per-run temp dir) and able to render any checkout via --root, with theme/pack/mode flags.
@@ -58,3 +58,8 @@
 
 # AC Traceability
 - request-AC1 -> This task. Proof: render-isolation half of AC1 delivered in archeotech-shell 5d7d626 - real ~/.config/archeotech and ~/.local/share/archeotech mtimes unchanged across a render, no new user processes, a git worktree rendered via --root, two parallel runs succeeded; the guard-hook half of AC1 is item_102.
+- request-AC2 -> This task. Proof deferred to slice closeout.
+- request-AC3 -> This task. Proof deferred to slice closeout.
+- request-AC4 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.
