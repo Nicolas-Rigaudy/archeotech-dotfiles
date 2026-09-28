@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: claude
-> Indicators reviewed: 2026-09-28 13:41:50
+> Indicators reviewed: 2026-09-28 13:47:09
 
 # AI Context
 - Summary: scripts/archeotech-live.sh pins ~/.config/quickshell/archeotech to a detached worktree (archeotech-shell.live) so only promoted commits reach the live bar.
@@ -55,3 +55,8 @@
 
 # AC Traceability
 - request-AC1 -> This task. Proof: supports AC1 by keeping worktree edits off the live bar - verified in a throwaway clone in archeotech-dotfiles 2541cd3 (commits reach the pinned link only after promote).
+- request-AC2 -> This task. Proof deferred to slice closeout.
+- request-AC3 -> This task. Proof deferred to slice closeout.
+- request-AC4 -> This task. Proof deferred to slice closeout.
+- request-AC5 -> This task. Proof deferred to slice closeout.
+- request-AC6 -> This task. Proof deferred to slice closeout.

@@ -1,14 +1,14 @@
 ## item_104_docs_and_repo_hygiene_after_the_audit - Docs and repo hygiene after the audit
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 40%
+> Progress: 100%
 > Complexity: Low
 > Theme: Documentation
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 13:44:22
+> Indicators reviewed: 2026-09-28 13:47:11
 
 # AI Context
 - Summary: Docs and repo hygiene after the audit. docs/SHELL_VISUAL_DEV.md tells sessions to grim the live screen and drive the live bar via IPC.
@@ -44,7 +44,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_035_docs_and_repo_hygiene_after_the_audit`
 
 # Priority
 - Priority: Medium
@@ -53,3 +53,6 @@
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 - `task_035_docs_and_repo_hygiene_after_the_audit`
+
+# Notes
+- Task `task_035_docs_and_repo_hygiene_after_the_audit` was finished via `logics-manager flow finish task` on 2026-09-28.
