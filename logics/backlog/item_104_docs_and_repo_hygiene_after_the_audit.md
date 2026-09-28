@@ -1,14 +1,14 @@
 ## item_104_docs_and_repo_hygiene_after_the_audit - Docs and repo hygiene after the audit
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 40%
 > Complexity: Low
 > Theme: Documentation
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 12:53:19
+> Indicators reviewed: 2026-09-28 13:44:22
 
 # AI Context
 - Summary: Docs and repo hygiene after the audit. docs/SHELL_VISUAL_DEV.md tells sessions to grim the live screen and drive the live bar via IPC.
@@ -52,3 +52,4 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_035_docs_and_repo_hygiene_after_the_audit`
