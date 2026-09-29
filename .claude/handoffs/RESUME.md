@@ -37,6 +37,10 @@ says where to look and what is next. Update it at the end of each session (`/wra
    external-edit reload (item_132, `bd39a70`) done. Left: qmllint duplicate id `section`
    in EditOverlay (fold into item_130); `Config.get(k, ({}))` on a missing key still
    returns a fresh default object per evaluation (small follow-up).
+2b. Settings sliders (item_133, `62c4edd`): labels track the knob live, knob snaps.
+   Font/Corner/Padding scale sliders removed (`3376354`, keys nothing read). **Owner wants
+   an audit of what is missing in Settings (Appearance and every other pane)** - scope it
+   as its own item before or alongside 0.40.
 3. Then 0.40 Design system v2 (items 110-117, 039, 130). The contrast report is the
    baseline: 63 token pairs below floor; tokyo-night-day body 2.78:1; nord
    `overlay0 == surface0` (1.00:1).
