@@ -57,7 +57,10 @@ says where to look and what is next. Update it at the end of each session (`/wra
 - Push both repos (nothing pushed; ~80 commits each).
 - RTK: fixed 2026-09-29. cdx's `--rtk on` only adds a prompt line; the rewrite hook was
   added to the `corvus` and `rose` profile `settings.json` (backups `*.bak-pre-rtk`).
-  The dotfiles repo has an untrusted `.rtk/filters.toml` (owner to `rtk trust` or not).
+  A local `rtk init` (2026-09-29 11:29) injected ~134 lines of rtk instructions into the
+  root `CLAUDE.md` and created `.rtk/filters.toml` (empty template) — uncommitted,
+  redundant with the global hook + `~/.claude/RTK.md`. Owner decides: keep, or
+  `git checkout -- CLAUDE.md && rm -r .rtk`. Do not commit it without asking.
 - Owner WIP: none in archeotech-shell (the builder work landed as `38b5167`).
   archeotech-dotfiles has theme churn / personal files unstaged
   (`config/.config/fish/fish_variables`, `mango/config.conf`, `fish/completions/copilot.fish`) — not ours.
