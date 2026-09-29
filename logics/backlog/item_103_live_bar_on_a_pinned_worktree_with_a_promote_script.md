@@ -1,10 +1,10 @@
 ## item_103_live_bar_on_a_pinned_worktree_with_a_promote_script - Live bar on a pinned worktree with a promote script
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 95%
 > Confidence: 90%
-> Progress: 80%
+> Progress: 100%
 > Complexity: Low
 > Theme: Tooling
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -40,6 +40,7 @@
 - Architecture framing: Not needed
 - 2026-09-28: mechanism delivered and verified in isolation (task_034); item stays In progress until the owner runs archeotech-live.sh init + SUPER+SHIFT+R on the real bar (AC2). After that, the Commons qmldir deferred from item_102 can land safely.
 - 2026-09-28 (later): added `preview <worktree|branch>` and `back` to scripts/archeotech-live.sh. preview accepts a path or a branch name (resolved via `git worktree list`), refuses non-worktrees of the shell repo and trees without shell.qml; back requires the .live worktree; status reports PREVIEW (branch, dirty count) and BROKEN when a previewed worktree was removed. Verified in a throwaway clone with ARCHEOTECH_HOME/ARCHEOTECH_SHELL overrides (init, preview by branch and path, bad branch, foreign repo, non-repo dir, missing arg, back, deleted-worktree status, follow). AC3 on the real bar is the owner's step, like AC2. Documented in .claude/claude.md (Live bar vs dev checkout).
+- 2026-09-29: owner ran archeotech-live.sh init + SUPER+SHIFT+R; status reports PINNED at cef5002 (~/Projects/archeotech-shell.live), main 0 ahead. AC1 (dev edits no longer reach the bar) holds by construction of the pin; AC2 (promote) and AC3 (preview/back) are available on the live bar. Closed.
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`

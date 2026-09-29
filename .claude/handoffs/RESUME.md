@@ -11,11 +11,11 @@ says where to look and what is next. Update it at the end of each session (`/wra
   (30%), sequenced in `logics/roadmap/road_001_archeotech_shell.md`
   (0.30 Safety net → 0.31 Correctness → 0.40 Design v2 → 0.50 Utility → 0.60 Contexts
   → 1.0). Personal items: `road_002`.
-- **0.30 Safety net:** 101, 102, 104 done. **item_103 In progress (80%)**:
-  `scripts/archeotech-live.sh` now also has `preview <worktree|branch>` / `back`;
-  waiting for the owner to run `init` + SUPER+SHIFT+R (AC2/AC3 are live-bar checks).
-  Until then the live bar FOLLOWS the dev checkout: everything landed on shell `main`
-  is already on the owner's bar.
+- **0.30 Safety net: done** (101-104). The live bar is PINNED to
+  `~/Projects/archeotech-shell.live` (owner ran `init` 2026-09-29, at `cef5002`): landed
+  commits reach the bar only via `archeotech-live.sh promote`; `preview <wt|branch>` /
+  `back` show work in progress. Check `archeotech-live.sh status` before assuming the
+  owner sees a change.
 - **0.31 Correctness:** 105, 106, 107, **108** (`436dc27`: per-toast timers, per-screen
   toast windows on the focused output, nmcli backoff, Wi-Fi PSK via stdin), **109**
   (`05f202c`: launcher footer, designed media idle state), **049** (`cef5002`: System
@@ -52,13 +52,12 @@ says where to look and what is next. Update it at the end of each session (`/wra
   closed docs they touched (both bit this session).
 
 ## Pending owner actions / decisions
-- item_103: `~/Projects/archeotech-dotfiles/scripts/archeotech-live.sh init`, then
-  SUPER+SHIFT+R (or keep following; `preview`/`back` are there when pinned).
 - item_108 real-network check: join a password-protected Wi-Fi from the Wi-Fi panel
   once (nmcli `--ask` with the PSK on stdin was proven only against a fake nmcli).
 - Push both repos (nothing pushed; ~80 commits each).
-- RTK: `~/.claude/RTK.md` describes a hook not active in this profile — enable or drop
-  `@RTK.md` from `~/.claude/CLAUDE.md`.
+- RTK: fixed 2026-09-29. cdx's `--rtk on` only adds a prompt line; the rewrite hook was
+  added to the `corvus` and `rose` profile `settings.json` (backups `*.bak-pre-rtk`).
+  The dotfiles repo has an untrusted `.rtk/filters.toml` (owner to `rtk trust` or not).
 - Owner WIP: none in archeotech-shell (the builder work landed as `38b5167`).
   archeotech-dotfiles has theme churn / personal files unstaged
   (`config/.config/fish/fish_variables`, `mango/config.conf`, `fish/completions/copilot.fish`) — not ours.
