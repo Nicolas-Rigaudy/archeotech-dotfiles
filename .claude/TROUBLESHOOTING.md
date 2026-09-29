@@ -1578,6 +1578,8 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 **Fix:** `git status logics` after either command and `git checkout --` any already-committed doc it touched outside the chain you are working on (recorded in the shell-item skill).
 
+Same family: `flow progress task task_031_… --progress 30%` (an orchestrator) rewrote `> Progress` on all 39 linked backlog items, *lowering* item_103 from 80% to 65%. Restore `logics/backlog` from HEAD after it, or leave orchestrator progress alone.
+
 ---
 
 **Last Updated:** 2026-09-29
