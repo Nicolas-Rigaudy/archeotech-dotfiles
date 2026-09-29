@@ -2,13 +2,13 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: In progress
-> Understanding: 90%
-> Confidence: 85%
-> Progress: 20%
+> Understanding: 95%
+> Confidence: 90%
+> Progress: 60%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 15:27:45
+> Indicators reviewed: 2026-09-29 10:29:30
 
 # AI Context
 - Summary: Adds ImageMagick visual-regression diffing against committed goldens, greenfield QML logic tests, and extends CI to run in an Arch container.
@@ -51,12 +51,13 @@
 - Architecture signals: (none detected)
 - Architecture follow-up: No architecture decision follow-up is expected based on current signals.
 - 2026-09-28 audit: absorbs item_001 and item_004 as scenarios; start from .claude/audits/2026-09-28/render-matrix.sh (themes x packs x modes x panel states, contact sheets) and add image diff plus automated text-contrast checks. Depends on item_101.
+- 2026-09-28 owner decisions: goldens committed in tests/golden (shell repo); CI staged - Arch container qml job (qmllint gate, qmltestrunner, contrast) now, golden diff runs locally as the pre-land gate; first matrix = 8 core states x {macchiato dark, latte light, macchiato flat} + grimdark dashboard. Delivered in 8d84bd6 (task_042). Still open for AC1/AC3: render smoke + golden diff + diff-artifact upload in CI once a cached image with mango exists; goldens are machine-bound until then.
 
 # Links
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
-- Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Request: `req_000_archeotech_shell_dotfiles`
+- Primary task(s): `task_042_visual_regression_vs_goldens_qml_logic_tests_arch_container_ci`
 
 # Priority
 - Priority: Medium
@@ -66,6 +67,8 @@
 - Hybrid rationale: Derived from request `req_000_archeotech_shell_dotfiles` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_000_archeotech_shell_dotfiles.md`.
 - Generated locally by logics-manager.
+- Task `task_042_visual_regression_vs_goldens_qml_logic_tests_arch_container_ci` was finished via `logics-manager flow finish task` on 2026-09-29.
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_042_visual_regression_vs_goldens_qml_logic_tests_arch_container_ci`
