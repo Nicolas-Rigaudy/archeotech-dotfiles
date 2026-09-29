@@ -2,8 +2,8 @@
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: Ready
-> Understanding: 80%
-> Confidence: 80%
+> Understanding: 90%
+> Confidence: 85%
 > Progress: 0%
 > Complexity: Medium
 > Theme: Settings
@@ -32,14 +32,48 @@ Supported but hand-edit only (no UI):
 - `bar.modules.{battery,bluetooth,music,wifi}` widget options (read by the bar widgets).
 - `dashboard.scanRoots` (Active Projects scan directories).
 
-Candidate missing settings (owner picks; grouped by pane):
-- Appearance: font family and a real type/spacing/radius scale (lands with item_110 scales); animation speed / reduced motion (item_114); glass vs satin once item_116 decides.
-- Shell / Bar: clock format (24h/12h, seconds, date), bar widget options above, dashboard project scan roots.
-- Display: per-output arrangement from the real compositor state (read back), scale, refresh rate, rotation for the portrait DP-3; night light schedule (sunset/sunrise instead of fixed temperature only).
-- Input (new pane): keyboard layout (AZERTY built-in / QWERTY external, Alt+Shift switch), repeat rate, touchpad natural scroll / tap-to-click.
-- Notifications: per-app rules, sound, toast position (overlaps 0.50 item_119).
-- Power: battery charge limit, lid-close behaviour (item_011 decided it in config), low-battery warning level.
-- Launcher (new section): pinned apps list and providers (overlaps 0.50 item_118).
+Comparison with the reference shells (2026-09-29, shallow clones at HEAD: DankMaterialShell 2026-09-29, caelestia 2026-09-27, end-4 ii 2026-09-28, Noctalia 2026-09-29 - now a native C++ rewrite, no longer QML). Y = in its settings UI, cfg = config-file only, - = absent.
+
+| Area | Archeotech | DMS | Caelestia | end-4 | Noctalia |
+|---|---|---|---|---|---|
+| Theme, palette, dark/light schedule | Y | Y | mode only | Y | Y |
+| Font family, UI scale, radius, animation speed, reduced motion | - (fake sliders removed) | Y | cfg (tokens file) | fonts | Y |
+| Opacity, borders, shadows | flat mode | Y | transparency | transparency | Y |
+| Bar layout / per-widget options | edit mode; widget options cfg | Y, multi-bar | Y | Y | Y, per-bar + per-monitor |
+| Clock / date format | - | Y | Y | Y | Y |
+| Launcher (prefixes, fuzzy, hidden, pinned) | - | Y | Y | prefixes | Y |
+| Notifications: position, history, per-app rules | - (timeout/max/fullscreen/DND only) | Y | groups, toast events | timeout, monitor | Y |
+| OSD: position, which kinds | - | Y | cfg | timeout | Y |
+| Display arrangement, scale, refresh, rotation, profiles | broken 4-mode | Y + profiles | - | - | - |
+| Night light schedule | fixed temperature | Y | - | cfg | Y |
+| Keyboard layout, mouse, touchpad | - | Y | - | - | layout labels |
+| Keybind editor | - | Y | - | cheatsheet | shell nav keys |
+| Idle / power profile | Y | Y + AC/battery split | cfg | - | Y (rules) |
+| Battery warn level, charge limit | - | Y | cfg | Y | warn level |
+| Lock screen | - | Y | cfg | Y | Y |
+| Default apps | - | Y | Y | cfg | launch cmd |
+| Language / locale, weather location | - | Y | Y | Y | Y |
+| Wallpaper (per-monitor, cycling) | Y | Y | Y | Y | Y |
+| Plugins | Y | Y + registry | placeholder | - | Y + store |
+
+Settings UX practices seen:
+- Search: DMS and Noctalia search every row (jump + highlight); Archeotech searches panes by keyword (PaneRegistry); caelestia's search is a stub; end-4 has none.
+- Reset to default per row: DMS (reset icon when value != default), Noctalia (reset + confirm, reset page; UI edits live in a separate override file so reset = delete). Archeotech: none.
+- Capability gating: DMS/Noctalia hide panes/rows whose backend is missing (compositor, ddcutil, gamma, battery); Archeotech's Power pane shows them disabled with the reason (keep that: it is more honest).
+- Advanced filter / "More" group: Noctalia, DMS.
+- Per-monitor settings: DMS, Noctalia.
+- Export config / support report: Noctalia.
+- Anti-pattern: caelestia shows "under construction" placeholder pages (conflicts with rule 6).
+
+Candidate additions, ranked for this shell (dev/cloud, multi-monitor, dock/undock):
+1. Display done properly: read the real layout back, arrangement for eDP + HDMI + portrait DP-3, scale/refresh/rotation, and saved profiles for work vs home (DMS pattern) - fits the dock/undock workflow.
+2. Keyboard: layout (AZERTY built-in / QWERTY external), repeat rate; touchpad natural scroll / tap.
+3. Typography and motion: font family, UI scale, animation speed, reduced motion (item_110 scales, item_114).
+4. Clock/date format; bar widget options now config-only; dashboard scan roots.
+5. Settings infrastructure: per-row reset to default, row-level search.
+6. 0.50 overlaps: notifications position/history/rules (item_119), OSD kinds/position (item_120), launcher settings (item_118).
+7. Later: lock screen, battery warn level / charge limit, default apps, night-light schedule, locale/weather.
+Not worth it here: printers, users/greeter, cellular, hotspot, AI/weeb policies.
 
 # Scope
 - In:

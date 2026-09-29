@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Design system
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 15:27:46
+> Indicators reviewed: 2026-09-29 15:45:37
 
 # AI Context
 - Summary: Semantic token layer with contrast floor and spacing/type scales. Appearance.qml is one flat bag
@@ -39,6 +39,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-29 owner decision (contrast floor): keep official palettes exactly as their designers made them. Never mix, lighten or synthesize colours to pass contrast. A text role that fails the floor on a theme means we mapped it to the wrong palette step: the semantic layer must pick a stronger official step for that role (e.g. muted -> subtext0 instead of overlay0). Record as an ADR when the role map lands.
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`

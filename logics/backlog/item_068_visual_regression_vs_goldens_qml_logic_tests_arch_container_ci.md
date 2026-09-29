@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-29 10:29:30
+> Indicators reviewed: 2026-09-29 15:45:37
 
 # AI Context
 - Summary: Adds ImageMagick visual-regression diffing against committed goldens, greenfield QML logic tests, and extends CI to run in an Arch container.
@@ -52,6 +52,7 @@
 - Architecture follow-up: No architecture decision follow-up is expected based on current signals.
 - 2026-09-28 audit: absorbs item_001 and item_004 as scenarios; start from .claude/audits/2026-09-28/render-matrix.sh (themes x packs x modes x panel states, contact sheets) and add image diff plus automated text-contrast checks. Depends on item_101.
 - 2026-09-28 owner decisions: goldens committed in tests/golden (shell repo); CI staged - Arch container qml job (qmllint gate, qmltestrunner, contrast) now, golden diff runs locally as the pre-land gate; first matrix = 8 core states x {macchiato dark, latte light, macchiato flat} + grimdark dashboard. Delivered in 8d84bd6 (task_042). Still open for AC1/AC3: render smoke + golden diff + diff-artifact upload in CI once a cached image with mango exists; goldens are machine-bound until then.
+- 2026-09-29: owner does not recall choosing staged CI; resume the CI render stage. Finding: mangowm is now in Arch [extra] (0.17.4, no AUR build needed), but it cannot run in CI: its scenefx fx_renderer requires a DRM device (drmGetDevices2 fails, 'Cannot create GLES2 renderer: no DRM FD available') and ignores WLR_RENDERER=pixman/gles2/vulkan. Verified in archlinux:latest with every render dependency installed; GitHub hosted runners have no /dev/dri either. Options: self-hosted runner on a machine with a GPU; a software DRM device (vkms/vgem) where the runner allows kernel modules; or CI renders under another compositor with separate goldens.
 
 # Links
 - Product brief(s): (none yet)
