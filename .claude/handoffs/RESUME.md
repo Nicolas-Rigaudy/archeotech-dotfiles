@@ -33,8 +33,8 @@ says where to look and what is next. Update it at the end of each session (`/wra
 ## Next
 1. item_068 follow-up: CI image with mango (AUR build, cached) → render smoke + golden
    diff in the `qml` job, upload `diff/` on failure. Or move on and leave it staged.
-2. 0.31 leftovers found on the way (not yet items): MangoService backoff never backs
-   off (TROUBLESHOOTING); `Persistence.Config` has no per-key change signal (every
+2. 0.31 leftovers found on the way (not yet items): ~~MangoService backoff~~ (item_131, `4a4d6e0`);
+   `Persistence.Config` has no per-key change signal (every
    `Config.get()` binding churns on any `set`); qmllint duplicate id `section` in
    EditOverlay (legal, fold into item_130).
 3. Then 0.40 Design system v2 (items 110-117, 039, 130). The contrast report is the

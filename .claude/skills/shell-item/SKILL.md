@@ -31,7 +31,8 @@ One item per run. Nothing touches the live bar until the verified change lands o
    QObject` (no qmldir yet). Then the `qml-reviewer` agent on the worktree diff;
    apply its should-fixes, re-verify.
 5. **Land by path.** Commit on the branch with `git commit -m "…" -- <paths>`, then
-   on main: `git -C <wt> diff <base> HEAD -- <paths> | git apply`, `git add` new
+   on main: `rtk proxy git -C <wt> diff <base> HEAD -- <paths> | git apply` (the RTK hook
+   rewrites a bare `git diff` to a compact summary, which `git apply` rejects), `git add` new
    files, `git commit -m "…" -- <paths>` (the owner may have WIP or staged work on
    main — never a bare commit), check `git diff --quiet <branch> HEAD -- <paths>`,
    then `git worktree remove` + `git branch -D`. Message style: `fix[QML]: …`.

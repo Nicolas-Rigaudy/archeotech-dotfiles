@@ -1562,13 +1562,13 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 ---
 
-### MangoService "exponential backoff" never backs off (open, not fixed)
+### MangoService "exponential backoff" never backs off (fixed 2026-09-29, `4a4d6e0`)
 
-**Symptom:** on a non-Mango compositor the three `mmsg watch` streams retry every ~1 s forever.
+**Symptom:** when `mmsg` can't reach Mango, the three `mmsg watch` streams retried every ~1 s forever.
 
-**Cause:** `_scheduleRestart` doubles `timer.interval`, but each restart Timer's `onTriggered` resets `interval = 500` first, so every retry waits 1 s (`Services/Compositor/MangoService.qml` ~97-127).
+**Cause:** `_scheduleRestart` doubled `timer.interval`, but each restart Timer's `onTriggered` reset `interval = 500` first, so every retry waited 1 s (`Services/Compositor/MangoService.qml`).
 
-**Fix (to do):** reset the interval only after a stream has stayed up (as `Network.qml`'s nmcli monitor does since `436dc27`), and add a generic compositor backend.
+**Fix:** per-Process `_startedAt`; the interval resets to 500 ms only after a stream stayed up 10 s+ (the `Network.qml` nmcli pattern), else doubles to an 8 s cap (item_131). Note: a missing binary never loops at all: Quickshell 0.3.1 logs "Process failed to start" and emits no `exited`. A generic compositor backend is still open.
 
 ---
 
