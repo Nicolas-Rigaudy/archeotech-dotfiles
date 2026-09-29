@@ -14,6 +14,11 @@ Run every step; report each result. A step you skip is reported as skipped, not 
 4. **Render.** With `/shot`, render every state the change touches in at least:
    dark (archeotech-macchiato), light (archeotech-latte), flat mode, and the grimdark pack.
    Build one contact sheet.
+4b. **Goldens + tests.** `scripts/golden.sh --root <tree>` (the whole matrix, ~3 min)
+   and `tests/run.sh`. A FAIL on a scenario the change was *meant* to alter: look at
+   `<run>/diff/<name>.diff.png`, then `golden.sh --root <tree> --update --only
+   '<those>'` and commit the new goldens with the change. A FAIL anywhere else is a
+   regression.
 5. **Judge.** Give the contact sheet and the acceptance criteria to the
    `visual-verifier` agent. Any FAIL goes back to step 1.
 6. **Live safety.** Confirm nothing ran against the live session (no grim, no qs ipc

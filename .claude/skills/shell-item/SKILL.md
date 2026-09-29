@@ -22,7 +22,9 @@ One item per run. Nothing touches the live bar until the verified change lands o
    IPC state: a `--qml` harness in the scratchpad (absolute imports need `file:`;
    Appearance colours are undefined outside the full shell, so test behaviour in the
    full shell where possible). Measure, don't eyeball: counts from probes, crops
-   stacked with `magick`.
+   stacked with `magick`. Before landing, `scripts/golden.sh --root <wt>` must pass
+   except for scenarios the item intends to change (regenerate those with
+   `--update --only` and land the PNGs with the fix), plus `tests/run.sh`.
 4. **Lint + review.** Qt6 `/usr/lib/qt6/bin/qmllint` (the hooks run it on Edit/Write;
    Python/sed edits bypass the pre-save gate, so lint those by hand). Known false
    positives: singleton `missing-property` / `Cannot assign binding of type X to
