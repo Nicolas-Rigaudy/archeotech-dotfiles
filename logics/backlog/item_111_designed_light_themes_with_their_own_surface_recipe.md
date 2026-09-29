@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Design system
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 15:27:46
+> Indicators reviewed: 2026-09-29 17:23:35
 
 # AI Context
 - Summary: Designed light themes with their own surface recipe. Light themes are recoloured dark themes: cards render darker and greyer than their panel, shadows sink toward black, secondary text is about 2:1 (Tokyo Night Day worst)
@@ -35,6 +35,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-09-29 from item_110 wave 1 review: owner finds the glass look wrong on light themes (Latte, Tokyo Night Day). Also owned here: text on the accent is below AA on gruvbox-light (best official 4.35:1), Tokyo Night Day (3.11:1 on its blue) and the Grimdark default register (4.14:1); no official colour passes, so selected pills / accent buttons on light surfaces need a different recipe (e.g. tinted fill + dark text), not a recoloured accent. Real card contrast on light themes is below token contrast because surfaceCard blends surface0 toward the accent and is translucent.
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`

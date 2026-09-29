@@ -41,6 +41,12 @@ says where to look and what is next. Update it at the end of each session (`/wra
    Font/Corner/Padding scale sliders removed (`3376354`, keys nothing read). **Owner wants
    an audit of what is missing in Settings (Appearance and every other pane)** - scope it
    as its own item before or alongside 0.40.
+2c. **item_110 wave 1 landed** (`5e38db3`, `de16daf`): official palettes only (themes/_official
+   + theme-fidelity.py), per-theme text roles gated by contrast-check.py --strict in CI,
+   253 call sites on roles, nord-light removed, tokyo-night-day accent blue (adr_033).
+   Live bar still PINNED at 62c4edd: owner promotes. Next: **item_111** (light-theme
+   surface recipe; owner: glass looks wrong on light themes; also AA text-on-accent),
+   then item_110 waves 2-4 (type scale, spacing, elevation).
 3. Then 0.40 Design system v2 (items 110-117, 039, 130). The contrast report is the
    baseline: 63 token pairs below floor; tokyo-night-day body 2.78:1; nord
    `overlay0 == surface0` (1.00:1).
