@@ -4,7 +4,7 @@
 > Related product: `prod_001_archeotech_shell`
 > Related request: `req_005_2026_09_28_audit_upgrade_program`
 > Reminder: Update status, milestone scope, linked refs, risks, and success signals when you edit this doc.
-> Indicators reviewed: 2026-09-29 11:01:56
+> Indicators reviewed: 2026-09-29 15:59:05
 
 # AI Context
 - Summary: Roadmap for the Archeotech shell, re-sequenced after the 2026-09-28 five-area audit (safety net, correctness, design system v2, utility layer, Contexts, 1.0).
@@ -105,6 +105,8 @@ flowchart TD
 - `item_006_live_colour_preview_on_scroll_in_pickers`: Live colour preview on scroll in pickers
 - `item_007_async_fade_in_on_wallpaper_thumbnails`: Async fade-in on wallpaper thumbnails
 - `item_009_palette_crossfade_on_theme_apply`: Palette crossfade on theme apply
+- `item_134_settings_audit_fake_controls_missing_settings`: Settings audit: fake controls, missing settings, per-pane gaps
+- `item_138_settings_ux_per_setting_search_and_reset`: Settings UX: per-setting search and reset to default
 - Goal: A semantic, mode-aware design system with designed light themes, pack chrome out of core, and the Corvus Dataslate base identity.
 - Scope: Semantic tokens with a contrast floor, light surface recipe, surface recipes and style delegates, primitive completion with focus/disabled states, unified motion presets, glass decision, retire test packs, plus tray menu, edit mode, dismissal consistency, accent for all families and picker feel.
 - Exit signal: No hex literal outside tokens, every golden passes AA in glass/flat/light, no pack-specific branch in core, owner signs off on the base contact sheet.
@@ -114,6 +116,9 @@ flowchart TD
 - `item_119_notifications_v2_actions_images_grouping_history`: Notifications v2: actions, images, grouping, history
 - `item_120_state_driven_osd_generic_panel_ipc_and_keybind_cheatsheet`: State-driven OSD, generic panel IPC and keybind cheatsheet
 - `item_121_native_quickshell_networking_and_bluetooth_services`: Native Quickshell Networking and Bluetooth services
+- `item_135_display_settings_real_layout_arrangement_profiles`: Display settings: real layout, arrangement, per-output modes and profiles
+- `item_136_input_settings_keyboard_layout_repeat_touchpad`: Input settings pane: keyboard layout, repeat, touchpad
+- `item_137_clock_format_bar_widget_options_scan_roots_settings`: Clock format, bar widget options and dashboard scan roots in Settings
 - Goal: Parity with DMS/Noctalia/Caelestia on the everyday layer.
 - Scope: Launcher command palette with providers, notifications v2, state-driven OSD plus generic panel IPC plus keybind cheatsheet, native Networking and Bluetooth.
 - Exit signal: Four rofi scripts retired; notifications support actions, history and grouping; any panel opens by IPC.
