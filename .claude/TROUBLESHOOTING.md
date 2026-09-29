@@ -1572,6 +1572,16 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 ---
 
+### Quickshell FileView `watchChanges` does not reload by itself (fixed for Config 2026-09-29, `bd39a70`)
+
+**Symptom:** hand edits to `~/.config/archeotech/config.json` never reached the running shell, although `Config.qml` said it "picks up external edits (watchChanges)".
+
+**Cause:** `watchChanges: true` only emits `fileChanged()`; the handler must call `reload()`. `Commons/Appearance.qml` works around the same thing by resetting the path.
+
+**Fix:** `onFileChanged: reload()` in `Services/Persistence/Config.qml`, with `_parse()` guarded: invalid text keeps the current config (never `{}`: the next `set()` would save that), our own last writes and unchanged content are skipped, and once loaded a pending save wins (item_132). Any other FileView relying on `watchChanges` alone has the same gap.
+
+---
+
 ### logics: `flow repair links` / `repair ac-traceability` edit docs outside the chain
 
 **Symptom:** after `flow repair links <task>`, `prod_001` was rewritten (Status → Settled, its 60-item backlog list cut to one item); `flow repair ac-traceability req_005_…` appends placeholder AC lines to every closed task of the request.

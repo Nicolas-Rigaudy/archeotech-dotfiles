@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-09-29)
+# Resume here (last updated 2026-09-29, evening)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -33,10 +33,10 @@ says where to look and what is next. Update it at the end of each session (`/wra
 ## Next
 1. item_068 follow-up: CI image with mango (AUR build, cached) → render smoke + golden
    diff in the `qml` job, upload `diff/` on failure. Or move on and leave it staged.
-2. 0.31 leftovers found on the way (not yet items): ~~MangoService backoff~~ (item_131, `4a4d6e0`);
-   `Persistence.Config` has no per-key change signal (every
-   `Config.get()` binding churns on any `set`); qmllint duplicate id `section` in
-   EditOverlay (legal, fold into item_130).
+2. 0.31 leftovers: MangoService backoff (item_131, `4a4d6e0`) and Config set churn +
+   external-edit reload (item_132, `bd39a70`) done. Left: qmllint duplicate id `section`
+   in EditOverlay (fold into item_130); `Config.get(k, ({}))` on a missing key still
+   returns a fresh default object per evaluation (small follow-up).
 3. Then 0.40 Design system v2 (items 110-117, 039, 130). The contrast report is the
    baseline: 63 token pairs below floor; tokyo-night-day body 2.78:1; nord
    `overlay0 == surface0` (1.00:1).
