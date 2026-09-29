@@ -4,7 +4,7 @@
 > Related product: `prod_001_archeotech_shell`
 > Related request: `req_005_2026_09_28_audit_upgrade_program`
 > Reminder: Update status, milestone scope, linked refs, risks, and success signals when you edit this doc.
-> Indicators reviewed: 2026-09-03 16:34:46
+> Indicators reviewed: 2026-09-29 11:01:56
 
 # AI Context
 - Summary: Roadmap for the Archeotech shell, re-sequenced after the 2026-09-28 five-area audit (safety net, correctness, design system v2, utility layer, Contexts, 1.0).
@@ -98,6 +98,7 @@ flowchart TD
 - `item_116_glass_material_decision_real_blur_or_satin`: Glass material decision: real blur or satin
 - `item_117_retire_angular_and_hud_test_packs_to_test_fixtures`: Retire Angular and HUD test packs to test fixtures
 - `item_039_glass_themed_system_tray_context_menu_tooltip`: Glass-themed system-tray context menu + tooltip
+- `item_130_edit_mode_design_review_and_audit`: Edit mode design review and audit
 - `item_045_edit_mode_stragglers_onto_3d_glass_theme`: Edit mode + stragglers onto 3D/glass theme
 - `item_017_panel_keybinds_dismissal_consistency`: Panel keybinds / dismissal consistency
 - `item_091_accent_picker_for_all_theme_families_with_gtk_fallback`: Accent picker for all theme families with GTK fallback

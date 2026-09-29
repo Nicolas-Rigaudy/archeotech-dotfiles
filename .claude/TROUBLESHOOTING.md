@@ -1532,4 +1532,52 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 ---
 
-**Last Updated:** 2026-09-28
+### A panel's rows float mid-card instead of sitting under the title
+
+**Symptom:** a card showing fewer rows than usual (System Notes with 2 stats selected) centres them vertically; `Layout.alignment: Qt.AlignTop` on the grid does nothing.
+
+**Cause:** a child *layout* (GridLayout/ColumnLayout/RowLayout) inside a layout defaults to `Layout.fillWidth` **and** `Layout.fillHeight: true`, so it stretches to the whole cell and spreads its own rows; the alignment applies to an item that already fills the cell.
+
+**Fix (`cef5002`):** `Layout.fillHeight: false` on the inner layout, then `Layout.alignment: Qt.AlignTop`.
+
+---
+
+### Every `Config.get()` binding re-evaluates on any settings change
+
+**Symptom:** a binding like `Logic.selection(Persistence.Config.get("dashboard.notes"))` hands out a new array whenever *any* key is written (theme, frame radius, …); Repeaters over it rebuild their delegates. Probe: 3 unrelated `Config.set()` → 5 change events.
+
+**Cause:** `Config.get()` walks the single `property var _data`, and `Config.set()` deep-clones and reassigns `_data` for every key — there is no per-key change signal.
+
+**Fix:** compare by value where it matters: bind a `JSON.stringify(...)` string, and assign the real property from `on<Key>Changed` (SystemNotes `_selKey`). A per-key signal in Config is the proper fix (follow-up).
+
+---
+
+### `qmltestrunner` can't load a service that imports `Quickshell.*`
+
+**Symptom:** a test importing `Services/...Foo.qml` fails on `import Quickshell.Io` (module plugin not found).
+
+**Cause:** Quickshell's QML types are compiled into the `qs` binary; `/usr/lib/qt6/qml/Quickshell/*/qmldir` marks the plugins optional with `prefer :/qt/qml/...` resources only `qs` has.
+
+**Fix:** put testable logic in a plain `.pragma library` JS file next to the service (`ShellConfigLogic.js`, `SystemNotesLogic.js`), have the service delegate to it, and import the JS from `tests/qml/tst_*.qml`. Run with `tests/run.sh`.
+
+---
+
+### MangoService "exponential backoff" never backs off (open, not fixed)
+
+**Symptom:** on a non-Mango compositor the three `mmsg watch` streams retry every ~1 s forever.
+
+**Cause:** `_scheduleRestart` doubles `timer.interval`, but each restart Timer's `onTriggered` resets `interval = 500` first, so every retry waits 1 s (`Services/Compositor/MangoService.qml` ~97-127).
+
+**Fix (to do):** reset the interval only after a stream has stayed up (as `Network.qml`'s nmcli monitor does since `436dc27`), and add a generic compositor backend.
+
+---
+
+### logics: `flow repair links` / `repair ac-traceability` edit docs outside the chain
+
+**Symptom:** after `flow repair links <task>`, `prod_001` was rewritten (Status → Settled, its 60-item backlog list cut to one item); `flow repair ac-traceability req_005_…` appends placeholder AC lines to every closed task of the request.
+
+**Fix:** `git status logics` after either command and `git checkout --` any already-committed doc it touched outside the chain you are working on (recorded in the shell-item skill).
+
+---
+
+**Last Updated:** 2026-09-29
