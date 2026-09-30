@@ -1,84 +1,70 @@
-# Resume here (last updated 2026-09-29, evening)
+# Resume here (last updated 2026-09-30)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
 
 ## Where things stand
-- **Audit (2026-09-28):** reports + contact sheets in `.claude/audits/2026-09-28/`;
-  audit page https://claude.ai/artifact/DYRRZnpcg856cU9LX2iBup. Decisions in
-  `logics/architecture/adr_032_*`.
-- **Program:** `req_005_2026_09_28_audit_upgrade_program`, orchestrated by `task_031_…`
-  (30%), sequenced in `logics/roadmap/road_001_archeotech_shell.md`
-  (0.30 Safety net → 0.31 Correctness → 0.40 Design v2 → 0.50 Utility → 0.60 Contexts
-  → 1.0). Personal items: `road_002`.
-- **0.30 Safety net: done** (101-104). The live bar is PINNED to
-  `~/Projects/archeotech-shell.live` (owner ran `init` 2026-09-29, at `cef5002`): landed
-  commits reach the bar only via `archeotech-live.sh promote`; `preview <wt|branch>` /
-  `back` show work in progress. Check `archeotech-live.sh status` before assuming the
-  owner sees a change.
-- **0.31 Correctness:** 105, 106, 107, **108** (`436dc27`: per-toast timers, per-screen
-  toast windows on the focused output, nmcli backoff, Wi-Fi PSK via stdin), **109**
-  (`05f202c`: launcher footer, designed media idle state), **049** (`cef5002`: System
-  Notes per-stat fetch, missing sources hidden, selectable in Settings → Shell) done.
-  **item_068 In progress (60%)**: `8d84bd6` delivered `scripts/golden.sh` + 25 goldens in
-  `tests/golden`, `tests/run.sh` (qmltestrunner, 22 pass), `scripts/contrast-check.py`,
-  and the CI `qml` job (Arch container: qmllint gate + tests + contrast). Still open:
-  render smoke + golden diff + diff artifact **in CI** (needs a cached image with mango
-  from AUR; owner chose "staged").
-- **task_001 re-home done:** 27 post-1.0 items now hang off holding `task_039` (retire it
-  with `sync update-indicators --status Obsolete` once empty, not `flow close`).
-- **New:** `item_130` edit mode design review + audit (0.40; banner over the clock,
-  3 selectors; owner asked for a proper review first).
+- **Program:** `req_005_2026_09_28_audit_upgrade_program` (orchestrator `task_031`),
+  sequenced in `logics/roadmap/road_001_archeotech_shell.md`: 0.30 Safety net (done) →
+  0.31 Correctness (done) → **0.40 Design v2 (current)** → 0.50 Utility → 0.60 Contexts →
+  1.0. Personal items: `road_002`. 2026-09-28 audit: `.claude/audits/2026-09-28/`.
+- **Live bar:** pinned to `~/Projects/archeotech-shell.live` (at `9f20bf8` on 2026-09-30;
+  main is 2 commits ahead with the audio fixes). Landed commits reach the bar only via
+  `archeotech-live.sh promote` (owner runs it). `promote` only hot-reloads QML: process
+  state (PipeWire nodes) needs SUPER+SHIFT+R. `theme-switch.py` in `~/.local/bin` points
+  at the shell repo's MAIN checkout, so theme/kitty file changes apply on the next
+  theme switch even while the bar is pinned.
+- **Done 2026-09-29/30 (all on archeotech-shell main, by path):**
+  - 0.31 leftovers: mango watch backoff (`4a4d6e0`, item_131); Config set churn +
+    external-edit reload (`bd39a70`, item_132); slider live labels + snapping
+    (`62c4edd`, item_133); fake Appearance scale sliders removed (`3376354`).
+  - item_068 closed: goldens stay local by owner decision (mango needs a GPU/DRM device;
+    hosted CI runners have none). CI runs qmllint, logic tests, theme fidelity and strict
+    role contrast.
+  - **item_110 wave 1** (`5e38db3`, `de16daf`; adr_033): official palettes only
+    (`themes/_official/*.json` + `scripts/theme-fidelity.py`, which checks every colour in
+    theme.json), per-theme text roles (`Appearance.colors.textPrimary/...`) gated by
+    `scripts/contrast-check.py --strict`, 253 call sites migrated, nord-light removed.
+  - **item_111 light themes** (`1bfef30`, `1677793`, `9f20bf8`): designer surface roles,
+    paper cards on light glass (`Appearance.isLight`), official kitty light themes +
+    light readability settings, shot.sh renders with the owner's real mango look.
+  - Audio: Bluetooth volume freeze fixed (`31e9e7e`, separate PipeWire trackers) and OSD
+    binding loop (`7541d31`); owner confirmed on hardware after a reconnect.
+  - Settings audit vs DMS / caelestia / end-4 / noctalia: item_134 (open fixes noted).
 
-## Next
-1. item_068 follow-up: CI image with mango (AUR build, cached) → render smoke + golden
-   diff in the `qml` job, upload `diff/` on failure. Or move on and leave it staged.
-2. 0.31 leftovers: MangoService backoff (item_131, `4a4d6e0`) and Config set churn +
-   external-edit reload (item_132, `bd39a70`) done. Left: qmllint duplicate id `section`
-   in EditOverlay (fold into item_130); `Config.get(k, ({}))` on a missing key still
-   returns a fresh default object per evaluation (small follow-up).
-2b. Settings sliders (item_133, `62c4edd`): labels track the knob live, knob snaps.
-   Font/Corner/Padding scale sliders removed (`3376354`, keys nothing read). **Owner wants
-   an audit of what is missing in Settings (Appearance and every other pane)** - scope it
-   as its own item before or alongside 0.40.
-2c. **item_110 wave 1 landed** (`5e38db3`, `de16daf`): official palettes only (themes/_official
-   + theme-fidelity.py), per-theme text roles gated by contrast-check.py --strict in CI,
-   253 call sites on roles, nord-light removed, tokyo-night-day accent blue (adr_033).
-   Live bar still PINNED at 62c4edd: owner promotes. Next: **item_111** (light-theme
-   surface recipe; owner: glass looks wrong on light themes; also AA text-on-accent),
-   then item_110 waves 2-4 (type scale, spacing, elevation).
-2d. **item_111 light themes landed** (`1bfef30`, `1677793`, `9f20bf8`): designer surface
-   roles, paper cards on light glass, official kitty light themes (+ dim/contrast
-   readability), shot.sh renders with the real mango look. theme-switch.py in
-   ~/.local/bin points at main, so the next theme switch uses it; the bar needs promote.
-   Follow-ups: item_139 glass setting, item_140 per-mode wallpapers, item_141 theme
-   library research (later), tonal selected pills (text-on-accent AA on 2 light themes).
-2e. Audio: shell volume froze on a Bluetooth headset (unbound PipeWire sink after a profile
-   switch) - fixed `31e9e7e`, plus OSD binding loop `7541d31`; owner confirmed after a reconnect (2026-09-30).
-3. Then 0.40 Design system v2 (items 110-117, 039, 130). The contrast report is the
-   baseline: 63 token pairs below floor; tokyo-night-day body 2.78:1; nord
-   `overlay0 == surface0` (1.00:1).
+## Next (pick one; the owner chooses)
+1. **item_139** glass/opacity setting (solid / soft / glass) in Settings → Appearance.
+2. **Tonal selected pills on light themes**: text on accent-coloured pills is below AA on
+   gruvbox-light (3.33) and tokyo-night-day (3.11); restyle selected pills (tinted fill +
+   dark text) rather than recolouring accents (reported, not gated, in contrast-check).
+3. **item_110 wave 2**: type scale (display/headline tiers, weights, tracking, UI/font
+   scale setting), migrate 82 literal font sizes. Then waves 3-4 (4pt spacing, elevation +
+   CI grep invariant).
+4. Settings items from the audit: item_135 display (arrangement + profiles), item_136
+   input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
+   the fake Audio "Remember volume" toggle.
+5. item_140 per-mode wallpapers; item_141 theme library research (later, low).
+6. Remaining 0.40: 112-117, 039, 130 (edit mode review), 045, 017, 091, 006/007/009.
 
 ## How to work
-- One item at a time with `/shell-item` (worktree → A/B vs unfixed main → qml-reviewer →
-  `golden.sh --root <wt>` + `tests/run.sh` → land by path → closeout). `/verify` has the
-  full checklist; judge renders with the `visual-verifier` agent, not by eye.
-- shot.sh gained `--outputs N` and `--exec 'CMD'` (`$QSPID` inside → `qs ipc --pid`);
-  see the `/shot` skill. Intended visual change → `golden.sh --update --only '<names>'`
-  and commit the PNGs with it.
-- After `flow repair links` / `repair ac-traceability`: `git status logics` and restore
-  closed docs they touched (both bit this session).
+- One item at a time with `/shell-item`; `/verify` for the checklist; `visual-verifier`
+  judges renders. Regenerate goldens with the WORKTREE's `scripts/golden.sh --update`
+  (the script writes into its own checkout).
+- Renders: `scripts/shot.sh --theme <t> --wallpaper <path>`. Light themes look very
+  different on light vs dark wallpapers; test both. Candidate light wallpapers used in the
+  item_111 review came from github.com/iQuickDev/catppuccin-wallpapers (not in the catalogue).
+- Owner reviews: end the reply with a "Your input needed" block (what, why, how, then
+  what); one combined image; offer to open it in imv (see `.claude/claude.md`).
+- RTK rewrites `git diff`, `head`, `curl`, `docker ps`: use `rtk proxy <cmd>` when exact
+  output matters (e.g. `rtk proxy git diff --binary ... | git apply`).
+- After `flow repair ac-traceability`: `git status logics` and restore closed tasks it touched.
 
 ## Pending owner actions / decisions
-- item_108 real-network check: join a password-protected Wi-Fi from the Wi-Fi panel
-  once (nmcli `--ask` with the PSK on stdin was proven only against a fake nmcli).
-- Push both repos (nothing pushed; ~80 commits each).
-- RTK: fixed 2026-09-29. cdx's `--rtk on` only adds a prompt line; the rewrite hook was
-  added to the `corvus` and `rose` profile `settings.json` (backups `*.bak-pre-rtk`).
-  A local `rtk init` (2026-09-29 11:29) injected ~134 lines of rtk instructions into the
-  root `CLAUDE.md` and created `.rtk/filters.toml` (empty template) — uncommitted,
-  redundant with the global hook + `~/.claude/RTK.md`. Owner decides: keep, or
-  `git checkout -- CLAUDE.md && rm -r .rtk`. Do not commit it without asking.
-- Owner WIP: none in archeotech-shell (the builder work landed as `38b5167`).
-  archeotech-dotfiles has theme churn / personal files unstaged
-  (`config/.config/fish/fish_variables`, `mango/config.conf`, `fish/completions/copilot.fish`) — not ours.
+- `archeotech-live.sh promote` to get the audio fixes on the bar (main is 2 ahead).
+- item_108 real-network check: join a password-protected Wi-Fi once from the panel.
+- Push both repos (nothing pushed; ~96 commits each).
+- `rtk init` leftovers in archeotech-dotfiles (uncommitted): root `CLAUDE.md` rtk block and
+  `.rtk/filters.toml` (untrusted template; makes rtk print a warning on every command).
+  Keep, or `git checkout -- CLAUDE.md && rm -r .rtk`. Do not commit without asking.
+- Owner WIP / theme churn, not ours: `config/.config/fish/fish_variables`,
+  `config/.config/mango/config.conf`, `config/.config/fish/completions/copilot.fish`.

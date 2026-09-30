@@ -25,7 +25,8 @@ Complete reference for all tools and utilities in this Arch + MangoWC/Hyprland s
 
 **Features:**
 - GPU-accelerated
-- Catppuccin Macchiato theme
+- Colours follow the shell theme: `theme-switch.py` writes `~/.config/kitty/current-theme.conf` from the theme's official kitty file (archeotech-shell `themes/<variant>/kitty.conf`)
+- Glass: `background_opacity` 0.6 on dark themes, 0.9 on light; light themes also get `dim_opacity 0.75` and `text_fg_override_threshold 3 ratio` so dim text and pale ANSI shades stay readable (2026-09-30)
 - FiraCode Nerd Font (11pt) with ligatures
 - Image preview support
 

@@ -8,6 +8,7 @@
 > Complexity: Medium
 > Theme: Settings
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-30 11:35:47
 
 # AI Context
 - Summary: 2026-09-29 audit of the 9 Settings panes (Appearance, Shell, Display, Notifications, Connections, Audio, Plugins, Power, About): every control traced to what it drives, config keys written vs read, and settings the shell supports but Settings does not expose. Two more fake controls, one wrong-state selector, and a candidate list of missing settings for the owner to pick from.
@@ -93,6 +94,7 @@ Not worth it here: printers, users/greeter, cellular, hotspot, AI/weeb policies.
 # Decision framing
 - Product framing: Needed (which settings belong in 1.0)
 - Architecture framing: Not needed
+- 2026-09-29/30 status: owner picks became item_135 (display), item_136 (input), item_137 (clock/bar/scan roots), item_138 (settings UX: search + reset); related follow-ups item_139 (glass setting), item_140 (per-mode wallpapers). Fake Appearance scale sliders removed (3376354). Still open here (AC1): remove the fake Audio 'Remember volume on restart' toggle (WirePlumber already restores volumes), and the stale bar.clockFormat / bar.height keys (folded into item_137). The Display layout selector fix belongs to item_135.
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
