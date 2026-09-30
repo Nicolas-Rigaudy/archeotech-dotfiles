@@ -1,13 +1,14 @@
 ## item_139_glass_opacity_setting_solid_soft_glass - Glass opacity setting: solid, soft, glass
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 85%
 > Confidence: 80%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Settings
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-09-30 13:52:26
 
 # AI Context
 - Summary: A Settings > Appearance control for panel/card opacity (solid / soft / glass), per the reference shells.
@@ -50,3 +51,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_049_glass_opacity_setting_solid_soft_glass`
