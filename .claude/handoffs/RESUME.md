@@ -47,6 +47,12 @@ says where to look and what is next. Update it at the end of each session (`/wra
    Live bar still PINNED at 62c4edd: owner promotes. Next: **item_111** (light-theme
    surface recipe; owner: glass looks wrong on light themes; also AA text-on-accent),
    then item_110 waves 2-4 (type scale, spacing, elevation).
+2d. **item_111 light themes landed** (`1bfef30`, `1677793`, `9f20bf8`): designer surface
+   roles, paper cards on light glass, official kitty light themes (+ dim/contrast
+   readability), shot.sh renders with the real mango look. theme-switch.py in
+   ~/.local/bin points at main, so the next theme switch uses it; the bar needs promote.
+   Follow-ups: item_139 glass setting, item_140 per-mode wallpapers, item_141 theme
+   library research (later), tonal selected pills (text-on-accent AA on 2 light themes).
 3. Then 0.40 Design system v2 (items 110-117, 039, 130). The contrast report is the
    baseline: 63 token pairs below floor; tokyo-night-day body 2.78:1; nord
    `overlay0 == surface0` (1.00:1).

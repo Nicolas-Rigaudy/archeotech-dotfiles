@@ -1,14 +1,14 @@
 ## item_111_designed_light_themes_with_their_own_surface_recipe - Designed light themes with their own surface recipe
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 20%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Design system
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-29 17:23:35
+> Indicators reviewed: 2026-09-30 11:06:17
 
 # AI Context
 - Summary: Designed light themes with their own surface recipe. Light themes are recoloured dark themes: cards render darker and greyer than their panel, shadows sink toward black, secondary text is about 2:1 (Tokyo Night Day worst)
@@ -41,7 +41,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_048_designed_light_themes_with_their_own_surface_recipe`
 
 # Priority
 - Priority: High
@@ -49,3 +49,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_048_designed_light_themes_with_their_own_surface_recipe`
+
+# Notes
+- Task `task_048_designed_light_themes_with_their_own_surface_recipe` was finished via `logics-manager flow finish task` on 2026-09-30.

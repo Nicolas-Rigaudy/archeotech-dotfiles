@@ -8,6 +8,11 @@ description: Render the Archeotech shell headlessly and safely, never touching t
 a private runtime dir and its own D-Bus, so nothing it does reaches the live bar or
 the real config. No `HOME=` prefix is needed any more.
 
+0. **What a render looks like (2026-09-30).** The nested mango uses the owner's real
+   mango config (borders, gaps, shadows, blur, rules) with every command-capable line
+   stripped and a guard that aborts if one survives; `--theme` adds that theme's window
+   colours; `--wallpaper <path>` picks the background (default: the live one). Light
+   themes look very different on light vs dark wallpapers: test both.
 1. **Pick the tree.** `--root <dir>` renders any checkout or worktree; default is the
    repo the script lives in. When editing in a worktree, always pass `--root`.
 2. **Single render**
