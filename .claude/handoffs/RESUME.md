@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-09-30)
+# Resume here (last updated 2026-09-30, late)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -32,19 +32,26 @@ says where to look and what is next. Update it at the end of each session (`/wra
     binding loop (`7541d31`); owner confirmed on hardware after a reconnect.
   - Settings audit vs DMS / caelestia / end-4 / noctalia: item_134 (open fixes noted).
 
+- **Landed 2026-09-30 (main, NOT yet promoted; owner review pending, tasks at 90%):**
+  - item_139 / task_049 (`fc71e41`): Settings → Appearance → Style → Opacity
+    solid/soft/glass. One table `themes/glass-presets.json` feeds Appearance, kitty
+    (`theme-switch --glass <preset>`) and `contrast-check --glass` (CI). AC2 set alpha
+    floors, so light Glass is subtle (panels >= 0.94) and light Soft panels went
+    0.92 -> 0.96. Pending: owner confirms kitty follows a preset change on hardware.
+  - item_142 / task_050 (`0c52f94`): tonal selected pills on light themes (selectedFill /
+    onSelected / selectedBorder tokens; SegmentedControl, GlassButton, Connections,
+    calendar today, Official badge). tokyo-night-day exempt (contrastExempt.selectedFill).
+    Pending: owner approves the look + the exemption. Follow-up: Verified badge contrast.
+
 ## Next (pick one; the owner chooses)
-1. **item_139** glass/opacity setting (solid / soft / glass) in Settings → Appearance.
-2. **Tonal selected pills on light themes**: text on accent-coloured pills is below AA on
-   gruvbox-light (3.33) and tokyo-night-day (3.11); restyle selected pills (tinted fill +
-   dark text) rather than recolouring accents (reported, not gated, in contrast-check).
-3. **item_110 wave 2**: type scale (display/headline tiers, weights, tracking, UI/font
+1. **item_110 wave 2**: type scale (display/headline tiers, weights, tracking, UI/font
    scale setting), migrate 82 literal font sizes. Then waves 3-4 (4pt spacing, elevation +
    CI grep invariant).
-4. Settings items from the audit: item_135 display (arrangement + profiles), item_136
+2. Settings items from the audit: item_135 display (arrangement + profiles), item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
    the fake Audio "Remember volume" toggle.
-5. item_140 per-mode wallpapers; item_141 theme library research (later, low).
-6. Remaining 0.40: 112-117, 039, 130 (edit mode review), 045, 017, 091, 006/007/009.
+3. item_140 per-mode wallpapers; item_141 theme library research (later, low).
+4. Remaining 0.40: 112-117, 039, 130 (edit mode review), 045, 017, 091, 006/007/009.
 
 ## How to work
 - One item at a time with `/shell-item`; `/verify` for the checklist; `visual-verifier`
