@@ -1588,7 +1588,7 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 **Cause:** `Services/Media/Audio.qml` used one `PwObjectTracker` for `[sink, source]`. A headset switching profile adds/removes its mic node, rewriting that list; the sink could end up unbound, and an unbound `PwNode.audio` neither updates nor accepts writes. A fresh Quickshell saw the right node and volume (read-only probe `qs -p` with only `Pipewire.defaultAudioSink`), so the API itself was fine.
 
-**Fix:** one tracker per device. Workaround before the fix: SUPER+SHIFT+R. Diagnose: `wpctl get-volume @DEFAULT_AUDIO_SINK@` vs the shell's value; `pw-metadata 0 | grep default` (configured vs actual default can differ: here Headphones vs Jabra). Also fixed alongside: OSD `visible` binding loop (`7541d31`).
+**Fix:** one tracker per device. Workaround before the fix: SUPER+SHIFT+R. Diagnose: `wpctl get-volume @DEFAULT_AUDIO_SINK@` vs the shell's value; `pw-metadata 0 | grep default` (configured vs actual default can differ: here Headphones vs Jabra). Also fixed alongside: OSD `visible` binding loop (`7541d31`). Confirmed by the owner 2026-09-30: after a Jabra reconnect the OSD and bar follow the encoder and bar scroll changes the headset volume. Note: `archeotech-live.sh promote` only hot-reloads QML; PipeWire node state lives in the qs process, so a node already stuck unbound needs SUPER+SHIFT+R once.
 
 ---
 
