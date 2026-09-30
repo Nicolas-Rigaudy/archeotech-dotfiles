@@ -51,3 +51,6 @@
 - Request: `req_005_2026_09_28_audit_upgrade_program`
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
+
+# Notes
+- Owner 2026-09-30: two presets only, Solid + the base transparent look (Soft); Glass dropped (archeotech-shell f8384d9). A saved unknown preset falls back to the default. Owner test: kitty opacity switches live; windows opened under Soft keep mango's 0.85 after switching to Solid because mango 0.17.4 assigns per-window opacity only at map time (src/mango.c:3848; reload_config does not re-apply it): reopen the window.
