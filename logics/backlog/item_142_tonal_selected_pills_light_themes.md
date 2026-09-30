@@ -1,7 +1,7 @@
 ## item_142_tonal_selected_pills_light_themes - Tonal selected pills on light themes
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 90%
@@ -39,6 +39,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Owner decision 2026-09-30: keep solid accent pills on light themes; tonal pills reverted (c380d33). Accepted: selected-pill text below AA on gruvbox-light (3.33) and tokyo-night-day (3.11), reported not gated. Do not re-propose tonal pills.
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`

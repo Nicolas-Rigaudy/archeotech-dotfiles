@@ -32,16 +32,15 @@ says where to look and what is next. Update it at the end of each session (`/wra
     binding loop (`7541d31`); owner confirmed on hardware after a reconnect.
   - Settings audit vs DMS / caelestia / end-4 / noctalia: item_134 (open fixes noted).
 
-- **Landed 2026-09-30 (main, NOT yet promoted; owner review pending, tasks at 90%):**
+- **Landed 2026-09-30 (main, NOT yet promoted):**
   - item_139 / task_049 (`fc71e41`): Settings → Appearance → Style → Opacity
     solid/soft/glass. One table `themes/glass-presets.json` feeds Appearance, kitty
     (`theme-switch --glass <preset>`) and `contrast-check --glass` (CI). AC2 set alpha
     floors, so light Glass is subtle (panels >= 0.94) and light Soft panels went
     0.92 -> 0.96. Pending: owner confirms kitty follows a preset change on hardware.
-  - item_142 / task_050 (`0c52f94`): tonal selected pills on light themes (selectedFill /
-    onSelected / selectedBorder tokens; SegmentedControl, GlassButton, Connections,
-    calendar today, Official badge). tokyo-night-day exempt (contrastExempt.selectedFill).
-    Pending: owner approves the look + the exemption. Follow-up: Verified badge contrast.
+  - item_142 tonal pills: built, then REVERTED on owner preference (`c380d33`); solid
+    accent pills stay, sub-AA pill text on gruvbox-light/tokyo-night-day accepted.
+    Chain retired Obsolete; do not re-propose. Follow-up: Verified badge contrast.
 
 ## Next (pick one; the owner chooses)
 1. **item_110 wave 2**: type scale (display/headline tiers, weights, tracking, UI/font

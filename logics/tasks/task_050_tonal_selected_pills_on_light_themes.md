@@ -1,7 +1,7 @@
 ## task_050_tonal_selected_pills_on_light_themes - Tonal selected pills on light themes
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 90%
@@ -43,8 +43,12 @@
 
 # Report
 - Tokens Appearance.colors.selectedTint/selectedFill/onSelected/selectedBorder/selectedBorderWidth: light = base tinted 20% toward the accent + 1.5px accent outline + textPrimary; dark = accent + base, no change. Migrated SegmentedControl, GlassButton active (found by qml-reviewer), 8 ConnectionsPane active labels, CalendarPopup today, PluginsPane Official badge. contrast-check reads selectedTint from Appearance.qml. Deliberately left: icon-only glyphs on accent (Wi-Fi/BT popup tiles, check badges, play button, bar pills) since non-text 3:1 holds, so light themes mix tonal text pills with solid accent icon tiles. Follow-up: PluginsPane Verified badge (base on overlay0) is 1.7-3.4:1 on every theme. Pending owner: approve the look and the tokyo-night-day selectedFill exemption.
+- Owner decision 2026-09-30 after reviewing renders: keep the solid accent pills (accent fill + base text) on light themes; tonal pills reverted on archeotech-shell main (c380d33 reverts 0c52f94). Accepted consequence: text on selected pills stays below AA on gruvbox-light (3.33) and tokyo-night-day (3.11); contrast-check keeps reporting textOnAccent, ungated. Do not re-propose tonal pills.
 
 # Links
 - Request: `req_005_2026_09_28_audit_upgrade_program`
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
+
+# Notes
+- Owner decision 2026-09-30: keep solid accent pills on light themes; tonal pills reverted (c380d33). Accepted: selected-pill text below AA on gruvbox-light (3.33) and tokyo-night-day (3.11), reported not gated. Do not re-propose tonal pills.
