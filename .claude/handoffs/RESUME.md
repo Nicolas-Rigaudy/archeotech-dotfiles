@@ -53,6 +53,8 @@ says where to look and what is next. Update it at the end of each session (`/wra
    ~/.local/bin points at main, so the next theme switch uses it; the bar needs promote.
    Follow-ups: item_139 glass setting, item_140 per-mode wallpapers, item_141 theme
    library research (later), tonal selected pills (text-on-accent AA on 2 light themes).
+2e. Audio: shell volume froze on a Bluetooth headset (unbound PipeWire sink after a profile
+   switch) - fixed `31e9e7e`, plus OSD binding loop `7541d31`. Owner to confirm after promote.
 3. Then 0.40 Design system v2 (items 110-117, 039, 130). The contrast report is the
    baseline: 63 token pairs below floor; tokyo-night-day body 2.78:1; nord
    `overlay0 == surface0` (1.00:1).

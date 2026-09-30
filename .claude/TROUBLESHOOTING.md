@@ -1582,6 +1582,16 @@ WARN scene: @Modules/Shell/Sides/BarWidgetLoader.qml[26:5]: Required property wi
 
 ---
 
+### Volume stuck in the shell while keys still work (Bluetooth headset) (fixed 2026-09-30, `31e9e7e`)
+
+**Symptom:** OSD pill and bar volume frozen (e.g. 40%) on a Bluetooth headset; scrolling the bar changes the number but not what you hear, while the keyboard/rotary encoder (`wpctl set-volume @DEFAULT_AUDIO_SINK@`) changes the real volume.
+
+**Cause:** `Services/Media/Audio.qml` used one `PwObjectTracker` for `[sink, source]`. A headset switching profile adds/removes its mic node, rewriting that list; the sink could end up unbound, and an unbound `PwNode.audio` neither updates nor accepts writes. A fresh Quickshell saw the right node and volume (read-only probe `qs -p` with only `Pipewire.defaultAudioSink`), so the API itself was fine.
+
+**Fix:** one tracker per device. Workaround before the fix: SUPER+SHIFT+R. Diagnose: `wpctl get-volume @DEFAULT_AUDIO_SINK@` vs the shell's value; `pw-metadata 0 | grep default` (configured vs actual default can differ: here Headphones vs Jabra). Also fixed alongside: OSD `visible` binding loop (`7541d31`).
+
+---
+
 ### logics: `flow repair links` / `repair ac-traceability` edit docs outside the chain
 
 **Symptom:** after `flow repair links <task>`, `prod_001` was rewritten (Status → Settled, its 60-item backlog list cut to one item); `flow repair ac-traceability req_005_…` appends placeholder AC lines to every closed task of the request.
