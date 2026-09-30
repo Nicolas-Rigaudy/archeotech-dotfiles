@@ -8,8 +8,8 @@ says where to look and what is next. Update it at the end of each session (`/wra
   sequenced in `logics/roadmap/road_001_archeotech_shell.md`: 0.30 Safety net (done) →
   0.31 Correctness (done) → **0.40 Design v2 (current)** → 0.50 Utility → 0.60 Contexts →
   1.0. Personal items: `road_002`. 2026-09-28 audit: `.claude/audits/2026-09-28/`.
-- **Live bar:** pinned to `~/Projects/archeotech-shell.live` (at `9f20bf8` on 2026-09-30;
-  main is 2 commits ahead with the audio fixes). Landed commits reach the bar only via
+- **Live bar:** pinned to `~/Projects/archeotech-shell.live` (promoted by the owner to
+  current main on 2026-09-30, audio fixes included). Landed commits reach the bar only via
   `archeotech-live.sh promote` (owner runs it). `promote` only hot-reloads QML: process
   state (PipeWire nodes) needs SUPER+SHIFT+R. `theme-switch.py` in `~/.local/bin` points
   at the shell repo's MAIN checkout, so theme/kitty file changes apply on the next
@@ -60,11 +60,8 @@ says where to look and what is next. Update it at the end of each session (`/wra
 - After `flow repair ac-traceability`: `git status logics` and restore closed tasks it touched.
 
 ## Pending owner actions / decisions
-- `archeotech-live.sh promote` to get the audio fixes on the bar (main is 2 ahead).
 - item_108 real-network check: join a password-protected Wi-Fi once from the panel.
-- Push both repos (nothing pushed; ~96 commits each).
-- `rtk init` leftovers in archeotech-dotfiles (uncommitted): root `CLAUDE.md` rtk block and
-  `.rtk/filters.toml` (untrusted template; makes rtk print a warning on every command).
-  Keep, or `git checkout -- CLAUDE.md && rm -r .rtk`. Do not commit without asking.
 - Owner WIP / theme churn, not ours: `config/.config/fish/fish_variables`,
   `config/.config/mango/config.conf`, `config/.config/fish/completions/copilot.fish`.
+- (2026-09-30: both repos pushed, bar promoted with the audio fixes, `rtk init`
+  leftovers removed; RTK runs from the global hook + `~/.claude/RTK.md`.)
