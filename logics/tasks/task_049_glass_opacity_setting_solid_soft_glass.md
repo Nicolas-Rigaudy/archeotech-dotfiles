@@ -54,3 +54,4 @@
 
 # Notes
 - Owner 2026-09-30: two presets only, Solid + the base transparent look (Soft); Glass dropped (archeotech-shell f8384d9). A saved unknown preset falls back to the default. Owner test: kitty opacity switches live; windows opened under Soft keep mango's 0.85 after switching to Solid because mango 0.17.4 assigns per-window opacity only at map time (src/mango.c:3848; reload_config does not re-apply it): reopen the window.
+- 2026-10-01: preset renamed soft -> glass (archeotech-shell, owner: soft means little). kitty no longer gets mango opacity (windowrule appid:kitty 1.0/1.0, dotfiles f49e094) so Solid/Glass switch open kitty windows fully live; kitty Glass alpha 0.5 dark / 0.77 light = old 0.6/0.9 x mango 0.85. Other apps still take mango opacity at map time.

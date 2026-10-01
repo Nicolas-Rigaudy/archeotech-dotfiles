@@ -1607,4 +1607,4 @@ Same family: `flow progress task task_031_… --progress 30%` (an orchestrator) 
 ## Opacity preset: open windows keep their old transparency (2026-09-30)
 - **Symptom:** Settings → Appearance → Opacity → Solid, but a window that was already open stays see-through.
 - **Cause:** two layers. kitty's SIGUSR1 reload never re-applies `background_opacity` to open OS windows (fixed: socket-only remote control in `kitty.conf` + `kitty @ set-background-opacity --all` from theme-switch.py). mango 0.17.4 assigns `focused_opacity`/`unfocused_opacity` to a window only when it maps (`src/mango.c:3848`); `reload_config` and `setoption` affect new windows only.
-- **Fix/workaround:** reopen the window. kitty windows started before the `listen_on` line need one restart to get a socket.
+- **Fix/workaround:** kitty is exempt from mango opacity (windowrule `appid:kitty` 1.0/1.0), so it follows the preset live; other apps: reopen the window. kitty windows started before the `listen_on` line / the rule need one restart.
