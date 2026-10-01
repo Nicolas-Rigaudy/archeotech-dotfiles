@@ -95,6 +95,7 @@ Not worth it here: printers, users/greeter, cellular, hotspot, AI/weeb policies.
 - Product framing: Needed (which settings belong in 1.0)
 - Architecture framing: Not needed
 - 2026-09-29/30 status: owner picks became item_135 (display), item_136 (input), item_137 (clock/bar/scan roots), item_138 (settings UX: search + reset); related follow-ups item_139 (glass setting), item_140 (per-mode wallpapers). Fake Appearance scale sliders removed (3376354). Still open here (AC1): remove the fake Audio 'Remember volume on restart' toggle (WirePlumber already restores volumes), and the stale bar.clockFormat / bar.height keys (folded into item_137). The Display layout selector fix belongs to item_135.
+- 2026-10-01: removed Appearance > Behavior 'Restart Zen on theme change' (archeotech-shell 5a9ba75): owner says Zen theming never worked; the toggle was also fake (pane default true, service default false, so it showed ON while doing nothing). Restart machinery removed from ColorScheme. Still open: theme-switch apply_zen writes archeotech-colors.css + an @import into the Zen profile on every switch (owner to decide: fix Zen theming or drop the applier).
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
