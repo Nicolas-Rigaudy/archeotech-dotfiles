@@ -32,12 +32,14 @@ says where to look and what is next. Update it at the end of each session (`/wra
     binding loop (`7541d31`); owner confirmed on hardware after a reconnect.
   - Settings audit vs DMS / caelestia / end-4 / noctalia: item_134 (open fixes noted).
 
-- **Landed 2026-09-30 (main, NOT yet promoted):**
-  - item_139 / task_049 (`fc71e41`): Settings → Appearance → Style → Opacity
-    solid/soft/glass. One table `themes/glass-presets.json` feeds Appearance, kitty
-    (`theme-switch --glass <preset>`) and `contrast-check --glass` (CI). AC2 set alpha
-    floors, so light Glass is subtle (panels >= 0.94) and light Soft panels went
-    0.92 -> 0.96. Pending: owner confirms kitty follows a preset change on hardware.
+- **Landed 2026-09-30 (main):**
+  - item_139 / task_049 DONE (owner-confirmed 2026-10-01): Settings → Appearance → Style
+    → Opacity **Solid / Glass** (`f8384d9`, `3a1f875`). One table
+    `themes/glass-presets.json` feeds Appearance, kitty (`theme-switch --glass`, live via
+    kitty socket-only remote control) and mango window opacity, plus
+    `contrast-check --glass` in CI. kitty is exempt from mango opacity (windowrule
+    `appid:kitty`; mango fixes per-window opacity at map time, see TROUBLESHOOTING).
+    Light Glass panels are 0.96 (was 0.92) to keep gruvbox-light text AA.
   - item_142 tonal pills: built, then REVERTED on owner preference (`c380d33`); solid
     accent pills stay, sub-AA pill text on gruvbox-light/tokyo-night-day accepted.
     Chain retired Obsolete; do not re-propose. Follow-up: Verified badge contrast.

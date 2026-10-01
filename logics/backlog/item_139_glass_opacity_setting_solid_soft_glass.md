@@ -1,14 +1,14 @@
 ## item_139_glass_opacity_setting_solid_soft_glass - Glass opacity setting: solid, soft, glass
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 85%
 > Confidence: 80%
-> Progress: 90%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Settings
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-30 13:52:26
+> Indicators reviewed: 2026-10-01 10:05:14
 
 # AI Context
 - Summary: A Settings > Appearance control for panel/card opacity (solid / soft / glass), per the reference shells.
@@ -43,7 +43,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): (none yet)
+- Primary task(s): `task_049_glass_opacity_setting_solid_soft_glass`
 
 # Priority
 - Priority: Medium
@@ -51,6 +51,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_049_glass_opacity_setting_solid_soft_glass` was finished via `logics-manager flow finish task` on 2026-10-01.
 
 # Tasks
 - `task_049_glass_opacity_setting_solid_soft_glass`
