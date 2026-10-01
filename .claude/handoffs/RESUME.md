@@ -45,9 +45,9 @@ says where to look and what is next. Update it at the end of each session (`/wra
     Chain retired Obsolete; do not re-propose. Follow-up: Verified badge contrast.
 
 ## Next (pick one; the owner chooses)
-1. **item_110 wave 3**: 4pt spacing grid + wider radius scale, migrate ~226 literal
-   spacings. Then wave 4 (opacity/elevation tiers, hex-colour CI invariant). Wave 2 (type
-   scale, weight/tracking tokens, Text size setting, token-lint.py in CI) landed `668d60e`.
+1. **item_110 wave 4**: opacity + elevation tiers (29 shadow sites), hex-colour CI
+   invariant in token-lint. Waves 2 (`668d60e`, type scale + Text size) and 3 (`3517847`,
+   4pt spacing grid s1..s12, ties rounded up) landed; token-lint.py gates typography + spacing.
 2. Settings items from the audit: item_135 display (arrangement + profiles), item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
    the fake Audio "Remember volume" toggle.
