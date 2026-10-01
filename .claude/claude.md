@@ -41,6 +41,7 @@ Standing feedback the user has given (keep/extend here, not in memory):
 5. **Max 2 keystrokes** to reach any setting.
 6. **No fake toggles** — bind to real state (QML property writes), never fire-and-forget shell commands that desync.
 7. **Nothing hardcoded** — colors in one place.
+8. **Pick-one settings are selectors** — a look/mode choice (Opacity, Text size, Depth 3D/Flat) is a `ButtonGroupRow` of named options, even with two states; `ToggleRow` is only for genuine on/off behaviours ("Restart Zen on theme change"). Rows in one card are separated by the 8px / 1px `surface0` divider / 8px pattern. (Owner, 2026-10-01.)
 
 ### Git commits (hard rules)
 Format: `type[SCOPE]: description` — **subject line only, no body**.
