@@ -49,7 +49,10 @@ says where to look and what is next. Update it at the end of each session (`/wra
    `668d60e` type scale + Text size, `3517847` 4pt spacing grid, `fd13057` elevation e1-e5 +
    opacity tiers + hex invariant). `scripts/token-lint.py` (CI) now rejects raw font sizes,
    weights, tracking, off-grid spacing and hex colours outside Commons.
-   Settings items: item_135 display (arrangement + profiles), item_136
+   **item_135 display: wave 1 landed `68631af`** (in-Settings layout editor bound to real
+   wlr-randr state, apply + 15 s auto-revert; task_051 50%, owner desk test pending). Wave 2 =
+   per-monitor profiles (make/model/serial) auto-applied on hotplug, retiring monitor-apply.sh
+   layouts. Other Settings items: item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
    the fake Audio "Remember volume" toggle.
 2. item_140 per-mode wallpapers; item_141 theme library research (later, low); item_143 Zen theming retry (low; the userChrome applier and the fake Restart Zen toggle were removed 2026-10-01).
