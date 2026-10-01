@@ -45,9 +45,9 @@ says where to look and what is next. Update it at the end of each session (`/wra
     Chain retired Obsolete; do not re-propose. Follow-up: Verified badge contrast.
 
 ## Next (pick one; the owner chooses)
-1. **item_110 wave 2**: type scale (display/headline tiers, weights, tracking, UI/font
-   scale setting), migrate 82 literal font sizes. Then waves 3-4 (4pt spacing, elevation +
-   CI grep invariant).
+1. **item_110 wave 3**: 4pt spacing grid + wider radius scale, migrate ~226 literal
+   spacings. Then wave 4 (opacity/elevation tiers, hex-colour CI invariant). Wave 2 (type
+   scale, weight/tracking tokens, Text size setting, token-lint.py in CI) landed `668d60e`.
 2. Settings items from the audit: item_135 display (arrangement + profiles), item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
    the fake Audio "Remember volume" toggle.
