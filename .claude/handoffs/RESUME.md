@@ -51,7 +51,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
 2. Settings items from the audit: item_135 display (arrangement + profiles), item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
    the fake Audio "Remember volume" toggle.
-3. item_140 per-mode wallpapers; item_141 theme library research (later, low).
+3. item_140 per-mode wallpapers; item_141 theme library research (later, low); item_143 Zen theming retry (low; the userChrome applier and the fake Restart Zen toggle were removed 2026-10-01).
 4. Remaining 0.40: 112-117, 039, 130 (edit mode review), 045, 017, 091, 006/007/009.
 
 ## How to work
