@@ -45,10 +45,11 @@ says where to look and what is next. Update it at the end of each session (`/wra
     Chain retired Obsolete; do not re-propose. Follow-up: Verified badge contrast.
 
 ## Next (pick one; the owner chooses)
-1. **item_110 wave 4**: opacity + elevation tiers (29 shadow sites), hex-colour CI
-   invariant in token-lint. Waves 2 (`668d60e`, type scale + Text size) and 3 (`3517847`,
-   4pt spacing grid s1..s12, ties rounded up) landed; token-lint.py gates typography + spacing.
-2. Settings items from the audit: item_135 display (arrangement + profiles), item_136
+1. Settings items from the audit (below). item_110 is DONE (2026-10-01; waves 2-4:
+   `668d60e` type scale + Text size, `3517847` 4pt spacing grid, `fd13057` elevation e1-e5 +
+   opacity tiers + hex invariant). `scripts/token-lint.py` (CI) now rejects raw font sizes,
+   weights, tracking, off-grid spacing and hex colours outside Commons.
+   Settings items: item_135 display (arrangement + profiles), item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
    the fake Audio "Remember volume" toggle.
 3. item_140 per-mode wallpapers; item_141 theme library research (later, low); item_143 Zen theming retry (low; the userChrome applier and the fake Restart Zen toggle were removed 2026-10-01).
