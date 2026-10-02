@@ -70,7 +70,9 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `wayland-protocols` | Protocol extensions | Additional protocols |
 | `wl-clipboard` | Clipboard utilities | wl-copy, wl-paste |
 | `cliphist` | Clipboard manager | History with rofi integration |
-| `wlr-randr` | Monitor layout tool | Re-apply output positions/rotation via CLI — used by `mango-reload.sh` |
+| `wlr-randr` | Monitor layout tool | Read/apply output layout: Settings → Display editor (`wlr-randr --json`), `mango-reload.sh` |
+| `wl-gammarelay-rs` (AUR) | Night light on mango | D-Bus daemon (`rs.wl-gammarelay`); Settings → Display slider sets its Temperature live, no flash. Started on demand by the shell. Replaces wlsunset. |
+| `hyprsunset` | Night light on Hyprland | Same slider under Hyprland (`hyprctl hyprsunset temperature N`); install only if you use the Hyprland session |
 
 ---
 
