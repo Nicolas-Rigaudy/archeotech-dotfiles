@@ -58,7 +58,7 @@ Complete reference for all keybindings in the MangoWC compositor setup.
 
 | Keybind | Action | Notes |
 |---------|--------|-------|
-| `Super + `` ` | Toggle scratchpad terminal | Shows/hides a floating kitty — auto-spawned on first press |
+| `Super + `` ` | Toggle scratchpad terminal | Shows/hides a floating kitty — auto-spawned on first press. The key left of `1` (`²` on AZERTY) |
 
 The scratchpad terminal persists across tag switches. Size is 75% width × 85% height, centered on screen.
 
@@ -93,6 +93,8 @@ The scratchpad terminal persists across tag switches. Size is 75% width × 85% h
 |---------|--------|-------|
 | `Super + [1-9]` | Switch to tag N | View specific tag |
 | `Super + Shift + [1-9]` | Move window to tag N | Assign window to tag |
+
+> **Physical keys:** the number row, the scratchpad key, the group-tab (`[` `]` positions) and gap (`-` `=` positions) binds use key **codes** (`code:10`–`19`, `49`, `34/35`, `20/21`), so they sit on the same physical keys on QWERTY and AZERTY. Since mangowm 0.17.5 a keysym `bind=` resolves through the first xkb layout (fr), which made Super+7 open the scratchpad and Super+5 do nothing.
 | `Super + Tab` | Next tag | Cycle forward through tags |
 | `Super + Shift + Tab` | Previous tag | Cycle backward through tags |
 
