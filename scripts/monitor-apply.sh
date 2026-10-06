@@ -19,6 +19,20 @@
 
 set +e  # best-effort — a wlr-randr hiccup must never abort a caller mid-reload
 
+# Saved display profiles come first (archeotech-shell scripts/display-profile.py,
+# managed in Settings → Display → Profiles). Only "no profiles yet" (exit 5) or a
+# missing tool falls through to the legacy layouts below, which stay as the
+# fallback until profiles are saved. Every other outcome leaves the screens
+# alone: applied / already in place (0), no profile for these monitors (3, it
+# toasts "arrange it in Settings"), auto-apply off (4), a profile matched but
+# failed (6, it toasts why) or any error: forcing a hard-coded layout over the
+# user's own would be worse.
+PROFILE_TOOL=$(command -v display-profile.py || echo "$HOME/Projects/archeotech-shell/scripts/display-profile.py")
+if [ -x "$PROFILE_TOOL" ]; then
+    "$PROFILE_TOOL" apply
+    [ $? -eq 5 ] || exit 0
+fi
+
 CONNECTED=$(wlr-randr 2>/dev/null | awk '/^[^[:space:]]/{print $1}')
 
 HAS_HDMI=$(echo "$CONNECTED" | grep -qx "HDMI-A-1" && echo "yes" || echo "no")
