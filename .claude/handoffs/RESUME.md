@@ -49,10 +49,8 @@ says where to look and what is next. Update it at the end of each session (`/wra
    `668d60e` type scale + Text size, `3517847` 4pt spacing grid, `fd13057` elevation e1-e5 +
    opacity tiers + hex invariant). `scripts/token-lint.py` (CI) now rejects raw font sizes,
    weights, tracking, off-grid spacing and hex colours outside Commons.
-   **item_135 display: waves 1+2 landed** (layout editor, confirm dialog, themed pickers, live
-   night light `4a8193c`, profiles `8e73521` + dotfiles monitor-apply.sh). task_051 at 90%:
-   owner to re-run the shell install.sh (links display-profile.py), save Work/Laptop/Home and
-   test dock/undock; then close item_135. Other Settings items: item_136
+   item_135 display DONE 2026-10-07 (layout editor, confirm dialog, live night light, per-monitor
+   profiles auto-applied on dock/undock; owner-confirmed). Other Settings items: item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
    the fake Audio "Remember volume" toggle.
 2. item_140 per-mode wallpapers; item_141 theme library research (later, low); item_143 Zen theming retry (low; the userChrome applier and the fake Restart Zen toggle were removed 2026-10-01).

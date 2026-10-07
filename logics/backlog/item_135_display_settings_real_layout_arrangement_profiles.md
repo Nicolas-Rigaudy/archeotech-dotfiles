@@ -1,14 +1,14 @@
 ## item_135_display_settings_real_layout_arrangement_profiles - Display settings: real layout, arrangement, per-output modes and profiles
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 85%
 > Confidence: 80%
-> Progress: 90%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Display
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-10-01 16:42:23
+> Indicators reviewed: 2026-10-07 10:24:17
 
 # AI Context
 - Summary: Replace the Display pane's fire-and-forget layout selector with settings bound to the real compositor output state.
@@ -45,7 +45,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): (none yet)
+- Primary task(s): `task_051_display_settings_real_layout_arrangement_per_output_modes_and_profiles`
 
 # Priority
 - Priority: High
@@ -53,6 +53,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_051_display_settings_real_layout_arrangement_per_output_modes_and_profiles` was finished via `logics-manager flow finish task` on 2026-10-07.
 
 # Tasks
 - `task_051_display_settings_real_layout_arrangement_per_output_modes_and_profiles`
