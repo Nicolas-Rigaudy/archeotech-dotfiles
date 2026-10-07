@@ -36,6 +36,7 @@
 
 # Validation
 - archeotech-shell f8f4c4d + dotfiles 818a85c (source-optional=archeotech-input.conf after the config's own input keys; generated file git-ignored). Isolated: pane renders with 3 simulated keyboards; the conf holds only changed keys + one devicerule per configured keyboard and parses in mango with no rule errors; write+reload is one chain (atomic write, skip when unchanged, save/restore the active xkb layout around reload_config); Input is instantiated at boot so a missing conf is re-synced from config.json. qml-reviewer blockers fixed (write/reload race, layout reset, comma in identifiers) plus: only changed keys written, 'Not applied' after a settled reload, no per-poll rebuild, 900 ms debounce, dedupe by vendor:product. tests 45/45, py 13/13, golden 25/25 (settings-* updated: Input in the sidebar). Pending owner: real keyboards + whether touchpad keys apply on reload.
+- Owner test 2026-10-07: rules written + sourced but matched=false on all keyboards, pane said 'mango rejected the rule'. Root cause from mango 0.17.5 source (src/input/keyboard.c keyboard_create/find_device_rule, src/config/parse_config.c reset_option): device rules are applied only when a device is created; reload_config re-applies pointer settings (reapply_pointer) but not device rules. Matching is exact strcmp on name or vendor:product:name (our identifiers are right). Fixed the misleading status (archeotech-shell 4dee586): 'Saved: replug' / built-in 'next login'.
 
 # Report
 - Not started.
