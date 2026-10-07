@@ -1,13 +1,14 @@
 ## item_136_input_settings_keyboard_layout_repeat_touchpad - Input settings pane: keyboard layout, repeat, touchpad
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 85%
 > Confidence: 80%
-> Progress: 0%
+> Progress: 85%
 > Complexity: Medium
 > Theme: Settings
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-07 10:58:56
 
 # AI Context
 - Summary: New Input pane for keyboard and pointer settings, applied through the compositor.
@@ -50,3 +51,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_052_input_settings_pane_keyboard_layout_repeat_touchpad`
