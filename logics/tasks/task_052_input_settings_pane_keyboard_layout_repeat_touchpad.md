@@ -48,3 +48,4 @@
 
 # Notes
 - Owner 2026-10-07: layouts follow the KEYBOARD, not the display profile (mango 0.17.5 devicerule gives a keyboard its own keymap). Verified in a nested mango (shot.sh --mango-line): a rule takes ONE layout ('kb_layout:us,fr' -> 'Invalid device rule format: fr'), colons in values are fine, the keyword is 'devicerule' (docs say device_rule). Owner chose: Ajazz '3141:65021:2.4G Dongle' = us(altgr-intl) (accents via AltGr), built-in '1:1:AT Translated Set 2 keyboard' = fr; 'Default' keyboards keep the global fr,us + Alt+Shift.
+- 2026-10-07: owner finds the replug step annoying. Upstream mango main already re-applies device rules on reload (src/config/reapply.c reapply_keyboard); not released yet (latest 0.17.5, 2026-10-01). Decision: no git build (main restructured config loading); wait for the next release, then remove the replug/next-login status in InputPane._status(). Day-to-day unaffected: rules apply at login and on dock (hub plug adds the keyboard).
