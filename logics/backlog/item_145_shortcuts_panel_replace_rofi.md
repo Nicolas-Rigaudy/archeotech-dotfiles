@@ -1,10 +1,10 @@
 ## item_145_shortcuts_panel_replace_rofi - Shortcuts panel: themed searchable keybind sheet replacing the rofi menu
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 85%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Shell
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -50,6 +50,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_053_shortcuts_panel_themed_searchable_keybind_sheet_replacing_the_rofi_menu` was finished via `logics-manager flow finish task` on 2026-10-12.
 
 # Tasks
 - `task_053_shortcuts_panel_themed_searchable_keybind_sheet_replacing_the_rofi_menu`
