@@ -50,6 +50,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
    opacity tiers + hex invariant). `scripts/token-lint.py` (CI) now rejects raw font sizes,
    weights, tracking, off-grid spacing and hex colours outside Commons.
    item_136 input: landed (`f8f4c4d`, `4dee586`; task_052 85%). Pending owner: Ajazz replug test, built-in after next login, touchpad live-apply check. Follow-up: when mango > 0.17.5 ships (upstream reapply_keyboard re-applies device rules on reload), remove the 'replug / next login' status in InputPane._status().
+   New (owner 2026-10-12): item_144 keymap helper PLUGIN (search by letter, layer diagram, click to copy, Super+Shift+K) and item_145 themed Super+K shortcuts panel replacing the rofi show-keybinds.sh.
    item_135 display DONE 2026-10-07 (layout editor, confirm dialog, live night light, per-monitor
    profiles auto-applied on dock/undock; owner-confirmed). Other Settings items: item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
