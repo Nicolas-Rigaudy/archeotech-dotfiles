@@ -256,7 +256,7 @@ Portrait monitors (e.g. DP-3) get their own correctly-sized composite automatica
 | `Super + L` | Lock screen | swaylock-launch.sh — shows current wallpaper as background |
 | `Super + M` | Logout (quit compositor) | mmsg -q — exits MangoWC cleanly, returns to SDDM |
 | Waybar power button | Power menu | wlogout — Catppuccin themed, icon-only buttons, full overlay |
-| `Super + K` | Show keybinds | Display this keybind reference |
+| `Super + K` | Show keybinds | Shell shortcuts panel: every bind in the mango config, grouped and searchable (Hyprland still uses the rofi `show-keybinds.sh`) |
 | `Super + ;` | Toggle notification panel | Open/close swaync notification center |
 | `Super + ,` | Open control center | Quickshell panel — display, audio, network, power, etc. |
 | `Super + Shift + E` | Toggle shell edit mode | Visual builder — click-to-assign bar/strip/holder widgets per screen edge |
