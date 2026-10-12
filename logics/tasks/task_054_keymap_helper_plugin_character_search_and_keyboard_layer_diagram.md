@@ -50,6 +50,7 @@
 - Finished on 2026-10-12.
 - Linked backlog item(s): `item_144_keymap_helper_plugin`
 - Related request(s): `req_005_2026_09_28_audit_upgrade_program`
+- Follow-up 2026-10-12 (owner: shortcuts don't show the modifier keys): diagram now has the edge keys (Backspace, Tab, Caps, Enter, both Shifts) and a bottom row (Ctrl, Super, Alt, Space, AltGr, Ctrl), ISO/ANSI shaped, lit by hovered shortcuts and character combos (shell d4ebbc6). tests 58/58, golden 25/25.
 
 # Links
 - Request: `req_005_2026_09_28_audit_upgrade_program`
