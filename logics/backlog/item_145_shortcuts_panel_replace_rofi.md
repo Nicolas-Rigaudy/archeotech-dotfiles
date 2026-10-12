@@ -1,13 +1,14 @@
 ## item_145_shortcuts_panel_replace_rofi - Shortcuts panel: themed searchable keybind sheet replacing the rofi menu
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 85%
 > Complexity: Medium
 > Theme: Shell
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-12 14:20:03
 
 # AI Context
 - Summary: Replace the Super+K rofi keybind sheet (dotfiles show-keybinds.sh) with a shell panel in the Archeotech design language: searchable, grouped, built from the live mango config.
@@ -49,3 +50,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_053_shortcuts_panel_themed_searchable_keybind_sheet_replacing_the_rofi_menu`
