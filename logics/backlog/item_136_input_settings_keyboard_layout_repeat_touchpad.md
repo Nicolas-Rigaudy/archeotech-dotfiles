@@ -1,14 +1,14 @@
 ## item_136_input_settings_keyboard_layout_repeat_touchpad - Input settings pane: keyboard layout, repeat, touchpad
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 85%
 > Confidence: 80%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Settings
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-10-07 10:58:56
+> Indicators reviewed: 2026-10-12 14:05:12
 
 # AI Context
 - Summary: New Input pane for keyboard and pointer settings, applied through the compositor.
@@ -43,7 +43,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): (none yet)
+- Primary task(s): `task_052_input_settings_pane_keyboard_layout_repeat_touchpad`
 
 # Priority
 - Priority: Medium
@@ -51,6 +51,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_052_input_settings_pane_keyboard_layout_repeat_touchpad` was finished via `logics-manager flow finish task` on 2026-10-12.
 
 # Tasks
 - `task_052_input_settings_pane_keyboard_layout_repeat_touchpad`
