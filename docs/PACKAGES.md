@@ -68,7 +68,8 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 |---------|---------|-------|
 | `wayland` | Wayland protocol | Core Wayland libraries |
 | `wayland-protocols` | Protocol extensions | Additional protocols |
-| `wl-clipboard` | Clipboard utilities | wl-copy, wl-paste |
+| `wl-clipboard` | Clipboard utilities | wl-copy, wl-paste; the Keyboard panel copies characters with `wl-copy` |
+| `libxkbcommon` | XKB keymaps | Provides `xkbcli`: the Keyboard panel (Super+K / Super+Shift+K) compiles each keyboard's real layout with it (archeotech-shell `scripts/keymap-data.py`) |
 | `cliphist` | Clipboard manager | History with rofi integration |
 | `wlr-randr` | Monitor layout tool | Read/apply output layout: Settings → Display editor (`wlr-randr --json`), `mango-reload.sh` |
 | `wl-gammarelay-rs` (AUR) | Night light on mango | D-Bus daemon (`rs.wl-gammarelay`); Settings → Display slider sets its Temperature live, no flash. Started on demand by the shell. Replaces wlsunset. |

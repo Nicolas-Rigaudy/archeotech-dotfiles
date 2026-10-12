@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-09-30, late)
+# Resume here (last updated 2026-10-12, end of session)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -8,8 +8,10 @@ says where to look and what is next. Update it at the end of each session (`/wra
   sequenced in `logics/roadmap/road_001_archeotech_shell.md`: 0.30 Safety net (done) →
   0.31 Correctness (done) → **0.40 Design v2 (current)** → 0.50 Utility → 0.60 Contexts →
   1.0. Personal items: `road_002`. 2026-09-28 audit: `.claude/audits/2026-09-28/`.
-- **Live bar:** pinned to `~/Projects/archeotech-shell.live` (promoted by the owner to
-  current main on 2026-09-30, audio fixes included). Landed commits reach the bar only via
+- **Live bar (2026-10-12):** FOLLOWING the dev checkout (`archeotech-live.sh status`):
+  every commit/save on archeotech-shell main hot-reloads onto the owner's bar, so only
+  land verified work on main. (The `.live` worktree still exists for `back`/`promote`;
+  the owner switches modes, never us.) When pinned, landed commits reach the bar only via
   `archeotech-live.sh promote` (owner runs it). `promote` only hot-reloads QML: process
   state (PipeWire nodes) needs SUPER+SHIFT+R. `theme-switch.py` in `~/.local/bin` points
   at the shell repo's MAIN checkout, so theme/kitty file changes apply on the next
@@ -50,7 +52,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
    opacity tiers + hex invariant). `scripts/token-lint.py` (CI) now rejects raw font sizes,
    weights, tracking, off-grid spacing and hex colours outside Commons.
    item_136 input DONE 2026-10-12 (per-keyboard layouts, repeat, touchpad; owner-confirmed). Follow-up: when mango > 0.17.5 ships (upstream reapply_keyboard re-applies device rules on reload), remove the 'replug / next login' status in InputPane._status().
-   item_145 + item_144 DONE 2026-10-12 (owner approved): one core Keyboard panel (shell cfdf2b0; id `keybinds`, `Modules/Shell/Panels/Content/KeybindsPanel.qml` + `Keyboard/`): Super+K = Shortcuts tab (mango binds, keys labelled for the picked keyboard), Super+Shift+K = Characters tab (AltGr/dead-key combos, one line per é | É), shared keyboard picker + diagram; data `scripts/keymap-data.py` (xkbcli + Compose).
+   item_145 + item_144 DONE 2026-10-12 (owner approved, copy confirmed; adr_034): one core Keyboard panel (shell cfdf2b0 → 2af2dcf header → d4ebbc6 modifier keys; id `keybinds`, `Modules/Shell/Panels/Content/KeybindsPanel.qml` + `Keyboard/`): Super+K = Shortcuts tab (mango binds, keys labelled for the picked keyboard), Super+Shift+K = Characters tab (AltGr/dead-key combos, one line per é | É), keyboard dropdown on the diagram, which lights the hovered combo incl. modifiers; data `scripts/keymap-data.py` (xkbcli + Compose). Generic: `ipc call panel toggle <id>`, plugin manifest `panel.side`, `shot.sh --state panel:<id>`. Owner UI rules for panels now in `.claude/claude.md`.
    item_135 display DONE 2026-10-07 (layout editor, confirm dialog, live night light, per-monitor
    profiles auto-applied on dock/undock; owner-confirmed). Other Settings items: item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove
@@ -73,7 +75,12 @@ says where to look and what is next. Update it at the end of each session (`/wra
 
 ## Pending owner actions / decisions
 - item_108 real-network check: join a password-protected Wi-Fi once from the panel.
-- Owner WIP / theme churn, not ours: `config/.config/fish/fish_variables`,
-  `config/.config/mango/config.conf`, `config/.config/fish/completions/copilot.fish`.
+- Owner WIP / theme churn, not ours (leave unstaged): `config/.config/fish/fish_variables`,
+  `config/.config/kitty/current-theme.conf`, `config/.config/fish/completions/copilot.fish`,
+  and 3 recolour lines in `config/.config/mango/config.conf` (jump_label / group_bar colours):
+  commit our own hunks in that file via `git update-index --cacheinfo` + a plain
+  `git commit` (NOT `git commit -- <path>`, which commits the working tree).
+- Unpushed (owner pushes): archeotech-shell and archeotech-dotfiles main are ahead of
+  origin (2026-10-12 session).
 - (2026-09-30: both repos pushed, bar promoted with the audio fixes, `rtk init`
   leftovers removed; RTK runs from the global hook + `~/.claude/RTK.md`.)

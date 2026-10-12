@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: claude
-> Indicators reviewed: 2026-10-12 15:18:42
+> Indicators reviewed: 2026-10-12 17:01:55
 
 # AI Context
 - Summary: Bundled `keymap` plugin module: per-keyboard character search, 4-level keyboard diagram, click to copy; data from real xkb keymaps + the Compose table via modules/keymap/keymap-data.py.
@@ -43,6 +43,7 @@
 - Shell cfdf2b0: tests/run.sh 58/58, tests/py 24 OK, token-lint 0, golden.sh 25/25 (editmode-* updated), qml-reviewer findings applied (tab switch via IPC resets search, header elide, min list height, memoised parse, number-row-only collapse); isolated renders: left strip (owner config) Shortcuts on the AZERTY (Super & … ç, & key lit) and Characters 'e', bottom placement.
 - Finish workflow executed on 2026-10-12.
 - Linked backlog/request close verification passed.
+- Owner confirmed 2026-10-12: click-to-copy works with the real clipboard.
 
 # Report
 - Shell dca04bc: modules/keymap (module.json, Keymap.qml, keymap-data.py), panel IPC target, Strip fallback for plugin panels + manifest panel.side, shot.sh --state panel:<id>. Dotfiles: Super+Shift+K bound. Pending: owner check on the live bar (AC2 click-to-copy needs a real clipboard).
