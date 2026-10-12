@@ -50,7 +50,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
    opacity tiers + hex invariant). `scripts/token-lint.py` (CI) now rejects raw font sizes,
    weights, tracking, off-grid spacing and hex colours outside Commons.
    item_136 input DONE 2026-10-12 (per-keyboard layouts, repeat, touchpad; owner-confirmed). Follow-up: when mango > 0.17.5 ships (upstream reapply_keyboard re-applies device rules on reload), remove the 'replug / next login' status in InputPane._status().
-   item_145 DONE + item_144 IN REVIEW 2026-10-12: one core Keyboard panel (shell cfdf2b0; id `keybinds`, `Modules/Shell/Panels/Content/KeybindsPanel.qml` + `Keyboard/`): Super+K = Shortcuts tab (mango binds, keys labelled for the picked keyboard), Super+Shift+K = Characters tab (AltGr/dead-key combos, one line per é | É), shared keyboard picker + diagram; data `scripts/keymap-data.py` (xkbcli + Compose). Pending: owner check on the live bar, then close task_054/item_144.
+   item_145 + item_144 DONE 2026-10-12 (owner approved): one core Keyboard panel (shell cfdf2b0; id `keybinds`, `Modules/Shell/Panels/Content/KeybindsPanel.qml` + `Keyboard/`): Super+K = Shortcuts tab (mango binds, keys labelled for the picked keyboard), Super+Shift+K = Characters tab (AltGr/dead-key combos, one line per é | É), shared keyboard picker + diagram; data `scripts/keymap-data.py` (xkbcli + Compose).
    item_135 display DONE 2026-10-07 (layout editor, confirm dialog, live night light, per-monitor
    profiles auto-applied on dock/undock; owner-confirmed). Other Settings items: item_136
    input, item_137 clock/bar/scan roots, item_138 search + reset; item_134 leftover: remove

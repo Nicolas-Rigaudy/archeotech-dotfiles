@@ -1,10 +1,10 @@
 ## item_144_keymap_helper_plugin - Keymap helper plugin: character search and keyboard layer diagram
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 90%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Input
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -54,6 +54,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_054_keymap_helper_plugin_character_search_and_keyboard_layer_diagram` was finished via `logics-manager flow finish task` on 2026-10-12.
 
 # Tasks
 - `task_054_keymap_helper_plugin_character_search_and_keyboard_layer_diagram`
