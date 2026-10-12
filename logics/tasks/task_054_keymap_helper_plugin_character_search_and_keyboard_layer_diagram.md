@@ -52,3 +52,4 @@
 
 # Notes
 - Owner 2026-10-12: results as one line per letter form (é | É) grouped by letter, read top to bottom (cards and 2-column grid rejected); keymap merged into the Super+K panel as one core Keyboard panel (tabs Shortcuts | Characters, shared keyboard picker + diagram), shortcuts keyed to the selected keyboard's labels (Super+1 vs Super+&). The plugin was removed; panel id stays keybinds (owner's left-strip icon).
+- Owner 2026-10-12: decluttered header (shell 2af2dcf): one row = segmented Shortcuts|Characters + wide search (count in the hint, 'copied' notice inside the field), keyboard picker moved to a dropdown in the diagram header next to the legend, title/status line and close button dropped (Esc / click outside), one muted key-hints footer (errors show there). Gates: tests 58/58, token-lint 0, golden 25/25.
