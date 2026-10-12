@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 85%
+> Progress: 95%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -38,6 +38,7 @@
 - archeotech-shell f8f4c4d + dotfiles 818a85c (source-optional=archeotech-input.conf after the config's own input keys; generated file git-ignored). Isolated: pane renders with 3 simulated keyboards; the conf holds only changed keys + one devicerule per configured keyboard and parses in mango with no rule errors; write+reload is one chain (atomic write, skip when unchanged, save/restore the active xkb layout around reload_config); Input is instantiated at boot so a missing conf is re-synced from config.json. qml-reviewer blockers fixed (write/reload race, layout reset, comma in identifiers) plus: only changed keys written, 'Not applied' after a settled reload, no per-poll rebuild, 900 ms debounce, dedupe by vendor:product. tests 45/45, py 13/13, golden 25/25 (settings-* updated: Input in the sidebar). Pending owner: real keyboards + whether touchpad keys apply on reload.
 - Owner test 2026-10-07: rules written + sourced but matched=false on all keyboards, pane said 'mango rejected the rule'. Root cause from mango 0.17.5 source (src/input/keyboard.c keyboard_create/find_device_rule, src/config/parse_config.c reset_option): device rules are applied only when a device is created; reload_config re-applies pointer settings (reapply_pointer) but not device rules. Matching is exact strcmp on name or vendor:product:name (our identifiers are right). Fixed the misleading status (archeotech-shell 4dee586): 'Saved: replug' / built-in 'next login'.
 - 2026-10-12 owner: no rule applied even after re-login; headphones + mouse listed as keyboards. Root cause: mango 0.17.5 resolves a bare relative source path against its working directory (only ./ and ~ are config/home relative; upstream 0.17.5 parse_config.c), so source-optional=archeotech-input.conf loaded nothing, silently. Proven with the new reviewed shot.sh --mango-include (bogus rule reported only with the ~ form; guard still refuses an exec-once include). Fixed: dotfiles 716f157 (~ path); archeotech-shell 1f37cc0 (letter-key filter from /proc, 'Not a keyboard' hide + Show hidden, --mango-include). Incident the same day: an edited scratch copy of shot.sh escaped isolation (visible nested mango on the owner's desktop); no files changed, stale socket removed, rule recorded in .claude/claude.md (99c83b7).
+- Owner confirmed 2026-10-12 after re-login: built-in = AZERTY, Ajazz = QWERTY intl (mmsg: both matched=true). The Ajazz dongle exposes two keyboard interfaces whose name varies ('2.4G Dongle' / '2.4G Dongle Keyboard'); archeotech-shell 3658d3b keys keyboards by vendor:product, writes the rule for every interface (remembered in input.keyboardNodes so rules survive unplug), migrates the old per-interface keys; verified in isolation with the owner's real mmsg + /proc snapshots. Cheat sheet docs/KEYBOARD-US-INTL.md (46036d9). Pending: owner confirms touchpad toggles apply live (source: reapply_pointer on reload).
 
 # Report
 - Not started.
