@@ -56,7 +56,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
    item_135 display DONE 2026-10-07 (layout editor, confirm dialog, live night light, per-monitor
    profiles auto-applied on dock/undock; owner-confirmed). Remaining Settings item:
    item_138 search + reset. item_134 CLOSED 2026-10-12 (fake controls already gone, b0db0b5).
-   item_137 DONE 2026-10-12 (shell aec377e): ONE global clock setting (config clock.format /
+   item_137 DONE 2026-10-12, owner-confirmed (shell aec377e): ONE global clock setting (config clock.format /
    clock.seconds / clock.date, Settings > Shell > Clock) for bar, dashboard and notification
    times (per-widget clock schema removed, owner pick); bar.modules.* show/hide keys dropped
    (Edit Layout decides, owner pick); Settings > Shell > Dashboard . Project folders edits

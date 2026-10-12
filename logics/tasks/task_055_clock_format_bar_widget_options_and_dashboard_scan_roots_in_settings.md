@@ -58,3 +58,6 @@
 
 # AC Traceability
 - request-AC2 -> This task. Proof: archeotech-shell aec377e; clock format, project folders editable in Settings and applied live (shot.sh renders), stale config keys dropped on load (tst_configlogic dropKeys).
+
+# Notes
+- 2026-10-12: owner confirmed on the live bar (clock format, date, project folders all work).
