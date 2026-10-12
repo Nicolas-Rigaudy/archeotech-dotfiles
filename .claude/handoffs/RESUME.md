@@ -54,9 +54,13 @@ says where to look and what is next. Update it at the end of each session (`/wra
    item_136 input DONE 2026-10-12 (per-keyboard layouts, repeat, touchpad; owner-confirmed). Follow-up: when mango > 0.17.5 ships (upstream reapply_keyboard re-applies device rules on reload), remove the 'replug / next login' status in InputPane._status().
    item_145 + item_144 DONE 2026-10-12 (owner approved, copy confirmed; adr_034): one core Keyboard panel (shell cfdf2b0 → 2af2dcf header → d4ebbc6 modifier keys; id `keybinds`, `Modules/Shell/Panels/Content/KeybindsPanel.qml` + `Keyboard/`): Super+K = Shortcuts tab (mango binds, keys labelled for the picked keyboard), Super+Shift+K = Characters tab (AltGr/dead-key combos, one line per é | É), keyboard dropdown on the diagram, which lights the hovered combo incl. modifiers; data `scripts/keymap-data.py` (xkbcli + Compose). Generic: `ipc call panel toggle <id>`, plugin manifest `panel.side`, `shot.sh --state panel:<id>`. Owner UI rules for panels now in `.claude/claude.md`.
    item_135 display DONE 2026-10-07 (layout editor, confirm dialog, live night light, per-monitor
-   profiles auto-applied on dock/undock; owner-confirmed). Other Settings items:
-   item_137 clock/bar/scan roots (+ drop stale bar.clockFormat/bar.height), item_138
-   search + reset. item_134 CLOSED 2026-10-12 (all fake controls already gone, b0db0b5).
+   profiles auto-applied on dock/undock; owner-confirmed). Remaining Settings item:
+   item_138 search + reset. item_134 CLOSED 2026-10-12 (fake controls already gone, b0db0b5).
+   item_137 DONE 2026-10-12 (shell aec377e): ONE global clock setting (config clock.format /
+   clock.seconds / clock.date, Settings > Shell > Clock) for bar, dashboard and notification
+   times (per-widget clock schema removed, owner pick); bar.modules.* show/hide keys dropped
+   (Edit Layout decides, owner pick); Settings > Shell > Dashboard . Project folders edits
+   dashboard.scanRoots; Config drops obsolete keys on load (ConfigLogic.OBSOLETE_KEYS).
 2. item_140 per-mode wallpapers; item_141 theme library research (later, low); item_143 Zen theming retry (low; the userChrome applier and the fake Restart Zen toggle were removed 2026-10-01).
 3. Remaining 0.40: 112-117, 039, 130 (edit mode review), 045, 017, 091, 006/007/009.
 

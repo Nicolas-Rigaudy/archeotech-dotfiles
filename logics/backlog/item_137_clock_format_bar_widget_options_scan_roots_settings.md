@@ -1,13 +1,14 @@
 ## item_137_clock_format_bar_widget_options_scan_roots_settings - Clock format, bar widget options and dashboard scan roots in Settings
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 85%
 > Confidence: 80%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Settings
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-12 17:22:22
 
 # AI Context
 - Summary: Expose settings that today need a config.json hand-edit or are hardcoded.
@@ -44,7 +45,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): (none yet)
+- Primary task(s): `task_055_clock_format_bar_widget_options_and_dashboard_scan_roots_in_settings`
 
 # Priority
 - Priority: Medium
@@ -52,3 +53,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_055_clock_format_bar_widget_options_and_dashboard_scan_roots_in_settings` was finished via `logics-manager flow finish task` on 2026-10-12.
+
+# Tasks
+- `task_055_clock_format_bar_widget_options_and_dashboard_scan_roots_in_settings`
