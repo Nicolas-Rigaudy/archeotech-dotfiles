@@ -1,13 +1,14 @@
 ## item_144_keymap_helper_plugin - Keymap helper plugin: character search and keyboard layer diagram
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Input
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-12 15:18:42
 
 # AI Context
 - Summary: An archeotech-shell plugin (module) that answers "how do I type X" for the keyboard in use: search by character or base letter, a keyboard diagram with Shift/AltGr layers, click to copy. Generic for any xkb layout.
@@ -53,3 +54,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_054_keymap_helper_plugin_character_search_and_keyboard_layer_diagram`

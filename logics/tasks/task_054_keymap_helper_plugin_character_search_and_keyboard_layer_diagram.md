@@ -1,0 +1,50 @@
+## task_054_keymap_helper_plugin_character_search_and_keyboard_layer_diagram - Keymap helper plugin: character search and keyboard layer diagram
+> From version: 1.0.0
+> Schema version: 1.0
+> Status: In progress
+> Understanding: 90%
+> Confidence: 85%
+> Progress: 90%
+> Complexity: Medium
+> Theme: Implementation delivery
+> Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
+> Owner: claude
+> Indicators reviewed: 2026-10-12 15:18:42
+
+# AI Context
+- Summary: Bundled `keymap` plugin module: per-keyboard character search, 4-level keyboard diagram, click to copy; data from real xkb keymaps + the Compose table via modules/keymap/keymap-data.py.
+- Keywords: keymap, helper, plugin, character, search, keyboard, layer, diagram
+- Use when: changing the keymap plugin, its data script, or how plugin panels open from a keybind (`ipc call panel toggle`).
+- Skip when: per-keyboard layout settings (item_136) or the compositor shortcuts sheet (item_145).
+
+# Definition of Done (DoD)
+- [ ] The backlog scope is implemented.
+- [ ] Acceptance criteria are covered.
+- [ ] Validation passes.
+- [ ] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
+
+# Backlog
+- `item_144_keymap_helper_plugin`
+
+# Acceptance criteria
+- AC1: Searching "e" on the Ajazz (us altgr-intl) lists é è ê ë and their capitals with the exact combos from the keymap and Compose tables.
+- AC2: The diagram shows the AltGr layer of the selected keyboard's real layout, and clicking a character copies it.
+
+# Plan
+- [x] `modules/keymap/keymap-data.py` (+ `tests/py/test_keymap_data.py`): keyboards from Settings → Input + global xkb layouts, xkbcli keymaps, Compose dead-key sequences, combos per character.
+- [x] `Keymap.qml`: keyboard pills, search (char / letter / name), result tiles with combos, keyboard diagram, wl-copy.
+- [x] Shell: `panel` IPC target (any panel id), Strip fallback for plugin panels + manifest `panel.side`; shot.sh `--state panel:<id>`.
+- [ ] Owner check on the live bar; dotfiles Super+Shift+K → `qs -c archeotech ipc call panel toggle plugin:keymap`.
+- [ ] Use `python3 -m logics_manager flow progress task task_054_keymap_helper_plugin_character_search_and_keyboard_layer_diagram.md --progress <n>%` during multi-wave work.
+- [ ] Run `python3 -m logics_manager flow finish task task_054_keymap_helper_plugin_character_search_and_keyboard_layer_diagram.md` after implementation.
+
+# Validation
+- python3 -m unittest discover -s tests/py: 23 OK (test_keymap_data 10 cases: us altgr-intl e family exact combos (AC1), fr dead-key base level, ISO by layout id, typed key bodies, keyboards from Settings > Input); tests/run.sh 57/57; golden.sh 25/25 after editmode-* updated for the new Plugins tile; qml-reviewer: no blocking, should-fixes applied; isolated renders 1920x1200: bottom panel, vertical left strip, fr AZERTY board, us-intl search 'e' with keys lit.
+
+# Report
+- Shell dca04bc: modules/keymap (module.json, Keymap.qml, keymap-data.py), panel IPC target, Strip fallback for plugin panels + manifest panel.side, shot.sh --state panel:<id>. Dotfiles: Super+Shift+K bound. Pending: owner check on the live bar (AC2 click-to-copy needs a real clipboard).
+
+# Links
+- Request: `req_005_2026_09_28_audit_upgrade_program`
+- Product brief(s): (none yet)
+- Architecture decision(s): (none yet)
