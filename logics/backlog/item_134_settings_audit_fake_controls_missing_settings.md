@@ -1,10 +1,10 @@
 ## item_134_settings_audit_fake_controls_missing_settings - Settings audit: fake controls, missing settings, per-pane gaps
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Settings
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -97,6 +97,7 @@ Not worth it here: printers, users/greeter, cellular, hotspot, AI/weeb policies.
 - 2026-09-29/30 status: owner picks became item_135 (display), item_136 (input), item_137 (clock/bar/scan roots), item_138 (settings UX: search + reset); related follow-ups item_139 (glass setting), item_140 (per-mode wallpapers). Fake Appearance scale sliders removed (3376354). Still open here (AC1): remove the fake Audio 'Remember volume on restart' toggle (WirePlumber already restores volumes), and the stale bar.clockFormat / bar.height keys (folded into item_137). The Display layout selector fix belongs to item_135.
 - 2026-10-01: removed Appearance > Behavior 'Restart Zen on theme change' (archeotech-shell 5a9ba75): owner says Zen theming never worked; the toggle was also fake (pane default true, service default false, so it showed ON while doing nothing). Restart machinery removed from ColorScheme. Still open: theme-switch apply_zen writes archeotech-colors.css + an @import into the Zen profile on every switch (owner to decide: fix Zen theming or drop the applier).
 - 2026-10-07: removed the fake Audio 'Remember volume on restart' toggle (archeotech-shell b0db0b5; nothing read audio.rememberVolume, WirePlumber restores volumes). With the Zen restart toggle (5a9ba75) and the Display layout selector (item_135) gone, the audit's fake controls are all fixed.
+- 2026-10-12: closed. AC1 met: fake controls removed (3376354 scale sliders, 5a9ba75 Zen restart, b0db0b5 remember volume) and the Display layout selector replaced by item_135; stale bar.clockFormat/bar.height keys owned by item_137. AC2 met: owner picks are item_135-140. The Zen applier decision moved to item_143.
 
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
