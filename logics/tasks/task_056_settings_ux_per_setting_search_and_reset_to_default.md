@@ -62,3 +62,4 @@
 
 # Notes
 - 2026-10-13: owner tested on the live bar: search + reset work; the stock Qt tooltip on the ↺ was ugly. Owner picked a shell-styled tooltip, used everywhere: Commons/Primitives/Tooltip.qml (glass card, e2 shadow) now backs the ↺ hint and the Wi-Fi Auto-join hint; tests/py/test_tooltips.py rejects stock ToolTip. Same commit fixes Opacity showing ↺ when an explicit 'glass' equals the default (compare effectiveGlassPreset to glassDefault). archeotech-shell ddc94b7.
+- 2026-10-13: owner found the first tooltip flat/opaque; rebuilt on the cards' MetalSurface material + glass rim + e3 shadow (steel plate under Grimdark), owner approved from dark/light/grimdark renders. archeotech-shell 072af41.
