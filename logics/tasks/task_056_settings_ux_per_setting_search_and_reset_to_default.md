@@ -59,3 +59,6 @@
 
 # AC Traceability
 - request-AC2 -> This task. Proof: archeotech-shell 1453d16; 'toast' lists the row and selecting it scrolls to and pulses it; changed rows show ↺ and reset restores the default live (shot.sh setting:<key> renders, PROBE reset burst, tst_settingssearch, test_settings_search).
+
+# Notes
+- 2026-10-13: owner tested on the live bar: search + reset work; the stock Qt tooltip on the ↺ was ugly. Owner picked a shell-styled tooltip, used everywhere: Commons/Primitives/Tooltip.qml (glass card, e2 shadow) now backs the ↺ hint and the Wi-Fi Auto-join hint; tests/py/test_tooltips.py rejects stock ToolTip. Same commit fixes Opacity showing ↺ when an explicit 'glass' equals the default (compare effectiveGlassPreset to glassDefault). archeotech-shell ddc94b7.
