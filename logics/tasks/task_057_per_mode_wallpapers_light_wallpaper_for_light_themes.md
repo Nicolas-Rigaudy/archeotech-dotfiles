@@ -48,3 +48,6 @@
 - Request: `req_005_2026_09_28_audit_upgrade_program`
 - Product brief(s): (none yet)
 - Architecture decision(s): (none yet)
+
+# Notes
+- 2026-10-14: owner picked all 16 light candidates (86a2e2c) and 13 dark (f13a650: #17-23, 25-28, 30, 31) from the sourced set; wallpapers/CREDITS.md carries author/licence/source, 4 marked personal use only (unknown licence). Grimdark/hud/angular wallpapers: owner wants custom ones found later (not this item). Pending: owner check of per-mode switching on the live bar.
