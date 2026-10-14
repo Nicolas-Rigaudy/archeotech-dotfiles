@@ -1,14 +1,14 @@
 ## item_140_per_mode_wallpapers_light_and_dark - Per-mode wallpapers: light wallpaper for light themes
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 85%
 > Confidence: 80%
-> Progress: 80%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Theme
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-10-14 16:02:43
+> Indicators reviewed: 2026-10-14 17:20:50
 
 # AI Context
 - Summary: Pair each mode with its own wallpaper so light themes sit on a light wallpaper and dark themes on a dark one.
@@ -44,7 +44,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): (none yet)
+- Primary task(s): `task_057_per_mode_wallpapers_light_wallpaper_for_light_themes`
 
 # Priority
 - Priority: Medium
@@ -52,6 +52,7 @@
 
 # Notes
 - Generated locally by logics-manager.
+- Task `task_057_per_mode_wallpapers_light_wallpaper_for_light_themes` was finished via `logics-manager flow finish task` on 2026-10-14.
 
 # Tasks
 - `task_057_per_mode_wallpapers_light_wallpaper_for_light_themes`
