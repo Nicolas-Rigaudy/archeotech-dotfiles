@@ -40,6 +40,7 @@
 
 # Validation
 - tests/run.sh 72/72; python unittest 29 OK; token-lint 0; qmllint Qt6 only singleton/delegate-id false positives; scripts/golden.sh --root <wt> 25/25 ok. shot.sh renders: latte+perMode -> light slot applied, macchiato -> dark slot, perMode off -> wallpaper untouched (AC2). In-session burst (drive.sh fills slots with catalogue paths, then flips theme.json latte->macchiato + theme reload): snowy (light slot) applied, then after the flip the starfield (dark slot) follows one frame after the palette; selected card + Now marker follow the mode. qml-reviewer: blocking items fixed (queued apply, re-read last-wallpaper after an apply and before each follow, failed path not retried, follow waits for theme.json/pack resolve).
+- 4002f6d: tests/run.sh 72/72, python 29 OK, token-lint 0; brightness command run standalone in a scratch HOME (measures, caches .lum, second run reuses); burst through choose() (temporary probe, removed): latte pick camels -> applied; flip to macchiato -> kept (dark slot empty); pick dark mountain -> applied; flip to latte -> camels back. Filter renders: light 27 / dark 26 of 46. golden.sh: wallpaper-dark/light/flat changed by the new filter row (regenerated, intended), rest ok. qml-reviewer: no blocking; carousel no longer rebuilds on a pick (kept path latched on mode change).
 
 # Report
 - archeotech-shell 521cf9d: wallpaper.perMode/light/dark; Wallpapers service owns applied path + apply queue and follows Appearance.isLight; Settings > Appearance > Wallpaper: One for both | Per mode + Light/Dark slot cards (selected card = carousel target); Super+W fills the current mode's slot. Pending: owner check on the live bar; wallpaper catalogue picks (sourcing agent running).
@@ -51,3 +52,4 @@
 
 # Notes
 - 2026-10-14: owner picked all 16 light candidates (86a2e2c) and 13 dark (f13a650: #17-23, 25-28, 30, 31) from the sourced set; wallpapers/CREDITS.md carries author/licence/source, 4 marked personal use only (unknown licence). Grimdark/hud/angular wallpapers: owner wants custom ones found later (not this item). Pending: owner check of per-mode switching on the live bar.
+- 2026-10-14: owner reported switching did nothing; config.json had no wallpaper key: the One for both | Per mode switch lived only in Settings and was never turned on (Super+W has none). Owner chose: each mode remembers its own wallpaper automatically (switch removed; empty slot keeps the screen), pickers offer wallpapers by brightness (dark <0.35 dark mode, light >0.60 light mode, medium both) with a session Show all chip.
