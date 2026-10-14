@@ -1,13 +1,14 @@
 ## item_140_per_mode_wallpapers_light_and_dark - Per-mode wallpapers: light wallpaper for light themes
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 85%
 > Confidence: 80%
-> Progress: 0%
+> Progress: 80%
 > Complexity: Medium
 > Theme: Theme
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-14 16:02:43
 
 # AI Context
 - Summary: Pair each mode with its own wallpaper so light themes sit on a light wallpaper and dark themes on a dark one.
@@ -51,3 +52,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_057_per_mode_wallpapers_light_wallpaper_for_light_themes`
