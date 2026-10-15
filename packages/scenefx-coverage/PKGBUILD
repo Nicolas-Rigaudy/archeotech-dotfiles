@@ -7,7 +7,9 @@
 # fade from blur to sharp like the surface does. Windows are untouched (mango
 # gives them no mask). Drop this package once the change lands upstream.
 #
-# Install:   cd packages/scenefx-coverage && makepkg -si
+# Install:   cd packages/scenefx-coverage && makepkg -si, then LOG OUT and back in:
+#            mango keeps the lib it started with (SUPER+SHIFT+R does not restart it),
+#            and the shell only switches to smooth edges once mango has loaded it.
 # Back out:  sudo pacman -S scenefx   (the official package)
 pkgname=scenefx-coverage
 _pkgname=scenefx
