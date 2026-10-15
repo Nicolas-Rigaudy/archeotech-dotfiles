@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-10-12, end of session)
+# Resume here (last updated 2026-10-15, end of session)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -45,6 +45,29 @@ says where to look and what is next. Update it at the end of each session (`/wra
   - item_142 tonal pills: built, then REVERTED on owner preference (`c380d33`); solid
     accent pills stay, sub-AA pill text on gruvbox-light/tokyo-night-day accepted.
     Chain retired Obsolete; do not re-propose. Follow-up: Verified badge contrast.
+
+- **Landed 2026-10-13..15:**
+  - item_140 per-mode wallpapers DONE (owner confirmed). req_006 wallpaper modes opened
+    (source contract, rotation, per-monitor, weather, effects, packs): items 146-151.
+  - **item_116 / task_058 DONE** (adr_035, supersedes adr_008): Glass = real mango layer
+    blur. Dark panels 0.82 (0.70 in Blur mode), Settings > Appearance > Style > Behind
+    windows = X-ray | Blur, 18px corners, mango blur 2 passes radius 3. Stock scenefx
+    blurs any pixel with alpha > 0 at full strength, so the shell renders blur-safe
+    (no outer shadows/fades, crisp outer edges, tight toast/OSD windows) unless the
+    patched scenefx is installed (`packages/scenefx-coverage`, coverage-weighted blur;
+    marker `/usr/share/scenefx/coverage-blur` switches the shell to smooth edges +
+    shadows). mango never un-blurs a layer: Glass -> Solid keeps blur-safe rendering
+    until the shell restarts.
+  - One separator everywhere: `Prim.Divider` (soft recessed channel; `thin` in lists).
+  - Tooling: `scripts/desk-check.py` reproduces the owner's desk headless (size,
+    wallpaper, GPU blur, app behind, wlrctl hover, mid-session `set:`); use it before
+    asking for screenshots. `shot.sh --mango-libs` loads a locally built scenefx.
+  - swaync/dunst D-Bus activation masked (it stole org.freedesktop.Notifications).
+  - **Open (owner):** install the patched scenefx (`makepkg -si` in
+    packages/scenefx-coverage, then SUPER+SHIFT+R) and check smooth corners live;
+    upstream PR for the scenefx patch not drafted yet; muted labels sit under their
+    contrast floor on glass over bright backdrops (owner reads fine; not pursued).
+- **Live bar (2026-10-15):** FOLLOWING main.
 
 ## Next (pick one; the owner chooses)
 1. Settings items from the audit (below). item_110 is DONE (2026-10-01; waves 2-4:
