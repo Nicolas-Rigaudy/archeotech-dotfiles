@@ -63,10 +63,11 @@ says where to look and what is next. Update it at the end of each session (`/wra
     wallpaper, GPU blur, app behind, wlrctl hover, mid-session `set:`); use it before
     asking for screenshots. `shot.sh --mango-libs` loads a locally built scenefx.
   - swaync/dunst D-Bus activation masked (it stole org.freedesktop.Notifications).
-  - **Open (owner):** install the patched scenefx (`makepkg -si` in
-    packages/scenefx-coverage, then SUPER+SHIFT+R) and check smooth corners live;
-    upstream PR for the scenefx patch not drafted yet; muted labels sit under their
-    contrast floor on glass over bright backdrops (owner reads fine; not pursued).
+  - Patched scenefx INSTALLED and owner-confirmed live 2026-10-15 (mango restarted on
+    it; smooth corners, no ring). It needs a log out/in after any scenefx reinstall:
+    the shell only drops blur-safe rendering when the running mango maps the current
+    lib (a6e3015). **Open:** upstream PR for the scenefx patch (not drafted); muted
+    labels under their floor on glass over bright backdrops (owner reads fine).
 - **Live bar (2026-10-15):** FOLLOWING main.
 
 ## Next (pick one; the owner chooses)
