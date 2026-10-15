@@ -1,14 +1,14 @@
 ## item_116_glass_material_decision_real_blur_or_satin - Glass material decision: real blur or satin
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 20%
+> Progress: 100%
 > Complexity: Low
 > Theme: Design system
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 15:27:46
+> Indicators reviewed: 2026-10-15 17:20:10
 
 # AI Context
 - Summary: Glass material decision: real blur or satin. Quickshell layer blur is off (adr_008) and panels are 96% opaque, so the documented glass aesthetic is not what renders.
@@ -39,7 +39,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_058_glass_material_decision_real_blur_or_satin`
 
 # Priority
 - Priority: Medium
@@ -47,3 +47,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_058_glass_material_decision_real_blur_or_satin`
+
+# Notes
+- Task `task_058_glass_material_decision_real_blur_or_satin` was finished via `logics-manager flow finish task` on 2026-10-15.

@@ -1,0 +1,47 @@
+## adr_035_real_compositor_blur_behind_the_shell_layer_no_outer_shadows - Real compositor blur behind the shell layer; no outer shadows under blur
+> Date: 2026-10-14
+> Status: Accepted
+> Related request: `req_005_2026_09_28_audit_upgrade_program`
+> Related backlog: `item_116_glass_material_decision_real_blur_or_satin`
+> Related task: `task_058_glass_material_decision_real_blur_or_satin`
+> Drivers: the 2026-09-28 audit found the "glass" was a 96% opaque slab (adr_008 had turned layer blur off); owner asked for real blur on the shell layer (2026-10-14)
+> Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
+
+# Overview
+- The Glass preset now means real compositor blur behind the shell's surfaces. This supersedes adr_008 (layer blur off, high-opacity panels).
+
+# Context
+- adr_008 (2026-08-20) disabled mango `blur_layer` because of a white fringe around rounded layer surfaces, when the shell was several per-panel layers. The shell is now one full-screen layer per monitor (`archeotech-shell`, adr_015) plus `quickshell:osd` / `quickshell:toasts`; the old layer rules named layers that no longer exist and used bare flags (`noblur`, `isnoshadow`) that mango 0.17 ignores.
+- scenefx 0.5 blurs a layer through a transparency mask of its own buffer (`wlr_scene_blur_set_transparency_mask_source`, `ignore_transparent`): only pixels with alpha > 0 are blurred, so the empty middle of the full-screen surface stays sharp.
+- Spike (2026-10-14, `shot.sh --renderer gles2` on the Iris Xe render node): no corner fringe. But the mask is binary, so every soft drop shadow outside a floating surface became a hard-edged ~15 px blurred band. Flat mode (no shadows) gave a clean edge.
+- `blur_optimized=1` (scenefx caches one blurred wallpaper) makes a panel over a window show the blurred wallpaper (an x-ray look); `0` blurs what is really behind, at a per-frame cost. It is a global mango option, so it also changes how translucent windows (kitty) blur.
+- The strict contrast gate (text over a mid-grey wallpaper, `contrast-check --glass`) holds at 0.82 for every dark theme. Light panels stay at 0.96 (gruvbox-light floor).
+- Owner preview (2026-10-15) found what the static renders missed: popups fading in showed their full blurred patch while the glass was still faint (a ghost border), a toast window was blurred across its whole rectangle (its shadow margin), and X-ray left bright single-pixel specks on curves over dark apps.
+
+# Decision
+- `themes/glass-presets.json` gains `"blur"` per preset: Glass `true`, Solid `false`. Dark Glass panels 0.96/0.93 -> 0.82/0.82; cards keep 0.58 and their 3D (sheen, drop shadow inside the panel). Owner picked this over lighter glass and over softer or flat cards.
+- theme-switch writes mango `blur_layer` (preset blurs and no pack is active; a pack owns material) and `blur_optimized` from a new setting, Settings > Appearance > Style > Behind windows (`appearance.glassBlur`: `xray` default = 1, `windows` = 0), shown only while the preset blurs. The applier dedupes on `<preset>/<blur>`.
+- Under layer blur, shadows that fall outside their surface are dropped: `Appearance.outerShadows` / `outerShadowColor(tier)` in PanelShadow (strip panels and bar popups), Tooltip, toasts, OSD and the display-confirm dialog. Owner pick: a clean edge, no rim. Shadows inside a panel (cards, controls) stay; Solid keeps every shadow.
+- Under layer blur, floating glass shapes never fade (`Appearance.glassFades`): bar popups, strip popups/panels, tooltips, toasts and the OSD appear and disappear at full opacity; slide/scale motion stays.
+- Under layer blur the toast and OSD windows hug their content (no shadow margin), so a window that mango blurs whole shows nothing outside the card.
+- Under layer blur the OUTER edges of floating surfaces render crisp (`Appearance.crispEdges`: GeometryRenderer / no MSAA / no Rectangle antialiasing on the frame, panels, popups, toasts, OSD, tooltips): the faintest anti-aliased pixel of a curve is blurred at full strength and shows as a bright speck in X-ray over a dark window. Edges inside a panel stay smooth. Owner pick over keeping the specks.
+- Under layer blur the strip's hover key keeps a tight 2 px shadow instead of e2: the soft one bled past the strip's edge as a hard band (owner live check, 2026-10-15). Shadows near a surface edge must stay inside it.
+- Strip panel far corners use `radius.xl` (18 px): `md` read as a cut corner at scale 1 (owner pick).
+- Edit mode keeps its full-screen scrim: under blur it frosts the whole screen behind the editor, which reads as a modal backdrop.
+- No mango layer rules: every shell layer takes the global layer blur.
+- mango blurs a layer's surface from its first commit and never un-blurs it, so after Glass -> Solid the blur-safe rendering stays on until the shell restarts (ColorScheme latches it after boot).
+- Blur mode (Behind windows = Blur) gets its own dark panel alpha, 0.70 (`darkWindows` in glass-presets.json): the blurred window reads darker than the X-ray wallpaper. Owner pick, checked live over a white page; muted text over a bright window sits under its floor there. mango blur is 2 passes, radius 3 (owner pick from rendered options).
+- The stock scenefx stencil (any alpha > 0 gets full blur) is the root cause of the rings, bands and ghosts above. `packages/scenefx-coverage` (dotfiles) patches scenefx 0.5 to weight the layer blur by the surface's alpha, `w = a(1-A) / (A(1-a))` with A = 0.8: full blur from the panel's alpha up, almost none on faint edge and shadow pixels. Measured on the Settings corner over a dark window in X-ray: bright-edge excess 64.8 (stock) -> 0.6 (patched; the crisp staircase is 0.8). The package installs `/usr/share/scenefx/coverage-blur`; with it, `Appearance.coverageBlur` turns the blur-safe rendering off (smooth edges, soft outer shadows and fades back). `appearance.coverageBlur` on/off overrides the marker. Until upstream takes it, the owner runs the patched package.
+
+# Consequences
+- Glass shows a frosted view of the wallpaper (or windows, by choice) through the frame, bar, panels, toasts and OSD. The effect is subtle at 0.85; more transparency needs a per-theme contrast exemption (monochrome).
+- Floating panels under Glass have no drop shadow; depth comes from the frost and the panel fill. A future shadow needs its own non-blurred layer surface.
+- Test tooling: `ipc call popup open <wifi|bt|calendar|hover|strip>` / `shot.sh --state popup:<name>` open pointer-only popups headless; `scripts/blur-scan.py` finds faint regions (alpha from black/white renders) and, with `--app`, blur artifacts with an app window behind (GPU renders with layer blur off vs on, diffed where the shell draws nothing).
+- `shot.sh --renderer gles2` renders scenefx effects for spikes; it needs a readable `/dev/dri` render node (the Claude Code sandbox hides it, so those runs go unsandboxed; seen side effect: the nested Xwayland probes the `:0` socket, finds it busy and moves on). Goldens stay pixman, which draws no blur: they show the lower panel alpha and the dropped shadows only.
+- Test tooling: `scripts/desk-check.py` renders the owner's desk (size, wallpaper, GPU blur, app behind, hover via wlrctl, mid-session setting changes, zoom sheets); `shot.sh --mango-libs` loads a locally built scenefx.
+- Hyprland: `layerrule = blur, archeotech-shell` (+ `ignore_alpha`, `xray` for the source choice) is rejected by 0.56.2's INI config and waits for the Lua migration (item_084).
+
+# References
+- Supersedes: `adr_008_disable_quickshell_layer_blur_rely_on_high_opacity_glass_panels`
+- Related: `adr_015_one_unified_framebackground_shape_per_screen`, `adr_029_flat_mode_gates_depth_only_opacity_is_a_pack_material_decision`, `adr_033_official_palettes_only_semantic_text_roles_with_a_contrast_floor`
+- Evidence: `.claude/audits/2026-09-28/audit-design.md` (finding 3); spike renders in the task's validation notes

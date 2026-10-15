@@ -1,6 +1,6 @@
 ## adr_008_disable_quickshell_layer_blur_rely_on_high_opacity_glass_panels - Disable Quickshell layer blur; rely on high-opacity glass panels
 > Date: 2026-08-20
-> Status: Proposed
+> Status: Superseded
 > Related request: (none yet)
 > Related backlog: (none yet)
 > Related task: (none yet)
@@ -27,3 +27,4 @@
 - Related request: (none yet)
 - Related backlog: (none yet)
 - Related task: (none yet)
+- Superseded by: `adr_035_real_compositor_blur_behind_the_shell_layer_no_outer_shadows` (2026-10-14: the shell is one full-screen layer now; real layer blur shows no fringe on the Iris Xe; outer shadows are dropped under blur).
