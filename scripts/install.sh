@@ -200,6 +200,14 @@ enable_user_services() {
     else
         print_warning "Could not enable battery-alert.service (may need graphical session)"
     fi
+
+    # The shell owns org.freedesktop.Notifications. swaync and dunst ship D-Bus
+    # activation for that name, so any notify-send while the shell restarts
+    # started swaync, which then kept the name (2026-10-15). Mask both units so
+    # D-Bus cannot start them; a direct launch still works.
+    systemctl --user mask swaync.service dunst.service >/dev/null 2>&1 \
+        && print_success "swaync/dunst D-Bus activation masked" \
+        || print_warning "Could not mask swaync/dunst"
 }
 
 verify_deployment() {

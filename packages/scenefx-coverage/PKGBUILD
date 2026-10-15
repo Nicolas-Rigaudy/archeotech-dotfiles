@@ -1,0 +1,45 @@
+# scenefx 0.5 + coverage-weighted layer blur (archeotech, adr_035 follow-up).
+#
+# Stock scenefx blurs a layer surface through a binary stencil: every pixel with
+# alpha > 0 gets the full blur, so anti-aliased corners and soft shadows show a
+# bright ring/band over a dark window in X-ray mode. coverage-blur.patch weights
+# the blur by the surface's alpha instead (full from alpha 0.8 up), so edges
+# fade from blur to sharp like the surface does. Windows are untouched (mango
+# gives them no mask). Drop this package once the change lands upstream.
+#
+# Install:   cd packages/scenefx-coverage && makepkg -si
+# Back out:  sudo pacman -S scenefx   (the official package)
+pkgname=scenefx-coverage
+_pkgname=scenefx
+pkgver=0.5
+pkgrel=1
+pkgdesc="scenefx with coverage-weighted layer blur (smooth blurred corners)"
+url="https://github.com/wlrfx/scenefx"
+arch=("x86_64")
+license=("MIT")
+depends=("libdrm" "libglvnd" "libpixman-1.so" "wlroots0.20" "wayland")
+makedepends=("git" "glslang" "meson" "ninja" "wayland-protocols")
+provides=("scenefx=${pkgver}" "libscenefx-0.5.so")
+conflicts=("scenefx" "scenefx0.5" "scenefx-git")
+options=("!debug")
+source=("${_pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz"
+        "coverage-blur.patch")
+sha512sums=('055511e88ba4036e6bb4a9f1c5f3a16c4841c518a57b98ad824dd0ecd53c251541a9801be9c760ebf78936400918a51c3b04300f22a47437077d444bc7bc2f08'
+            'SKIP')
+
+prepare() {
+	patch -d "${_pkgname}-${pkgver}" -p1 < coverage-blur.patch
+}
+
+build() {
+	arch-meson "${_pkgname}-${pkgver}" build
+	meson compile -C build
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install -C build
+	# Marker the archeotech shell reads: blur-safe rendering (crisp edges, no
+	# outer shadows, no fades) is only needed without this patch.
+	install -Dm644 /dev/null "$pkgdir/usr/share/scenefx/coverage-blur"
+	install -Dm644 "${_pkgname}-${pkgver}/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

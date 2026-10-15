@@ -1,0 +1,244 @@
+diff -ru '--exclude=build' scenefx/scenefx-0.5/include/render/fx_renderer/shaders.h scenefx-patched/include/render/fx_renderer/shaders.h
+--- a/include/render/fx_renderer/shaders.h	2026-06-28 07:36:32.000000000 +0200
++++ b/include/render/fx_renderer/shaders.h	2026-10-15 15:27:12.750831040 +0200
+@@ -117,6 +117,12 @@
+ 
+ 	GLint discard_transparent;
+ 
++	GLint coverage;
++	GLint coverage_full;
++	GLint blur_tex;
++	GLint blur_size;
++	GLint blur_flip;
++
+ 	// Only used for the effects shader
+ 	struct {
+ 		GLint size;
+diff -ru '--exclude=build' scenefx/scenefx-0.5/render/fx_renderer/fx_pass.c scenefx-patched/render/fx_renderer/fx_pass.c
+--- a/render/fx_renderer/fx_pass.c	2026-06-28 07:36:32.000000000 +0200
++++ b/render/fx_renderer/fx_pass.c	2026-10-15 15:34:20.000695628 +0200
+@@ -201,40 +201,6 @@
+ /// FX pass functions
+ ///
+ 
+-// TODO: REMOVE STENCILING
+-
+-// Initialize the stenciling work
+-static void stencil_mask_init(void) {
+-	glClearStencil(0);
+-	glClear(GL_STENCIL_BUFFER_BIT);
+-	glEnable(GL_STENCIL_TEST);
+-
+-	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+-	// Disable writing to color buffer
+-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+-}
+-
+-// Close the mask
+-static void stencil_mask_close(bool draw_inside_mask) {
+-	// Reenable writing to color buffer
+-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+-	if (draw_inside_mask) {
+-		glStencilFunc(GL_EQUAL, 1, 0xFF);
+-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+-		return;
+-	}
+-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+-}
+-
+-// Finish stenciling and clear the buffer
+-static void stencil_mask_fini(void) {
+-	glClearStencil(0);
+-	glClear(GL_STENCIL_BUFFER_BIT);
+-	glDisable(GL_STENCIL_TEST);
+-}
+-
+ static void render(const struct wlr_box *box, const pixman_region32_t *clip, GLint attrib) {
+ 	pixman_region32_t region;
+ 	pixman_region32_init_rect(&region, box->x, box->y, box->width, box->height);
+@@ -348,8 +314,16 @@
+ 	return false;
+ }
+ 
+-void fx_render_pass_add_texture(struct fx_gles_render_pass *pass,
+-		const struct fx_render_texture_options *fx_options) {
++// A blurred backdrop drawn through a layer's own buffer: the buffer's alpha at
++// each pixel weights the blur there (see tex.frag).
++struct coverage_blur {
++	struct fx_texture *texture;
++	int width, height;
++};
++
++static void add_texture_impl(struct fx_gles_render_pass *pass,
++		const struct fx_render_texture_options *fx_options,
++		const struct coverage_blur *coverage) {
+ 	const struct wlr_render_texture_options *options = &fx_options->base;
+ 	struct fx_renderer *renderer = pass->buffer->renderer;
+ 	struct fx_texture *texture = fx_get_texture(options->texture);
+@@ -441,7 +415,7 @@
+ 		}
+ 	}
+ 
+-	bool has_alpha = texture->has_alpha || alpha < 1.0 || use_effects;
++	bool has_alpha = texture->has_alpha || alpha < 1.0 || use_effects || coverage;
+ 	TRACY_ZONE_TEXT_f("Has Alpha: %d", has_alpha);
+ 	setup_blending(!has_alpha ? WLR_RENDER_BLEND_MODE_NONE : options->blend_mode);
+ 
+@@ -477,6 +451,19 @@
+ 
+ 	glUniform1f(shader->discard_transparent, fx_options->discard_transparent);
+ 
++	glUniform1i(shader->coverage, coverage != NULL);
++	if (coverage) {
++		glActiveTexture(GL_TEXTURE1);
++		glBindTexture(coverage->texture->target, coverage->texture->tex);
++		glTexParameteri(coverage->texture->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
++		glTexParameteri(coverage->texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
++		glUniform1i(shader->blur_tex, 1);
++		glUniform2f(shader->blur_size, coverage->width, coverage->height);
++		glUniform1i(shader->blur_flip, false);
++		glUniform1f(shader->coverage_full, 0.8f); // typical panel alpha A (see tex.frag)
++		glActiveTexture(GL_TEXTURE0);
++	}
++
+ 	if (use_effects) {
+ 		struct fx_corner_fradii corners = fx_options->corners;
+ 
+@@ -495,12 +482,22 @@
+ 	render(&dst_box, &clip_region, shader->pos_attrib);
+ 	pixman_region32_fini(&clip_region);
+ 
++	if (coverage) {
++		glActiveTexture(GL_TEXTURE1);
++		glBindTexture(coverage->texture->target, 0);
++		glActiveTexture(GL_TEXTURE0);
++	}
+ 	glBindTexture(texture->target, 0);
+ 
+ 	pop_fx_debug(renderer);
+ 	TRACY_BOTH_ZONES_END;
+ }
+ 
++void fx_render_pass_add_texture(struct fx_gles_render_pass *pass,
++		const struct fx_render_texture_options *fx_options) {
++	add_texture_impl(pass, fx_options, NULL);
++}
++
+ void fx_render_pass_add_rect(struct fx_gles_render_pass *pass,
+ 		const struct fx_render_rect_options *fx_options) {
+ 	const struct wlr_render_rect_options *options = &fx_options->base;
+@@ -1135,16 +1132,20 @@
+ 		fx_texture_from_buffer(&renderer->wlr_renderer, buffer->buffer);
+ 	struct fx_texture *blur_texture = fx_get_texture(wlr_texture);
+ 
+-	// Get a stencil of the window ignoring transparent regions
++	// Weight the blur by the mask's alpha (anti-aliased edges, soft shadows and
++	// translucent pixels get proportionally less blur) instead of a binary stencil.
+ 	if (fx_options->ignore_transparent && fx_options->tex_options.base.texture) {
+-		stencil_mask_init();
+-
+-		struct fx_render_texture_options tex_options = fx_options->tex_options;
+-		tex_options.discard_transparent = true;
+-		tex_options.clipped_region = fx_options->clipped_region;
+-		fx_render_pass_add_texture(pass, &tex_options);
+-
+-		stencil_mask_close(true);
++		struct fx_render_texture_options mask_options = fx_options->tex_options;
++		mask_options.base.blend_mode = WLR_RENDER_BLEND_MODE_PREMULTIPLIED;
++		mask_options.clipped_region = fx_options->clipped_region;
++		struct coverage_blur coverage = {
++			.texture = blur_texture,
++			.width = buffer->buffer->width,
++			.height = buffer->buffer->height,
++		};
++		add_texture_impl(pass, &mask_options, &coverage);
++		wlr_texture_destroy(&blur_texture->wlr_texture);
++		goto finish;
+ 	}
+ 
+ 	// Draw the blurred texture
+@@ -1168,11 +1169,6 @@
+ 
+ 	wlr_texture_destroy(&blur_texture->wlr_texture);
+ 
+-	// Finish stenciling
+-	if (fx_options->ignore_transparent && fx_options->tex_options.base.texture) {
+-		stencil_mask_fini();
+-	}
+-
+ finish:
+ 	pop_fx_debug(renderer);
+ 	TRACY_BOTH_ZONES_END;
+diff -ru '--exclude=build' scenefx/scenefx-0.5/render/fx_renderer/shaders/tex.frag scenefx-patched/render/fx_renderer/shaders/tex.frag
+--- a/render/fx_renderer/shaders/tex.frag	2026-06-28 07:36:32.000000000 +0200
++++ b/render/fx_renderer/shaders/tex.frag	2026-10-15 15:34:20.000597774 +0200
+@@ -47,6 +47,19 @@
+ 
+ uniform bool discard_transparent;
+ 
++// Coverage-weighted blur: the texture is a blur mask (a layer's own buffer).
++// The blurred backdrop is drawn under the layer with a per-pixel weight w, so
++// that an edge pixel composites exactly as "coverage c of a panel of alpha A":
++//   a*C + (1-a)*(w*blur + (1-w)*sharp)  ==  c*(A*C + (1-A)*blur) + (1-c)*sharp
++// with a = c*A gives w = a*(1-A) / (A*(1-a)). Interior pixels (a >= A) get the
++// full blur; anti-aliased edges and faint shadows get proportionally less.
++// A = coverage_full (a typical panel alpha; upstream would make it a parameter).
++uniform bool coverage;
++uniform float coverage_full;
++uniform sampler2D blur_tex;
++uniform vec2 blur_size;
++uniform bool blur_flip;
++
+ vec4 sample_texture() {
+ #if SOURCE == SOURCE_TEXTURE_RGBA || SOURCE == SOURCE_TEXTURE_EXTERNAL
+ 	return texture2D(tex, v_texcoord);
+@@ -55,6 +68,20 @@
+ #endif
+ }
+ 
++vec4 sample_source() {
++	if (coverage) {
++		vec2 uv = gl_FragCoord.xy / blur_size;
++		if (blur_flip) {
++			uv.y = 1.0 - uv.y;
++		}
++		float a = sample_texture().a;
++		float weight = clamp(a * (1.0 - coverage_full)
++			/ (coverage_full * max(1.0 - a, 1e-4)), 0.0, 1.0);
++		return texture2D(blur_tex, uv) * weight;
++	}
++	return sample_texture();
++}
++
+ #if EFFECTS
+ float corner_alpha(vec2 size, vec2 position, bool is_cutout,
+ 		float radius_tl, float radius_tr, float radius_bl, float radius_br);
+@@ -83,9 +110,9 @@
+ 		clip_radius_bottom_right
+ 	);
+ 
+-	gl_FragColor = sample_texture() * alpha * quad_corner_alpha * clip_corner_alpha;
++	gl_FragColor = sample_source() * alpha * quad_corner_alpha * clip_corner_alpha;
+ #else
+-	gl_FragColor = sample_texture() * alpha;
++	gl_FragColor = sample_source() * alpha;
+ #endif
+ 
+ 	if (discard_transparent && gl_FragColor.a == 0.0) {
+diff -ru '--exclude=build' scenefx/scenefx-0.5/render/fx_renderer/shaders.c scenefx-patched/render/fx_renderer/shaders.c
+--- a/render/fx_renderer/shaders.c	2026-06-28 07:36:32.000000000 +0200
++++ b/render/fx_renderer/shaders.c	2026-10-15 15:27:12.750867689 +0200
+@@ -262,6 +262,11 @@
+ 	shader->tex_proj = glGetUniformLocation(prog, "tex_proj");
+ 
+ 	shader->discard_transparent = glGetUniformLocation(prog, "discard_transparent");
++	shader->coverage = glGetUniformLocation(prog, "coverage");
++	shader->coverage_full = glGetUniformLocation(prog, "coverage_full");
++	shader->blur_tex = glGetUniformLocation(prog, "blur_tex");
++	shader->blur_size = glGetUniformLocation(prog, "blur_size");
++	shader->blur_flip = glGetUniformLocation(prog, "blur_flip");
+ 
+ 	if (!effects) {
+ 		return true;
