@@ -19,8 +19,8 @@ Plan the path to a public, community-ready 1.0 (v1 bar decided 2026-09-03), re-s
 flowchart TD
   A[0.25 Stability delivered]
   B[0.26 Widgets and engine delivered]
-  C[0.30 Safety net]
-  D[0.31 Correctness and goldens]
+  C[0.30 Safety net delivered]
+  D[0.31 Correctness and goldens delivered]
   E[0.40 Design system v2]
   F[0.50 Utility layer]
   G[0.60 Contexts and signature]
@@ -67,7 +67,7 @@ flowchart TD
 - Scope: Everything delivered from the former 0.26/0.265/0.27/0.28/0.29/1.0 milestones up to 2026-09-28; open items from those milestones were re-sequenced below after the audit.
 - Exit signal: Met for the delivered scope; the 2026-09-28 audit found correctness bugs under it (see 0.31).
 
-## 0.30 - Safety net
+## 0.30 - Safety net (delivered)
 - `item_101_isolate_shot_sh_fully_and_render_any_worktree`: Isolate shot.sh fully and render any worktree
 - `item_102_claude_code_project_tooling_guard_hooks_qt6_lint_skills_and_reviewer_agents`: Claude Code project tooling: guard hooks, Qt6 lint, skills and reviewer agents
 - `item_103_live_bar_on_a_pinned_worktree_with_a_promote_script`: Live bar on a pinned worktree with a promote script
@@ -76,7 +76,7 @@ flowchart TD
 - Scope: Isolated shot.sh with worktree rendering, guard hooks plus Qt6 lint plus skills and reviewer agents, live bar on a pinned worktree, docs hygiene.
 - Exit signal: A worktree edit renders headless with the live bar and real HOME untouched (mtime check), and the guard hook blocks every forbidden live-session command.
 
-## 0.31 - Correctness sweep and golden matrix
+## 0.31 - Correctness sweep and golden matrix (delivered)
 - `item_068_visual_regression_vs_goldens_qml_logic_tests_arch_container_ci`: Visual-regression vs goldens + QML logic tests + Arch-container CI
 - `item_105_service_command_runner_queue_and_startup_gating`: Service command runner queue and startup gating
 - `item_106_bar_and_strip_widget_instantiation_fixes`: Bar and strip widget instantiation fixes
