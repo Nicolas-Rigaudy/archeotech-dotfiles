@@ -6,7 +6,7 @@
 > Related task: `task_058_glass_material_decision_real_blur_or_satin`
 > Drivers: the 2026-09-28 audit found the "glass" was a 96% opaque slab (adr_008 had turned layer blur off); owner asked for real blur on the shell layer (2026-10-14)
 > Reminder: Update status, linked refs, decision rationale, consequences, and follow-up work when you edit this doc.
-> Indicators reviewed: 2026-10-20 16:15:17
+> Indicators reviewed: 2026-10-20 18:03:20
 
 # Overview
 - The Glass preset now means real compositor blur behind the shell's surfaces. This supersedes adr_008 (layer blur off, high-opacity panels).
