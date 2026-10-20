@@ -40,7 +40,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
     `themes/glass-presets.json` feeds Appearance, kitty (`theme-switch --glass`, live via
     kitty socket-only remote control) and mango window opacity, plus
     `contrast-check --glass` in CI. kitty is exempt from mango opacity (windowrule
-    `appid:kitty`; mango fixes per-window opacity at map time, see TROUBLESHOOTING).
+    `app_id:kitty`; mango fixes per-window opacity at map time, see TROUBLESHOOTING).
     Light Glass panels are 0.96 (was 0.92) to keep gruvbox-light text AA.
   - item_142 tonal pills: built, then REVERTED on owner preference (`c380d33`); solid
     accent pills stay, sub-AA pill text on gruvbox-light/tokyo-night-day accepted.

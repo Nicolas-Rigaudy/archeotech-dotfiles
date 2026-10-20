@@ -1635,3 +1635,8 @@ Same family: `flow progress task task_031_… --progress 30%` (an orchestrator) 
 - **Quickshell IpcHandler: every function inside it is parsed as an IPC call**; an untyped argument is refused at load ("Type of argument 1 (t: QVariant) cannot be used across IPC") and the handler's other functions are not affected but the helper is dead. Keep helpers outside the handler (`shell._keyboardTab`) and type IPC arguments (`function toggle(id: string)`).
 - **shot.sh probes for panels:** tie the probe Timer to the panel being open and its data loaded (`running: root._panelOpen && root._data !== null`) with a short interval (~150 ms); a 1 s+ timer fires after the capture and the render shows the untouched state.
 
+
+### mango 0.18 renamed config keys (2026-10-20)
+- 0.18.1 only accepts the snake_case names (`monitor_rule`, `window_rule`, `border_px`, `gap_inner_horizontal`, `shadows_color`, `focus_color`, `exec_once`, `source_optional`, …); old ones log `Unknown keyword`. Converted in `config/.config/mango/config.conf` (895795b, 0b890aa). Older entries above keep the 0.17 names on purpose.
+- Headless check: strip comments and `bind*`/`exec*`/`source*` lines from the config, pass the rest to `archeotech-shell/scripts/shot.sh --fresh --keep --mango-include <file> out.png`, then grep `<run>/log/mango.log` for `Unknown keyword` (a deliberate `borderpx=2` in the file shows up, so the check is live). Result: no errors. Binds/exec_once are not covered by this check.
+- Not done here (other repo): `archeotech-shell` still writes `devicerule=` (Services/Hardware/Input.qml) and `shot.sh` uses `source-optional`, `bordercolor|focuscolor|urgentcolor|shadowscolor`, and a command-guard regex on the old names; they need the same rename.
