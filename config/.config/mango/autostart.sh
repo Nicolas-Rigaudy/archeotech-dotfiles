@@ -18,7 +18,7 @@ sleep 0.5
 ################################################################################
 # Shell (bar + control center + OSD — single Quickshell process)
 ################################################################################
-# Launched by `exec-once` in config.conf (the authoritative launcher). Kept here
+# Launched by `exec_once` in config.conf (the authoritative launcher). Kept here
 # only as a reference — do NOT re-enable: Quickshell doesn't dedupe per-config,
 # so two launch points = doubled bars + doubled exclusion zones on login.
 # qs -c archeotech &
