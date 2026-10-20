@@ -7,10 +7,12 @@
 # lowest panel alpha, the dark Blur-mode glass), so edges fade from blur to sharp
 # like the surface does. Windows are untouched (mango gives them no mask).
 #
-# rotated-blur.patch fixes an upstream bug: with blur_optimized=0, a layer
-# surface on a rotated output (monitor_rule rr:1/3) had its blur damage rotated
-# twice and its backdrop sampled rotated, so panels there showed bands and a
-# seam of misplaced, half-sharp backdrop. Drop both once they land upstream.
+# 0002-backport-pr199-rotated-blur.patch: backport of wlrfx/scenefx#199, drop
+# when scenefx > 0.5. Upstream's own fix (commit 1d5ce45, issue #197), taken with
+# git format-patch: with blur_optimized=0, a layer surface on a rotated output
+# (monitor_rule rr:1/3) had its blur damage rotated twice and its backdrop
+# sampled rotated, so panels there showed bands and a seam of misplaced,
+# half-sharp backdrop.
 #
 # Install:   cd packages/scenefx-coverage && makepkg -si, then LOG OUT and back in:
 #            mango keeps the lib it started with (SUPER+SHIFT+R does not restart it),
@@ -31,14 +33,14 @@ conflicts=("scenefx" "scenefx0.5" "scenefx-git")
 options=("!debug")
 source=("${_pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz"
         "coverage-blur.patch"
-        "rotated-blur.patch")
+        "0002-backport-pr199-rotated-blur.patch")
 sha512sums=('055511e88ba4036e6bb4a9f1c5f3a16c4841c518a57b98ad824dd0ecd53c251541a9801be9c760ebf78936400918a51c3b04300f22a47437077d444bc7bc2f08'
             'SKIP'
             'SKIP')
 
 prepare() {
 	patch -d "${_pkgname}-${pkgver}" -p1 < coverage-blur.patch
-	patch -d "${_pkgname}-${pkgver}" -p1 < rotated-blur.patch
+	patch -d "${_pkgname}-${pkgver}" -p1 < 0002-backport-pr199-rotated-blur.patch
 }
 
 build() {
