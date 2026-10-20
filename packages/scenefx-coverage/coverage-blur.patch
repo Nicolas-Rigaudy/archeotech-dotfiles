@@ -99,7 +99,7 @@ diff -ru '--exclude=build' scenefx/scenefx-0.5/render/fx_renderer/fx_pass.c scen
 +		glUniform1i(shader->blur_tex, 1);
 +		glUniform2f(shader->blur_size, coverage->width, coverage->height);
 +		glUniform1i(shader->blur_flip, false);
-+		glUniform1f(shader->coverage_full, 0.8f); // typical panel alpha A (see tex.frag)
++		glUniform1f(shader->coverage_full, 0.7f); // lowest panel alpha A (see tex.frag)
 +		glActiveTexture(GL_TEXTURE0);
 +	}
 +
@@ -174,7 +174,7 @@ diff -ru '--exclude=build' scenefx/scenefx-0.5/render/fx_renderer/fx_pass.c scen
 diff -ru '--exclude=build' scenefx/scenefx-0.5/render/fx_renderer/shaders/tex.frag scenefx-patched/render/fx_renderer/shaders/tex.frag
 --- a/render/fx_renderer/shaders/tex.frag	2026-06-28 07:36:32.000000000 +0200
 +++ b/render/fx_renderer/shaders/tex.frag	2026-10-15 15:34:20.000597774 +0200
-@@ -47,6 +47,19 @@
+@@ -47,6 +47,20 @@
  
  uniform bool discard_transparent;
  
@@ -184,7 +184,8 @@ diff -ru '--exclude=build' scenefx/scenefx-0.5/render/fx_renderer/shaders/tex.fr
 +//   a*C + (1-a)*(w*blur + (1-w)*sharp)  ==  c*(A*C + (1-A)*blur) + (1-c)*sharp
 +// with a = c*A gives w = a*(1-A) / (A*(1-a)). Interior pixels (a >= A) get the
 +// full blur; anti-aliased edges and faint shadows get proportionally less.
-+// A = coverage_full (a typical panel alpha; upstream would make it a parameter).
++// A = coverage_full: the lowest interior alpha of a blurred panel, so every panel
++// body gets the full blur (upstream would make it a parameter).
 +uniform bool coverage;
 +uniform float coverage_full;
 +uniform sampler2D blur_tex;

@@ -1,0 +1,22 @@
+--- a/render/fx_renderer/fx_pass.c
++++ b/render/fx_renderer/fx_pass.c
+@@ -995,11 +995,17 @@
+ 	}
+ 	fx_options->blur_data = &blur_data;
+ 
++	// The clip is already in buffer coordinates (the scene transformed it), and
++	// the blur passes sample the framebuffer itself, which is never transformed.
++	// tex_options.base.transform is the MASK's transform (a layer surface on a
++	// rotated output): applying it here rotated the damage a second time and made
++	// every pass sample the framebuffer rotated, so non-optimized blur on a
++	// rotated output showed bands of wrongly placed, stretched backdrop.
++	fx_options->tex_options.base.transform = WL_OUTPUT_TRANSFORM_NORMAL;
++
+ 	pixman_region32_t damage;
+ 	pixman_region32_init(&damage);
+ 	pixman_region32_copy(&damage, fx_options->tex_options.base.clip);
+-	wlr_region_transform(&damage, &damage, fx_options->tex_options.base.transform,
+-			buffer_bounds.width, buffer_bounds.height);
+ 
+ 	wlr_region_expand(&damage, &damage, blur_data_calc_size(&blur_data));
+ 	// Make sure that the region doesn't expand past the buffer bounds
