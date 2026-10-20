@@ -9,7 +9,7 @@
 # Order matters: kill first, reload config, fix monitors, then relaunch the
 # shell LAST — so it lays out its layer-shell panels against the FINAL display
 # scale (relaunching before wlr-randr caused pixelated/janky panels). The
-# relaunch matches the exec-once launcher (`-c archeotech`, no decorations).
+# relaunch matches the exec_once launcher (`-c archeotech`, no decorations).
 #
 # Usage: mango-reload.sh    Keybind: Super+Shift+R
 

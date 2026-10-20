@@ -206,7 +206,7 @@ multi-monitor and performance controls on MangoWC:
 | Script | Role |
 |--------|------|
 | `monitor-apply.sh` | Single source of truth: reads active outputs via `mmsg get all-monitors` and applies the matching `wlr-randr` layout (work 3-mon / home 2-mon / DP fallback / laptop-only). Called by the two below. |
-| `monitor-hotplug.sh` | **Hotplug auto-detect daemon.** Streams `mmsg watch all-monitors` and re-applies the layout automatically on dock/undock (MangoWC applies `monitorrule=` on first sight but not the full positioning/transform on hotplug). Debounces the event burst; single-instance via `flock`. Started from `exec-once` in `config.conf`. |
+| `monitor-hotplug.sh` | **Hotplug auto-detect daemon.** Streams `mmsg watch all-monitors` and re-applies the layout automatically on dock/undock (MangoWC applies `monitor_rule=` on first sight but not the full positioning/transform on hotplug). Debounces the event burst; single-instance via `flock`. Started from `exec_once` in `config.conf`. |
 | `gaming-mode.sh` | Toggles blur/shadows/animations off for full-screen games. |
 
 **Tags follow monitors on undock** is handled by the compositor itself:

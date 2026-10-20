@@ -32,7 +32,7 @@ if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
     # ── Hyprland ────────────────────────────────────────────────────────────────
     hyprctl reload                          # re-read hyprland.conf (rules, binds, blur)
     restart_shell
-    # Relaunch the shell LAST, matching the exec-once launcher (no decorations).
+    # Relaunch the shell LAST, matching the exec_once launcher (no decorations).
     env QT_WAYLAND_DECORATION=none quickshell -c archeotech >/dev/null 2>&1 &
     disown
     exit 0

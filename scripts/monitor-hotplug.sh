@@ -1,17 +1,17 @@
 #!/bin/bash
 # monitor-hotplug.sh — Auto-apply the monitor layout when outputs change.
 #
-# MangoWC applies `monitorrule=` entries when it first sees an output, but it
+# MangoWC applies `monitor_rule=` entries when it first sees an output, but it
 # does NOT re-run the full wlr-randr positioning/transform layout on hotplug —
 # so docking/undocking mid-session left monitors mispositioned until a manual
 # Super+Shift+R. This daemon closes that gap: it streams `mmsg watch
 # all-monitors` and re-applies the layout (via monitor-apply.sh, the same logic
 # mango-reload.sh uses) every time the active-output set changes.
 #
-# Started once from the MangoWC autostart (exec-once). Idempotent and
+# Started once from the MangoWC autostart (exec_once). Idempotent and
 # self-guarding: a second instance exits immediately.
 #
-# Usage: monitor-hotplug.sh        (normally launched by exec-once, not by hand)
+# Usage: monitor-hotplug.sh        (normally launched by exec_once, not by hand)
 
 set -u
 
