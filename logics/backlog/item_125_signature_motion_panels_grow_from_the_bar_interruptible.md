@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 20%
+> Progress: 35%
 > Complexity: High
 > Theme: Motion
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -48,3 +48,8 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+
+# Notes
+- 2026-10-21 (night run, shell branch night/showcase): the "panels fade in" premise is stale. `Strip.qml` already grows the card from the bar edge with `_perp`/`_axis` Behaviors; a mid-flight reverse retargets from the current value, so AC1 holds per property but not through one shared driver (still open, needs a burst capture to prove).
+- Delivered: staggered entrance (`Commons/Primitives/EntranceStagger.qml` + `EntranceLogic.js`, tests/qml/tst_entrancelogic.qml): dashboard hero and cards fade and lift in one after another (55 ms step). Slow-motion frame strip in cr-0w/local/state/night/shots/20261021-showcase/showcase/entrance-slowmo-strip.png.
+- Not done: sliding selection highlight (launcher/settings list), list add/remove transitions, a reduced-motion switch for the entrance (item_114 owns the setting; EntranceStagger already takes `enabled`). The highlight is a visual choice, so it is left for the owner.
