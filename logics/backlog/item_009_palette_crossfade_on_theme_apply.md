@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 10%
+> Progress: 43%
 > Complexity: Medium
 > Theme: Theming polish
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -48,3 +48,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_065_palette_crossfade_on_theme_apply`
+
+# Notes
+- Task `task_065_palette_crossfade_on_theme_apply` was finished via `logics-manager flow finish task` on 2026-10-21.
