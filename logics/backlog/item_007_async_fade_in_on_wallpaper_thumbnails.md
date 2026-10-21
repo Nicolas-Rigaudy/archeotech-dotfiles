@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 10%
+> Progress: 43%
 > Complexity: Low
 > Theme: Picker feel
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -47,3 +47,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_064_async_fade_in_on_wallpaper_thumbnails`
+
+# Notes
+- Task `task_064_async_fade_in_on_wallpaper_thumbnails` was finished via `logics-manager flow finish task` on 2026-10-21.
