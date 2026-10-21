@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 20%
+> Progress: 65%
 > Complexity: Medium
 > Theme: Motion
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -51,3 +51,6 @@
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 - `task_061_unified_motion_presets_with_reduced_motion_and_animation_scale`
+
+# Notes
+- Task `task_061_unified_motion_presets_with_reduced_motion_and_animation_scale` was finished via `logics-manager flow finish task` on 2026-10-21.
