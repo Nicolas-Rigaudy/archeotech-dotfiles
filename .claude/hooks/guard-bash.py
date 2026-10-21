@@ -44,8 +44,6 @@ RULES = [
      "Only launch mango via scripts/shot.sh (headless, isolated config)."),
     (AT + r"(?:qs|quickshell)\s+(?:-c\s+archeotech|--config\s+archeotech)\b(?![^|;&]*\bipc\b)",
      "Launching a second archeotech shell on the live session. Use scripts/shot.sh."),
-    (r"\bgit\b[^|;&]*\bpush\b",
-     "Never git push; leave pushing to the user."),
     (r"\bgit\b[^|;&]*\badd\s+(?:[^|;&]*\s)?(-A|--all|\.)(?=\s|$|[;&|])",
      "Stage explicit paths only; theme-switch churn must stay unstaged."),
     (r"\bgit\b[^|;&]*\bcommit\b[^|;&]*\s-[a-zA-Z]*a[a-zA-Z]*(?=\s|$)",
@@ -53,6 +51,31 @@ RULES = [
     (r"\blogics-manager\s+bootstrap\b",
      "logics-manager bootstrap deletes .claude/; ask the user first."),
 ]
+
+# Pushes: a plain push of a named branch other than main/master is allowed (overnight
+# runs push their feature branches); main, a bare `git push`, force and bulk pushes
+# stay the owner's.
+PUSH_FLAGS_BLOCKED = {"-f", "--force", "--force-with-lease", "--force-if-includes", "-d",
+                      "--delete", "--mirror", "--all", "--tags", "--prune"}
+def _push_blocked(text):
+    for m in re.finditer(r"\bgit\b[^|;&]*?\bpush\b([^|;&]*)", text):
+        args = m.group(1).split()
+        if any(a in PUSH_FLAGS_BLOCKED or a.startswith("--force") for a in args):
+            return True
+        refs = [a for a in args if not a.startswith("-")]
+        if len(refs) < 2:  # no explicit remote + branch: could push main
+            return True
+        for ref in refs[1:]:
+            dst = ref.split(":")[-1].removeprefix("refs/heads/")
+            if ref.startswith("+") or dst in ("main", "master", "HEAD", ""):
+                return True
+    return False
+
+if any(_push_blocked(t) for t in targets):
+    print("BLOCKED by archeotech guard: push only a named feature branch, plainly "
+          f"(git push [-u] origin <branch>); main, bare and force pushes are the user's.\n  cmd: {cmd[:200]}",
+          file=sys.stderr)
+    sys.exit(2)
 
 for pat, why in RULES:
     if any(re.search(pat, t) for t in targets):

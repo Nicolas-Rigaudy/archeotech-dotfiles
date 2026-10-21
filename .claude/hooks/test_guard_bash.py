@@ -18,6 +18,9 @@ BLOCK = [
     "HOME=/tmp/fh theme-switch.py x", "python3 scripts/theme-switch.py --family nord",
     "~/.local/bin/theme-switch.sh archeotech-latte",
     "bash <<'EOF'\npkill quickshell\nEOF",
+    "git push origin", "git push -f origin feat/x", "git push --force-with-lease origin feat/x",
+    "git push origin +feat/x", "git push origin feat/x:main", "git push origin HEAD",
+    "git push --all origin", "git -C ../x push -u origin master",
 ]
 ALLOW = [
     "git status", "git add logics .claude/PLANNING.md", "git add ./scripts/shot.sh",
@@ -27,6 +30,7 @@ ALLOW = [
     "grep -n pkill scripts/theme-switch.py", "cat scripts/theme-switch.sh | head",
     "python3 - <<'EOF'\ns = 'the real `~/.local/bin/theme-switch.sh` runs pkill -USR1 kitty'\nEOF\ngit status",
     "cat logics/x.md | grep push", "echo mango", "rg 'qs -c archeotech' docs",
+    "git push -u origin chore/mango-0.18-keys", "git -C ../x push origin fix/blur",
     'logics-manager sync append-note t --text "blocks pkill/killall shell, qs ipc, grim, theme-switch on the real HOME"',
 ]
 
