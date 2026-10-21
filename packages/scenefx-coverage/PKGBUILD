@@ -3,8 +3,8 @@
 # Stock scenefx blurs a layer surface through a binary stencil: every pixel with
 # alpha > 0 gets the full blur, so anti-aliased corners and soft shadows show a
 # bright ring/band over a dark window in X-ray mode. coverage-blur.patch weights
-# the blur by the surface's alpha instead (full from alpha 0.7 up: the shell's
-# lowest panel alpha, the dark Blur-mode glass), so edges fade from blur to sharp
+# the blur by the surface's alpha instead (full from alpha 0.7 up, under the
+# shell's lowest panel alpha, 0.82 dark glass in both X-ray and Blur), so edges fade from blur to sharp
 # like the surface does. Windows are untouched (mango gives them no mask).
 #
 # 0002-backport-pr199-rotated-blur.patch: backport of wlrfx/scenefx#199, drop
