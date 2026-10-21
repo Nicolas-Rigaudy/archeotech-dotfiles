@@ -50,3 +50,4 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_061_unified_motion_presets_with_reduced_motion_and_animation_scale`
