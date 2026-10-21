@@ -1,10 +1,10 @@
 ## item_130_edit_mode_design_review_and_audit - Edit mode design review and audit
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 50%
 > Complexity: Medium
 > Theme: Polish
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -49,3 +49,6 @@
 
 # Notes
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_070_edit_mode_design_review_and_audit`
