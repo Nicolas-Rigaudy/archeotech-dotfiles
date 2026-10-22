@@ -1,188 +1,131 @@
-# Archeotech Dotfiles - Arch + MangoWC/Hyprland
+<div align="center">
 
-Personal dotfiles for Arch Linux with MangoWC (primary) and Hyprland (backup) desktop environments with Catppuccin Macchiato theming.
+<img src="docs/img/header.svg" alt="Archeotech dotfiles" width="620">
 
-**Theme:** Catppuccin Macchiato with Mauve accent
-**Managed with:** GNU Stow + Git
-**Compositors:** MangoWC (primary - scrolling layouts), Hyprland (backup)
+### An Arch Linux desktop on MangoWC, in one repo. Clone it, run one script, get the same machine back.
 
----
+![Arch Linux](https://img.shields.io/badge/Arch%20Linux-1793d1?logo=archlinux&logoColor=white)
+![MangoWC and Hyprland](https://img.shields.io/badge/compositor-MangoWC%20%C2%B7%20Hyprland-7dc4e4)
+![GNU Stow](https://img.shields.io/badge/managed%20with-GNU%20Stow-c6a0f6)
+![Daily driver](https://img.shields.io/badge/status-daily%20driver-a6da95)
 
-> **The desktop shell lives in a separate repo.** As of 2026-07-09 the Archeotech
-> Quickshell shell (bar, panels, launcher, theme system — the publishable product)
-> was split out into **[archeotech-shell](https://github.com/Nicolas-Rigaudy/archeotech-shell)**.
-> This repo is now **only the personal machine config** (compositor keybinds + monitor
-> rules, kitty/fish/rofi/etc, system files, wallpapers). The shell is deployed
-> separately — its own `install.sh` symlinks it to `~/.config/quickshell/archeotech`
-> and it's launched with `qs -c archeotech` (see the mango config here for the
-> launch/IPC binds). See `.claude/DECISIONS.md [2026-07-09]` for the split rationale.
->
-> _Note: sections below still describe the older waybar-era layout and are due a refresh._
+<img src="docs/img/desktop.png" alt="MangoWC with kitty, yazi and fastfetch under the Archeotech shell" width="900">
+
+<sub>MangoWC scrolling layout with kitty, yazi and fastfetch, under the Archeotech shell. Isolated render.</sub>
+
+</div>
 
 ---
 
-## Features
+These are the configs of a work laptop that docks at two desks. MangoWC tiles the windows,
+the [Archeotech shell](https://github.com/Nicolas-Rigaudy/archeotech-shell) draws the bar and panels,
+and kitty, fish, starship, rofi, GTK and the terminal tools share one Catppuccin theme.
+Every file lives in this repo. GNU Stow links it into `~/.config`. An edit is a git change.
+Hyprland stays configured as a fallback, selectable at the login screen.
 
-- ✨ **MangoWC** - Modern Wayland compositor with scrolling layouts (primary)
-- 🔄 **Hyprland** - Stable fallback compositor with animations (backup)
-- 🎨 **Catppuccin Macchiato** - Consistent theming across all apps
-- 🔗 **Stow-based** - Symlink management for easy deployment
-- 📝 **Fully documented** - Complete installation and usage guides
-- 🔄 **Git-tracked** - Version controlled configs
-- 🖥️ **Multi-compositor** - Switch between MangoWC/Hyprland at login
+## A day on this desktop
 
----
+- **Login.** SDDM offers MangoWC or Hyprland. MangoWC starts the shell, the wallpaper, clipboard history and the idle lock.
+- **Docking.** Plug in two monitors. A hotplug watcher applies the right layout, portrait screen included.
+- **Coding.** `Super+Ctrl+P` lists every git repo and opens VS Code and a terminal in the one you pick.
+- **Typing.** The laptop is AZERTY, the desk keyboard is QWERTY. `Alt+Shift` switches and the binds still work.
+- **Gaming.** One toggle turns blur, shadows and animations off for a full-screen game, and back on after.
+- **Updating.** Every pacman transaction takes a btrfs snapshot. A bad update rolls back from the boot menu.
 
-## Quick Start
+## Why it is built this way
 
-### 1. Install Stow
+| Usual dotfiles pain | Here |
+|---|---|
+| Copying files back and forth | **Stow symlinks**: the live config is the repo file |
+| A fresh install that takes a day | **`install.sh --profile full`**: packages, backup, deploy, checks |
+| A config change that breaks the session | **Isolated CI**: compositor configs are verified in a container |
+| Monitors in the wrong place after docking | **Hotplug layouts** per desk, with a wildcard for unknown screens |
+| An update that breaks boot | **Snapper + snap-pac + grub-btrfs** snapshots |
+| A theme that differs per app | **One theme switch** from the shell for kitty, rofi, fish, starship, GTK and MangoWC |
 
-```bash
-sudo pacman -S stow
+## See it
+
+### Every bind, for the keyboard in use
+The shell's keyboard panel reads the MangoWC binds from this repo and labels them for the active layout.
+
+<img src="docs/img/keyboard.png" alt="The keyboard panel listing MangoWC binds" width="900">
+
+### One theme across the desktop
+The theme picked in the shell rewrites kitty, rofi, fish, starship, GTK, hyprlock and the MangoWC borders in this repo.
+
+<img src="docs/img/themes.png" alt="The shell dashboard in six themes" width="900">
+
+## What is configured
+
+| Area | Tools |
+|---|---|
+| Compositor | MangoWC (primary, scrolling layouts), Hyprland (fallback) |
+| Shell | [archeotech-shell](https://github.com/Nicolas-Rigaudy/archeotech-shell) on Quickshell; waybar, swaync and wlogout for Hyprland |
+| Terminal | kitty, fish, starship, atuin, navi |
+| Terminal apps | yazi, lazygit, btop, bat, cava, zathura |
+| Desktop | rofi, swaylock, swayidle, GTK 3/4, xdg-desktop-portal |
+| System | SDDM, snapper, logid, systemd units (in `system/`) |
+
+## Get started
+
+On an Arch install with `paru`:
+
+```sh
+git clone https://github.com/Nicolas-Rigaudy/archeotech-dotfiles.git ~/Projects/archeotech-dotfiles
+cd ~/Projects/archeotech-dotfiles
+./scripts/install.sh --dry-run --profile full   # preview
+./scripts/install.sh --profile full             # packages, then configs
 ```
 
-### 2. Clone Repository
+`install.sh` backs up any existing `~/.config` entry before it links the repo in.
+`--profile minimal` installs only the required packages. Then install the shell from
+[archeotech-shell](https://github.com/Nicolas-Rigaudy/archeotech-shell) with its own installer.
 
-```bash
-cd ~/Projects
-git clone https://github.com/Nicolas-Rigaudy/archeotech-dotfiles.git
-cd archeotech-dotfiles
-```
+Starting from a blank disk? [`docs/INSTALLATION.md`](docs/INSTALLATION.md) covers the full Arch install
+with btrfs subvolumes, snapshots and both compositors.
 
-### 3. Deploy Configs
+These are personal configs for one machine (an Intel laptop, 1920x1200, AZERTY). Monitor names, paths and binds
+reflect that setup. Read before you run.
 
-```bash
-./scripts/install.sh
-```
+<details>
+<summary><b>What is in the box</b></summary>
 
-This will:
-- Backup your existing configs
-- Create symlinks from `~/.config/` to this repo
-- Verify everything is working
+| Path | What |
+|---|---|
+| `config/.config/` | the Stow package: every app config |
+| `scripts/install.sh`, `install-packages.sh` | deploy with Stow, install packages by profile |
+| `scripts/monitor-hotplug.sh`, `monitor-apply.sh` | layout per set of connected monitors |
+| `scripts/project-jump.sh` | rofi picker for git repos |
+| `scripts/gaming-mode.sh` | turn compositor effects off and on |
+| `scripts/setup-snapper.sh`, `update-system-configs.sh` | snapshots, and deploy of `system/` files |
+| `scripts/archeotech-live.sh` | pin the running shell to a commit while the dev checkout moves |
+| `system/etc/` | SDDM, snapper, logid and systemd files for `/etc` |
+| `packages/scenefx-coverage/` | PKGBUILD for a scenefx patch that smooths blurred panel edges |
+| `ci/` | container checks for the compositor configs |
+| `wallpapers/` | wallpapers with their [credits](wallpapers/CREDITS.md) |
+| `logics/` | planning for this repo and the shell |
 
-**That's it!** Your configs are now managed by this repository.
+</details>
 
----
+<details>
+<summary><b>Day-to-day use</b></summary>
 
-## How It Works
+- Edit `~/.config/<app>/...` as usual. It is the repo file.
+- Add an app: create `config/.config/<app>/`, add it to `CONFIGS` in `scripts/install.sh`, run `stow -R config`.
+- Remove the links: `./scripts/uninstall.sh`. The repo stays intact.
+- Reload MangoWC and the shell: `Super+Shift+R`.
 
-This repo uses **GNU Stow** to create symlinks:
-
-```
-~/.config/hypr/  →  ~/Projects/archeotech-dotfiles/config/.config/hypr/
-~/.config/waybar/ →  ~/Projects/archeotech-dotfiles/config/.config/waybar/
-...
-```
-
-When you edit `~/.config/hypr/hyprland.conf`, you're editing the repo file directly. Changes are automatically tracked by git!
-
----
-
-## Repository Structure
-
-```
-archeotech-dotfiles/
-├── config/              # Stow package for .config files
-│   └── .config/
-│       ├── hypr/        # Hyprland configs
-│       ├── waybar/      # Status bar configs
-│       ├── kitty/       # Terminal configs
-│       ├── fish/        # Shell configs
-│       └── ...
-├── scripts/
-│   ├── install.sh       # Deploy dotfiles (stow)
-│   ├── uninstall.sh     # Remove symlinks
-│   └── setup-snapper.sh # Snapshot management setup
-├── docs/
-│   ├── INSTALLATION.md      # Full Arch + MangoWC/Hyprland install guide
-│   ├── KEYBINDS-MANGO.md    # MangoWC keybindings (primary)
-│   ├── KEYBINDS.md          # Hyprland keybindings (backup)
-│   ├── PACKAGES.md          # Package list with explanations
-│   └── TOOLS.md             # Tool configurations and usage
-├── .claude/                 # Claude Code project files
-│   ├── claude.md            # Main project knowledge base
-│   ├── DECISIONS.md         # Technical decisions log
-│   ├── TROUBLESHOOTING.md   # Known issues & solutions
-│   ├── STYLE_GUIDE.md       # Theme and design patterns
-│   └── sessions/            # Session summaries
-└── README.md                # This file
-```
-
----
-
-## Included Configs
-
-- **MangoWC** - Primary compositor with scrolling layout configs
-- **Hyprland** - Backup compositor config, keybinds, animations
-- **Waybar** - Status bar with Catppuccin styling (works on both)
-- **Kitty** - Terminal with FiraCode Nerd Font
-- **Rofi** - Application launcher
-- **Fish** - Shell configuration with productivity tools
-- **Starship** - Prompt configuration
-- **GTK 3/4** - Theme settings
-- **Btop** - System monitor
-- **Yazi** - Terminal file manager
-
----
+</details>
 
 ## Documentation
 
-- 📖 **[Installation Guide](docs/INSTALLATION.md)** - Complete Arch + Hyprland setup
-- 🖥️ **MangoWC Setup** - moved to the [archeotech-shell repo](https://github.com/Nicolas-Rigaudy/archeotech-shell) (`docs/MANGOWC-SETUP.md` there)
-- ⌨️ **[MangoWC Keybindings](docs/KEYBINDS-MANGO.md)** - Primary compositor shortcuts
-- ⌨️ **[Hyprland Keybindings](docs/KEYBINDS.md)** - Backup compositor shortcuts
-- 📦 **[Package List](docs/PACKAGES.md)** - What's installed and why
-- 🛠️ **[Tools Guide](docs/TOOLS.md)** - Tool configurations and usage
-- 🎨 **[Style Guide](.claude/STYLE_GUIDE.md)** - Theme and design patterns
-- 🔧 **[Troubleshooting](.claude/TROUBLESHOOTING.md)** - Common issues & fixes
-
----
-
-## Managing Your Dotfiles
-
-### Making Changes
-
-Just edit files normally:
-```bash
-nvim ~/.config/hypr/hyprland.conf
-```
-
-Since it's a symlink, you're editing the repo file directly.
-
-### Committing Changes
-
-```bash
-cd ~/Projects/archeotech-dotfiles
-git status                    # See what changed
-git add config/.config/hypr/  # Stage changes
-git commit -m "Update keybinds"
-git push
-```
-
-### Deploying to Another Machine
-
-```bash
-git clone <your-repo>
-cd archeotech-dotfiles
-./scripts/install.sh
-```
-
-### Removing Dotfiles
-
-```bash
-./scripts/uninstall.sh  # Removes symlinks, keeps repo intact
-```
-
----
+- [Installation](docs/INSTALLATION.md): from a blank disk to a running desktop
+- [MangoWC keybinds](docs/KEYBINDS-MANGO.md) and [Hyprland keybinds](docs/KEYBINDS.md)
+- [US International layout](docs/KEYBOARD-US-INTL.md)
+- [Packages](docs/PACKAGES.md): what is installed and why
+- [Tools](docs/TOOLS.md): configuration and usage of each tool
 
 ## License
 
-Personal dotfiles - use at your own risk. Feel free to steal anything useful!
-
----
-
-**Last Updated:** 2026-07-09 (shell split out to archeotech-shell)
-**Status:** ✅ Fully Functional
-**Primary Compositor:** MangoWC (scrolling layouts)
-**Backup Compositor:** Hyprland
-**Daily Driver:** Yes
+Personal configs, shared as they are. Take anything useful.
+Wallpapers belong to their authors, see [`wallpapers/CREDITS.md`](wallpapers/CREDITS.md).
