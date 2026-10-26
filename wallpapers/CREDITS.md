@@ -38,3 +38,4 @@ The older files in this folder predate this list.
 | gnome-adwaita-dark.jpg | dark | GNOME Design Team (Jakub Steiner) | CC BY-SA 3.0 (gnome-backgrounds COPYING) | https://gitlab.gnome.org/GNOME/gnome-backgrounds |
 | amazon-aurora-sunrise.jpg | dark | RodrigoErse | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Aurora_amaz%C3%B4nica_no_Lago_do_Cuni%C3%A3.jpg |
 | gnome-curvy-dark.jpg | dark | Jakub Steiner (GNOME) | CC BY-SA 3.0 (gnome-backgrounds COPYING) | https://gitlab.gnome.org/GNOME/gnome-backgrounds |
+| hammerhead-shiver-4k.jpg | dark | unknown photographer (wallhaven upload by Eniram, 2016, no source given; upscaled from 1920x1200) | unknown (**personal use only**) | https://wallhaven.cc/w/gj8vyd |
