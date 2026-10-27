@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 20%
+> Progress: 40%
 > Complexity: Medium
 > Theme: Services
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -48,3 +48,4 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_072_native_quickshell_networking_and_bluetooth_services`
