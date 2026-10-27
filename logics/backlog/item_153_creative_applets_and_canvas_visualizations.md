@@ -8,7 +8,7 @@
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-10-21 17:50:34
+> Indicators reviewed: 2026-10-27 12:22:21
 
 # AI Context
 - Summary: Canvas hero-viz primitive (OrbitViz, shipped on night/showcase as a System Status face) plus the creative applets still to build: Digital Wellbeing, Kanban/Tasks, draw/annotation overlay.
@@ -46,6 +46,7 @@ Scope OUT: the GPU cava audio visualizer (existing item — separate); motion pl
 - Architecture framing: Not needed
 - Architecture signals: (none detected)
 - Architecture follow-up: No architecture decision follow-up is expected based on current signals.
+- 2026-10-21 owner: System Status keeps gauges; Orbit/Chain need refining and integrating into the global panel design, maybe for another panel. 2026-10-27: Orbit face removed from System Status (shell 0fe8efd), OrbitViz kept unmounted; which panels get a canvas visual is decided in req_010_canvas_panel_design_session.
 
 # Links
 - Product brief(s): (none yet)

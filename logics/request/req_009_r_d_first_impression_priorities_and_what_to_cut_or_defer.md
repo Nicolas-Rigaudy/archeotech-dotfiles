@@ -7,6 +7,7 @@
 > Complexity: Medium
 > Theme: Planning
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-10-27 12:22:21
 
 # AI Context
 - Summary: Research note (no code) on what the shell should do next so a new user is impressed, and what to cut or defer from the road_001 roadmap to make room. Written after the 2026-10-21 showcase night (OrbitViz face, staggered dashboard entrance). Items marked "Proposal" are NOT backlog items; nothing here is scheduled.
@@ -76,3 +77,6 @@ MangoWC is the primary target and a niche compositor; Hyprland parity (item_128)
 
 # Backlog
 - none
+
+# Notes
+- P3 settled 2026-10-21 by the owner: gauges stay the System Status default and the Orbit face was removed (2026-10-27). Canvas placement moves to req_010_canvas_panel_design_session.
