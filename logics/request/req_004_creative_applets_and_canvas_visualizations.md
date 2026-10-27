@@ -7,6 +7,7 @@
 > Complexity: High
 > Theme: Applets
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-10-21 17:50:43
 
 # AI Context
 - Summary: A reusable Canvas "hero visualization" primitive (radial nodes + animated strands, decorative orbit/idle motion) plus a set of new creative, full-featured applets — Digital Wellbeing (screen-time), Kanban/Tasks, and a draw/annotation quick-action. Candidate work from ANALYSIS.md §20.
@@ -44,4 +45,4 @@
 - `.claude/ANALYSIS.md` (§20.1 Canvas hero-viz; §20.2 Serpantinum/Brain_Shell applets; §20.3 recs 6/9)
 
 # Backlog
-- none
+- `item_152_creative_applets_and_canvas_visualizations`
