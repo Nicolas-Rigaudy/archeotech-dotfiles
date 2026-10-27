@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 10%
+> Progress: 43%
 > Complexity: Medium
 > Theme: Picker feel
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -48,3 +48,7 @@
 
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- `task_066_live_colour_preview_on_scroll_in_pickers`
+
+# Notes
+- Task `task_066_live_colour_preview_on_scroll_in_pickers` was finished via `logics-manager flow finish task` on 2026-10-21.
