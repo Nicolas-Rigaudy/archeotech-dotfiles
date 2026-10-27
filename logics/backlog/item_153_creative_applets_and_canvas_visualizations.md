@@ -1,4 +1,4 @@
-## item_152_creative_applets_and_canvas_visualizations - Creative applets and canvas visualizations
+## item_153_creative_applets_and_canvas_visualizations - Creative applets and canvas visualizations
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: In progress
@@ -64,4 +64,4 @@ Scope OUT: the GPU cava audio visualizer (existing item — separate); motion pl
 - Generated locally by logics-manager.
 
 # Tasks
-- `task_059_creative_applets_and_canvas_visualizations`
+- `task_075_creative_applets_and_canvas_visualizations`

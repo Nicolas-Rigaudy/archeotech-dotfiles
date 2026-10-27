@@ -1,4 +1,4 @@
-## req_007_r_d_first_impression_priorities_and_what_to_cut_or_defer - R&D: first-impression priorities and what to cut or defer
+## req_009_r_d_first_impression_priorities_and_what_to_cut_or_defer - R&D: first-impression priorities and what to cut or defer
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: Draft
@@ -35,12 +35,12 @@ MangoWC is the primary target and a niche compositor; Hyprland parity (item_128)
 2. Pull the storefront forward: item_077 (without the tag, which stays an owner action) and item_040 onboarding, built from `shot.sh --fresh` renders and burst strips. Reason: it is the first thing strangers see and costs days, not weeks.
 3. Hyprland parity (item_128) before Contexts. Reason: audience size.
 4. Contexts (item_122) stays the headline but time-boxed; if it slips, ship 1.0 with the wow set above and move Contexts to 1.1 (the roadmap already names it the first candidate to move).
-5. Reuse OrbitViz where data is live: network/Bluetooth node graph (completes item_152 AC1), workspace overview. Reason: that is where a plain list is dullest and the data already exists (item_121).
+5. Reuse OrbitViz where data is live: network/Bluetooth node graph (completes item_153 AC1), workspace overview. Reason: that is where a plain list is dullest and the data already exists (item_121).
 
 # Recommendation: defer or cut
 - Defer to after 1.0 (unchanged): 1.3 builder depth (096, 098, 046, 062), 1.2 motion personalities (keep only the reduced-motion/scale switch), 088 bar container variants, 129 more identity packs.
 - Cut or park indefinitely: 1.5 as a block (084 Hyprland Lua, 089 Niri/Sway, 090 Zen chrome, 019/020 refactors) until a user asks; they widen reach before depth is there.
-- Keep small and late: 085 idle/screensaver (OrbitViz would make a cheap one), item_152 AC2-4 (wellbeing, kanban, draw) as opt-in plugins; they are applets, not first-impression work.
+- Keep small and late: 085 idle/screensaver (OrbitViz would make a cheap one), item_153 AC2-4 (wellbeing, kanban, draw) as opt-in plugins; they are applets, not first-impression work.
 - Do not start more identity-pack or theme work before the 0.40 sign-off: past commits were about half look-and-feel iteration (see roadmap risks).
 
 # Proposals (not backlog items, owner to accept or drop)

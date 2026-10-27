@@ -1,4 +1,4 @@
-## req_007_r_d_what_to_prioritise_cut_and_defer_after_0_40_proposals - R&D: what to prioritise, cut and defer after 0.40 (proposals)
+## req_008_r_d_what_to_prioritise_cut_and_defer_after_0_40_proposals - R&D: what to prioritise, cut and defer after 0.40 (proposals)
 > From version: 1.0.0
 > Schema version: 1.0
 > Status: Draft

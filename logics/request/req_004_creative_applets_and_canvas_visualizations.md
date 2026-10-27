@@ -45,4 +45,4 @@
 - `.claude/ANALYSIS.md` (§20.1 Canvas hero-viz; §20.2 Serpantinum/Brain_Shell applets; §20.3 recs 6/9)
 
 # Backlog
-- `item_152_creative_applets_and_canvas_visualizations`
+- `item_153_creative_applets_and_canvas_visualizations`
