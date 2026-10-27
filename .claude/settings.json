@@ -31,12 +31,12 @@
       "Bash(./scripts/shot.sh:*)"
     ],
     "deny": [
-      "Bash(git push:*)",
       "Bash(pkill:*)",
       "Bash(killall:*)",
       "Bash(grim:*)",
       "Bash(logics-manager bootstrap:*)"
-    ]
+    ],
+    "ask": []
   },
   "hooks": {
     "PreToolUse": [
