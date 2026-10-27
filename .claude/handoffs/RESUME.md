@@ -1,9 +1,19 @@
-# Resume here (last updated 2026-10-15, end of session)
+# Resume here (last updated 2026-10-27, merge train)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
 
 ## Where things stand
+- **Merge train 2026-10-27 (local main, NOT pushed):** shell main `c07c2f1` merged
+  fix/blur-coverage, chore/mango-0.18-keys, fix/plugin-strip-tiles, night/golden-diagnosis,
+  night/roadmap-next, night/showcase, night/fallback; `golden.sh` pins
+  `appearance.coverageBlur=on`; 25 goldens regenerated (25/25 pass). Dotfiles main
+  `9ed8093` merged fix/scenefx-rotated-blur, night/logics, night/logics-showcase,
+  night/logics-fallback; colliding ids renumbered: post-0.40 R&D note -> `req_008`,
+  first-impression note -> `req_009`, creative applets -> `item_153` / `task_075`.
+  Local branches and worktrees removed. Owner pushes main and deletes the remote
+  branches (guard hook blocks main pushes). Follow-up: EntranceStagger / OrbitViz
+  (showcase) ignore the reduce-motion and animation-scale settings from item_114.
 - **Program:** `req_005_2026_09_28_audit_upgrade_program` (orchestrator `task_031`),
   sequenced in `logics/roadmap/road_001_archeotech_shell.md`: 0.30 Safety net (done) →
   0.31 Correctness (done) → **0.40 Design v2 (current)** → 0.50 Utility → 0.60 Contexts →
