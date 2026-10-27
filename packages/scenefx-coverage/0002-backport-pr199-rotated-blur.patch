@@ -1,0 +1,44 @@
+From 1d5ce45a0c3eceed7ef182a2c2381cbc1c861914 Mon Sep 17 00:00:00 2001
+From: Elnu <elnu@elnu.com>
+Date: Sat, 1 Aug 2026 07:24:11 -0700
+Subject: [PATCH] blur: use a normal transform when blurring offscreen buffers
+ (#199)
+
+get_main_buffer_blur() only ever samples and writes offscreen framebuffers,
+which are in output buffer orientation. It read tex_options.base.transform,
+which since #154 carries the transparency mask buffer's transform composed
+with the output transform. On a rotated output that is 90 or 270, rotating
+both the clip region and the texture matrix used by every downscale and
+upscale pass.
+
+Layer surfaces with blur_ignore_transparent then blurred the wrong part of
+the buffer and drew whatever the optimized blur pass had left there, so the
+backdrop showed the wallpaper instead of the windows behind the surface.
+
+The clip region reaching this function is already in buffer coordinates, so
+the region transform goes with it.
+---
+ render/fx_renderer/fx_pass.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/render/fx_renderer/fx_pass.c b/render/fx_renderer/fx_pass.c
+index 39b6226..b4867d3 100644
+--- a/render/fx_renderer/fx_pass.c
++++ b/render/fx_renderer/fx_pass.c
+@@ -994,12 +994,11 @@ static struct fx_framebuffer *get_main_buffer_blur(struct fx_gles_render_pass *p
+ 		return NULL;
+ 	}
+ 	fx_options->blur_data = &blur_data;
++	fx_options->tex_options.base.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+ 
+ 	pixman_region32_t damage;
+ 	pixman_region32_init(&damage);
+ 	pixman_region32_copy(&damage, fx_options->tex_options.base.clip);
+-	wlr_region_transform(&damage, &damage, fx_options->tex_options.base.transform,
+-			buffer_bounds.width, buffer_bounds.height);
+ 
+ 	wlr_region_expand(&damage, &damage, blur_data_calc_size(&blur_data));
+ 	// Make sure that the region doesn't expand past the buffer bounds
+-- 
+2.56.0
+
