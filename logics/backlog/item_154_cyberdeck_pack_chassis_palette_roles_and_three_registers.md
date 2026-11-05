@@ -8,6 +8,7 @@
 > Complexity: Medium
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 14:06:14
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -28,6 +29,9 @@
 - Out:
   - Fonts, ornaments, textures and style delegates (own slices).
   - Light mode variant (later, if wanted).
+
+# Decisions
+- Owner decisions 2026-11-05 (compare page cr-0w local/state/shots/cyberdeck-pack/compare.html): keep all three registers (Protocol, Netrunner, Phosphor). Default register: none of the drafts picked; open, ask again with revised renders before building.
 
 # Acceptance criteria
 - AC1: Selecting the pack and each register repaints the whole shell live; contrast-check --strict passes for all three.
@@ -52,4 +56,3 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-

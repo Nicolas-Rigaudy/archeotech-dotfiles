@@ -8,6 +8,7 @@
 > Complexity: Low
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 14:06:14
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -25,6 +26,9 @@
   - Uppercase tracked micro-labels for headers (HUD readout feel).
 - Out:
   - Body font changes.
+
+# Decisions
+- Owner decision 2026-11-05: Oxanium (OFL) for every register; body stays FiraCode.
 
 # Acceptance criteria
 - AC1: Headers render in the chosen OFL face in every register; the licence text ships with the font.
@@ -49,4 +53,3 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-
