@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-11-05, item_112 landed; roadmap re-sequenced; screensaver scoped)
+# Resume here (last updated 2026-11-05, item_156 wave 1 seams landed; item_112 landed; screensaver scoped)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -24,6 +24,14 @@ says where to look and what is next. Update it at the end of each session (`/wra
   ConsoleChrome, BarSegment, BarDivider); core asks `Appearance.hasStyle()`. Docs:
   THEME_PACK.md `surfaces`, STYLE_API.md. Grimdark renders pixel-identical. Styles are
   scanned at startup: new style files need SUPER+SHIFT+R. Cyberdeck seams (item_156) build on this.
+- **item_156 wave 1 DONE (2026-11-05, shell 36db5dc; task_078 50%, In progress):** seven
+  pack style seams, all inert without a pack style (goldens + tests unchanged): FrameStyle
+  (`replacesGlass` blanks the core glass), ScreenEffects (never paint the content hole),
+  BarSegment `cluster`/`vertical`, `Prim.CardHeader` (DashCard), SegmentedControl
+  (`keyRect`, `activeText`/`idleText`), `Prim.RowSelection` (launcher + settings nav,
+  `selectedText`), StripButton (per-slot `active`; `Strip.buttonStyled`). Contract in
+  `docs/STYLE_API.md`. Wave 2 (the Cyberdeck delegates themselves) needs the item_154
+  pack chassis: build item_154 next. Open: `Appearance.shellVersion` is still 0.3.0.
 - **Cyberdeck theme pack scoped (2026-11-05):** `req_011` + items 154-160 + `task_076`.
   One pack, three registers on the unchanged shell layout: Megacorp, Netrunner
   (default), Deck. Spec and research: `.claude/CYBERDECK_RESEARCH.md`; mockups and
