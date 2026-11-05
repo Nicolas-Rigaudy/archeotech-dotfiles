@@ -1,13 +1,14 @@
 ## item_166_cyberdeck_netrunner_register_matches_its_mockup - Cyberdeck Netrunner register matches its mockup
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 80%
-> Progress: 0%
+> Progress: 90%
 > Complexity: High
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 17:31:25
 
 # AI Context
 - Summary: The Netrunner register of the cyberdeck pack, built until the shell matches the round 3 Netrunner mockups side by side. One deliverable: palette, fonts, frame, bar, cards, gauges, selectors, rows, strip, wallpaper and effects together.
@@ -72,3 +73,6 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+
+# Tasks
+- `task_080_cyberdeck_netrunner_register_matches_its_mockup`
