@@ -7,7 +7,7 @@
 > Complexity: High
 > Theme: Ambient
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-11-05 15:02:17
+> Indicators reviewed: 2026-11-05 15:05:16
 
 # AI Context
 - Summary: Idle screensaver in the shell, decided by the owner in the crow hub (req_015, 2026-11-03): plugin sources (terminal, QML, web), Power pane picker with preview and shuffle, a screensaver IPC target that swayidle calls before the lock, and a card layer for crow. Absorbs item_085; road_001 0.60.
@@ -18,6 +18,7 @@
 # Needs
 - Owner decision (crow hub req_015 track 1, 2026-11-03): a full-screen screensaver when the machine idles, with the engine in archeotech-shell. Settings picker near the Power pane idle settings, live preview, shuffle, and screensaver sources as plugins so new ones are easy to add.
 - Source kinds: terminal animation (cmatrix/unimatrix, pipes.sh, asciiquarium, cbonsai, tty-clock, ASCII Star Wars asciimation from a local copy, ascii-magic's 734 MIT animated pieces via `npx ascii-magic-art`), QML scenes (including original ones), and a web page.
+- Research 2026-11-05 (`.claude/SCREENSAVER_RESEARCH.md`) adds two kinds: `shader` (Qt ShaderEffect, Shadertoy-style GLSL, theme-aware through token uniforms; hyprsaver is the nearest prior art and no Quickshell screensaver exists) and `program` (any fullscreen program: gource on the active repo, mpv videos, xscreensaver hacks via Xwayland as best effort). Terminal pool gains termflix (about 60 animations, screensaver flag), astroterm and rotating globes.
 - crow ships a screensaver plugin later (like integrations/archeotech/crow-agents): a 'CR-0W is working' card with run bars, modes overlay / take over / off, default overlay on top of the active source. The engine must allow a plugin card drawn above the active source.
 - Owner wants original ideas too, beyond the classic Linux animations. Placed in road_001 0.60 First impression (owner, 2026-11-05).
 
@@ -31,7 +32,7 @@
 
 # Acceptance criteria
 - AC1: A `screensaver` IPC target starts, stops and previews the screensaver; any input dismisses it and returns focus to the previous window.
-- AC2: Sources are plugins discovered from a manifest; QML, terminal and web sources each have at least one working example, and adding a source needs no core edit.
+- AC2: Sources are plugins discovered from a manifest; QML, shader, terminal, program and web sources each have at least one working example, and adding a source needs no core edit.
 - AC3: Settings (Power pane, next to the idle timeouts) picks a source or shuffle, shows a live preview, and sets the screensaver timeout before the lock.
 - AC4: swayidle starts the screensaver through the IPC target before the lock timeout, on MangoWC and Hyprland.
 - AC5: A plugin card layer (overlay / take over / off) can draw above the active source; a demo card proves the contract that crow will use.

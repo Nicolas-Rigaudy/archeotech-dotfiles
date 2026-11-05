@@ -8,6 +8,7 @@
 > Complexity: Medium
 > Theme: Ambient
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 15:05:16
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -20,13 +21,16 @@
 
 # Scope
 - In:
-  - Manifest kind for screensaver sources (module.json) with name, kind (qml / terminal / web), preview hint and configSchema.
+  - Manifest kind for screensaver sources (module.json) with name, kind (qml / shader / terminal / program / web), preview hint and configSchema. Research: `.claude/SCREENSAVER_RESEARCH.md`.
   - QML: at least one original scene (reusing OrbitViz or the canvas work is fine) and a clock.
-  - Terminal: cmatrix/unimatrix, pipes.sh, asciiquarium, cbonsai, tty-clock, a local ASCII Star Wars copy, ascii-magic via npx; each declares its package and is hidden when missing.
+  - Shader: Qt ShaderEffect sources (GLSL compiled to .qsb, a small Shadertoy uniform wrapper), at least one theme-aware shader whose uniforms come from the accent and surface tokens; read hyprsaver (MIT) first.
+  - Terminal: termflix (about 60 animations, `--screensaver`) as the main shuffle pool, astroterm (star map at the owner's location), a rotating globe, cmatrix/unimatrix, pipes.sh, asciiquarium, cbonsai, tty-clock, a local ASCII Star Wars copy, ascii-magic via npx; each declares its package and is hidden when missing.
+  - Program: any fullscreen program under the same window rule as terminal sources; gource on a repo (the active Context's repo once 0.70 lands), mpv over a local video folder; xscreensaver hacks via Xwayland as best effort.
   - Web: a URL source, sandboxed, off by default.
   - docs/MODULE_API.md section for screensaver sources.
 - Out:
   - Bundling animation binaries or third-party art in the repo.
+  - Porting xscreensaver hacks to Wayland (wscreensaver is unmaintained; Xwayland only).
 
 # Acceptance criteria
 - AC2: A new source added under modules/ appears in the picker without core edits; one source of each kind plays in an isolated render.
@@ -51,4 +55,3 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-

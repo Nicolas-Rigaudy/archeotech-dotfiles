@@ -8,6 +8,7 @@
 > Complexity: Low
 > Theme: Ambient
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 15:05:16
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -22,7 +23,7 @@
 - In:
   - 2-3 options for the Power pane picker (list with thumbnails, gallery, compact selector plus preview), the live preview placement, and the overlay card (corner card, lower band, centred).
   - Rendered at 1920x1200 with shot.sh --qml standalone mocks, on dark and light, combined into one review page.
-  - At least two original QML scene ideas sketched beyond the classic terminal animations.
+  - At least two original QML scene ideas sketched beyond the classic terminal animations, from `.claude/SCREENSAVER_RESEARCH.md`: glance board (clock, next event, weather, battery), wallpaper drift, dev radar at rest (OrbitViz on live data), flip clock, theme-aware shader.
 - Out:
   - Engine code, plugins and the idle hook.
 
@@ -49,4 +50,3 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-
