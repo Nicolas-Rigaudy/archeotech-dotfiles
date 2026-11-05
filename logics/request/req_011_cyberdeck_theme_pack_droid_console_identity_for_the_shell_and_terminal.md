@@ -7,7 +7,7 @@
 > Complexity: High
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-11-05 14:28:01
+> Indicators reviewed: 2026-11-05 14:47:14
 
 # AI Context
 - Summary: Second official identity pack: a droid-console look with three registers (Protocol, Netrunner, Phosphor), an OFL display font, original ornaments, pack-controlled kitty ANSI slots for crow deck, and the crow agents and screensaver look. CyberArch-Shell ideas (HUD gauges, scanner launcher, kill mode, layout profiles) scoped as core or plugin slices.
@@ -71,3 +71,4 @@
 
 # Notes
 - 2026-11-05: first pass (token-only Protocol/Netrunner/Phosphor registers) rejected by the owner as a colour filter on the stock shell. Redone as three full directions (Megacorp, Netrunner, Deck) with their own structure, rendered as QML mockups; research in .claude/CYBERDECK_RESEARCH.md, compare page cr-0w local/state/shots/cyberdeck-pack/compare2.html. Direction pick pending. Owner direction: cyberdeck aesthetic, megacorp corporate terminals, matrix data, CR-0W droid.
+- Owner 2026-11-05: plan the pack from the round 3 mockups (compare3.html; spec .claude/CYBERDECK_RESEARCH.md). Animation, detailed panel layouts and per-element refinement happen case by case during the build. Default register: Netrunner.
