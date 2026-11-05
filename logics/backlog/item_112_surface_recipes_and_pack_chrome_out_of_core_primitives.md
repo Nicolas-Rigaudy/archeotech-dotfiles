@@ -1,14 +1,14 @@
 ## item_112_surface_recipes_and_pack_chrome_out_of_core_primitives - Surface recipes and pack chrome out of core primitives
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 32%
+> Progress: 100%
 > Complexity: High
 > Theme: Theming engine
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 15:27:46
+> Indicators reviewed: 2026-11-05 15:36:24
 
 # AI Context
 - Summary: Surface recipes and pack chrome out of core primitives. frameChamfer doubles as the 'is this Grimdark' switch (72 references in 20 files)
@@ -43,7 +43,7 @@
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
 - Request: `req_005_2026_09_28_audit_upgrade_program`
-- Primary task(s): `task_031_orchestrate_2026_09_28_audit_upgrade_program`
+- Primary task(s): `task_059_surface_recipes_and_pack_chrome_out_of_core_primitives`
 
 # Priority
 - Priority: High
@@ -52,3 +52,6 @@
 # Tasks
 - `task_031_orchestrate_2026_09_28_audit_upgrade_program`
 - `task_059_surface_recipes_and_pack_chrome_out_of_core_primitives`
+
+# Notes
+- Task `task_059_surface_recipes_and_pack_chrome_out_of_core_primitives` was finished via `logics-manager flow finish task` on 2026-11-05.

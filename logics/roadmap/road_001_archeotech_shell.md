@@ -4,7 +4,7 @@
 > Related product: `prod_001_archeotech_shell`
 > Related request: `req_005_2026_09_28_audit_upgrade_program`
 > Reminder: Update status, milestone scope, linked refs, risks, and success signals when you edit this doc.
-> Indicators reviewed: 2026-09-29 15:59:05
+> Indicators reviewed: 2026-11-05 15:36:41
 
 # AI Context
 - Summary: Roadmap for the Archeotech shell, re-sequenced after the 2026-09-28 audit and again on 2026-11-05 (design system v2, utility layer, wallpaper modes, first impression, Contexts, 1.0, add-on packs).
@@ -110,7 +110,7 @@ flowchart TD
 - `item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers`: Cyberdeck pack chassis: palette, roles and three registers
 - Goal: A semantic, mode-aware design system with designed light themes, pack chrome out of core, and the Corvus Dataslate base identity.
 - Scope: Semantic tokens with a contrast floor, light surface recipe, surface recipes and style delegates, primitive completion with focus/disabled states, unified motion presets, glass decision, retire test packs, plus tray menu, edit mode, dismissal consistency, accent for all families and picker feel. Cyberdeck is the proving pack (owner, 2026-11-05): item_156's delegate seams and item_154's chassis land here because they test item_112's "no pack branch in core" rule with a pack that is not Grimdark; the rest of the pack is 1.1.
-- Left (2026-11-05): autonomous: 112 (about 40 platedChrome branches), 113 (IconButton, ListRow, TextField, ComboBox, Scrollbar, focus ring). Owner: 115 contact-sheet sign-off, 130 edit-mode direction, live checks for 039 (tray right-click), 017 (close keybind, Esc on bar popups).
+- Left (2026-11-05): autonomous: 113 (IconButton, ListRow, TextField, ComboBox, Scrollbar, focus ring). Owner: 115 contact-sheet sign-off, 130 edit-mode direction, live checks for 039 (tray right-click), 017 (close keybind, Esc on bar popups).
 - Exit signal: No hex literal outside tokens, every golden passes AA in glass/flat/light, no pack-specific branch in core (proved by the Grimdark and Cyberdeck chassis rendering with zero core edits), owner signs off on the base contact sheet.
 
 ## 0.50 - Daily utility layer

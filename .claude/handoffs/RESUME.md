@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-11-05, roadmap re-sequenced; screensaver scoped)
+# Resume here (last updated 2026-11-05, item_112 landed; roadmap re-sequenced; screensaver scoped)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -18,6 +18,12 @@ says where to look and what is next. Update it at the end of each session (`/wra
   `.claude/SCREENSAVER_RESEARCH.md` (hyprsaver is the nearest prior art; termflix,
   astroterm, gource). Next: item_161 mockups (picker, preview, overlay card, 2-3 original
   scenes) on one review page for the owner's pick, before any build.
+- **item_112 DONE (2026-11-05, shell cd43af7):** pack chrome is out of core. A pack sets
+  per-role surface recipes in tokens.json `surfaces` (panel, selector, choice, key, button,
+  segment.pad, popup) and ships style delegates in `packs/<id>/styles/` (MetalSurface,
+  ConsoleChrome, BarSegment, BarDivider); core asks `Appearance.hasStyle()`. Docs:
+  THEME_PACK.md `surfaces`, STYLE_API.md. Grimdark renders pixel-identical. Styles are
+  scanned at startup: new style files need SUPER+SHIFT+R. Cyberdeck seams (item_156) build on this.
 - **Cyberdeck theme pack scoped (2026-11-05):** `req_011` + items 154-160 + `task_076`.
   One pack, three registers on the unchanged shell layout: Megacorp, Netrunner
   (default), Deck. Spec and research: `.claude/CYBERDECK_RESEARCH.md`; mockups and
@@ -125,7 +131,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
    (Edit Layout decides, owner pick); Settings > Shell > Dashboard . Project folders edits
    dashboard.scanRoots; Config drops obsolete keys on load (ConfigLogic.OBSOLETE_KEYS).
 2. item_140 per-mode wallpapers; item_141 theme library research (later, low); item_143 Zen theming retry (low; the userChrome applier and the fake Restart Zen toggle were removed 2026-10-01).
-3. Remaining 0.40: 112-117, 039, 130 (edit mode review), 045, 017, 091, 006/007/009.
+3. Remaining 0.40: 113-117 (113 next autonomous), 039, 130 (edit mode review), 045, 017, 091, 006/007/009.
 
 ## How to work
 - One item at a time with `/shell-item`; `/verify` for the checklist; `visual-verifier`
