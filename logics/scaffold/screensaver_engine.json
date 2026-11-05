@@ -1,0 +1,182 @@
+{
+  "title": "Screensaver engine: pluggable sources, Settings picker and idle hook",
+  "references": [
+    "cr-0w logics/request/req_015_wishlist_ambient_mobile_voice_colleague_ideas.md (track 1, decided 2026-11-03)",
+    "cr-0w local/state/handoffs/2026-11-03-1322-archeotech-shell.md",
+    "cr-0w integrations/archeotech/crow-agents",
+    "logics/backlog/item_085_idle_and_screensaver_mode.md",
+    "logics/backlog/item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack.md",
+    "archeotech-shell Modules/Settings/Panes/PowerPane.qml",
+    "archeotech-shell docs/MODULE_API.md",
+    "archeotech-shell shell.qml (IpcHandler targets)",
+    "config/.config/swayidle/config.sh",
+    "logics/roadmap/road_001_archeotech_shell.md (0.60 First impression)"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Ambient",
+    "needs": [
+      "Owner decision (crow hub req_015 track 1, 2026-11-03): a full-screen screensaver when the machine idles, with the engine in archeotech-shell. Settings picker near the Power pane idle settings, live preview, shuffle, and screensaver sources as plugins so new ones are easy to add.",
+      "Source kinds: terminal animation (cmatrix/unimatrix, pipes.sh, asciiquarium, cbonsai, tty-clock, ASCII Star Wars asciimation from a local copy, ascii-magic's 734 MIT animated pieces via `npx ascii-magic-art`), QML scenes (including original ones), and a web page.",
+      "crow ships a screensaver plugin later (like integrations/archeotech/crow-agents): a 'CR-0W is working' card with run bars, modes overlay / take over / off, default overlay on top of the active source. The engine must allow a plugin card drawn above the active source.",
+      "Owner wants original ideas too, beyond the classic Linux animations. Placed in road_001 0.60 First impression (owner, 2026-11-05)."
+    ],
+    "context": [
+      "Idle today: swayidle is started by config/.config/swayidle/config.sh (dotfiles) with dim / lock / sleep timeouts read from ~/.cache/swayidle.conf; PowerPane.qml edits those values and re-runs the script. The shell has no idle behaviour of its own.",
+      "A layer-shell overlay cannot host a terminal, so terminal sources need a fullscreen kitty window with a compositor rule (MangoWC windowrule and Hyprland windowrule), or a terminal emulator embedded in QML; check before designing.",
+      "Plugins: modules/<id>/module.json + entry QML per docs/MODULE_API.md, with configSchema for per-instance settings. A screensaver source can be a new canLiveIn target or its own manifest kind.",
+      "IPC: shell.qml exposes IpcHandler targets (theme, launcher, settings, panel, osd, ...). The swayidle hook will call a new `screensaver` target before the lock; the dotfiles change is its own item.",
+      "Absorbs item_085 (idle and screensaver mode). item_158 (Cyberdeck crow agents and screensaver look) builds on this engine.",
+      "Safety: testing stays isolated (shot.sh / desk-check.py); never trigger the live session's idle or screensaver."
+    ],
+    "acceptance_criteria": [
+      "AC1: A `screensaver` IPC target starts, stops and previews the screensaver; any input dismisses it and returns focus to the previous window.",
+      "AC2: Sources are plugins discovered from a manifest; QML, terminal and web sources each have at least one working example, and adding a source needs no core edit.",
+      "AC3: Settings (Power pane, next to the idle timeouts) picks a source or shuffle, shows a live preview, and sets the screensaver timeout before the lock.",
+      "AC4: swayidle starts the screensaver through the IPC target before the lock timeout, on MangoWC and Hyprland.",
+      "AC5: A plugin card layer (overlay / take over / off) can draw above the active source; a demo card proves the contract that crow will use.",
+      "AC6: Mockup options for the picker, preview and overlay card are rendered and the owner picks one before the UI is built."
+    ]
+  },
+  "product": {
+    "title": "Screensaver engine",
+    "overview": "An idle screensaver for the Archeotech shell with pluggable sources (terminal, QML, web), a Settings picker with live preview and shuffle, and an overlay card layer for plugins such as crow.",
+    "goals": [
+      "The machine shows something alive when idle, picked from Settings in two keystrokes.",
+      "New screensavers are a plugin drop-in, not a core change.",
+      "crow and identity packs can show their own card or look on top."
+    ],
+    "non_goals": [
+      "The lock screen itself (item_018) and DPMS / suspend policy.",
+      "Shipping crow's own card (it lives in the crow repo).",
+      "Bundling third-party animations whose licence forbids it."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Screensaver mockups: picker, preview and overlay card options",
+      "priority": "High",
+      "complexity": "Low",
+      "theme": "Ambient",
+      "request_acs": ["AC6"],
+      "problem": [
+        "The picker, preview and overlay card are visual choices; the owner picks from rendered options before any UI build (standing rule)."
+      ],
+      "scope_in": [
+        "2-3 options for the Power pane picker (list with thumbnails, gallery, compact selector plus preview), the live preview placement, and the overlay card (corner card, lower band, centred).",
+        "Rendered at 1920x1200 with shot.sh --qml standalone mocks, on dark and light, combined into one review page.",
+        "At least two original QML scene ideas sketched beyond the classic terminal animations."
+      ],
+      "scope_out": [
+        "Engine code, plugins and the idle hook."
+      ],
+      "acceptance_criteria": [
+        "AC6: The owner has picked a picker layout, a preview placement and an overlay card style; the pick is recorded in this item."
+      ]
+    },
+    {
+      "title": "Screensaver engine core: IPC target, fullscreen host and dismissal",
+      "priority": "High",
+      "complexity": "High",
+      "theme": "Ambient",
+      "request_acs": ["AC1", "AC5"],
+      "problem": [
+        "The shell has no screensaver surface, no IPC entry to start one and no layer where a plugin card can draw over it."
+      ],
+      "scope_in": [
+        "`screensaver` IpcHandler target: start, stop, preview <source>, status.",
+        "Fullscreen host per screen (all outputs) with dismissal on any key, pointer move or click, restoring focus.",
+        "Card layer above the source with modes overlay / take over / off and a demo card.",
+        "Terminal-source host decision recorded as an ADR: kitty fullscreen window + compositor rule versus an embedded terminal.",
+        "Reduce motion and the 114 animation scale respected by the engine's own fades."
+      ],
+      "scope_out": [
+        "Individual sources (own item), Settings UI, swayidle changes."
+      ],
+      "acceptance_criteria": [
+        "AC1: `qs ipc call screensaver start` in an isolated session shows the active source on every output and any input dismisses it.",
+        "AC5: A demo card draws over the source in overlay mode and replaces it in take-over mode."
+      ]
+    },
+    {
+      "title": "Screensaver source plugins: QML, terminal and web examples",
+      "priority": "Medium",
+      "complexity": "Medium",
+      "theme": "Ambient",
+      "request_acs": ["AC2"],
+      "problem": [
+        "Sources must be drop-in plugins so new screensavers need no core edit."
+      ],
+      "scope_in": [
+        "Manifest kind for screensaver sources (module.json) with name, kind (qml / terminal / web), preview hint and configSchema.",
+        "QML: at least one original scene (reusing OrbitViz or the canvas work is fine) and a clock.",
+        "Terminal: cmatrix/unimatrix, pipes.sh, asciiquarium, cbonsai, tty-clock, a local ASCII Star Wars copy, ascii-magic via npx; each declares its package and is hidden when missing.",
+        "Web: a URL source, sandboxed, off by default.",
+        "docs/MODULE_API.md section for screensaver sources."
+      ],
+      "scope_out": [
+        "Bundling animation binaries or third-party art in the repo."
+      ],
+      "acceptance_criteria": [
+        "AC2: A new source added under modules/ appears in the picker without core edits; one source of each kind plays in an isolated render."
+      ]
+    },
+    {
+      "title": "Screensaver settings: source picker, shuffle, live preview, timeout",
+      "priority": "Medium",
+      "complexity": "Medium",
+      "theme": "Ambient",
+      "request_acs": ["AC3"],
+      "problem": [
+        "The owner needs to pick, preview and time the screensaver next to the existing idle settings."
+      ],
+      "scope_in": [
+        "Power pane section in the layout picked in the mockup item: source or shuffle (ButtonGroupRow / list per design rules), live preview, timeout before lock, card mode (overlay / take over / off) when a card plugin is installed.",
+        "Values persisted with the idle settings (~/.cache/swayidle.conf gains SCREENSAVER_* keys) and in settings search."
+      ],
+      "scope_out": [
+        "The swayidle script change (dotfiles item)."
+      ],
+      "acceptance_criteria": [
+        "AC3: Choosing a source updates the preview live, shuffle rotates sources between runs, and the timeout is written where the idle hook reads it."
+      ]
+    },
+    {
+      "title": "Dotfiles idle hook: swayidle starts the shell screensaver before the lock",
+      "priority": "Medium",
+      "complexity": "Low",
+      "theme": "Ambient",
+      "request_acs": ["AC4"],
+      "problem": [
+        "Idle detection stays in the dotfiles; swayidle must call the shell's screensaver IPC before locking."
+      ],
+      "scope_in": [
+        "config/.config/swayidle/config.sh: a SCREENSAVER timeout calling `qs -c archeotech ipc call screensaver start`, resume calling stop, ordered before dim and lock.",
+        "Kitty fullscreen windowrule for terminal sources in mango and hyprland configs.",
+        "Animation tools listed as optional in docs/PACKAGES.md and install-packages.sh."
+      ],
+      "scope_out": [
+        "Testing on the owner's live session (the owner checks it; isolated tests only)."
+      ],
+      "acceptance_criteria": [
+        "AC4: After the screensaver timeout the screensaver starts, input stops it, and the lock still follows at its own timeout on MangoWC and Hyprland."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Orchestrate the screensaver engine",
+    "plan": [
+      "Render picker, preview and overlay card options; owner picks (mockup item).",
+      "Decide the terminal-source host (kitty window + rule vs embedded) as an ADR, then build the engine core with the IPC target and card layer.",
+      "Source plugins: QML first, then terminal, then web.",
+      "Settings section in the picked layout.",
+      "Dotfiles swayidle hook and window rules; owner checks on the live desk.",
+      "Retire item_085 as absorbed; hand item_158 and the crow card the card-layer contract."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/screensaver_engine.json",
+    "mode": "summary-only",
+    "profile": "normal"
+  }
+}

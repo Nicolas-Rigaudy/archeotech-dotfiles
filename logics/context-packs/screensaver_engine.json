@@ -1,0 +1,636 @@
+{
+  "budgets": {
+    "max_docs": 28,
+    "max_docs_per_ref": 4
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook item_161_screensaver_mockups_picker_preview_and_overlay_card_options item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal item_163_screensaver_source_plugins_qml_terminal_and_web_examples item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock task_077_orchestrate_the_screensaver_engine --mode summary-only --profile normal --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_161_screensaver_mockups_picker_preview_and_overlay_card_options",
+          "item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal",
+          "item_163_screensaver_source_plugins_qml_terminal_and_web_examples",
+          "item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout",
+          "item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook"
+        ],
+        "task": [
+          "task_077_orchestrate_the_screensaver_engine"
+        ]
+      },
+      "path": "logics/product/prod_005_screensaver_engine.md",
+      "ref": "prod_005_screensaver_engine",
+      "status": "Proposed",
+      "title": "Screensaver engine"
+    },
+    {
+      "kind": "roadmap",
+      "linked_refs": {
+        "item": [
+          "item_003_verify_vscode_colorcustomizations_regen_on_non_catppuccin_themes",
+          "item_005_fix_dock_undock_freeze_wlroots_output_hotplug_on_mangowm_0_16",
+          "item_006_live_colour_preview_on_scroll_in_pickers",
+          "item_007_async_fade_in_on_wallpaper_thumbnails",
+          "item_008_eager_warm_the_wallpapers_service_at_shell_startup",
+          "item_009_palette_crossfade_on_theme_apply",
+          "item_010_move_thumbnail_cache_to_freedesktop_shared_path",
+          "item_011_decide_and_apply_lid_close_while_docked_suspend_behaviour",
+          "item_012_flat_glass_aesthetic_settings_toggle_full_rollout",
+          "item_013_layout_loadouts_presets",
+          "item_015_auto_hide_sides_in_fullscreen",
+          "item_016_launcher_keyboard_first_master_search",
+          "item_017_panel_keybinds_dismissal_consistency",
+          "item_018_lock_screen_customization_widgets_settings_pane",
+          "item_019_theme_applier_plugins_refactor",
+          "item_020_core_plugin_optional_extraction",
+          "item_021_theme_packs_official_community",
+          "item_022_visual_builder_drag_and_drop_spatial_zone_representation",
+          "item_023_dev_workflow_bar_widgets_docker_keyboardlayout_capslock",
+          "item_026_multi_monitor_compositor_utilities",
+          "item_030_screenshot_recording_improvements",
+          "item_033_per_workspace_wallpapers",
+          "item_035_coherency_audit_slice_2_selector_unification_remaining",
+          "item_036_coherency_audit_slice_3_flat_mode_sweep",
+          "item_037_coherency_audit_slice_4_dedup_inputs",
+          "item_038_coherency_audit_slice_5_one_offs_tokens",
+          "item_039_glass_themed_system_tray_context_menu_tooltip",
+          "item_040_demo_onboarding_mode",
+          "item_043_fix_dashboard_auto_close_right_after_boot",
+          "item_044_workspace_indicators_3d_polish",
+          "item_045_edit_mode_stragglers_onto_3d_glass_theme",
+          "item_046_dashboard_customizable_grid",
+          "item_047_dashboard_pinnable_projects",
+          "item_048_dashboard_hero_rotating_quote",
+          "item_049_dashboard_customizable_system_notes_data_reliability",
+          "item_050_gradient_sheen_on_nested_cards_experiment",
+          "item_051_named_theme_personalities_as_glass_base_variants",
+          "item_062_desktop_widget_layer_sprint_21_chunk_3_deferred",
+          "item_063_configschema_auto_forms_plugin_widget_manager_pane",
+          "item_064_holder_aware_panels_responsive_vertical_orientation_widgets",
+          "item_065_archeotech_plugin_install_mechanism_plugins_json_index",
+          "item_066_plugin_manifest_schema_official_verified_minshellversion_deps",
+          "item_067_headless_render_harness_shot_sh_qs_ipc_state_driving",
+          "item_068_visual_regression_vs_goldens_qml_logic_tests_arch_container_ci",
+          "item_070_compositorservice_facade_mango_hyprland_service_extraction",
+          "item_071_hyprland_config_port_dual_sddm_session_reload_parity",
+          "item_072_docs_compositor_support_md_for_both_compositors",
+          "item_073_hardcoded_path_audit_zero_home_corvus",
+          "item_074_install_sh_rewrite_install_packages_sh_required_vs_optional",
+          "item_075_scripted_per_variant_theme_symlinks",
+          "item_076_api_install_contributing_docs",
+          "item_077_readme_screenshots_demo_gif_v1_0_0_tag",
+          "item_078_hud_framing_kit_angular_corners_corner_brackets_reticle_grids_mono_micro_labels",
+          "item_079_cava_audio_visualizer_element_bar_dashboard_lock_spectrum_opt_in",
+          "item_081_theming_capability_surface_engine_token_tree_component_style_registry_decorator_fx_motion_hooks_pack_scoped_settings",
+          "item_082_flagship_theme_pack_1_wh40k_shadow_spears_dataslate",
+          "item_083_theming_engine_ornament_asset_overlay_fx_pack_font_hook_flagship_gap",
+          "item_084_migrate_hyprland_config_to_lua_window_rules_per_app_opacity_floating_pip",
+          "item_085_idle_and_screensaver_mode",
+          "item_087_settings_deep_dive_search_display_modes_deep_linking",
+          "item_088_bar_container_style_variants_continuous_pills_framed_floating_per_side",
+          "item_089_niri_and_sway_compositor_services_post_v1_0",
+          "item_090_zen_browser_dynamic_chrome_theming_palette_follow_no_restart",
+          "item_091_accent_picker_for_all_theme_families_with_gtk_fallback",
+          "item_092_author_overview_mermaid_diagrams_for_remaining_adrs",
+          "item_096_visual_builder_applet_grouping_drop_onto_group_zone_merge_into_combined_pill",
+          "item_098_custom_pill_containers_arbitrary_n_separators_containers_per_side_with_chosen_widgets",
+          "item_101_isolate_shot_sh_fully_and_render_any_worktree",
+          "item_102_claude_code_project_tooling_guard_hooks_qt6_lint_skills_and_reviewer_agents",
+          "item_103_live_bar_on_a_pinned_worktree_with_a_promote_script",
+          "item_104_docs_and_repo_hygiene_after_the_audit",
+          "item_105_service_command_runner_queue_and_startup_gating",
+          "item_106_bar_and_strip_widget_instantiation_fixes",
+          "item_107_no_fake_toggles_sweep_controls_bound_to_real_state",
+          "item_108_toast_osd_and_network_service_hardening",
+          "item_109_visual_defects_found_in_the_audit_render_matrix",
+          "item_110_semantic_token_layer_with_contrast_floor_and_spacing_type_scales",
+          "item_111_designed_light_themes_with_their_own_surface_recipe",
+          "item_112_surface_recipes_and_pack_chrome_out_of_core_primitives",
+          "item_113_primitive_library_completion_with_focus_and_disabled_states",
+          "item_114_unified_motion_presets_with_reduced_motion_and_animation_scale",
+          "item_115_corvus_dataslate_base_identity",
+          "item_116_glass_material_decision_real_blur_or_satin",
+          "item_117_retire_angular_and_hud_test_packs_to_test_fixtures",
+          "item_118_launcher_command_palette_with_providers",
+          "item_119_notifications_v2_actions_images_grouping_history",
+          "item_120_state_driven_osd_generic_panel_ipc_and_keybind_cheatsheet",
+          "item_121_native_quickshell_networking_and_bluetooth_services",
+          "item_122_contexts_one_switch_for_project_cloud_and_workspace_state",
+          "item_123_dev_radar_widgets_aws_sso_pill_and_git_pr_ci_radar",
+          "item_124_claude_ask_panel",
+          "item_125_signature_motion_panels_grow_from_the_bar_interruptible",
+          "item_126_versioned_plugin_api_exposing_shell_services",
+          "item_127_portability_hardening_for_strangers_machines",
+          "item_128_fresh_arch_install_test_and_hyprland_service_parity",
+          "item_129_additional_add_on_identity_packs_cyberpunk_and_gundam",
+          "item_130_edit_mode_design_review_and_audit",
+          "item_134_settings_audit_fake_controls_missing_settings",
+          "item_135_display_settings_real_layout_arrangement_profiles",
+          "item_136_input_settings_keyboard_layout_repeat_touchpad",
+          "item_137_clock_format_bar_widget_options_scan_roots_settings",
+          "item_138_settings_ux_per_setting_search_and_reset",
+          "item_141_theme_library_research_reference_shells",
+          "item_143_zen_theming_follows_palette",
+          "item_146_wallpaper_source_contract_one_owner_active_mode_plugin_hook",
+          "item_147_wallpaper_rotation_through_a_selection",
+          "item_148_per_monitor_wallpapers",
+          "item_149_weather_wallpapers_plugin",
+          "item_150_animated_and_effect_wallpapers_plugin",
+          "item_151_theme_pack_wallpapers_grimdark_hud_angular",
+          "item_152_fastfetch_logo_in_the_theme_accent",
+          "item_153_creative_applets_and_canvas_visualizations",
+          "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+          "item_155_cyberdeck_display_font_and_type_scale",
+          "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+          "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+          "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+          "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles"
+        ],
+        "prod": [
+          "prod_001_archeotech_shell",
+          "prod_003_archeotech_1_0_after_the_2026_09_28_audit"
+        ],
+        "req": [
+          "req_000_archeotech_shell_dotfiles",
+          "req_001_theming_capability_surface_flagship_identity_packs",
+          "req_002_motion_and_fluidity_system",
+          "req_003_swappable_widget_faces_and_skins",
+          "req_004_creative_applets_and_canvas_visualizations",
+          "req_005_2026_09_28_audit_upgrade_program",
+          "req_006_wallpaper_modes",
+          "req_007_fastfetch_logo_in_the_theme_accent",
+          "req_008_r_d_what_to_prioritise_cut_and_defer_after_0_40_proposals",
+          "req_009_r_d_first_impression_priorities_and_what_to_cut_or_defer",
+          "req_010_canvas_panel_design_session",
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "road": [
+          "road_001_archeotech_shell"
+        ],
+        "task": [
+          "task_015_output_hotplug_auto_detect_tags_follow_monitor_gaming_mode_remaining",
+          "task_031_orchestrate_2026_09_28_audit_upgrade_program",
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/roadmap/road_001_archeotech_shell.md",
+      "ref": "road_001_archeotech_shell",
+      "status": "Proposed",
+      "title": "Archeotech shell"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+          "item_155_cyberdeck_display_font_and_type_scale",
+          "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+          "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+          "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+          "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/product/prod_004_cyberdeck_identity_pack.md",
+      "ref": "prod_004_cyberdeck_identity_pack",
+      "status": "Proposed",
+      "title": "Cyberdeck identity pack"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "screensaver, engine, pluggable, sources, settings, picker, idle, hook",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_085_idle_and_screensaver_mode",
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+          "item_161_screensaver_mockups_picker_preview_and_overlay_card_options",
+          "item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal",
+          "item_163_screensaver_source_plugins_qml_terminal_and_web_examples",
+          "item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout",
+          "item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook",
+          "req_015_wishlist_ambient_mobile_voice_colleague_ideas"
+        ],
+        "road": [
+          "road_001_archeotech_shell"
+        ]
+      },
+      "path": "logics/request/req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook.md",
+      "ref": "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook",
+      "schema_version": "1.0",
+      "status": "Draft",
+      "title": "Screensaver engine: pluggable sources, Settings picker and idle hook"
+    },
+    {
+      "ai_context": {
+        "keywords": "idle, screensaver, ambient, dim, burn-in, motion",
+        "skip when": "the lock screen (item_018, separate); DPMS / suspend / power policy.",
+        "summary": "An idle / screensaver mode \u2014 after inactivity, dim the shell and show a gentle ambient animation, restoring on cursor/key. Candidate from ANALYSIS.md \u00a720.5 (user-endorsed 2026-09-03); an ambient-motion slice of the motion system (req_002).",
+        "use when": "implementing idle detection + a screensaver/ambient overlay."
+      },
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_085_idle_and_screensaver_mode"
+        ],
+        "req": [
+          "req_002_motion_and_fluidity_system"
+        ]
+      },
+      "path": "logics/backlog/item_085_idle_and_screensaver_mode.md",
+      "ref": "item_085_idle_and_screensaver_mode",
+      "schema_version": "1.0",
+      "status": "Draft",
+      "title": "Idle and screensaver mode"
+    },
+    {
+      "ai_context": {
+        "keywords": "crow, agents, module, screensaver, cyberdeck, pack",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/backlog/item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack.md",
+      "ref": "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "crow agents module and screensaver in the cyberdeck pack"
+    },
+    {
+      "ai_context": {
+        "keywords": "screensaver, mockups, picker, preview, overlay, card, options",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_161_screensaver_mockups_picker_preview_and_overlay_card_options"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook"
+        ],
+        "task": [
+          "task_077_orchestrate_the_screensaver_engine"
+        ]
+      },
+      "path": "logics/backlog/item_161_screensaver_mockups_picker_preview_and_overlay_card_options.md",
+      "ref": "item_161_screensaver_mockups_picker_preview_and_overlay_card_options",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Screensaver mockups: picker, preview and overlay card options"
+    },
+    {
+      "ai_context": {
+        "keywords": "orchestrate, screensaver, engine",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_161_screensaver_mockups_picker_preview_and_overlay_card_options",
+          "item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal",
+          "item_163_screensaver_source_plugins_qml_terminal_and_web_examples",
+          "item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout",
+          "item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook"
+        ],
+        "task": [
+          "task_077_orchestrate_the_screensaver_engine"
+        ]
+      },
+      "path": "logics/tasks/task_077_orchestrate_the_screensaver_engine.md",
+      "ref": "task_077_orchestrate_the_screensaver_engine",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Orchestrate the screensaver engine"
+    },
+    {
+      "ai_context": {},
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_161_screensaver_mockups_picker_preview_and_overlay_card_options",
+          "item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal",
+          "item_163_screensaver_source_plugins_qml_terminal_and_web_examples",
+          "item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout",
+          "item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook"
+        ],
+        "task": [
+          "task_077_orchestrate_the_screensaver_engine"
+        ]
+      },
+      "path": "logics/product/prod_005_screensaver_engine.md",
+      "ref": "prod_005_screensaver_engine",
+      "schema_version": "1.0",
+      "status": "Proposed",
+      "title": "Screensaver engine"
+    },
+    {
+      "ai_context": {
+        "keywords": "screensaver, engine, core, ipc, target, fullscreen, host, dismissal",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook"
+        ],
+        "task": [
+          "task_077_orchestrate_the_screensaver_engine"
+        ]
+      },
+      "path": "logics/backlog/item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal.md",
+      "ref": "item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Screensaver engine core: IPC target, fullscreen host and dismissal"
+    },
+    {
+      "ai_context": {
+        "keywords": "screensaver, source, plugins, qml, terminal, web, examples",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_163_screensaver_source_plugins_qml_terminal_and_web_examples"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook"
+        ],
+        "task": [
+          "task_077_orchestrate_the_screensaver_engine"
+        ]
+      },
+      "path": "logics/backlog/item_163_screensaver_source_plugins_qml_terminal_and_web_examples.md",
+      "ref": "item_163_screensaver_source_plugins_qml_terminal_and_web_examples",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Screensaver source plugins: QML, terminal and web examples"
+    },
+    {
+      "ai_context": {
+        "keywords": "screensaver, settings, source, picker, shuffle, live, preview, timeout",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook"
+        ],
+        "task": [
+          "task_077_orchestrate_the_screensaver_engine"
+        ]
+      },
+      "path": "logics/backlog/item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout.md",
+      "ref": "item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Screensaver settings: source picker, shuffle, live preview, timeout"
+    },
+    {
+      "ai_context": {
+        "keywords": "dotfiles, idle, hook, swayidle, starts, shell, screensaver, before, lock",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock"
+        ],
+        "prod": [
+          "prod_005_screensaver_engine"
+        ],
+        "req": [
+          "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook"
+        ],
+        "task": [
+          "task_077_orchestrate_the_screensaver_engine"
+        ]
+      },
+      "path": "logics/backlog/item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock.md",
+      "ref": "item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Dotfiles idle hook: swayidle starts the shell screensaver before the lock"
+    }
+  ],
+  "estimates": {
+    "char_count": 20862,
+    "companion_doc_count": 3,
+    "doc_count": 10
+  },
+  "generated_at": "2026-11-05T14:02:02Z",
+  "handoff": {
+    "companion_doc_count": 3,
+    "enabled": true,
+    "source_refs": [
+      "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook",
+      "item_161_screensaver_mockups_picker_preview_and_overlay_card_options",
+      "item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal",
+      "item_163_screensaver_source_plugins_qml_terminal_and_web_examples",
+      "item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout",
+      "item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock",
+      "task_077_orchestrate_the_screensaver_engine"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Choose the source locale for app-owned user-facing copy.",
+      "Run logics-manager i18n init --source-locale <locale>.",
+      "Route new UI copy through stable semantic keys."
+    ],
+    "applicable": null,
+    "configured": false,
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "Run logics-manager i18n init --source-locale <locale> for a project that owns user-facing copy.",
+    "ok": true,
+    "state": "absent"
+  },
+  "mode": "summary-only",
+  "profile": "normal",
+  "ref": "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook,item_161_screensaver_mockups_picker_preview_and_overlay_card_options,item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal,item_163_screensaver_source_plugins_qml_terminal_and_web_examples,item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout,item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock,task_077_orchestrate_the_screensaver_engine",
+  "refs": [
+    "req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook",
+    "item_161_screensaver_mockups_picker_preview_and_overlay_card_options",
+    "item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal",
+    "item_163_screensaver_source_plugins_qml_terminal_and_web_examples",
+    "item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout",
+    "item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock",
+    "task_077_orchestrate_the_screensaver_engine"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_077_orchestrate_the_screensaver_engine.md",
+      "ref": "task_077_orchestrate_the_screensaver_engine"
+    }
+  ]
+}

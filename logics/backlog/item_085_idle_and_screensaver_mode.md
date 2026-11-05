@@ -1,13 +1,14 @@
 ## item_085_idle_and_screensaver_mode - Idle and screensaver mode
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Obsolete
 > Understanding: 55
 > Confidence: 55
 > Progress: 0
 > Complexity: Medium
 > Theme: Idle
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 15:02:35
 
 # AI Context
 - Summary: An idle / screensaver mode — after inactivity, dim the shell and show a gentle ambient animation, restoring on cursor/key. Candidate from ANALYSIS.md §20.5 (user-endorsed 2026-09-03); an ambient-motion slice of the motion system (req_002).
@@ -35,6 +36,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-11-05 (owner): absorbed by req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook (items 161-165, road_001 0.60). Retired Obsolete; the engine, sources, settings and idle hook live there.
 
 # Links
 - Product brief(s): (none yet)

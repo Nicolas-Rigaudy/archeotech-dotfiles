@@ -48,6 +48,7 @@
 | [prod_002_theming_platform_engine_packs](product/prod_002_theming_platform_engine_packs.md) | Theming platform (engine + packs) | Proposed |  |  | product/prod_002_theming_platform_engine_packs.md |
 | [prod_003_archeotech_1_0_after_the_2026_09_28_audit](product/prod_003_archeotech_1_0_after_the_2026_09_28_audit.md) | Archeotech 1.0 after the 2026-09-28 audit | Settled |  |  | product/prod_003_archeotech_1_0_after_the_2026_09_28_audit.md |
 | [prod_004_cyberdeck_identity_pack](product/prod_004_cyberdeck_identity_pack.md) | Cyberdeck identity pack | Proposed |  |  | product/prod_004_cyberdeck_identity_pack.md |
+| [prod_005_screensaver_engine](product/prod_005_screensaver_engine.md) | Screensaver engine | Proposed |  |  | product/prod_005_screensaver_engine.md |
 
 ## Roadmaps
 
@@ -72,6 +73,7 @@
 | [req_009_r_d_first_impression_priorities_and_what_to_cut_or_defer](request/req_009_r_d_first_impression_priorities_and_what_to_cut_or_defer.md) | R&D: first-impression priorities and what to cut or defer | Draft |  |  | request/req_009_r_d_first_impression_priorities_and_what_to_cut_or_defer.md |
 | [req_010_canvas_panel_design_session](request/req_010_canvas_panel_design_session.md) | Canvas panel design session: which panels gain from a canvas approach | Draft |  |  | request/req_010_canvas_panel_design_session.md |
 | [req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal](request/req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal.md) | Cyberdeck theme pack: droid console identity for the shell and terminal | Draft |  |  | request/req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal.md |
+| [req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook](request/req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook.md) | Screensaver engine: pluggable sources, Settings picker and idle hook | Draft |  |  | request/req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook.md |
 
 ## Backlog
 
@@ -161,7 +163,7 @@
 | [item_082_flagship_theme_pack_1_wh40k_shadow_spears_dataslate](backlog/item_082_flagship_theme_pack_1_wh40k_shadow_spears_dataslate.md) | Flagship theme pack #1: WH40K Shadow Spears dataslate | Ready |  | 60% | backlog/item_082_flagship_theme_pack_1_wh40k_shadow_spears_dataslate.md |
 | [item_083_theming_engine_ornament_asset_overlay_fx_pack_font_hook_flagship_gap](backlog/item_083_theming_engine_ornament_asset_overlay_fx_pack_font_hook_flagship_gap.md) | Theming engine: ornament asset-overlay FX + pack font hook (flagship gap) | In progress |  | 20% | backlog/item_083_theming_engine_ornament_asset_overlay_fx_pack_font_hook_flagship_gap.md |
 | [item_084_migrate_hyprland_config_to_lua_window_rules_per_app_opacity_floating_pip](backlog/item_084_migrate_hyprland_config_to_lua_window_rules_per_app_opacity_floating_pip.md) | Migrate Hyprland config to Lua (window rules, per-app opacity, floating PiP) | Ready |  | 0% | backlog/item_084_migrate_hyprland_config_to_lua_window_rules_per_app_opacity_floating_pip.md |
-| [item_085_idle_and_screensaver_mode](backlog/item_085_idle_and_screensaver_mode.md) | Idle and screensaver mode | Draft |  | 0 | backlog/item_085_idle_and_screensaver_mode.md |
+| [item_085_idle_and_screensaver_mode](backlog/item_085_idle_and_screensaver_mode.md) | Idle and screensaver mode | Obsolete |  | 0 | backlog/item_085_idle_and_screensaver_mode.md |
 | [item_086_nicer_boot_menu_aesthetics_grub_theme](backlog/item_086_nicer_boot_menu_aesthetics_grub_theme.md) | Nicer boot menu aesthetics GRUB theme | Draft |  | 0 | backlog/item_086_nicer_boot_menu_aesthetics_grub_theme.md |
 | [item_087_settings_deep_dive_search_display_modes_deep_linking](backlog/item_087_settings_deep_dive_search_display_modes_deep_linking.md) | Settings deep-dive search display-modes deep-linking | Draft |  | 0 | backlog/item_087_settings_deep_dive_search_display_modes_deep_linking.md |
 | [item_088_bar_container_style_variants_continuous_pills_framed_floating_per_side](backlog/item_088_bar_container_style_variants_continuous_pills_framed_floating_per_side.md) | Bar container style variants continuous pills framed floating per side | Draft |  | 0 | backlog/item_088_bar_container_style_variants_continuous_pills_framed_floating_per_side.md |
@@ -237,6 +239,11 @@
 | [item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack](backlog/item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack.md) | crow agents module and screensaver in the cyberdeck pack | Ready |  | 0% | backlog/item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack.md |
 | [item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery](backlog/item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery.md) | HUD gauge face for system stats (CPU, RAM, disk, battery) | Ready |  | 0% | backlog/item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery.md |
 | [item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles](backlog/item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles.md) | Scanner launcher style, kill-mode overlay and layout profiles | Ready |  | 0% | backlog/item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles.md |
+| [item_161_screensaver_mockups_picker_preview_and_overlay_card_options](backlog/item_161_screensaver_mockups_picker_preview_and_overlay_card_options.md) | Screensaver mockups: picker, preview and overlay card options | Ready |  | 0% | backlog/item_161_screensaver_mockups_picker_preview_and_overlay_card_options.md |
+| [item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal](backlog/item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal.md) | Screensaver engine core: IPC target, fullscreen host and dismissal | Ready |  | 0% | backlog/item_162_screensaver_engine_core_ipc_target_fullscreen_host_and_dismissal.md |
+| [item_163_screensaver_source_plugins_qml_terminal_and_web_examples](backlog/item_163_screensaver_source_plugins_qml_terminal_and_web_examples.md) | Screensaver source plugins: QML, terminal and web examples | Ready |  | 0% | backlog/item_163_screensaver_source_plugins_qml_terminal_and_web_examples.md |
+| [item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout](backlog/item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout.md) | Screensaver settings: source picker, shuffle, live preview, timeout | Ready |  | 0% | backlog/item_164_screensaver_settings_source_picker_shuffle_live_preview_timeout.md |
+| [item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock](backlog/item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock.md) | Dotfiles idle hook: swayidle starts the shell screensaver before the lock | Ready |  | 0% | backlog/item_165_dotfiles_idle_hook_swayidle_starts_the_shell_screensaver_before_the_lock.md |
 
 ## Tasks
 
@@ -318,6 +325,7 @@
 | [task_074_launcher_command_palette_with_providers](tasks/task_074_launcher_command_palette_with_providers.md) | Launcher command palette with providers | Ready |  | 25% | tasks/task_074_launcher_command_palette_with_providers.md |
 | [task_075_creative_applets_and_canvas_visualizations](tasks/task_075_creative_applets_and_canvas_visualizations.md) | Creative applets and canvas visualizations | In progress | claude-night | 25% | tasks/task_075_creative_applets_and_canvas_visualizations.md |
 | [task_076_orchestrate_the_cyberdeck_theme_pack](tasks/task_076_orchestrate_the_cyberdeck_theme_pack.md) | Orchestrate the cyberdeck theme pack | Ready |  | 0% | tasks/task_076_orchestrate_the_cyberdeck_theme_pack.md |
+| [task_077_orchestrate_the_screensaver_engine](tasks/task_077_orchestrate_the_screensaver_engine.md) | Orchestrate the screensaver engine | Ready |  | 0% | tasks/task_077_orchestrate_the_screensaver_engine.md |
 
 ## Runbooks
 
