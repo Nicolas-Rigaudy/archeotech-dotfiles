@@ -8,6 +8,7 @@
 > Complexity: High
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 14:44:22
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -37,6 +38,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-11-05 round 3: delegate seams needed for the registers: frame style (bezel, cut corners, ticks), bar zone container, card/panel header, gauge face (item_159), selector, list-row selection, strip button, screen-effects layer (scanlines, bloom, data rain; Reduce motion off). See .claude/CYBERDECK_RESEARCH.md.
 
 # Links
 - Product brief(s): `prod_004_cyberdeck_identity_pack`
@@ -51,4 +53,3 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-

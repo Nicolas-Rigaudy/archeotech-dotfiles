@@ -113,3 +113,40 @@ and hardwires slot 4 to `blue`.
 - Scenes: `kit/render.sh <megacorp|netrunner|deck> desk launcher kill saver`.
 - Terminal: `SHOTS=<dir> go test -run TestShots .` in cr-0w `tools/crow-deck`,
   then `bin/ansi-shot <ans> <png> --theme kit/ansi-<direction>.kitty.conf`.
+
+## Round 3: three registers inside the real shell layout (owner pick 2026-11-05)
+Owner decision: all three directions ship as registers (sub-themes) of one
+cyberdeck pack, and the shell keeps its structure: top bar zones, frame, side
+strips, panels sliding from the frame edges, the same widgets and settings. Only
+the look changes, as with any pack; customisation stays as it is. Grimdark is
+outdated: take its pack mechanics, not its look.
+
+Mockups: `mock/shell/` (one layout, `Style.qml` switches the register), rendered
+as `renders2/shell-<register>-<dash|launch|settings|agents>.png`. Settings shows
+Theme pack = Cyberdeck with the pack settings Register (Megacorp | Netrunner |
+Deck) and Screen effects (Off | Subtle | Full).
+
+Per register, on the same layout:
+- Frame: Megacorp black band, red hairline on the top inner edge, red L ticks in
+  the bottom corners. Netrunner cyan rule with cut corners, red crosshairs on the
+  side edges, red accent under the clock. Deck metal bezel (thicker gap), screws,
+  engraved labels; the bar sits in the top rail.
+- Bar zones: Megacorp hairline boxes, numbered workspace cells, crest. Netrunner
+  slanted translucent pills, slanted workspace dots. Deck LCD modules, digit
+  workspaces with an underline, status as text plus LEDs. The crow agents pill
+  (slot gauge + attention badge) sits in the right zone in all three.
+- Panels and cards: Megacorp hairline + red code tab (SYS, GIT, RUN, LOG).
+  Netrunner cut-corner panels, cyan titles, faint scanlines. Deck double-rule
+  boxes with the title inverted in the top rule.
+- Gauges: segmented bars (Megacorp), slanted segments (Netrunner), ASCII meters
+  (Deck), replacing the ring gauges.
+- Selectors/tabs: rectangular red fill, sheared cyan fill, `[label]` with an
+  inverted selection.
+- Launcher rows: numbered; selection inverted white (Megacorp), outlined cut card
+  (Netrunner), green inverse (Deck).
+
+Engine seams needed (Layer C delegates, beyond tokens/fx today): frame style
+(bezel, cut corners, ticks), bar zone container, card/panel header, gauge face
+(item_159), selector/segmented control, list-row selection, strip button, and a
+screen-effects layer (scanlines, bloom, data rain) gated by Reduce motion. Bar
+zone geometry, panel anchoring and every config key stay core.
