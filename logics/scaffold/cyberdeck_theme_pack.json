@@ -1,0 +1,222 @@
+{
+  "title": "Cyberdeck theme pack: droid console identity for the shell and terminal",
+  "references": [
+    "archeotech-shell docs/THEME_PACK.md",
+    "archeotech-shell packs/grimdark",
+    "archeotech-shell scripts/themes/templates/kitty-colors.conf.tmpl",
+    "logics/backlog/item_129_additional_add_on_identity_packs_cyberpunk_and_gundam.md",
+    "logics/backlog/item_085_idle_and_screensaver_mode.md",
+    "logics/backlog/item_151_theme_pack_wallpapers_grimdark_hud_angular.md",
+    "cr-0w integrations/archeotech/crow-agents",
+    "cr-0w logics/request/req_015_wishlist_ambient_mobile_voice_colleague_ideas.md",
+    "cr-0w local/state/shots/cyberdeck-pack (draft registers, renders, compare page)"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Identity packs",
+    "needs": [
+      "Owner request (2026-11-05): a second official identity pack after Grimdark, built on the same pack system, so crow runs in a matching environment on the desk and in the terminal.",
+      "Direction: cyberdeck, sci-fi, CR-0W as a droid character (protocol droids, cyberpunk AIs). Original work only: no Cyberpunk 2077 or other IP assets, fonts or logos; fonts under open licences (OFL).",
+      "Cover: tokens and palette, display font, ornaments and textures, panel styles, pack settings (registers like Grimdark), the kitty ANSI 16 output so crow deck matches, the crow agents module and the future screensaver in the pack.",
+      "Ideas from github.com/ARCANGEL0/CyberArch-Shell (no licence, ideas only, no code or assets): HUD gauge bars for CPU/RAM/disk/battery, a scanner-style launcher, a kill-mode overlay, layout profiles."
+    ],
+    "context": [
+      "Pack system: pack.json + tokens.json (Layer A tokens, Layer B fx and motion), styles/<Component>.qml delegates (Layer C), configSchema pack settings (Layer D). Grimdark is the model: one chassis, three registers (Legion, Ordos, Forge) deep-merged over the base colours.",
+      "Kitty follows a pack through scripts/themes/templates/kitty-colors.conf.tmpl: fixed slots (color4 = blue, color5 = pink, color6 = teal), brights equal normals. crow deck draws frames in ANSI slot 4, so a pack whose accent is not blue never reaches the terminal (seen in the 2026-11-05 Netrunner draft render).",
+      "Draft registers rendered 2026-11-05 (throwaway packs, never committed): Protocol (droid console, cyan accent, amber warnings, Oxanium), Netrunner (neon magenta accent, cyan live, Chakra Petch, scanlines), Phosphor (green CRT, amber warnings, VT323, scanlines). All pass contrast-check --strict.",
+      "Behaviour stays core (adr_026 skin/structure boundary): a pack restyles, it never adds kill mode or layout profiles. Those are core or plugin features the pack styles.",
+      "Roadmap: identity packs are 1.1 add-ons (road_001). item_129 holds cyberpunk and gundam; this request is the cyberpunk half in detail."
+    ],
+    "acceptance_criteria": [
+      "AC1: A cyberdeck pack exists under packs/ with its own palette, roles and registers, selectable live, passing contrast-check --strict for every register.",
+      "AC2: The pack ships an OFL display font, original ornaments and textures and pack panel styles, with no third-party IP asset.",
+      "AC3: kitty and crow deck match the active register: the pack controls which palette colour lands in each ANSI slot, brights included.",
+      "AC4: The crow agents module and the screensaver read the pack tokens and look native in each register.",
+      "AC5: HUD gauges, a scanner launcher style, a kill-mode overlay and layout profiles are scoped as core or plugin features with a pack-styled look, each in its own slice."
+    ]
+  },
+  "product": {
+    "title": "Cyberdeck identity pack",
+    "overview": "A droid-console identity pack (CR-0W as the machine's resident AI) for the shell, kitty and crow deck, with three registers.",
+    "goals": [
+      "One pack restyles the desk, the terminal and crow surfaces together.",
+      "Registers give three moods on one chassis: Protocol, Netrunner, Phosphor.",
+      "Everything original and openly licensed, publishable with the shell."
+    ],
+    "non_goals": [
+      "Recreating Cyberpunk 2077, Blade Runner or any other IP look, font or logo.",
+      "New behaviour inside the pack (keybinds, IA, config semantics stay core)."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Cyberdeck pack chassis: palette, roles and three registers",
+      "priority": "Medium",
+      "complexity": "Medium",
+      "theme": "Identity packs",
+      "request_acs": ["AC1"],
+      "problem": [
+        "No second identity pack exists; Grimdark is the only proof that the pack system carries a full identity."
+      ],
+      "scope_in": [
+        "packs/cyberdeck: pack.json, tokens.json with own colours and roles, defaultRegister and registers (Protocol, Netrunner, Phosphor; names final after the owner's pick).",
+        "Square geometry: radius 1-4, chamfered frame corners, window cornerRadius 0, 2px focus border.",
+        "Motion: short, snappy durations (fast enter, crisp exit); reduce motion honoured.",
+        "Pack setting `register` (enum) as in Grimdark.",
+        "contrast-check --strict passes per register; golden renders across registers x dark."
+      ],
+      "scope_out": [
+        "Fonts, ornaments, textures and style delegates (own slices).",
+        "Light mode variant (later, if wanted)."
+      ],
+      "acceptance_criteria": [
+        "AC1: Selecting the pack and each register repaints the whole shell live; contrast-check --strict passes for all three."
+      ]
+    },
+    {
+      "title": "Cyberdeck display font and type scale",
+      "priority": "Medium",
+      "complexity": "Low",
+      "theme": "Identity packs",
+      "request_acs": ["AC2"],
+      "problem": [
+        "The identity needs a techno display face; body text must stay the mono base for legibility."
+      ],
+      "scope_in": [
+        "Pick one OFL display face per register or one for the pack: candidates Oxanium, Chakra Petch, Share Tech Mono, VT323 (downloaded to cr-0w local/state/shots/cyberdeck-pack/fonts with their OFL texts).",
+        "Ship the .ttf and OFL.txt under packs/cyberdeck/fonts; font.displayFile per register if the register merge supports font keys (check the deep merge).",
+        "Uppercase tracked micro-labels for headers (HUD readout feel)."
+      ],
+      "scope_out": [
+        "Body font changes."
+      ],
+      "acceptance_criteria": [
+        "AC1: Headers render in the chosen OFL face in every register; the licence text ships with the font."
+      ]
+    },
+    {
+      "title": "Cyberdeck ornaments, textures and panel styles",
+      "priority": "Medium",
+      "complexity": "High",
+      "theme": "Identity packs",
+      "request_acs": ["AC2"],
+      "problem": [
+        "Tokens alone give a recoloured base; the identity needs its own chrome."
+      ],
+      "scope_in": [
+        "fx: HUD brackets on windows (focused full strength), accent rim glow, a subtle scanline texture on the frame bands (Netrunner, Phosphor).",
+        "Original SVG ornaments: circuit-trace corner pieces, a CR-0W droid mark (status-light eye) for the frame corner or the bar start, tick-mark rulers on panel headers.",
+        "Panel surface recipe: dark glass with a 1px neon rim, inset glow on focus, data-row zebra in surface0; style delegate for buttons (bracketed [ LABEL ] look).",
+        "Optional glitch transition on workspace switch, off with reduce motion, a pack setting.",
+        "All assets drawn for this pack; no third-party art."
+      ],
+      "scope_out": [
+        "Behaviour changes; per-widget FX beyond the frame and delegates."
+      ],
+      "acceptance_criteria": [
+        "AC1: Renders show brackets, rim, ornaments and panel style in all registers; reduce motion disables the glitch; every asset is original."
+      ]
+    },
+    {
+      "title": "Pack-controlled kitty ANSI slots so crow deck matches the register",
+      "priority": "Medium",
+      "complexity": "Medium",
+      "theme": "Identity packs",
+      "request_acs": ["AC3"],
+      "problem": [
+        "kitty-colors.conf.tmpl maps fixed palette names to ANSI slots and copies normals into brights. crow deck frames use slot 4 (blue), so a magenta-accent register shows blue frames in the terminal."
+      ],
+      "scope_in": [
+        "Optional tokens.json `ansi` block: palette name or hex for color0-15, cursor, selection and tab colours; registers may override it; template falls back to today's map.",
+        "Distinct brights per register (brighter neon for 9-14).",
+        "theme-switch.py applies it; a test renders crow deck through ansi-shot for each register.",
+        "Grimdark keeps its current output (no ansi block)."
+      ],
+      "scope_out": [
+        "crow deck code changes (it stays on ANSI slots only)."
+      ],
+      "acceptance_criteria": [
+        "AC1: With the pack active, kitty's 16 colours come from the register's ansi map and the crow deck ansi-shot shows the register accent on frames."
+      ]
+    },
+    {
+      "title": "crow agents module and screensaver in the cyberdeck pack",
+      "priority": "Low",
+      "complexity": "Medium",
+      "theme": "Identity packs",
+      "request_acs": ["AC4"],
+      "problem": [
+        "crow surfaces on the desk (agents pill and panel, the planned screensaver) must look native in the pack without pack-specific code."
+      ],
+      "scope_in": [
+        "crow-agents module: check it reads Appearance tokens only (accent, display font, surfaces); slot gauge as a segmented HUD bar (FiraCode-safe glyphs), attention badge in the register's warning colour.",
+        "Screensaver (item_085 engine, cr-0w req_015): terminal sources (ascii-magic MIT pieces, cmatrix-style rain) run in kitty and take the register's ANSI colours; the CR-0W working card overlay uses the pack panel style; optional scanline layer.",
+        "Render each register with the module panel open and a screensaver mock."
+      ],
+      "scope_out": [
+        "Building the screensaver engine (item_085) or the crow plugin itself (cr-0w)."
+      ],
+      "acceptance_criteria": [
+        "AC1: Renders of the agents pill, panel and screensaver card in each register read as one identity with the shell."
+      ]
+    },
+    {
+      "title": "HUD gauge face for system stats (CPU, RAM, disk, battery)",
+      "priority": "Low",
+      "complexity": "Medium",
+      "theme": "Identity packs",
+      "request_acs": ["AC5"],
+      "problem": [
+        "Idea from CyberArch-Shell: status bars styled as segmented HUD meters. The shell shows these stats as plain pills."
+      ],
+      "scope_in": [
+        "A widget face (req_003 swappable faces) for the system stats widgets: segmented bars with a tick ruler and a numeric readout; warning and critical tints from tokens.",
+        "Available to every pack; the cyberdeck pack selects it by default."
+      ],
+      "scope_out": [
+        "New data sources; copying CyberArch-Shell's tilted canvas or game-styled health bars."
+      ],
+      "acceptance_criteria": [
+        "AC1: CPU, RAM, disk and battery render as HUD gauges under the pack and fall back to the stock face elsewhere."
+      ]
+    },
+    {
+      "title": "Scanner launcher style, kill-mode overlay and layout profiles",
+      "priority": "Low",
+      "complexity": "High",
+      "theme": "Identity packs",
+      "request_acs": ["AC5"],
+      "problem": [
+        "Three CyberArch-Shell ideas touch behaviour, which a pack cannot add (adr_026)."
+      ],
+      "scope_in": [
+        "Scanner launcher: a launcher style delegate (scan line sweep on open, framed result tiles, target reticle on the selection); sound off by default.",
+        "Kill mode: a core or plugin action (pick a window, confirm, close or kill) with a pack-styled overlay (reticle, window label, target box); Esc cancels; check overlap with mango's own kill bind first.",
+        "Layout profiles (Minimal, Balanced, Cinematic): check against Contexts (0.60) and Edit Layout before adding anything; likely a preset list of shell-config layouts.",
+        "Split into separate items once the owner picks which to keep."
+      ],
+      "scope_out": [
+        "Audio cues on by default; behaviour inside the pack."
+      ],
+      "acceptance_criteria": [
+        "AC1: Each idea has an owner decision (keep, merge into an existing item, drop) and the kept ones have their own item."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Orchestrate the cyberdeck theme pack",
+    "plan": [
+      "Owner picks the register set, default register and display font from the 2026-11-05 compare page.",
+      "Build the chassis (palette, roles, registers), then the font.",
+      "Pack ANSI slots, checked with crow deck through ansi-shot.",
+      "Ornaments, textures and panel styles, with renders per register.",
+      "crow agents and screensaver look, after item_085 has an engine.",
+      "HUD gauge face, then the scanner launcher, kill mode and layout profile decisions."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/cyberdeck_theme_pack.json",
+    "mode": "summary-only",
+    "profile": "normal"
+  }
+}

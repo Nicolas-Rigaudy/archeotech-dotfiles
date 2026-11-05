@@ -1,0 +1,580 @@
+{
+  "budgets": {
+    "max_docs": 36,
+    "max_docs_per_ref": 4
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers item_155_cyberdeck_display_font_and_type_scale item_156_cyberdeck_ornaments_textures_and_panel_styles item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles task_076_orchestrate_the_cyberdeck_theme_pack --mode summary-only --profile normal --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+          "item_155_cyberdeck_display_font_and_type_scale",
+          "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+          "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+          "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+          "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/product/prod_004_cyberdeck_identity_pack.md",
+      "ref": "prod_004_cyberdeck_identity_pack",
+      "status": "Proposed",
+      "title": "Cyberdeck identity pack"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_003_verify_vscode_colorcustomizations_regen_on_non_catppuccin_themes"
+        ],
+        "prod": [
+          "prod_003_archeotech_1_0_after_the_2026_09_28_audit"
+        ],
+        "req": [
+          "req_005_2026_09_28_audit_upgrade_program"
+        ],
+        "task": [
+          "task_031_orchestrate_2026_09_28_audit_upgrade_program"
+        ]
+      },
+      "path": "logics/product/prod_003_archeotech_1_0_after_the_2026_09_28_audit.md",
+      "ref": "prod_003_archeotech_1_0_after_the_2026_09_28_audit",
+      "status": "Settled",
+      "title": "Archeotech 1.0 after the 2026-09-28 audit"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "cyberdeck, theme, pack, droid, console, identity, shell, terminal",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_085_idle_and_screensaver_mode",
+          "item_129_additional_add_on_identity_packs_cyberpunk_and_gundam",
+          "item_151_theme_pack_wallpapers_grimdark_hud_angular",
+          "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+          "item_155_cyberdeck_display_font_and_type_scale",
+          "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+          "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+          "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+          "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal",
+          "req_015_wishlist_ambient_mobile_voice_colleague_ideas"
+        ]
+      },
+      "path": "logics/request/req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal.md",
+      "ref": "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal",
+      "schema_version": "1.0",
+      "status": "Draft",
+      "title": "Cyberdeck theme pack: droid console identity for the shell and terminal"
+    },
+    {
+      "ai_context": {
+        "keywords": "idle, screensaver, ambient, dim, burn-in, motion",
+        "skip when": "the lock screen (item_018, separate); DPMS / suspend / power policy.",
+        "summary": "An idle / screensaver mode \u2014 after inactivity, dim the shell and show a gentle ambient animation, restoring on cursor/key. Candidate from ANALYSIS.md \u00a720.5 (user-endorsed 2026-09-03); an ambient-motion slice of the motion system (req_002).",
+        "use when": "implementing idle detection + a screensaver/ambient overlay."
+      },
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_085_idle_and_screensaver_mode"
+        ],
+        "req": [
+          "req_002_motion_and_fluidity_system"
+        ]
+      },
+      "path": "logics/backlog/item_085_idle_and_screensaver_mode.md",
+      "ref": "item_085_idle_and_screensaver_mode",
+      "schema_version": "1.0",
+      "status": "Draft",
+      "title": "Idle and screensaver mode"
+    },
+    {
+      "ai_context": {
+        "keywords": "additional, add, identity, packs, cyberpunk, gundam",
+        "skip when": "Working outside this milestone; see road_001 for sequencing and .claude/audits/2026-09-28/ for evidence.",
+        "summary": "Additional add-on identity packs: cyberpunk and gundam. Owner direction: real identity packs (Grimdark/Warhammer, cyberpunk, gundam, ...) ship as add-ons through community pack support, not as built-ins.",
+        "use when": "Implementing or reviewing the 1.1 Identity packs milestone work on identity packs."
+      },
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_129_additional_add_on_identity_packs_cyberpunk_and_gundam"
+        ],
+        "prod": [
+          "prod_003_archeotech_1_0_after_the_2026_09_28_audit"
+        ],
+        "req": [
+          "req_005_2026_09_28_audit_upgrade_program"
+        ],
+        "task": [
+          "task_031_orchestrate_2026_09_28_audit_upgrade_program"
+        ]
+      },
+      "path": "logics/backlog/item_129_additional_add_on_identity_packs_cyberpunk_and_gundam.md",
+      "ref": "item_129_additional_add_on_identity_packs_cyberpunk_and_gundam",
+      "schema_version": "1.0",
+      "status": "In progress",
+      "title": "Additional add-on identity packs: cyberpunk and gundam"
+    },
+    {
+      "ai_context": {
+        "keywords": "theme, pack, wallpapers, grimdark, hud, angular",
+        "skip when": "Base-theme wallpapers.",
+        "summary": "Give the grimdark, hud and angular packs their own fitting wallpapers (custom or carefully licensed), offered when the pack is active.",
+        "use when": "Pack visuals or promo screenshots of a pack."
+      },
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_151_theme_pack_wallpapers_grimdark_hud_angular"
+        ],
+        "prod": [
+          "prod_003_archeotech_1_0_after_the_2026_09_28_audit"
+        ],
+        "req": [
+          "req_006_wallpaper_modes"
+        ]
+      },
+      "path": "logics/backlog/item_151_theme_pack_wallpapers_grimdark_hud_angular.md",
+      "ref": "item_151_theme_pack_wallpapers_grimdark_hud_angular",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Theme pack wallpapers (grimdark, hud, angular)"
+    },
+    {
+      "ai_context": {
+        "keywords": "cyberdeck, pack, chassis, palette, roles, three, registers",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/backlog/item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers.md",
+      "ref": "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Cyberdeck pack chassis: palette, roles and three registers"
+    },
+    {
+      "ai_context": {
+        "keywords": "orchestrate, cyberdeck, theme, pack",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+          "item_155_cyberdeck_display_font_and_type_scale",
+          "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+          "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+          "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+          "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/tasks/task_076_orchestrate_the_cyberdeck_theme_pack.md",
+      "ref": "task_076_orchestrate_the_cyberdeck_theme_pack",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Orchestrate the cyberdeck theme pack"
+    },
+    {
+      "ai_context": {},
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+          "item_155_cyberdeck_display_font_and_type_scale",
+          "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+          "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+          "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+          "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/product/prod_004_cyberdeck_identity_pack.md",
+      "ref": "prod_004_cyberdeck_identity_pack",
+      "schema_version": "1.0",
+      "status": "Proposed",
+      "title": "Cyberdeck identity pack"
+    },
+    {
+      "ai_context": {
+        "keywords": "cyberdeck, display, font, type, scale",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_155_cyberdeck_display_font_and_type_scale"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/backlog/item_155_cyberdeck_display_font_and_type_scale.md",
+      "ref": "item_155_cyberdeck_display_font_and_type_scale",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Cyberdeck display font and type scale"
+    },
+    {
+      "ai_context": {
+        "keywords": "cyberdeck, ornaments, textures, panel, styles",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_156_cyberdeck_ornaments_textures_and_panel_styles"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/backlog/item_156_cyberdeck_ornaments_textures_and_panel_styles.md",
+      "ref": "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Cyberdeck ornaments, textures and panel styles"
+    },
+    {
+      "ai_context": {
+        "keywords": "pack, controlled, kitty, ansi, slots, crow, deck, matches, register",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/backlog/item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register.md",
+      "ref": "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Pack-controlled kitty ANSI slots so crow deck matches the register"
+    },
+    {
+      "ai_context": {
+        "keywords": "crow, agents, module, screensaver, cyberdeck, pack",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/backlog/item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack.md",
+      "ref": "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "crow agents module and screensaver in the cyberdeck pack"
+    },
+    {
+      "ai_context": {
+        "keywords": "hud, gauge, face, system, stats, cpu, ram, disk, battery",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/backlog/item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery.md",
+      "ref": "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "HUD gauge face for system stats (CPU, RAM, disk, battery)"
+    },
+    {
+      "ai_context": {
+        "keywords": "scanner, launcher, style, kill, mode, overlay, layout, profiles",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles"
+        ],
+        "prod": [
+          "prod_004_cyberdeck_identity_pack"
+        ],
+        "req": [
+          "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal"
+        ],
+        "task": [
+          "task_076_orchestrate_the_cyberdeck_theme_pack"
+        ]
+      },
+      "path": "logics/backlog/item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles.md",
+      "ref": "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Scanner launcher style, kill-mode overlay and layout profiles"
+    }
+  ],
+  "estimates": {
+    "char_count": 15522,
+    "companion_doc_count": 2,
+    "doc_count": 13
+  },
+  "generated_at": "2026-11-05T13:03:55Z",
+  "handoff": {
+    "companion_doc_count": 2,
+    "enabled": true,
+    "source_refs": [
+      "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal",
+      "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+      "item_155_cyberdeck_display_font_and_type_scale",
+      "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+      "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+      "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+      "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+      "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles",
+      "task_076_orchestrate_the_cyberdeck_theme_pack"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Choose the source locale for app-owned user-facing copy.",
+      "Run logics-manager i18n init --source-locale <locale>.",
+      "Route new UI copy through stable semantic keys."
+    ],
+    "applicable": null,
+    "configured": false,
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "Run logics-manager i18n init --source-locale <locale> for a project that owns user-facing copy.",
+    "ok": true,
+    "state": "absent"
+  },
+  "mode": "summary-only",
+  "profile": "normal",
+  "ref": "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal,item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers,item_155_cyberdeck_display_font_and_type_scale,item_156_cyberdeck_ornaments_textures_and_panel_styles,item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register,item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack,item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery,item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles,task_076_orchestrate_the_cyberdeck_theme_pack",
+  "refs": [
+    "req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal",
+    "item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers",
+    "item_155_cyberdeck_display_font_and_type_scale",
+    "item_156_cyberdeck_ornaments_textures_and_panel_styles",
+    "item_157_pack_controlled_kitty_ansi_slots_so_crow_deck_matches_the_register",
+    "item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack",
+    "item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery",
+    "item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles",
+    "task_076_orchestrate_the_cyberdeck_theme_pack"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_076_orchestrate_the_cyberdeck_theme_pack.md",
+      "ref": "task_076_orchestrate_the_cyberdeck_theme_pack"
+    }
+  ]
+}
