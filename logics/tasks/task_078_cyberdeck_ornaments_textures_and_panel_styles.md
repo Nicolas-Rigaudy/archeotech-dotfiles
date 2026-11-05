@@ -52,3 +52,4 @@
 
 # Notes
 - Pending: wave 2 (Cyberdeck delegates, ornaments, textures, per-register renders, reduce-motion check) needs the item_154 pack; Appearance.shellVersion is still 0.3.0, so a pack cannot yet declare minShellVersion for these seams (owner call on bumping).
+- 2026-11-05: Appearance.shellVersion bumped to 0.4.0 (shell 231dc0a, owner approved); the Cyberdeck pack declares minShellVersion 0.4.0 for these seams. Both repos pushed.

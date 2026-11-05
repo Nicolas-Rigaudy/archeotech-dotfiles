@@ -24,7 +24,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
   ConsoleChrome, BarSegment, BarDivider); core asks `Appearance.hasStyle()`. Docs:
   THEME_PACK.md `surfaces`, STYLE_API.md. Grimdark renders pixel-identical. Styles are
   scanned at startup: new style files need SUPER+SHIFT+R. Cyberdeck seams (item_156) build on this.
-- **item_156 wave 1 DONE (2026-11-05, shell 36db5dc; task_078 50%, In progress):** seven
+- **item_156 wave 1 DONE (2026-11-05, shell 36db5dc + 231dc0a shellVersion 0.4.0, pushed; task_078 50%, In progress; next: item_154 chassis, then wave 2):** seven
   pack style seams, all inert without a pack style (goldens + tests unchanged): FrameStyle
   (`replacesGlass` blanks the core glass), ScreenEffects (never paint the content hole),
   BarSegment `cluster`/`vertical`, `Prim.CardHeader` (DashCard), SegmentedControl
