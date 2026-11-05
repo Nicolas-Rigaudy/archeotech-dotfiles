@@ -1,9 +1,18 @@
-# Resume here (last updated 2026-10-27, merge train)
+# Resume here (last updated 2026-11-05, cyberdeck pack scoped)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
 
 ## Where things stand
+- **Cyberdeck theme pack scoped (2026-11-05):** `req_011` + items 154-160 + `task_076`.
+  One pack, three registers on the unchanged shell layout: Megacorp, Netrunner
+  (default), Deck. Spec and research: `.claude/CYBERDECK_RESEARCH.md`; mockups and
+  review page: `~/Projects/cr-0w/local/state/shots/cyberdeck-pack/compare3.html`
+  (`mock/shell/` QML, `kit/render.sh shell <reg>-<dash|launch|settings|agents>`,
+  rendered with shot.sh from the scratch worktree `~/Projects/archeotech-shell.wt/cyberdeck-scope`,
+  which only holds throwaway draft packs). Next: build in fresh sessions, starting
+  with the delegate seams (item_156 note) and the pack chassis (item_154); animation
+  and panel layouts get refined case by case while building.
 - **Merge train 2026-10-27 (pushed):** shell main merged fix/blur-coverage,
   chore/mango-0.18-keys, fix/plugin-strip-tiles, night/golden-diagnosis, night/roadmap-next,
   night/showcase, night/fallback; `golden.sh` pins `appearance.coverageBlur=on`; 25 goldens
