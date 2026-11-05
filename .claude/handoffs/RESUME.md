@@ -1,9 +1,23 @@
-# Resume here (last updated 2026-11-05, cyberdeck pack scoped)
+# Resume here (last updated 2026-11-05, roadmap re-sequenced; screensaver scoped)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
 
 ## Where things stand
+- **Roadmap re-sequenced (2026-11-05, owner decisions from req_008/req_009):** road_001
+  is now 0.40 Design v2 (current; adds Cyberdeck chassis item_154 + delegate seams item_156
+  as the proving pack) -> 0.50 Utility -> 0.55 Wallpaper modes (req_006, 146 first) ->
+  0.60 First impression (signature motion 125, README video 077, Hyprland parity 128,
+  screensaver req_012) -> 0.70 Contexts (time-boxed; 013 folded in) -> 1.0 -> 1.1 add-on
+  packs (rest of Cyberdeck as flagship, Grimdark rework, 021/065, Claude Ask 124). Onboarding
+  040 moved to 1.5. req_008/req_009 still Draft: ask the owner whether to close them.
+- **Screensaver engine scoped (2026-11-05):** `req_012` + items 161-165 + `task_077`
+  (`prod_005`), from crow hub req_015 track 1. Source kinds qml / shader / terminal /
+  program / web; `screensaver` IPC target that swayidle calls before the lock; card layer
+  for crow (overlay / take over / off). item_085 retired Obsolete (absorbed). Research:
+  `.claude/SCREENSAVER_RESEARCH.md` (hyprsaver is the nearest prior art; termflix,
+  astroterm, gource). Next: item_161 mockups (picker, preview, overlay card, 2-3 original
+  scenes) on one review page for the owner's pick, before any build.
 - **Cyberdeck theme pack scoped (2026-11-05):** `req_011` + items 154-160 + `task_076`.
   One pack, three registers on the unchanged shell layout: Megacorp, Netrunner
   (default), Deck. Spec and research: `.claude/CYBERDECK_RESEARCH.md`; mockups and
