@@ -8,6 +8,7 @@
 > Complexity: Medium
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 14:28:07
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -36,6 +37,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-11-05: per-direction ANSI maps drafted (cr-0w local/state/shots/cyberdeck-pack/kit/ansi-*.kitty.conf); slot 4 = pack accent makes crow deck frames match; renders on compare2.html.
 
 # Links
 - Product brief(s): `prod_004_cyberdeck_identity_pack`
@@ -50,4 +52,3 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-
