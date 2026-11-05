@@ -1,13 +1,14 @@
 ## item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery - HUD gauge face for system stats (CPU, RAM, disk, battery)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Medium
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-05 17:13:57
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -45,7 +46,9 @@
 - Priority: Low
 - Rationale: Set by scaffold input or defaulted for grooming.
 
+# Notes
+- Folded 2026-11-05 into item_166 (owner): the gauge face seam is built as a step of the Netrunner register and reused by Megacorp and Deck; it stays available to every pack.
+
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-

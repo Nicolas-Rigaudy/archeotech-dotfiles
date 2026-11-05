@@ -1,14 +1,14 @@
 ## item_154_cyberdeck_pack_chassis_palette_roles_and_three_registers - Cyberdeck pack chassis: palette, roles and three registers
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 5%
 > Complexity: Medium
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-05 14:47:14
+> Indicators reviewed: 2026-11-05 17:03:33
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -56,6 +56,12 @@
 - Priority: Medium
 - Rationale: Set by scaffold input or defaulted for grooming.
 
+# Notes
+- Folded 2026-11-05 into item_166/167/168 (owner): this palette-only slice was rejected as a colour filter; its chassis (packs/cyberdeck tokens and registers, worktree feat/item_154, not landed) is step 1 of item_166.
+
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+
+# Tasks
+- `task_079_cyberdeck_pack_chassis_palette_roles_and_three_registers`

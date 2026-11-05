@@ -1,14 +1,14 @@
 ## item_155_cyberdeck_display_font_and_type_scale - Cyberdeck display font and type scale
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Low
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-05 14:28:02
+> Indicators reviewed: 2026-11-05 17:13:56
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -50,6 +50,9 @@
 # Priority
 - Priority: Medium
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Notes
+- Folded 2026-11-05 into item_166/167/168 (owner): fonts are a step of each register deliverable, judged against its mockup.
 
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |

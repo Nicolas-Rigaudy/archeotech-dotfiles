@@ -7,10 +7,10 @@
 > Complexity: High
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-11-05 14:47:14
+> Indicators reviewed: 2026-11-05 17:13:56
 
 # AI Context
-- Summary: Second official identity pack: a droid-console look with three registers (Protocol, Netrunner, Phosphor), an OFL display font, original ornaments, pack-controlled kitty ANSI slots for crow deck, and the crow agents and screensaver look. CyberArch-Shell ideas (HUD gauges, scanner launcher, kill mode, layout profiles) scoped as core or plugin slices.
+- Summary: Second official identity pack: a droid-console look with three registers (Megacorp, Netrunner, Deck), each built to its round 3 mockup, an OFL display font, original ornaments, pack-controlled kitty ANSI slots for crow deck, and the crow agents and screensaver look. CyberArch-Shell ideas (HUD gauges, scanner launcher, kill mode, layout profiles) scoped as core or plugin slices.
 - Keywords: cyberdeck, theme, pack, droid, console, identity, shell, terminal
 - Use when: Building or reviewing the cyberdeck pack, its kitty output, or crow surfaces inside it.
 - Skip when: Grimdark work, the screensaver engine itself (item_085), or gundam (item_129).
@@ -29,7 +29,7 @@
 - Roadmap: identity packs are 1.1 add-ons (road_001). item_129 holds cyberpunk and gundam; this request is the cyberpunk half in detail.
 
 # Acceptance criteria
-- AC1: A cyberdeck pack exists under packs/ with its own palette, roles and registers, selectable live, passing contrast-check --strict for every register.
+- AC1: A cyberdeck pack exists under packs/ with three registers (Megacorp, Netrunner, Deck), selectable live, and each register matches its round 3 mockup side by side (cr-0w local/state/shots/cyberdeck-pack/renders2/shell-<register>-{dash,launch,settings,agents}.png): frame, bar, cards, gauges, selectors, rows, fonts, wallpaper and effects. Palette and tokens alone never meet this AC; contrast-check --strict passes for every register.
 - AC2: The pack ships an OFL display font, original ornaments and textures and pack panel styles, with no third-party IP asset.
 - AC3: kitty and crow deck match the active register: the pack controls which palette colour lands in each ANSI slot, brights included.
 - AC4: The crow agents module and the screensaver read the pack tokens and look native in each register.
@@ -64,6 +64,9 @@
 - `item_158_crow_agents_module_and_screensaver_in_the_cyberdeck_pack`
 - `item_159_hud_gauge_face_for_system_stats_cpu_ram_disk_battery`
 - `item_160_scanner_launcher_style_kill_mode_overlay_and_layout_profiles`
+- `item_166_cyberdeck_netrunner_register_matches_its_mockup`
+- `item_167_cyberdeck_megacorp_register_matches_its_mockup`
+- `item_168_cyberdeck_deck_register_matches_its_mockup`
 
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
@@ -72,3 +75,4 @@
 # Notes
 - 2026-11-05: first pass (token-only Protocol/Netrunner/Phosphor registers) rejected by the owner as a colour filter on the stock shell. Redone as three full directions (Megacorp, Netrunner, Deck) with their own structure, rendered as QML mockups; research in .claude/CYBERDECK_RESEARCH.md, compare page cr-0w local/state/shots/cyberdeck-pack/compare2.html. Direction pick pending. Owner direction: cyberdeck aesthetic, megacorp corporate terminals, matrix data, CR-0W droid.
 - Owner 2026-11-05: plan the pack from the round 3 mockups (compare3.html; spec .claude/CYBERDECK_RESEARCH.md). Animation, detailed panel layouts and per-element refinement happen case by case during the build. Default register: Netrunner.
+- Owner 2026-11-05 (after the item_154 colour-filter rejection): one deliverable per register, judged against its mockup (item_166 Netrunner first, then item_167 Megacorp, item_168 Deck). item_154, item_155, item_156 wave 2 and item_159 are folded in as steps; they are no longer finish lines.

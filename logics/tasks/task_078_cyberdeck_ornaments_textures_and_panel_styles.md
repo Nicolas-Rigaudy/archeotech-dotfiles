@@ -1,7 +1,7 @@
 ## task_078_cyberdeck_ornaments_textures_and_panel_styles - Cyberdeck ornaments, textures and panel styles
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 50%

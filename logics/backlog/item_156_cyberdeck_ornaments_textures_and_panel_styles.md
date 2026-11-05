@@ -1,14 +1,14 @@
 ## item_156_cyberdeck_ornaments_textures_and_panel_styles - Cyberdeck ornaments, textures and panel styles
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 25%
 > Complexity: High
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-05 15:44:00
+> Indicators reviewed: 2026-11-05 17:13:57
 
 # AI Context
 - Summary: (unfilled: replace before this doc is used)
@@ -49,6 +49,9 @@
 # Priority
 - Priority: Medium
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Notes
+- Folded 2026-11-05 into item_166/167/168 (owner): wave 1 (style seams, shell 36db5dc + 231dc0a) shipped; wave 2 (the cyberdeck delegates) is built inside each register deliverable.
 
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
