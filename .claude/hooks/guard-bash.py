@@ -52,8 +52,9 @@ RULES = [
      "logics-manager bootstrap deletes .claude/; ask the user first."),
 ]
 
-# Pushes: a plain push of a named branch other than main/master is allowed (overnight
-# runs push their feature branches); main, a bare `git push`, force and bulk pushes
+# Pushes: a plain push of a named branch is allowed, main/master included (owner,
+# 2026-11-05: Claude may push main once the owner says to push). A bare `git push`,
+# HEAD, another branch onto main (feat:main), `+` refspecs, force and bulk pushes
 # stay the owner's.
 PUSH_FLAGS_BLOCKED = {"-f", "--force", "--force-with-lease", "--force-if-includes", "-d",
                       "--delete", "--mirror", "--all", "--tags", "--prune"}
@@ -67,13 +68,15 @@ def _push_blocked(text):
             return True
         for ref in refs[1:]:
             dst = ref.split(":")[-1].removeprefix("refs/heads/")
-            if ref.startswith("+") or dst in ("main", "master", "HEAD", ""):
+            if ref.startswith("+") or dst in ("HEAD", ""):
                 return True
+            if dst in ("main", "master") and ref.removeprefix("refs/heads/") != dst:
+                return True  # another branch onto main
     return False
 
 if any(_push_blocked(t) for t in targets):
-    print("BLOCKED by archeotech guard: push only a named feature branch, plainly "
-          f"(git push [-u] origin <branch>); main, bare and force pushes are the user's.\n  cmd: {cmd[:200]}",
+    print("BLOCKED by archeotech guard: push a named branch plainly "
+          f"(git push [-u] origin <branch>); bare, HEAD, x:main and force pushes are the user's.\n  cmd: {cmd[:200]}",
           file=sys.stderr)
     sys.exit(2)
 

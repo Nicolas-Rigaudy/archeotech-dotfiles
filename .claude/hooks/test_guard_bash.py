@@ -11,7 +11,7 @@ BLOCK = [
     "pkill quickshell", "killall -9 mango", "qs -c archeotech ipc call dashboard open",
     "cd x && qs ipc call bar toggle", "grim /tmp/x.png", "sleep 1; grim -o eDP-1 out.png",
     "mango -s foo", "WLR_BACKENDS=headless mango", "qs -c archeotech", "git push",
-    "git -C ../x push origin main", "git add -A", "git add .", "git add logics .",
+    "git push -f origin main", "git push origin +main", "git add -A", "git add .", "git add logics .",
     "git commit -am wip", "git commit -a -m x", "logics-manager bootstrap",
     "theme-switch.py catppuccin", "HOME=/home/corvus theme-switch.py x",
     'bash -c "pkill quickshell"', "sh -c 'grim out.png'", "bash -c 'theme-switch.py nord'",
@@ -20,7 +20,7 @@ BLOCK = [
     "bash <<'EOF'\npkill quickshell\nEOF",
     "git push origin", "git push -f origin feat/x", "git push --force-with-lease origin feat/x",
     "git push origin +feat/x", "git push origin feat/x:main", "git push origin HEAD",
-    "git push --all origin", "git -C ../x push -u origin master",
+    "git push --all origin", "git -C ../x push origin HEAD:main",
 ]
 ALLOW = [
     "git status", "git add logics .claude/PLANNING.md", "git add ./scripts/shot.sh",
@@ -31,6 +31,7 @@ ALLOW = [
     "python3 - <<'EOF'\ns = 'the real `~/.local/bin/theme-switch.sh` runs pkill -USR1 kitty'\nEOF\ngit status",
     "cat logics/x.md | grep push", "echo mango", "rg 'qs -c archeotech' docs",
     "git push -u origin chore/mango-0.18-keys", "git -C ../x push origin fix/blur",
+    "git -C ../x push origin main", "git -C ../x push -u origin master",
     'logics-manager sync append-note t --text "blocks pkill/killall shell, qs ipc, grim, theme-switch on the real HOME"',
 ]
 

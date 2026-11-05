@@ -59,7 +59,7 @@ Format: `type[SCOPE]: description` — **subject line only, no body**.
 - Lowercase after the colon; no trailing period. **Keep subjects short and to the point** — state the essence, don't enumerate every change; ~50–72 chars. Use `;` only to pack genuinely-related changes, not as a changelog.
 - **Check `git log` first and match the existing vocabulary — do not invent scopes** (scope-by-file-type, not `[MANGOWC]`/`[DOTFILES]`).
 - **Commit as the user** — you may create commits. **Never** add `Co-Authored-By: Claude` or any trailer/line that marks Claude as an author or contributor.
-- **Never `git push`** — leave pushing to the user.
+- **Push only when the owner says to push**, as a plain named push (`git push origin main`, `git -C <repo> push origin <branch>`). Never a bare `git push`, `HEAD`, `x:main` or force push; the guard hook blocks those (owner, 2026-11-05).
 
 ```
 chg[QML]: dashboard cards 16px uniform padding; wider row highlight
@@ -81,7 +81,7 @@ After significant work, before committing:
 1. Update the relevant **logics** docs in the wave via `logics-manager` (status/progress/closeout) — **never hand-edit indicators/lineage/done status**; see `LOGICS.md`.
 2. `docs/PACKAGES.md` (new packages), `docs/KEYBINDS-MANGO.md` / `docs/KEYBINDS.md` (keybinds), `docs/TOOLS.md` (tool configs), `docs/MANGOWC-SETUP.md` (setup changes).
 3. Log technical choices as ADRs in `logics/architecture/`; add issues + fixes to `.claude/TROUBLESHOOTING.md`.
-4. Commit with a message in the format above (as the user, no Claude attribution). **Do not push** — leave that to the user.
+4. Commit with a message in the format above (as the user, no Claude attribution). Push only if the owner asked (plain `git push origin <branch>`).
 
 ---
 
