@@ -7,7 +7,7 @@
 > Complexity: High
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-11-05 17:13:56
+> Indicators reviewed: 2026-11-05 23:26:46
 
 # AI Context
 - Summary: Second official identity pack: a droid-console look with three registers (Megacorp, Netrunner, Deck), each built to its round 3 mockup, an OFL display font, original ornaments, pack-controlled kitty ANSI slots for crow deck, and the crow agents and screensaver look. CyberArch-Shell ideas (HUD gauges, scanner launcher, kill mode, layout profiles) scoped as core or plugin slices.

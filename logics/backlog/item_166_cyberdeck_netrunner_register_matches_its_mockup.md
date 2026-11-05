@@ -1,14 +1,14 @@
 ## item_166_cyberdeck_netrunner_register_matches_its_mockup - Cyberdeck Netrunner register matches its mockup
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 80%
-> Progress: 90%
+> Progress: 100%
 > Complexity: High
 > Theme: Identity packs
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-05 17:31:25
+> Indicators reviewed: 2026-11-05 23:26:47
 
 # AI Context
 - Summary: The Netrunner register of the cyberdeck pack, built until the shell matches the round 3 Netrunner mockups side by side. One deliverable: palette, fonts, frame, bar, cards, gauges, selectors, rows, strip, wallpaper and effects together.
@@ -61,7 +61,7 @@
 - Product brief(s): `prod_004_cyberdeck_identity_pack`
 - Architecture decision(s): (none yet)
 - Request: `req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal`
-- Primary task(s): (none yet)
+- Primary task(s): `task_080_cyberdeck_netrunner_register_matches_its_mockup`
 
 # Priority
 - Priority: High
@@ -69,6 +69,7 @@
 
 # Notes
 - 2026-11-05: created when the owner had the cyberdeck docs rewritten after the item_154 colour-filter rejection; each register is now one deliverable judged against its mockup.
+- Task `task_080_cyberdeck_netrunner_register_matches_its_mockup` was finished via `logics-manager flow finish task` on 2026-11-05.
 
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
