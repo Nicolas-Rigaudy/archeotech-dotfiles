@@ -50,6 +50,7 @@
 - Finished on 2026-11-06.
 - Linked backlog item(s): `item_151_theme_pack_wallpapers_grimdark_hud_angular`
 - Related request(s): `req_006_wallpaper_modes`
+- Follow-up fix archeotech-shell b6594f7: the picker opened on the user's marked wallpaper with the 5 pack ones off-screen, so a pack looked empty. While a pack ships wallpapers for the mode, the pickers now offer only those plus the one on screen, labelled 'For dark mode · Cyberdeck · 6'; Show all adds the user's own (Wallpapers.offered). tests/run.sh 128 passed; goldens updated: settings-cyberdeck-netrunner, wallpaper-dark, wallpaper-light.
 
 # Links
 - Request: `req_006_wallpaper_modes`
