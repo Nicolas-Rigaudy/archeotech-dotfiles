@@ -150,3 +150,30 @@ Engine seams needed (Layer C delegates, beyond tokens/fx today): frame style
 (item_159), selector/segmented control, list-row selection, strip button, and a
 screen-effects layer (scanlines, bloom, data rain) gated by Reduce motion. Bar
 zone geometry, panel anchoring and every config key stay core.
+
+## Motion: one entrance system (owner picks 2026-11-06)
+One shared entrance for every cyberdeck surface, not per-panel animation. A
+surface only declares its plate, anchor edge, sections in reading order, which
+headers decode, and what the reticle locks on. Prototype: scratchpad
+`motion/scene4.qml` + `specs.js`; videos `netrunner-motion-v3.mp4` (big panels)
+and `-v4.mp4` (small-surface options) in cr-0w `local/state/shots/cyberdeck-pack/`.
+
+Tempo: every timing below × k, **k = 1.5** (owner: full speed too fast, ×4 too slow).
+- Glitch-in (130): the empty plate in 4 horizontal slices, three offset states
+  (45/90/130), cyan and magenta chamfered outline ghosts offset ±4/3/1 px. Owner
+  prefers this to an outline draw.
+- Scan (220, big surfaces only): a linear sweep from the anchor edge, a 2 px head
+  plus a 20-row accent trail, inset so it never crosses the chamfers (the v2 scan
+  read as a flash and overran the cut corners).
+- Land: each section flickers in (2 frames) as the scan passes its centre.
+- Decode (380): header glyphs scramble then resolve, from the moment their
+  section lands. Owner's favourite part.
+- Reticle lock (80): corner brackets close on the selection 40 after the last
+  section lands; arm min(14, max(7, h/3)).
+
+Two types (owner pick, Option 2):
+- **Big** (dashboard, launcher, settings, agents): glitch, scan, land, decode, lock.
+- **Small** (popups, toasts, calendar, OSD): glitch, rows land top to bottom
+  40 ms × k apart, label decodes, reticle; no scan.
+
+Reduce motion and Screen effects = Off: no entrance, content appears at once.
