@@ -7,6 +7,7 @@
 > Complexity: Medium
 > Theme: Theme
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
+> Indicators reviewed: 2026-11-06 16:07:43
 
 # AI Context
 - Summary: Make the wallpaper customisable beyond one picked image: one core "wallpaper source" rule (a single owner applies wallpapers, one active mode at a time, plugins add modes), then rotation, per-monitor and per-workspace wallpapers in core, and weather-driven and animated/effect wallpapers as plugins; plus pack-specific wallpapers (grimdark, hud, angular).

@@ -1,13 +1,14 @@
 ## item_151_theme_pack_wallpapers_grimdark_hud_angular - Theme pack wallpapers (grimdark, hud, angular)
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-06 16:07:44
 
 # AI Context
 - Summary: Give the grimdark, hud and angular packs their own fitting wallpapers (custom or carefully licensed), offered when the pack is active.
@@ -42,8 +43,8 @@
 # Links
 - Product brief(s): `prod_003_archeotech_1_0_after_the_2026_09_28_audit`
 - Architecture decision(s): (none yet)
-- Request: `logics/request/req_006_wallpaper_modes.md`
-- Primary task(s): (none yet)
+- Request: `req_006_wallpaper_modes`
+- Primary task(s): `task_081_theme_pack_wallpapers_grimdark_hud_angular`
 
 # Priority
 - Priority: Medium
@@ -53,3 +54,7 @@
 - Hybrid rationale: Derived from request `req_006_wallpaper_modes` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_006_wallpaper_modes.md`.
 - Generated locally by logics-manager.
+- Task `task_081_theme_pack_wallpapers_grimdark_hud_angular` was finished via `logics-manager flow finish task` on 2026-11-06.
+
+# Tasks
+- `task_081_theme_pack_wallpapers_grimdark_hud_angular`
