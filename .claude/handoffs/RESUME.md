@@ -1,9 +1,24 @@
-# Resume here (last updated 2026-11-05, item_156 wave 1 seams landed; item_112 landed; screensaver scoped)
+# Resume here (last updated 2026-11-06, cyberdeck Netrunner landed; pack wallpapers; next item_170 or item_169)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
 
 ## Where things stand
+- **Cyberdeck + pack wallpapers (2026-11-06, all pushed):**
+  - Netrunner register landed and approved (shell 1e0cdea, c240e26, efb5139, 979c5e3;
+    task_080 + item_166 Done). item_154/item_156 and task_078/079 retired Obsolete
+    (token-only chassis rejected); Megacorp item_167 and Deck item_168 are Ready.
+  - item_151 Done (task_081): packs ship wallpapers via pack.json `wallpapers`
+    (shell 98a630a); cyberdeck ships 5 generated walls (42d1e08). With a pack active
+    the picker offers only the pack's walls until **Show all** (b6594f7, owner's pick).
+  - Private per-pack folder `~/.local/share/archeotech/pack-wallpapers/<id>/`
+    (recursive, symlink ok) counts as the pack's (1e12b71). The owner's `cyberdeck`
+    entry links `~/Pictures/wallpapers/cyberpunk` (25 franchise images): **private,
+    never ship or commit them anywhere public**. Picker reads "Cyberdeck · 30".
+  - Next (owner to pick): **item_170** wallpapers tied to themes with auto-switch
+    (same Show all button) or **item_169** cyberdeck entrance motion system (spec 6da11f1).
+  - Open: goldens dashboard-cyberdeck-{netrunner,megacorp,deck} fail on main because
+    the dashboard clock is not masked; add a mask in tests/golden.
 - **Roadmap re-sequenced (2026-11-05, owner decisions from req_008/req_009):** road_001
   is now 0.40 Design v2 (current; adds Cyberdeck chassis item_154 + delegate seams item_156
   as the proving pack) -> 0.50 Utility -> 0.55 Wallpaper modes (req_006, 146 first) ->
