@@ -1,10 +1,10 @@
 ## item_173_daily_system_update_check_with_arch_news_gate - arch-update: system update check, tray and upgrade flow
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 70%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
