@@ -57,7 +57,7 @@
 - (no validation recorded yet)
 
 # Report
-- Not started.
+- 2026-11-09 item_173 wave (d273cf9): arch-update installed; tracked arch-update.conf (AURHelper=paru, KeepOldPackages=2, NoFlatpak) + xdg-terminals.list (kitty); install.sh enables arch-update.timer; mango exec_once starts the tray. Verified: check state matches checkupdates (20 pkgs), sync db untouched, timer every 6 h. Pending owner: tray on live bar, click opens kitty, first real run + snapper pre/post pair.
 
 # Links
 - Request: `req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools`
