@@ -4,6 +4,7 @@
 > Related product: (none yet)
 > Related request: `req_000_archeotech_shell_dotfiles`
 > Reminder: Update status, milestone scope, linked refs, risks, and success signals when you edit this doc.
+> Indicators reviewed: 2026-11-09 17:34:39
 
 # AI Context
 - Summary: Personal machine configuration (compositor config, rofi/kitty/ssh tooling, install profiles, someday installs) split out of the shell roadmap on 2026-09-28.
@@ -18,6 +19,7 @@ Personal machine configuration for the owner's Arch laptop, kept separate from t
 flowchart TD
   A[0.1 Workflow tooling]
   B[0.2 Someday installs]
+  C[0.3 Machine upkeep]
   A --> B
 ```
 
@@ -47,6 +49,16 @@ flowchart TD
 - Goal: Tool evaluations and quick-win installs, plus the GRUB theme.
 - Scope: Unscheduled; pick up opportunistically.
 - Exit signal: Each item is either installed and documented in docs/PACKAGES.md or closed as not wanted.
+
+## 0.3 - Machine upkeep
+- `item_171_update_notifier_and_state_file_shared_by_all_update_jobs`: Update notifier and state file
+- `item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx`: Tracked user-tool updater
+- `item_173_daily_system_update_check_with_arch_news_gate`: Daily system update check with Arch news gate
+- `item_174_sysup_guarded_system_upgrade_command`: sysup guarded system upgrade
+- `item_175_update_policy_adr_rollback_runbook_and_docs`: Update policy ADR, rollback runbook and docs
+- Goal: Automatic updates (req_013): user tools unattended, system packages checked daily and applied through sysup.
+- Scope: Order 171, 172, 173, 174, 175 (task_082). Independent of 0.1 and 0.2.
+- Exit signal: The owner upgrades on a notice instead of by hand, with a snapshot and news check every time.
 
 # Sequencing
 - Independent of road_001; never blocks the shell release.

@@ -1,0 +1,196 @@
+{
+  "title": "Automatic updates: system packages, AUR, npm globals and user tools",
+  "references": [
+    "cr-0w logics/request/req_045_periodic_tool_update_watch.md (reads versions and changelogs only; installing belongs here)",
+    "~/.local/bin/update-dev-tools.sh and ~/.config/systemd/user/update-dev-tools.{service,timer} (untracked, daily, 2026-11 state)",
+    "scripts/setup-snapper.sh (snapper + snap-pac + grub-btrfs)",
+    "scripts/install.sh (stow, ~/.local/bin links)",
+    "config/.config/systemd/user/battery-alert.service (tracked user unit pattern)",
+    "docs/PACKAGES.md, docs/TOOLS.md",
+    "https://archlinux.org/feeds/news/ (Arch news RSS)",
+    "https://wiki.archlinux.org/title/System_maintenance (partial upgrades, pacnew, reading news before -Syu)"
+  ],
+  "request": {
+    "complexity": "Medium",
+    "theme": "Machine upkeep",
+    "needs": [
+      "The owner updates the machine by hand and too often. Updates run on a schedule and the owner acts only when something needs them.",
+      "Covered: pacman, AUR (paru), npm globals (@grifhinz/logics-manager, Codex CLI), Claude Code, cdx, rtk, and the other user tools in ~/.local (uv tools, pipx venvs, codebase-memory-mcp).",
+      "Safety: Arch news is checked before any pacman -Syu, a snapshot exists before every system upgrade with a written rollback path, and a kernel upgrade never reboots the machine on its own.",
+      "One desktop notification when something needs the owner: news to read, system upgrade ready, reboot needed, a tool update failed. Nothing when all is fine.",
+      "crow (cr-0w req_045) reads installed versions and changelogs. Installing and upgrading live in this repo."
+    ],
+    "context": [
+      "Today: ~/.local/bin/update-dev-tools.sh with update-dev-tools.timer (daily, Persistent, 30 min jitter) runs `cdx update all --yes` and `logics-manager update`. Neither file is in git.",
+      "`cdx update all` is an inventory plus a workstation plan: on 2026-11-09 it reported claude and rtk as UNKNOWN (latest unavailable) and codex as MISSING, and changed nothing. cdx itself (pipx venv cdx-manager, cdx 0.26.11) is not upgraded by that call.",
+      "Install methods found: logics-manager via npm -g with prefix ~/.local; Claude Code via its native installer (~/.local/share/claude/versions, built-in auto-updater); rtk 0.35.0 as a bare binary in ~/.local/bin (April 2026); cdx, code-review-graph, uv via pipx; ast-grep, graphify via uv tool; codebase-memory-mcp as a versioned dir; Codex CLI not installed.",
+      "System: paru (no yay), linux 7.2 only (no fallback kernel), snapper timeline + cleanup timers, snap-pac pre/post snapshots on every pacman transaction, grub-btrfs boot entries, pacman-contrib (checkupdates, pacdiff, paccache) installed. No system update check runs today.",
+      "Decision (this request): two tiers. User tools in ~/.local need no root and update unattended on a daily user timer. System packages (pacman + AUR) are never applied unattended: a daily no-root check (checkupdates, paru -Qua, Arch news) notifies, and the owner applies with one command (`sysup`) that runs the safety steps. Unattended -Syu breaks on news-flagged manual interventions and pacnew merges, and a kernel swap leaves the running kernel without modules until reboot.",
+      "Decision: cadence is systemd user timers with Persistent=true, so a missed run catches up at the next login or resume. No login hook. The system nudge fires at most once a day, and only when updates are older than a threshold (default 7 days), news is unread, or a security-flagged package is pending. The upgrade window is then weekly.",
+      "Decision: notifications go through notify-send to the shell's notification server, with an action that opens `sysup` in a kitty window. A bar widget for pending updates is a later archeotech-shell item, out of scope here.",
+      "Personal repo, private machine config (road_002). Scripts in scripts/, units in config/.config/systemd/user/, linked by install.sh."
+    ],
+    "acceptance_criteria": [
+      "AC1: The user-tool updater and its timer are tracked in this repo, installed by install.sh, and update logics-manager, Codex CLI, Claude Code, cdx, rtk, uv tools and pipx venvs; one tool failing does not stop the others.",
+      "AC2: A daily no-root check records pending pacman and AUR updates and Arch news published since the last system upgrade, without changing the system.",
+      "AC3: `sysup` refuses to upgrade while news is unread until the owner acknowledges it, confirms a pre snapshot exists, runs paru -Syu, then reports pacnew/pacsave files, failed units and whether a reboot is needed. It never reboots.",
+      "AC4: The owner gets one notification per event that needs them (news, upgrade due, reboot needed, tool update failed), at most once a day per kind, and none when nothing is due.",
+      "AC5: A runbook covers the policy, the daily flow and rolling back a bad upgrade from a snapper snapshot via grub-btrfs. An ADR records the two-tier decision, and docs/TOOLS.md and docs/PACKAGES.md are updated.",
+      "AC6: Installed versions are written to a state file that crow (cr-0w req_045) can read without running any updater."
+    ]
+  },
+  "product": {
+    "title": "Automatic machine updates",
+    "overview": "Scheduled, safe updates for the owner's Arch laptop: user tools update unattended, system packages are checked daily and applied with one guarded command, and the owner is notified only when something needs them.",
+    "goals": [
+      "The owner stops checking for updates by hand.",
+      "No system upgrade runs without a news check and a snapshot to roll back to.",
+      "A kernel update never reboots the machine without the owner."
+    ],
+    "non_goals": [
+      "Unattended pacman -Syu.",
+      "Changelog reading and impact proposals (crow req_045).",
+      "A pending-updates bar widget in archeotech-shell (later shell item).",
+      "Firmware updates (fwupd) and Flatpak."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Update notifier and state file shared by all update jobs",
+      "priority": "High",
+      "complexity": "Low",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC4", "AC6"],
+      "problem": [
+        "Every update job needs to tell the owner when something needs them, without repeating the same alert every run, and crow needs installed versions without running updaters."
+      ],
+      "scope_in": [
+        "scripts/update-notify.sh: one entry point taking a kind (news, upgrade-due, reboot, tool-failed) and a message; rate limit per kind per day; action button that opens `sysup` in kitty for upgrade-due and news.",
+        "State dir ~/.local/state/archeotech-updates/: last notification per kind, versions.json (tool, installed version, method, last update time, last result), last system upgrade time.",
+        "Dry-run flag that prints the notification instead of sending it, for tests."
+      ],
+      "scope_out": [
+        "The update jobs themselves.",
+        "A shell bar widget."
+      ],
+      "acceptance_criteria": [
+        "AC4: A second call with the same kind on the same day sends nothing; a different kind sends.",
+        "AC6: versions.json is valid JSON with one entry per followed tool and is documented for crow."
+      ]
+    },
+    {
+      "title": "Tracked user-tool updater: npm globals, Claude Code, Codex, cdx, rtk, uv, pipx",
+      "priority": "High",
+      "complexity": "Medium",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC1", "AC6"],
+      "problem": [
+        "The daily updater lives untracked in ~/.local/bin, does not upgrade cdx, rtk or Claude Code (cdx update all only lists them), and Codex CLI is not installed."
+      ],
+      "scope_in": [
+        "Move update-dev-tools.sh and its service/timer into scripts/ and config/.config/systemd/user/, linked by install.sh; remove the untracked copies.",
+        "One updater per install method: npm -g (logics-manager, @openai/codex, installed when missing), Claude Code (`claude update`, with its auto-updater left on), cdx (pipx upgrade cdx-manager, then cdx update all for the workstation plan), rtk (GitHub release binary with checksum, or the method rtk documents), uv tool upgrade --all, pipx upgrade-all, codebase-memory-mcp (versioned dir switch).",
+        "Each tool runs alone with a timeout; failures call update-notify.sh tool-failed; results go to versions.json.",
+        "Daily timer kept (Persistent=true, randomized delay)."
+      ],
+      "scope_out": [
+        "pacman and AUR packages.",
+        "Reading changelogs (crow req_045)."
+      ],
+      "acceptance_criteria": [
+        "AC1: After one run, every followed tool shows its latest version or a recorded failure reason; a forced failure in one tool leaves the others updated.",
+        "AC1: A fresh install.sh run installs the units and the timer is active.",
+        "AC6: versions.json lists each tool after the run."
+      ]
+    },
+    {
+      "title": "Daily system update check with Arch news gate",
+      "priority": "High",
+      "complexity": "Medium",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC2", "AC4"],
+      "problem": [
+        "Nothing tells the owner when system updates are pending or when Arch news needs reading before an upgrade, so the owner checks by hand."
+      ],
+      "scope_in": [
+        "scripts/update-check.sh (no root): checkupdates and paru -Qua counts and package lists, kernel/systemd/mesa/glibc flagged as notable, Arch news RSS items newer than the last system upgrade.",
+        "Writes pending.json in the state dir; unread news ids kept until `sysup --ack-news`.",
+        "Daily user timer (Persistent=true). Notifies upgrade-due when updates are older than the threshold (default 7 days) or news is unread.",
+        "Evaluate `checkupdates -d` to pre-download packages without touching the sync db."
+      ],
+      "scope_out": [
+        "Applying any update.",
+        "Running pacman -Sy outside sysup (partial-upgrade risk)."
+      ],
+      "acceptance_criteria": [
+        "AC2: The check runs as the user, leaves /var/lib/pacman/sync untouched, and pending.json matches checkupdates output.",
+        "AC2: A news item newer than the last upgrade is listed as unread until acknowledged.",
+        "AC4: No notification when nothing is pending; one upgrade-due notification once the threshold passes."
+      ]
+    },
+    {
+      "title": "sysup: guarded system upgrade command",
+      "priority": "High",
+      "complexity": "Medium",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC3", "AC4"],
+      "problem": [
+        "A system upgrade needs the same safety steps every time (news, snapshot, pacnew, reboot check) and the owner does them by memory or skips them."
+      ],
+      "scope_in": [
+        "scripts/sysup.sh: shows unread news and refuses to continue until acknowledged; checks snap-pac is installed and snapper root config works; paru -Syu (owner enters the sudo password); after the upgrade, lists pacnew/pacsave (pacdiff -o), failed units, and AUR packages that need a rebuild.",
+        "Reboot check: running kernel modules dir missing or linux/systemd/glibc upgraded sets reboot-needed and calls update-notify.sh reboot. Never reboots.",
+        "paccache -rk2 after a successful upgrade; records last upgrade time in the state dir.",
+        "Records the snapper pre/post numbers for the rollback runbook."
+      ],
+      "scope_out": [
+        "Unattended runs (no timer runs sysup).",
+        "Automatic pacnew merging."
+      ],
+      "acceptance_criteria": [
+        "AC3: With an unread news item, sysup stops before paru and continues after acknowledgement.",
+        "AC3: After an upgrade, a snapper pre/post pair exists and the summary lists pacnew files and failed units.",
+        "AC3: A kernel upgrade ends with a reboot-needed notice and no reboot."
+      ]
+    },
+    {
+      "title": "Update policy ADR, rollback runbook and docs",
+      "priority": "Medium",
+      "complexity": "Low",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC5"],
+      "problem": [
+        "The two-tier policy and the rollback path exist only in this request; the owner needs them written where they will look during a bad upgrade."
+      ],
+      "scope_in": [
+        "ADR in logics/architecture/: two tiers (user tools unattended, system guarded), timer cadence, no unattended reboot, no unattended -Syu.",
+        "Runbook in docs/: daily flow, sysup, reading pending.json, rollback from a snapper snapshot via grub-btrfs boot entry then snapper rollback, recovering from a missing-modules state.",
+        "docs/TOOLS.md and docs/PACKAGES.md entries; note on a fallback kernel (linux-lts) as an owner decision.",
+        "Point cr-0w req_045 at versions.json."
+      ],
+      "scope_out": [
+        "Installing linux-lts (owner decision first)."
+      ],
+      "acceptance_criteria": [
+        "AC5: The ADR, the runbook and both docs exist and match the shipped scripts.",
+        "AC5: The rollback steps were tried once on a non-destructive snapshot listing (snapper list, grub-btrfs menu entries present)."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Orchestrate automatic updates",
+    "plan": [
+      "Notifier and state file (everything else calls it).",
+      "Tracked user-tool updater (replaces the untracked daily job; quick win, no root).",
+      "Daily system check with Arch news gate (needs the notifier and state dir).",
+      "sysup guarded upgrade (consumes pending.json and the news acknowledgement from step 3).",
+      "ADR, rollback runbook and docs (written against the shipped scripts).",
+      "Validate each wave on the real machine with dry-run flags first; the first real sysup run is done by the owner."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/automatic_updates.json",
+    "mode": "summary-only",
+    "profile": "normal"
+  }
+}
