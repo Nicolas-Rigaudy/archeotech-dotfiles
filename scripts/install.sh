@@ -125,6 +125,9 @@ backup_existing_configs() {
         "xdg-desktop-portal"
         "environment.d"
         "systemd"
+        # Updates (arch-update tray click opens kitty via xdg-terminal-exec)
+        "arch-update"
+        "xdg-terminals.list"
     )
 
     BACKED_UP=0
@@ -199,6 +202,16 @@ enable_user_services() {
         print_success "battery-alert.service enabled and started"
     else
         print_warning "Could not enable battery-alert.service (may need graphical session)"
+    fi
+
+    # arch-update checks for pacman/AUR updates at login and every 6 h and
+    # notifies; upgrades only run when the owner starts arch-update (req_013).
+    if command -v arch-update &>/dev/null; then
+        systemctl --user enable --now arch-update.timer >/dev/null 2>&1 \
+            && print_success "arch-update.timer enabled" \
+            || print_warning "Could not enable arch-update.timer"
+    else
+        print_warning "arch-update not installed: skipping its check timer"
     fi
 
     # The shell owns org.freedesktop.Notifications. swaync and dunst ship D-Bus

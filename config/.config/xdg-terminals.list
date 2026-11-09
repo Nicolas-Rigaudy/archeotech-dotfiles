@@ -1,0 +1,3 @@
+# Terminal used by xdg-terminal-exec (Terminal=true desktop entries, e.g. the
+# arch-update tray click). One desktop entry id per line, first match wins.
+kitty.desktop

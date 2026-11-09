@@ -328,6 +328,8 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `grub-btrfs` | GRUB integration | Boot from snapshots in GRUB menu |
 | `snapper-gui-git` (AUR) | Snapshot GUI | Wayland-compatible GUI for snapper |
 | `pacman-contrib` | Pacman extras | Provides `checkupdates` — dashboard SystemNotes uses it for an accurate "pending updates" count without needing root sync |
+| `arch-update-bin` (AUR) | Update notifier and applier | Checks pacman/AUR at login and every 6 h (`arch-update.timer`), tray icon in the bar, notification with a run action. A run shows Arch news, upgrades with paru, then offers pacnew, services and kernel reboot steps. Config: `config/.config/arch-update/arch-update.conf` |
+| `xdg-terminal-exec` | Terminal launcher | Opens `Terminal=true` desktop entries (arch-update tray click) in kitty, per `config/.config/xdg-terminals.list` |
 
 ---
 
@@ -406,11 +408,9 @@ paru -S package-name
 ### Update System
 
 ```bash
-# Update all packages
-sudo pacman -Syu
-
-# Update AUR packages too
-paru -Syu
+# Update pacman + AUR with news, pacnew, services and reboot steps
+# (or click the arch-update tray icon / notification)
+arch-update
 ```
 
 ### Search Packages

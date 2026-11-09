@@ -81,6 +81,8 @@ OPTIONAL=(
     gtk3 gtk4 librsvg sddm-catppuccin-git
     # Btrfs snapshots
     snapper snap-pac grub-btrfs snapper-gui-git
+    # System updates: check, news, tray, guided upgrade (req_013)
+    arch-update-bin xdg-terminal-exec
     # Input remap (kanata layers, Logitech HID++)
     kanata logiops
 )

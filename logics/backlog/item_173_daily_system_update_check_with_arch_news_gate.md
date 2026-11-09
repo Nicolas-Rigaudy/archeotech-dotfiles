@@ -1,14 +1,14 @@
 ## item_173_daily_system_update_check_with_arch_news_gate - arch-update: system update check, tray and upgrade flow
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:44:31
+> Indicators reviewed: 2026-11-09 17:49:22
 
 # AI Context
 - Summary: Sets up arch-update (AUR) as the system tier: tracked config, check timer, tray icon in the bar, kitty on click. A run shows Arch news, upgrades with paru and offers pacnew, service and reboot steps. Replaces the custom check and sysup plan (owner, 2026-11-09).
