@@ -1,44 +1,18 @@
 {
   "budgets": {
-    "max_docs": 28,
+    "max_docs": 4,
     "max_docs_per_ref": 4
   },
   "changed_paths": [],
-  "command": "logics-manager sync context-pack req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools item_171_update_notifier_and_state_file_shared_by_all_update_jobs item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx item_173_daily_system_update_check_with_arch_news_gate item_174_sysup_guarded_system_upgrade_command item_175_update_policy_adr_rollback_runbook_and_docs task_082_orchestrate_automatic_updates --mode summary-only --profile normal --handoff",
-  "companion_docs": [
-    {
-      "kind": "product",
-      "linked_refs": {
-        "item": [
-          "item_171_update_notifier_and_state_file_shared_by_all_update_jobs",
-          "item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx",
-          "item_173_daily_system_update_check_with_arch_news_gate",
-          "item_174_sysup_guarded_system_upgrade_command",
-          "item_175_update_policy_adr_rollback_runbook_and_docs"
-        ],
-        "prod": [
-          "prod_006_automatic_machine_updates"
-        ],
-        "req": [
-          "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
-        ],
-        "task": [
-          "task_082_orchestrate_automatic_updates"
-        ]
-      },
-      "path": "logics/product/prod_006_automatic_machine_updates.md",
-      "ref": "prod_006_automatic_machine_updates",
-      "status": "Proposed",
-      "title": "Automatic machine updates"
-    }
-  ],
+  "command": "logics-manager sync context-pack req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools --mode summary-only --profile normal",
+  "companion_docs": [],
   "docs": [
     {
       "ai_context": {
-        "keywords": "automatic, updates, system, packages, aur, npm, globals, user, tools",
-        "skip when": "(unfilled: replace before this doc is used)",
-        "summary": "(unfilled: replace before this doc is used)",
-        "use when": "(unfilled: replace before this doc is used)"
+        "keywords": "pacman, paru, aur, npm, cdx, rtk, claude code, codex, systemd timer, arch news, snapper, snap-pac, notify-send, arch-update",
+        "skip when": "reading changelogs or proposing changes from new tool releases (cr-0w req_045).",
+        "summary": "Two-tier update plan for the Arch laptop. User tools in ~/.local update daily and unattended. pacman and AUR go through arch-update (AUR, owner choice 2026-11-09): its user timer checks without root and notifies, its tray icon in the bar opens it in kitty, and a run shows the Arch news, upgrades with paru, then offers pacnew, service restart and reboot steps. Nothing applies system updates or reboots unattended.",
+        "use when": "building or changing update timers, the arch-update setup, the update notifier or the versions state file."
       },
       "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
       "executions": {
@@ -65,15 +39,15 @@
       "path": "logics/request/req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools.md",
       "ref": "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools",
       "schema_version": "1.0",
-      "status": "Draft",
+      "status": "Ready",
       "title": "Automatic updates: system packages, AUR, npm globals and user tools"
     },
     {
       "ai_context": {
         "keywords": "update, notifier, state, file, shared, all, jobs",
-        "skip when": "(unfilled: replace before this doc is used)",
-        "summary": "(unfilled: replace before this doc is used)",
-        "use when": "(unfilled: replace before this doc is used)"
+        "skip when": "building the update jobs themselves (item_172) or system update notices (arch-update, item_173).",
+        "summary": "One notify script with a per-kind daily rate limit and a state dir (versions.json, last notice per kind, last upgrade time) used by every update job.",
+        "use when": "writing or changing update notifications or the versions state crow reads."
       },
       "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
       "executions": {
@@ -104,9 +78,9 @@
     {
       "ai_context": {
         "keywords": "tracked, user, tool, updater, npm, globals, claude, code, codex, cdx, rtk, pipx",
-        "skip when": "(unfilled: replace before this doc is used)",
-        "summary": "(unfilled: replace before this doc is used)",
-        "use when": "(unfilled: replace before this doc is used)"
+        "skip when": "pacman or AUR packages (item_173, item_174).",
+        "summary": "Moves the untracked daily updater into the repo and gives each install method its own upgrade step: npm -g, Claude Code native, pipx (cdx), rtk release binary, uv tools, codebase-memory-mcp.",
+        "use when": "adding a user tool to the daily update or fixing a tool that stays behind."
       },
       "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
       "executions": {
@@ -136,10 +110,10 @@
     },
     {
       "ai_context": {
-        "keywords": "daily, system, update, check, arch, news, gate",
-        "skip when": "(unfilled: replace before this doc is used)",
-        "summary": "(unfilled: replace before this doc is used)",
-        "use when": "(unfilled: replace before this doc is used)"
+        "keywords": "arch-update, system, update, check, arch, news, tray, paru",
+        "skip when": "user tools in ~/.local (item_172).",
+        "summary": "Sets up arch-update (AUR) as the system tier: tracked config, check timer, tray icon in the bar, kitty on click. A run shows Arch news, upgrades with paru and offers pacnew, service and reboot steps. Replaces the custom check and sysup plan (owner, 2026-11-09).",
+        "use when": "changing how pacman and AUR updates are checked, announced or applied."
       },
       "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
       "executions": {
@@ -165,163 +139,22 @@
       "ref": "item_173_daily_system_update_check_with_arch_news_gate",
       "schema_version": "1.0",
       "status": "Ready",
-      "title": "Daily system update check with Arch news gate"
-    },
-    {
-      "ai_context": {
-        "keywords": "orchestrate, automatic, updates",
-        "skip when": "(unfilled: replace before this doc is used)",
-        "summary": "(unfilled: replace before this doc is used)",
-        "use when": "(unfilled: replace before this doc is used)"
-      },
-      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
-      "executions": {
-        "older_count": 0,
-        "rows": []
-      },
-      "kind": "task",
-      "linked_refs": {
-        "item": [
-          "item_171_update_notifier_and_state_file_shared_by_all_update_jobs",
-          "item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx",
-          "item_173_daily_system_update_check_with_arch_news_gate",
-          "item_174_sysup_guarded_system_upgrade_command",
-          "item_175_update_policy_adr_rollback_runbook_and_docs"
-        ],
-        "prod": [
-          "prod_006_automatic_machine_updates"
-        ],
-        "req": [
-          "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
-        ],
-        "task": [
-          "task_082_orchestrate_automatic_updates"
-        ]
-      },
-      "path": "logics/tasks/task_082_orchestrate_automatic_updates.md",
-      "ref": "task_082_orchestrate_automatic_updates",
-      "schema_version": "1.0",
-      "status": "Ready",
-      "title": "Orchestrate automatic updates"
-    },
-    {
-      "ai_context": {},
-      "execution_table": "",
-      "executions": {
-        "older_count": 0,
-        "rows": []
-      },
-      "kind": "product",
-      "linked_refs": {
-        "item": [
-          "item_171_update_notifier_and_state_file_shared_by_all_update_jobs",
-          "item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx",
-          "item_173_daily_system_update_check_with_arch_news_gate",
-          "item_174_sysup_guarded_system_upgrade_command",
-          "item_175_update_policy_adr_rollback_runbook_and_docs"
-        ],
-        "prod": [
-          "prod_006_automatic_machine_updates"
-        ],
-        "req": [
-          "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
-        ],
-        "task": [
-          "task_082_orchestrate_automatic_updates"
-        ]
-      },
-      "path": "logics/product/prod_006_automatic_machine_updates.md",
-      "ref": "prod_006_automatic_machine_updates",
-      "schema_version": "1.0",
-      "status": "Proposed",
-      "title": "Automatic machine updates"
-    },
-    {
-      "ai_context": {
-        "keywords": "sysup, guarded, system, upgrade, command",
-        "skip when": "(unfilled: replace before this doc is used)",
-        "summary": "(unfilled: replace before this doc is used)",
-        "use when": "(unfilled: replace before this doc is used)"
-      },
-      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
-      "executions": {
-        "older_count": 0,
-        "rows": []
-      },
-      "kind": "backlog",
-      "linked_refs": {
-        "item": [
-          "item_174_sysup_guarded_system_upgrade_command"
-        ],
-        "prod": [
-          "prod_006_automatic_machine_updates"
-        ],
-        "req": [
-          "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
-        ],
-        "task": [
-          "task_082_orchestrate_automatic_updates"
-        ]
-      },
-      "path": "logics/backlog/item_174_sysup_guarded_system_upgrade_command.md",
-      "ref": "item_174_sysup_guarded_system_upgrade_command",
-      "schema_version": "1.0",
-      "status": "Ready",
-      "title": "sysup: guarded system upgrade command"
-    },
-    {
-      "ai_context": {
-        "keywords": "update, policy, adr, rollback, runbook, docs",
-        "skip when": "(unfilled: replace before this doc is used)",
-        "summary": "(unfilled: replace before this doc is used)",
-        "use when": "(unfilled: replace before this doc is used)"
-      },
-      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
-      "executions": {
-        "older_count": 0,
-        "rows": []
-      },
-      "kind": "backlog",
-      "linked_refs": {
-        "item": [
-          "item_175_update_policy_adr_rollback_runbook_and_docs"
-        ],
-        "prod": [
-          "prod_006_automatic_machine_updates"
-        ],
-        "req": [
-          "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
-        ],
-        "task": [
-          "task_082_orchestrate_automatic_updates"
-        ]
-      },
-      "path": "logics/backlog/item_175_update_policy_adr_rollback_runbook_and_docs.md",
-      "ref": "item_175_update_policy_adr_rollback_runbook_and_docs",
-      "schema_version": "1.0",
-      "status": "Ready",
-      "title": "Update policy ADR, rollback runbook and docs"
+      "title": "arch-update: system update check, tray and upgrade flow"
     }
   ],
   "estimates": {
-    "char_count": 9072,
-    "companion_doc_count": 1,
-    "doc_count": 8
+    "char_count": 5595,
+    "companion_doc_count": 0,
+    "doc_count": 4
   },
-  "generated_at": "2026-11-09T16:33:46Z",
+  "generated_at": "2026-11-09T16:44:44Z",
   "handoff": {
-    "companion_doc_count": 1,
-    "enabled": true,
+    "companion_doc_count": 0,
+    "enabled": false,
     "source_refs": [
-      "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools",
-      "item_171_update_notifier_and_state_file_shared_by_all_update_jobs",
-      "item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx",
-      "item_173_daily_system_update_check_with_arch_news_gate",
-      "item_174_sysup_guarded_system_upgrade_command",
-      "item_175_update_policy_adr_rollback_runbook_and_docs",
-      "task_082_orchestrate_automatic_updates"
+      "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
     ],
-    "validation_summary_count": 1
+    "validation_summary_count": 0
   },
   "i18n": {
     "actions": [
@@ -339,15 +172,9 @@
   },
   "mode": "summary-only",
   "profile": "normal",
-  "ref": "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools,item_171_update_notifier_and_state_file_shared_by_all_update_jobs,item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx,item_173_daily_system_update_check_with_arch_news_gate,item_174_sysup_guarded_system_upgrade_command,item_175_update_policy_adr_rollback_runbook_and_docs,task_082_orchestrate_automatic_updates",
+  "ref": "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools",
   "refs": [
-    "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools",
-    "item_171_update_notifier_and_state_file_shared_by_all_update_jobs",
-    "item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx",
-    "item_173_daily_system_update_check_with_arch_news_gate",
-    "item_174_sysup_guarded_system_upgrade_command",
-    "item_175_update_policy_adr_rollback_runbook_and_docs",
-    "task_082_orchestrate_automatic_updates"
+    "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
   ],
   "release": {
     "blocking_reasons": [
@@ -376,13 +203,5 @@
     "target_version": null,
     "targets": []
   },
-  "validation_summary": [
-    {
-      "items": [
-        "- (no validation recorded yet)"
-      ],
-      "path": "logics/tasks/task_082_orchestrate_automatic_updates.md",
-      "ref": "task_082_orchestrate_automatic_updates"
-    }
-  ]
+  "validation_summary": []
 }

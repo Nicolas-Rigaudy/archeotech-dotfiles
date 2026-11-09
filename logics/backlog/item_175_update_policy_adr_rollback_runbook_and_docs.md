@@ -8,32 +8,32 @@
 > Complexity: Low
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:34:22
+> Indicators reviewed: 2026-11-09 17:44:31
 
 # AI Context
 - Summary: Writes the two-tier policy as an ADR, the rollback runbook (grub-btrfs boot entry, snapper rollback, missing-modules recovery) and the TOOLS/PACKAGES docs.
 - Keywords: update, policy, adr, rollback, runbook, docs
 - Use when: recovering from a bad upgrade or explaining the update policy.
-- Skip when: script changes (items 171 to 174).
+- Skip when: script or config changes (items 171 to 173).
 
 # Problem
 - The two-tier policy and the rollback path exist only in this request; the owner needs them written where they will look during a bad upgrade.
 
 # Scope
 - In:
-  - ADR in logics/architecture/: two tiers (user tools unattended, system guarded), timer cadence, no unattended reboot, no unattended -Syu.
-  - Runbook in docs/: daily flow, sysup, reading pending.json, rollback from a snapper snapshot via grub-btrfs boot entry then snapper rollback, recovering from a missing-modules state.
+  - ADR in logics/architecture/: two tiers (user tools unattended, system via arch-update run by the owner), why arch-update over a custom script, timer cadence, no unattended reboot, no unattended -Syu.
+  - Runbook in docs/: daily flow, an arch-update run step by step, reading ~/.local/state/arch-update, rollback from a snapper snapshot via grub-btrfs boot entry then snapper rollback, recovering from a missing-modules state.
   - docs/TOOLS.md and docs/PACKAGES.md entries; note on a fallback kernel (linux-lts) as an owner decision.
   - Point cr-0w req_045 at versions.json.
 - Out:
   - Installing linux-lts (owner decision first).
 
 # Acceptance criteria
-- AC5: The ADR, the runbook and both docs exist and match the shipped scripts.
+- AC5: The ADR, the runbook and both docs exist and match the shipped scripts and arch-update config.
 - AC5: The rollback steps were tried once on a non-destructive snapshot listing (snapper list, grub-btrfs menu entries present).
 
 # AC Traceability
-- request-AC5 -> This backlog slice. Proof: AC5: The ADR, the runbook and both docs exist and match the shipped scripts.
+- request-AC5 -> This backlog slice. Proof: AC5: The ADR, the runbook and both docs exist and match the shipped scripts and arch-update config.
 
 # Decision framing
 - Product framing: Not needed

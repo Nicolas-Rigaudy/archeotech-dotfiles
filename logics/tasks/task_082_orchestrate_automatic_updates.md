@@ -8,10 +8,10 @@
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:34:35
+> Indicators reviewed: 2026-11-09 17:44:31
 
 # AI Context
-- Summary: Delivers req_013 in five waves: notifier, user-tool updater, system check, sysup, docs. The first real sysup run is the owner's.
+- Summary: Delivers req_013 in four waves: notifier, user-tool updater, arch-update setup, docs. item_174 (sysup) is obsolete. The first real arch-update run is the owner's.
 - Keywords: orchestrate, automatic, updates
 - Use when: picking the next automatic-updates wave or checking its order.
 - Skip when: crow's changelog watch (cr-0w req_045).
@@ -22,10 +22,10 @@
 # Plan
 - [ ] 1. Notifier and state file (everything else calls it).
 - [ ] 2. Tracked user-tool updater (replaces the untracked daily job; quick win, no root).
-- [ ] 3. Daily system check with Arch news gate (needs the notifier and state dir).
-- [ ] 4. sysup guarded upgrade (consumes pending.json and the news acknowledgement from step 3).
-- [ ] 5. ADR, rollback runbook and docs (written against the shipped scripts).
-- [ ] 6. Validate each wave on the real machine with dry-run flags first; the first real sysup run is done by the owner.
+- [ ] 3. arch-update setup (owner installs it with paru; tracked config, check timer, tray via mango exec_once, kitty via xdg-terminal-exec).
+- [x] 4. sysup guarded upgrade: dropped 2026-11-09, arch-update covers it (item_174 Obsolete).
+- [ ] 5. ADR, rollback runbook and docs (written against the shipped scripts and the arch-update config).
+- [ ] 6. Validate each wave on the real machine with dry-run flags first; the first real arch-update run is done by the owner.
 - [ ] ADR 009 checkpoint: update affected Logics docs during each meaningful wave and leave the repo commit-ready.
 - [ ] Keep commit creation under operator control; do not force one commit per micro-step.
 - [ ] GATE: do not close until lint, audit, and scaffold validation pass.
@@ -50,8 +50,7 @@
 - request-AC6 -> `item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx`. Proof deferred to slice closeout.
 - request-AC2 -> `item_173_daily_system_update_check_with_arch_news_gate`. Proof deferred to slice closeout.
 - request-AC4 -> `item_173_daily_system_update_check_with_arch_news_gate`. Proof deferred to slice closeout.
-- request-AC3 -> `item_174_sysup_guarded_system_upgrade_command`. Proof deferred to slice closeout.
-- request-AC4 -> `item_174_sysup_guarded_system_upgrade_command`. Proof deferred to slice closeout.
+- request-AC3 -> `item_173_daily_system_update_check_with_arch_news_gate`. Proof deferred to slice closeout.
 - request-AC5 -> `item_175_update_policy_adr_rollback_runbook_and_docs`. Proof deferred to slice closeout.
 
 # Validation

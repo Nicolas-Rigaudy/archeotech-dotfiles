@@ -6,6 +6,7 @@
 > Related task: `task_082_orchestrate_automatic_updates`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-11-09 17:44:32
 
 # Overview
 Scheduled, safe updates for the owner's Arch laptop: user tools update unattended, system packages are checked daily and applied with one guarded command, and the owner is notified only when something needs them.
@@ -15,11 +16,11 @@ Scheduled, safe updates for the owner's Arch laptop: user tools update unattende
 %% logics-signature: product|automatic_machine_updates|generated
 flowchart TD
     Timer[Daily user timers] --> Tools[User tools updated]
-    Timer --> Check[System check and news]
+    Timer --> Check[arch-update check]
     Check --> Notify[Notify owner]
-    Notify --> Sysup[Owner runs sysup]
-    Sysup --> Snap[Snapshot and paru upgrade]
-    Snap --> Reboot[Reboot notice only]
+    Notify --> Run[Owner runs arch-update]
+    Run --> Snap[News, snapshot, paru upgrade]
+    Snap --> Reboot[Pacnew, services, reboot offered]
 ```
 
 # Goals
@@ -38,9 +39,9 @@ flowchart TD
 - Out: unattended system upgrades, automatic reboots, automatic pacnew merges.
 
 # Key product decisions
-- Two tiers: user tools update unattended; pacman and AUR are checked daily and applied only through `sysup`.
+- Two tiers: user tools update unattended; pacman and AUR are checked by arch-update and applied only when the owner runs it (owner choice 2026-11-09, replaces the custom `sysup` idea).
 - systemd user timers with Persistent=true; no login hook.
-- One notification per kind per day, only when the owner has something to do.
+- Notifications only when the owner has something to do: arch-update for system updates, the user-tool job for failures.
 - versions.json is the read surface for crow (cr-0w req_045).
 
 # Success signals

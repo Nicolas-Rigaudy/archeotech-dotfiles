@@ -1,14 +1,14 @@
 ## item_174_sysup_guarded_system_upgrade_command - sysup: guarded system upgrade command
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Obsolete
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:34:22
+> Indicators reviewed: 2026-11-09 17:44:36
 
 # AI Context
 - Summary: Owner-run upgrade command: news acknowledgement, snapshot check, paru -Syu, pacnew and failed-unit report, reboot-needed notice, cache trim. No timer runs it and it never reboots.
@@ -41,6 +41,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Obsolete 2026-11-09: the owner chose arch-update (AUR) over a custom sysup script. Its news, paru upgrade, pacnew, services and reboot steps moved to item_173.
 
 # Links
 - Product brief(s): `prod_006_automatic_machine_updates`

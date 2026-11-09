@@ -8,21 +8,21 @@
 > Complexity: Low
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:34:22
+> Indicators reviewed: 2026-11-09 17:44:31
 
 # AI Context
 - Summary: One notify script with a per-kind daily rate limit and a state dir (versions.json, last notice per kind, last upgrade time) used by every update job.
 - Keywords: update, notifier, state, file, shared, all, jobs
 - Use when: writing or changing update notifications or the versions state crow reads.
-- Skip when: building the update jobs themselves (item_172, item_173, item_174).
+- Skip when: building the update jobs themselves (item_172) or system update notices (arch-update, item_173).
 
 # Problem
 - Every update job needs to tell the owner when something needs them, without repeating the same alert every run, and crow needs installed versions without running updaters.
 
 # Scope
 - In:
-  - scripts/update-notify.sh: one entry point taking a kind (news, upgrade-due, reboot, tool-failed) and a message; rate limit per kind per day; action button that opens `sysup` in kitty for upgrade-due and news.
-  - State dir ~/.local/state/archeotech-updates/: last notification per kind, versions.json (tool, installed version, method, last update time, last result), last system upgrade time.
+  - scripts/update-notify.sh: one entry point taking a kind (tool-failed for now) and a message; rate limit per kind per day. System update notices are arch-update's own (item_173).
+  - State dir ~/.local/state/archeotech-updates/: last notification per kind, versions.json (tool, installed version, method, last update time, last result).
   - Dry-run flag that prints the notification instead of sending it, for tests.
 - Out:
   - The update jobs themselves.
