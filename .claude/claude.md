@@ -32,6 +32,7 @@ Standing feedback the user has given (keep/extend here, not in memory):
 - **Tooltips: always the shell's `Prim.Tooltip`** (`Commons/Primitives/Tooltip.qml`: the cards' MetalSurface material, glass rim, e3 shadow; steel plate under Grimdark; owner-approved 2026-10-13), never a stock QtQuick.Controls `ToolTip` (platform look; owner called it ugly, 2026-10-13). `tests/py/test_tooltips.py` fails on any `ToolTip {`/`ToolTip.` outside the primitive. Per-row tooltips are built only while hovered (Loader), as in `RowLabel`.
 - **Research one-at-a-time repo studies inline** (Read/Grep yourself); only spawn agents for genuine parallel fan-out, not a single agent I then block on.
 - **Sandbox `$HOME`** is not `/home/corvus` (see below); also `paru -S` in a background shell can't read the sudo password — have the user run installs via `!`.
+- **Never have the owner start a long-lived GUI app or daemon via `!`** (tray applets, anything that later opens windows): `!` runs in the Claude Code shell, so the process keeps the sandbox `HOME` and the Claude session variables, and every window it opens (kitty) loses the owner's config. Start it in the clean user-manager env: `systemd-run --user --unit=<name> <cmd>` (2026-11-09, arch-update tray; AUR builds also landed in the sandbox paru cache). One-shot installs and read-only commands via `!` are fine.
 
 ### Principles
 1. **Build from scratch** — reference projects for inspiration only, never wholesale.
