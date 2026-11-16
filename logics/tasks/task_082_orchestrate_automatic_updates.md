@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-11-16 10:18:13
+> Indicators reviewed: 2026-11-16 10:27:07
 
 # AI Context
 - Summary: Delivers req_013 in four waves: notifier, user-tool updater, arch-update setup, docs. item_174 (sysup) is obsolete. The first real arch-update run is the owner's.
@@ -69,3 +69,6 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+
+# Notes
+- update-dev-tools: kept the daily Persistent timer + a 30 min DNS wait instead of a NetworkManager dispatcher hook (owner, 2026-11-16): connect events fire many times a day and need root; 30 min covers Wi-Fi setup on a train.
