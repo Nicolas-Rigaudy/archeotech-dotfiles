@@ -182,6 +182,8 @@ install_local_scripts() {
         "swaylock-launch.sh"
         "archeotech-live.sh"
         "update-dev-tools.sh"
+        "update-notify.sh"
+        "update-state.sh"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do
