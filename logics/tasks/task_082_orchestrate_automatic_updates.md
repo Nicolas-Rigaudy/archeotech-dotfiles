@@ -62,6 +62,7 @@
 - 2026-11-09 item_173 verified by the owner: tray icon on the bar, click opens arch-update in kitty, first full run done (news, -Syu, paru AUR builds, orphan removal, pacdiff: mirrorlist + locale.gen kept, fortran.conf + 2 tpm2 profiles replaced). snapper pre/post pairs 2851-2860 cover every pacman transaction; 0 pacnew left. Fixes: tray waits for the StatusNotifierWatcher (27a9468); a tray started from a Claude Code ! shell inherits the sandbox HOME, so kitty loses its theme (TROUBLESHOOTING, 02e7dbe).
 - 2026-11-16 item_172 slice: update-dev-tools.sh + service/timer tracked and linked by install.sh, DNS wait (5 min) + 3 retries per tool, real start passed (b47b448). item_172 still needs per-method updaters, update-notify.sh, versions.json.
 - 2026-11-16 item_171 Done (35da7db): scripts/update-notify.sh (kind + message, one notice per kind per day in notified.json, --dry-run prints and writes nothing) and scripts/update-state.sh (versions.json record/forget/show, atomic + locked; last_update moves only on a version change), both linked by install.sh. Format for crow in docs/UPDATES.md. Validated: tests/test-update-scripts.sh 15/15 (AC4 same kind suppressed, other kind sends; AC6 valid JSON, one entry per tool), shellcheck clean, real-machine --dry-run. item_172 now calls these.
+- 2026-11-16 wrap: wave 1 (item_171) done and owner-verified with a real notice (693741d). Next: item_172 per-method updaters calling update-notify.sh tool-failed and update-state.sh record. Test kinds test/test-failed sit in the real notified.json (harmless).
 
 # Links
 - Request: `req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools`
@@ -74,3 +75,4 @@
 
 # Notes
 - update-dev-tools: kept the daily Persistent timer + a 30 min DNS wait instead of a NetworkManager dispatcher hook (owner, 2026-11-16): connect events fire many times a day and need root; 30 min covers Wi-Fi setup on a train.
+- Failure kinds (*-failed) are sent critical: red border, stays until dismissed; other kinds normal (owner, 2026-11-16, after a real test notice).
