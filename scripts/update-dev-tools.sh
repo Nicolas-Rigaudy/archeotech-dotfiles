@@ -14,8 +14,8 @@ export PATH="$HOME/.local/bin:$PATH"
 log() { printf '%s  %s\n' "$(date -Is)" "$*"; }
 
 NET_HOSTS=(github.com registry.npmjs.org)
-NET_WAIT_MAX=${NET_WAIT_MAX:-300}   # seconds to wait for DNS before trying anyway
-NET_WAIT_STEP=10
+NET_WAIT_MAX=${NET_WAIT_MAX:-1800}  # seconds to wait for DNS (30 min: Wi-Fi on a train can take a while)
+NET_WAIT_STEP=15
 RETRIES=${RETRIES:-3}               # attempts per tool
 RETRY_DELAY=${RETRY_DELAY:-60}      # seconds between attempts
 NET_GAVE_UP=0                       # set once the wait timed out: retries stop re-waiting

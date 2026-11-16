@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:34:22
+> Indicators reviewed: 2026-11-16 10:24:24
 
 # AI Context
 - Summary: Moves the untracked daily updater into the repo and gives each install method its own upgrade step: npm -g, Claude Code native, pipx (cdx), rtk release binary, uv tools, codebase-memory-mcp.
@@ -53,7 +53,7 @@
 - Rationale: Set by scaffold input or defaulted for grooming.
 
 # Notes
-- 2026-11-16: first slice landed. update-dev-tools.sh and its service/timer are tracked (scripts/, config/.config/systemd/user/) and linked/enabled by install.sh; the untracked copies are now symlinks. The script waits for DNS (github.com, registry.npmjs.org, up to 5 min) and retries each step 3 times, after the 2026-11-16 resume run failed offline. Still open: per-install-method updaters (npm -g, codex, claude update, pipx, uv, rtk, codebase-memory-mcp), per-tool timeouts, update-notify.sh and versions.json.
+- 2026-11-16: first slice landed. update-dev-tools.sh and its service/timer are tracked (scripts/, config/.config/systemd/user/) and linked/enabled by install.sh; the untracked copies are now symlinks. The script waits for DNS (github.com, registry.npmjs.org, up to 30 min) and retries each step 3 times, after the 2026-11-16 resume run failed offline. Still open: per-install-method updaters (npm -g, codex, claude update, pipx, uv, rtk, codebase-memory-mcp), per-tool timeouts, update-notify.sh and versions.json.
 
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |

@@ -1,7 +1,7 @@
 # Daily dev-CLI updater (req_013 / item_172). Linked into
 # ~/.config/systemd/user by scripts/install.sh (enable_user_services).
 # network-online.target does not cover a resume from suspend: the script
-# itself waits for DNS (up to 5 min) and retries failed steps.
+# itself waits for DNS (up to 30 min) and retries failed steps.
 [Unit]
 Description=Update dev CLIs (cdx, logics-manager)
 Wants=network-online.target
@@ -10,5 +10,5 @@ After=network-online.target
 [Service]
 Type=oneshot
 ExecStart=%h/.local/bin/update-dev-tools.sh
-# 5 min network wait + 3 attempts per tool with 60 s pauses fit well inside this.
-TimeoutStartSec=30min
+# 30 min network wait + 3 attempts per tool with 60 s pauses fit inside this.
+TimeoutStartSec=1h
