@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-11-09 18:07:07
+> Indicators reviewed: 2026-11-16 10:18:13
 
 # AI Context
 - Summary: Delivers req_013 in four waves: notifier, user-tool updater, arch-update setup, docs. item_174 (sysup) is obsolete. The first real arch-update run is the owner's.
@@ -59,6 +59,7 @@
 # Report
 - 2026-11-09 item_173 wave (d273cf9): arch-update installed; tracked arch-update.conf (AURHelper=paru, KeepOldPackages=2, NoFlatpak) + xdg-terminals.list (kitty); install.sh enables arch-update.timer; mango exec_once starts the tray. Verified: check state matches checkupdates (20 pkgs), sync db untouched, timer every 6 h. Pending owner: tray on live bar, click opens kitty, first real run + snapper pre/post pair.
 - 2026-11-09 item_173 verified by the owner: tray icon on the bar, click opens arch-update in kitty, first full run done (news, -Syu, paru AUR builds, orphan removal, pacdiff: mirrorlist + locale.gen kept, fortran.conf + 2 tpm2 profiles replaced). snapper pre/post pairs 2851-2860 cover every pacman transaction; 0 pacnew left. Fixes: tray waits for the StatusNotifierWatcher (27a9468); a tray started from a Claude Code ! shell inherits the sandbox HOME, so kitty loses its theme (TROUBLESHOOTING, 02e7dbe).
+- 2026-11-16 item_172 slice: update-dev-tools.sh + service/timer tracked and linked by install.sh, DNS wait (5 min) + 3 retries per tool, real start passed (b47b448). item_172 still needs per-method updaters, update-notify.sh, versions.json.
 
 # Links
 - Request: `req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools`
