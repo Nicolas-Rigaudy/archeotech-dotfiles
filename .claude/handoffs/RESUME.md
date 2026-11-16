@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-11-09, arch-update landed (item_173); next item_171 notifier; shell next item_170 or item_169)
+# Resume here (last updated 2026-11-16, item_171 notifier landed; next item_172 per-method updaters; shell next item_170 or item_169)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -13,7 +13,8 @@ says where to look and what is next. Update it at the end of each session (`/wra
   tracked `config/.config/arch-update/arch-update.conf` (paru, keep 2, no flatpak),
   `xdg-terminals.list` (kitty), `arch-update.timer` (6 h check), mango `exec_once`
   tray that waits for quickshell's StatusNotifierWatcher (d273cf9, 27a9468). First real
-  run verified with snap-pac pairs. Remaining: item_171 notifier, item_172 tracked
+  run verified with snap-pac pairs. item_171 Done (35da7db): `update-notify.sh` +
+  `update-state.sh` (versions.json), format in `docs/UPDATES.md`. Remaining: item_172 tracked
   user-tool updater (replaces untracked `~/.local/bin/update-dev-tools.sh`), item_175 docs.
 - **Cyberdeck + pack wallpapers (2026-11-06, all pushed):**
   - Netrunner register landed and approved (shell 1e0cdea, c240e26, efb5139, 979c5e3;

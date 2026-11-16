@@ -1,14 +1,14 @@
 ## item_171_update_notifier_and_state_file_shared_by_all_update_jobs - Update notifier and state file shared by all update jobs
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: Low
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:44:31
+> Indicators reviewed: 2026-11-16 10:59:39
 
 # AI Context
 - Summary: One notify script with a per-kind daily rate limit and a state dir (versions.json, last notice per kind, last upgrade time) used by every update job.

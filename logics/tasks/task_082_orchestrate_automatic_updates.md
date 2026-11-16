@@ -1,14 +1,15 @@
 ## task_082_orchestrate_automatic_updates - Orchestrate automatic updates
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 25%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-11-16 10:27:07
+> Indicators reviewed: 2026-11-16 10:59:39
+> Owner: claude
 
 # AI Context
 - Summary: Delivers req_013 in four waves: notifier, user-tool updater, arch-update setup, docs. item_174 (sysup) is obsolete. The first real arch-update run is the owner's.
@@ -20,7 +21,7 @@
 - Orchestrate the scaffolded request chain and keep sibling implementation slices linked.
 
 # Plan
-- [ ] 1. Notifier and state file (everything else calls it).
+- [x] 1. Notifier and state file (everything else calls it).
 - [ ] 2. Tracked user-tool updater (replaces the untracked daily job; quick win, no root).
 - [ ] 3. arch-update setup (owner installs it with paru; tracked config, check timer, tray via mango exec_once, kitty via xdg-terminal-exec).
 - [x] 4. sysup guarded upgrade: dropped 2026-11-09, arch-update covers it (item_174 Obsolete).
@@ -60,6 +61,7 @@
 - 2026-11-09 item_173 wave (d273cf9): arch-update installed; tracked arch-update.conf (AURHelper=paru, KeepOldPackages=2, NoFlatpak) + xdg-terminals.list (kitty); install.sh enables arch-update.timer; mango exec_once starts the tray. Verified: check state matches checkupdates (20 pkgs), sync db untouched, timer every 6 h. Pending owner: tray on live bar, click opens kitty, first real run + snapper pre/post pair.
 - 2026-11-09 item_173 verified by the owner: tray icon on the bar, click opens arch-update in kitty, first full run done (news, -Syu, paru AUR builds, orphan removal, pacdiff: mirrorlist + locale.gen kept, fortran.conf + 2 tpm2 profiles replaced). snapper pre/post pairs 2851-2860 cover every pacman transaction; 0 pacnew left. Fixes: tray waits for the StatusNotifierWatcher (27a9468); a tray started from a Claude Code ! shell inherits the sandbox HOME, so kitty loses its theme (TROUBLESHOOTING, 02e7dbe).
 - 2026-11-16 item_172 slice: update-dev-tools.sh + service/timer tracked and linked by install.sh, DNS wait (5 min) + 3 retries per tool, real start passed (b47b448). item_172 still needs per-method updaters, update-notify.sh, versions.json.
+- 2026-11-16 item_171 Done (35da7db): scripts/update-notify.sh (kind + message, one notice per kind per day in notified.json, --dry-run prints and writes nothing) and scripts/update-state.sh (versions.json record/forget/show, atomic + locked; last_update moves only on a version change), both linked by install.sh. Format for crow in docs/UPDATES.md. Validated: tests/test-update-scripts.sh 15/15 (AC4 same kind suppressed, other kind sends; AC6 valid JSON, one entry per tool), shellcheck clean, real-machine --dry-run. item_172 now calls these.
 
 # Links
 - Request: `req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools`
