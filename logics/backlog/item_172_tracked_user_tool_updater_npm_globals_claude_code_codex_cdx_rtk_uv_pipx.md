@@ -4,7 +4,7 @@
 > Status: Ready
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 25%
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -51,6 +51,9 @@
 # Priority
 - Priority: High
 - Rationale: Set by scaffold input or defaulted for grooming.
+
+# Notes
+- 2026-11-16: first slice landed. update-dev-tools.sh and its service/timer are tracked (scripts/, config/.config/systemd/user/) and linked/enabled by install.sh; the untracked copies are now symlinks. The script waits for DNS (github.com, registry.npmjs.org, up to 5 min) and retries each step 3 times, after the 2026-11-16 resume run failed offline. Still open: per-install-method updaters (npm -g, codex, claude update, pipx, uv, rtk, codebase-memory-mcp), per-tool timeouts, update-notify.sh and versions.json.
 
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |

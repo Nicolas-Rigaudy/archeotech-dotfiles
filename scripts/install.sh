@@ -181,6 +181,7 @@ install_local_scripts() {
         "show-keybinds.sh"
         "swaylock-launch.sh"
         "archeotech-live.sh"
+        "update-dev-tools.sh"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do
@@ -192,9 +193,12 @@ install_local_scripts() {
 enable_user_services() {
     print_header "Enabling Systemd User Services"
 
-    # battery-alert.service lives in a pre-existing systemd dir stow can't manage
-    ln -sf "$DOTFILES_DIR/config/.config/systemd/user/battery-alert.service" \
-        "$HOME/.config/systemd/user/battery-alert.service"
+    # These units live in a pre-existing systemd dir stow can't manage
+    mkdir -p "$HOME/.config/systemd/user"
+    for unit in battery-alert.service update-dev-tools.service update-dev-tools.timer; do
+        ln -sf "$DOTFILES_DIR/config/.config/systemd/user/$unit" \
+            "$HOME/.config/systemd/user/$unit"
+    done
 
     systemctl --user daemon-reload
 
@@ -203,6 +207,11 @@ enable_user_services() {
     else
         print_warning "Could not enable battery-alert.service (may need graphical session)"
     fi
+
+    # Daily dev-CLI updater (cdx, logics-manager); waits for the network itself.
+    systemctl --user enable --now update-dev-tools.timer >/dev/null 2>&1 \
+        && print_success "update-dev-tools.timer enabled" \
+        || print_warning "Could not enable update-dev-tools.timer"
 
     # arch-update checks for pacman/AUR updates at login and every 6 h and
     # notifies; upgrades only run when the owner starts arch-update (req_013).
