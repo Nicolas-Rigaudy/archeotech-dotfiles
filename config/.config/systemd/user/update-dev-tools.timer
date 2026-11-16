@@ -1,7 +1,7 @@
 # Runs update-dev-tools.service daily; Persistent catches up a missed run
 # (e.g. right after resume, hence the network wait in the script).
 [Unit]
-Description=Daily update of dev CLIs (cdx, logics-manager)
+Description=Daily update of user-installed dev tools
 
 [Timer]
 OnCalendar=daily

@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-11-16, item_171 notifier landed; next item_172 per-method updaters; shell next item_170 or item_169)
+# Resume here (last updated 2026-11-16, item_172 user-tool updater landed; next item_175 update docs or task_083 housekeeping; shell next item_170 or item_169)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -14,8 +14,9 @@ says where to look and what is next. Update it at the end of each session (`/wra
   `xdg-terminals.list` (kitty), `arch-update.timer` (6 h check), mango `exec_once`
   tray that waits for quickshell's StatusNotifierWatcher (d273cf9, 27a9468). First real
   run verified with snap-pac pairs. item_171 Done (35da7db): `update-notify.sh` +
-  `update-state.sh` (versions.json), format in `docs/UPDATES.md`. Remaining: item_172 tracked
-  user-tool updater (replaces untracked `~/.local/bin/update-dev-tools.sh`), item_175 docs.
+  `update-state.sh` (versions.json), format in `docs/UPDATES.md`. item_172 Done: tracked
+  `scripts/update-dev-tools.sh`, one updater per install method, per-tool timeout, versions.json,
+  `tests/test-update-dev-tools.sh`; first real run recorded 10 tools ok. Remaining: item_175 docs.
 - **Cyberdeck + pack wallpapers (2026-11-06, all pushed):**
   - Netrunner register landed and approved (shell 1e0cdea, c240e26, efb5139, 979c5e3;
     task_080 + item_166 Done). item_154/item_156 and task_078/079 retired Obsolete
@@ -146,7 +147,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
 - **Live bar (2026-10-15):** FOLLOWING main.
 
 ## Next (pick one; the owner chooses)
-- **Updates:** item_171 (tool-failed notifier), then item_172, then item_175 (task_082).
+- **Updates:** item_175 docs, the last open item of task_082.
 1. Settings items from the audit (below). item_110 is DONE (2026-10-01; waves 2-4:
    `668d60e` type scale + Text size, `3517847` 4pt spacing grid, `fd13057` elevation e1-e5 +
    opacity tiers + hex invariant). `scripts/token-lint.py` (CI) now rejects raw font sizes,
