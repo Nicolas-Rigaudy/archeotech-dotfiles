@@ -4,6 +4,10 @@ Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
 
 ## Where things stand
+- **Machine housekeeping scoped (2026-11-16, req_017 / task_083, items 176-179):** disk space
+  alert (/ at 85 %), `disk-report`, Downloads tidy, docs. Reuses the item_171 notifier, so land
+  171 first. Backups deferred by the owner: no off-laptop target yet; same-disk copy is weak and
+  @home has no snapper config (only `root`). From the owner's Obsidian note "linux automation".
 - **Automatic updates (2026-11-09, req_013 / task_082, all pushed):** system tier is
   arch-update (owner's pick over a custom sysup; item_174 Obsolete). item_173 Done:
   tracked `config/.config/arch-update/arch-update.conf` (paru, keep 2, no flatpak),

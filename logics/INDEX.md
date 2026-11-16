@@ -50,6 +50,7 @@
 | [prod_004_cyberdeck_identity_pack](product/prod_004_cyberdeck_identity_pack.md) | Cyberdeck identity pack | Proposed |  |  | product/prod_004_cyberdeck_identity_pack.md |
 | [prod_005_screensaver_engine](product/prod_005_screensaver_engine.md) | Screensaver engine | Proposed |  |  | product/prod_005_screensaver_engine.md |
 | [prod_006_automatic_machine_updates](product/prod_006_automatic_machine_updates.md) | Automatic machine updates | Proposed |  |  | product/prod_006_automatic_machine_updates.md |
+| [prod_007_machine_housekeeping](product/prod_007_machine_housekeeping.md) | Machine housekeeping | Proposed |  |  | product/prod_007_machine_housekeeping.md |
 
 ## Roadmaps
 
@@ -76,6 +77,10 @@
 | [req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal](request/req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal.md) | Cyberdeck theme pack: droid console identity for the shell and terminal | Draft |  |  | request/req_011_cyberdeck_theme_pack_droid_console_identity_for_the_shell_and_terminal.md |
 | [req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook](request/req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook.md) | Screensaver engine: pluggable sources, Settings picker and idle hook | Draft |  |  | request/req_012_screensaver_engine_pluggable_sources_settings_picker_and_idle_hook.md |
 | [req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools](request/req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools.md) | Automatic updates: system packages, AUR, npm globals and user tools | Ready |  |  | request/req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools.md |
+| [req_014_mask_the_clock_in_the_cyberdeck_dashboard_goldens](request/req_014_mask_the_clock_in_the_cyberdeck_dashboard_goldens.md) | Mask the clock in the cyberdeck dashboard goldens | Draft |  |  | request/req_014_mask_the_clock_in_the_cyberdeck_dashboard_goldens.md |
+| [req_015_fix_bluetooth_device_removal_and_silent_panel_buttons](request/req_015_fix_bluetooth_device_removal_and_silent_panel_buttons.md) | Fix bluetooth device removal and silent panel buttons | Draft |  |  | request/req_015_fix_bluetooth_device_removal_and_silent_panel_buttons.md |
+| [req_016_tint_the_fastfetch_logo_with_the_theme_accent](request/req_016_tint_the_fastfetch_logo_with_the_theme_accent.md) | Tint the fastfetch logo with the theme accent | Draft |  |  | request/req_016_tint_the_fastfetch_logo_with_the_theme_accent.md |
+| [req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy](request/req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy.md) | Machine housekeeping: disk space alert, space report and Downloads tidy | Draft |  |  | request/req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy.md |
 
 ## Backlog
 
@@ -252,10 +257,14 @@
 | [item_169_cyberdeck_entrance_motion_system](backlog/item_169_cyberdeck_entrance_motion_system.md) | Cyberdeck entrance motion system for big and small surfaces | Ready |  | 0% | backlog/item_169_cyberdeck_entrance_motion_system.md |
 | [item_170_wallpapers_tied_to_themes_auto_switch_on_theme_change](backlog/item_170_wallpapers_tied_to_themes_auto_switch_on_theme_change.md) | Wallpapers tied to themes; auto-switch on theme change | Ready |  | 0% | backlog/item_170_wallpapers_tied_to_themes_auto_switch_on_theme_change.md |
 | [item_171_update_notifier_and_state_file_shared_by_all_update_jobs](backlog/item_171_update_notifier_and_state_file_shared_by_all_update_jobs.md) | Update notifier and state file shared by all update jobs | Ready |  | 0% | backlog/item_171_update_notifier_and_state_file_shared_by_all_update_jobs.md |
-| [item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx](backlog/item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx.md) | Tracked user-tool updater: npm globals, Claude Code, Codex, cdx, rtk, uv, pipx | Ready |  | 0% | backlog/item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx.md |
+| [item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx](backlog/item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx.md) | Tracked user-tool updater: npm globals, Claude Code, Codex, cdx, rtk, uv, pipx | Ready |  | 25% | backlog/item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx.md |
 | [item_173_daily_system_update_check_with_arch_news_gate](backlog/item_173_daily_system_update_check_with_arch_news_gate.md) | arch-update: system update check, tray and upgrade flow | Done |  | 100% | backlog/item_173_daily_system_update_check_with_arch_news_gate.md |
 | [item_174_sysup_guarded_system_upgrade_command](backlog/item_174_sysup_guarded_system_upgrade_command.md) | sysup: guarded system upgrade command | Obsolete |  | 0% | backlog/item_174_sysup_guarded_system_upgrade_command.md |
 | [item_175_update_policy_adr_rollback_runbook_and_docs](backlog/item_175_update_policy_adr_rollback_runbook_and_docs.md) | Update policy ADR, rollback runbook and docs | Ready |  | 0% | backlog/item_175_update_policy_adr_rollback_runbook_and_docs.md |
+| [item_176_disk_space_alert_on_the_arch_partition](backlog/item_176_disk_space_alert_on_the_arch_partition.md) | Disk space alert on the Arch partition | Ready |  | 0% | backlog/item_176_disk_space_alert_on_the_arch_partition.md |
+| [item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean](backlog/item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean.md) | disk-report: where the space went and what is safe to clean | Ready |  | 0% | backlog/item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean.md |
+| [item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule](backlog/item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule.md) | Downloads tidy: sort ~/Downloads into type folders on a schedule | Ready |  | 0% | backlog/item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule.md |
+| [item_179_housekeeping_docs_and_the_backup_deferral_note](backlog/item_179_housekeeping_docs_and_the_backup_deferral_note.md) | Housekeeping docs and the backup deferral note | Ready |  | 0% | backlog/item_179_housekeeping_docs_and_the_backup_deferral_note.md |
 
 ## Tasks
 
@@ -343,6 +352,7 @@
 | [task_080_cyberdeck_netrunner_register_matches_its_mockup](tasks/task_080_cyberdeck_netrunner_register_matches_its_mockup.md) | Cyberdeck Netrunner register matches its mockup | Done | claude | 100% | tasks/task_080_cyberdeck_netrunner_register_matches_its_mockup.md |
 | [task_081_theme_pack_wallpapers_grimdark_hud_angular](tasks/task_081_theme_pack_wallpapers_grimdark_hud_angular.md) | Theme pack wallpapers (grimdark, hud, angular) | Done | claude | 100% | tasks/task_081_theme_pack_wallpapers_grimdark_hud_angular.md |
 | [task_082_orchestrate_automatic_updates](tasks/task_082_orchestrate_automatic_updates.md) | Orchestrate automatic updates | Ready |  | 0% | tasks/task_082_orchestrate_automatic_updates.md |
+| [task_083_orchestrate_machine_housekeeping](tasks/task_083_orchestrate_machine_housekeeping.md) | Orchestrate machine housekeeping | Ready |  | 0% | tasks/task_083_orchestrate_machine_housekeeping.md |
 
 ## Runbooks
 

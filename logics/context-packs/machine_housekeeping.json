@@ -1,0 +1,407 @@
+{
+  "budgets": {
+    "max_docs": 24,
+    "max_docs_per_ref": 4
+  },
+  "changed_paths": [],
+  "command": "logics-manager sync context-pack req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy item_176_disk_space_alert_on_the_arch_partition item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule item_179_housekeeping_docs_and_the_backup_deferral_note task_083_orchestrate_machine_housekeeping --mode summary-only --profile normal --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_176_disk_space_alert_on_the_arch_partition",
+          "item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean",
+          "item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule",
+          "item_179_housekeeping_docs_and_the_backup_deferral_note"
+        ],
+        "prod": [
+          "prod_007_machine_housekeeping"
+        ],
+        "req": [
+          "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy"
+        ],
+        "task": [
+          "task_083_orchestrate_machine_housekeeping"
+        ]
+      },
+      "path": "logics/product/prod_007_machine_housekeeping.md",
+      "ref": "prod_007_machine_housekeeping",
+      "status": "Proposed",
+      "title": "Machine housekeeping"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_171_update_notifier_and_state_file_shared_by_all_update_jobs",
+          "item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx",
+          "item_173_daily_system_update_check_with_arch_news_gate",
+          "item_174_sysup_guarded_system_upgrade_command",
+          "item_175_update_policy_adr_rollback_runbook_and_docs"
+        ],
+        "prod": [
+          "prod_006_automatic_machine_updates"
+        ],
+        "req": [
+          "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
+        ],
+        "task": [
+          "task_082_orchestrate_automatic_updates"
+        ]
+      },
+      "path": "logics/product/prod_006_automatic_machine_updates.md",
+      "ref": "prod_006_automatic_machine_updates",
+      "status": "Proposed",
+      "title": "Automatic machine updates"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "machine, housekeeping, disk, space, alert, report, downloads, tidy",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_171_update_notifier_and_state_file_shared_by_all_update_jobs",
+          "item_176_disk_space_alert_on_the_arch_partition",
+          "item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean",
+          "item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule",
+          "item_179_housekeeping_docs_and_the_backup_deferral_note"
+        ],
+        "prod": [
+          "prod_007_machine_housekeeping"
+        ],
+        "req": [
+          "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy"
+        ]
+      },
+      "path": "logics/request/req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy.md",
+      "ref": "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy",
+      "schema_version": "1.0",
+      "status": "Draft",
+      "title": "Machine housekeeping: disk space alert, space report and Downloads tidy"
+    },
+    {
+      "ai_context": {
+        "keywords": "update, notifier, state, file, shared, all, jobs",
+        "skip when": "building the update jobs themselves (item_172) or system update notices (arch-update, item_173).",
+        "summary": "One notify script with a per-kind daily rate limit and a state dir (versions.json, last notice per kind, last upgrade time) used by every update job.",
+        "use when": "writing or changing update notifications or the versions state crow reads."
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_171_update_notifier_and_state_file_shared_by_all_update_jobs"
+        ],
+        "prod": [
+          "prod_006_automatic_machine_updates"
+        ],
+        "req": [
+          "req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools"
+        ],
+        "task": [
+          "task_082_orchestrate_automatic_updates"
+        ]
+      },
+      "path": "logics/backlog/item_171_update_notifier_and_state_file_shared_by_all_update_jobs.md",
+      "ref": "item_171_update_notifier_and_state_file_shared_by_all_update_jobs",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Update notifier and state file shared by all update jobs"
+    },
+    {
+      "ai_context": {
+        "keywords": "disk, space, alert, arch, partition",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_176_disk_space_alert_on_the_arch_partition"
+        ],
+        "prod": [
+          "prod_007_machine_housekeeping"
+        ],
+        "req": [
+          "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy"
+        ],
+        "task": [
+          "task_083_orchestrate_machine_housekeeping"
+        ]
+      },
+      "path": "logics/backlog/item_176_disk_space_alert_on_the_arch_partition.md",
+      "ref": "item_176_disk_space_alert_on_the_arch_partition",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Disk space alert on the Arch partition"
+    },
+    {
+      "ai_context": {
+        "keywords": "disk, report, space, went, safe, clean",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean"
+        ],
+        "prod": [
+          "prod_007_machine_housekeeping"
+        ],
+        "req": [
+          "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy"
+        ],
+        "task": [
+          "task_083_orchestrate_machine_housekeeping"
+        ]
+      },
+      "path": "logics/backlog/item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean.md",
+      "ref": "item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "disk-report: where the space went and what is safe to clean"
+    },
+    {
+      "ai_context": {
+        "keywords": "orchestrate, machine, housekeeping",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_176_disk_space_alert_on_the_arch_partition",
+          "item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean",
+          "item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule",
+          "item_179_housekeeping_docs_and_the_backup_deferral_note"
+        ],
+        "prod": [
+          "prod_007_machine_housekeeping"
+        ],
+        "req": [
+          "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy"
+        ],
+        "task": [
+          "task_083_orchestrate_machine_housekeeping"
+        ]
+      },
+      "path": "logics/tasks/task_083_orchestrate_machine_housekeeping.md",
+      "ref": "task_083_orchestrate_machine_housekeeping",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Orchestrate machine housekeeping"
+    },
+    {
+      "ai_context": {},
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_176_disk_space_alert_on_the_arch_partition",
+          "item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean",
+          "item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule",
+          "item_179_housekeeping_docs_and_the_backup_deferral_note"
+        ],
+        "prod": [
+          "prod_007_machine_housekeeping"
+        ],
+        "req": [
+          "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy"
+        ],
+        "task": [
+          "task_083_orchestrate_machine_housekeeping"
+        ]
+      },
+      "path": "logics/product/prod_007_machine_housekeeping.md",
+      "ref": "prod_007_machine_housekeeping",
+      "schema_version": "1.0",
+      "status": "Proposed",
+      "title": "Machine housekeeping"
+    },
+    {
+      "ai_context": {
+        "keywords": "downloads, tidy, sort, type, folders, schedule",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule"
+        ],
+        "prod": [
+          "prod_007_machine_housekeeping"
+        ],
+        "req": [
+          "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy"
+        ],
+        "task": [
+          "task_083_orchestrate_machine_housekeeping"
+        ]
+      },
+      "path": "logics/backlog/item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule.md",
+      "ref": "item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Downloads tidy: sort ~/Downloads into type folders on a schedule"
+    },
+    {
+      "ai_context": {
+        "keywords": "housekeeping, docs, backup, deferral, note",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_179_housekeeping_docs_and_the_backup_deferral_note"
+        ],
+        "prod": [
+          "prod_007_machine_housekeeping"
+        ],
+        "req": [
+          "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy"
+        ],
+        "task": [
+          "task_083_orchestrate_machine_housekeeping"
+        ]
+      },
+      "path": "logics/backlog/item_179_housekeeping_docs_and_the_backup_deferral_note.md",
+      "ref": "item_179_housekeeping_docs_and_the_backup_deferral_note",
+      "schema_version": "1.0",
+      "status": "Ready",
+      "title": "Housekeeping docs and the backup deferral note"
+    }
+  ],
+  "estimates": {
+    "char_count": 9759,
+    "companion_doc_count": 2,
+    "doc_count": 8
+  },
+  "generated_at": "2026-11-16T09:34:33Z",
+  "handoff": {
+    "companion_doc_count": 2,
+    "enabled": true,
+    "source_refs": [
+      "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy",
+      "item_176_disk_space_alert_on_the_arch_partition",
+      "item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean",
+      "item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule",
+      "item_179_housekeeping_docs_and_the_backup_deferral_note",
+      "task_083_orchestrate_machine_housekeeping"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Choose the source locale for app-owned user-facing copy.",
+      "Run logics-manager i18n init --source-locale <locale>.",
+      "Route new UI copy through stable semantic keys."
+    ],
+    "applicable": null,
+    "configured": false,
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "Run logics-manager i18n init --source-locale <locale> for a project that owns user-facing copy.",
+    "ok": true,
+    "state": "absent"
+  },
+  "mode": "summary-only",
+  "profile": "normal",
+  "ref": "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy,item_176_disk_space_alert_on_the_arch_partition,item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean,item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule,item_179_housekeeping_docs_and_the_backup_deferral_note,task_083_orchestrate_machine_housekeeping",
+  "refs": [
+    "req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy",
+    "item_176_disk_space_alert_on_the_arch_partition",
+    "item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean",
+    "item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule",
+    "item_179_housekeeping_docs_and_the_backup_deferral_note",
+    "task_083_orchestrate_machine_housekeeping"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_083_orchestrate_machine_housekeeping.md",
+      "ref": "task_083_orchestrate_machine_housekeeping"
+    }
+  ]
+}

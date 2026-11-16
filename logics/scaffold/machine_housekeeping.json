@@ -1,0 +1,160 @@
+{
+  "title": "Machine housekeeping: disk space alert, space report and Downloads tidy",
+  "references": [
+    "Obsidian vault note 'linux automation' (owner's list of ideas: organise Downloads, scheduled jobs, rsync backups, disk usage monitoring)",
+    "config/.config/systemd/user/battery-alert.service (tracked user unit pattern)",
+    "config/.config/systemd/user/update-dev-tools.{service,timer} (tracked daily timer pattern, Persistent=true)",
+    "logics/backlog/item_171_update_notifier_and_state_file_shared_by_all_update_jobs.md (rate-limited notifier to reuse)",
+    "scripts/setup-snapper.sh (snapper root config, snap-pac, grub-btrfs)",
+    "https://wiki.archlinux.org/title/Btrfs (df vs btrfs filesystem usage on btrfs)"
+  ],
+  "request": {
+    "complexity": "Low",
+    "theme": "Machine upkeep",
+    "needs": [
+      "The Arch partition fills up without warning. The owner wants a notification before it is full, not when a build or an upgrade fails.",
+      "When space is low, the owner wants to see where it went and which cleanups are safe, without hunting through du output.",
+      "~/Downloads collects everything (images, PDFs, slides, archives) and is never tidied. It should sort itself on a schedule without losing anything."
+    ],
+    "context": [
+      "2026-11-16 state: / and /home share the btrfs partition nvme0n1p4 (216 G, subvolumes @ @home @snapshots @cache @log) at 85 % used, 34 G free. /mnt/games is a separate 260 G btrfs partition (the old Fedora dual-boot, 42 % used).",
+      "Known consumers: /var/cache/pacman/pkg 7.2 G, ~/.cache 8.6 G (paru builds included), ~/Downloads 3.3 G (196 files: 81 images, 35 PDFs, 25 pptx, 14 zips), snapper root config with ~85 snapshots.",
+      "On btrfs, df under-reports what snapshots hold; the alert reads `btrfs filesystem usage` free estimate when available and falls back to df.",
+      "Pattern: scripts in scripts/, user units in config/.config/systemd/user/, linked by install.sh; timers use Persistent=true so a run missed while asleep catches up. Notifications go through notify-send to the shell's notification server.",
+      "Decision: reuse the item_171 notifier (rate limit per kind per day) instead of a second notification helper; it gains generic kinds (disk-warn, disk-critical). If item_171 has not landed when this starts, land it first.",
+      "Backups deferred (owner, 2026-11-16): there is no off-laptop target yet (no external drive, NAS or cloud). A copy to another partition on the same NVMe protects against deletion or a broken filesystem, not against disk loss or theft, and /mnt/games is the only spare space. Only a snapper `root` config exists, so @home has no snapshots today. Revisit when an off-laptop target exists; a snapper config for @home is the cheap local option to weigh then.",
+      "Resizing the partitions (shrinking /mnt/games to grow the Arch partition) is an owner decision with a live-USB step and stays out of this request."
+    ],
+    "acceptance_criteria": [
+      "AC1: A user timer checks free space on the Arch partition and notifies once a day at a warning level (default under 15 % free) and again at a critical level (default under 8 % free); nothing is sent above the warning level.",
+      "AC2: The alert names the top consumers, and an on-demand `disk-report` command lists them with sizes and the safe cleanup command for each, without deleting anything itself.",
+      "AC3: A Downloads tidy job sorts files into type folders on a schedule, never deletes or overwrites a file, skips files still being downloaded or modified in the last day, and has a dry-run mode.",
+      "AC4: Scripts and units are tracked, installed by install.sh, documented in docs/TOOLS.md, and the backup deferral is recorded with its reasons."
+    ]
+  },
+  "product": {
+    "title": "Machine housekeeping",
+    "overview": "Small scheduled jobs that keep the owner's Arch laptop tidy: a disk space alert with a report of where space went, and a Downloads folder that sorts itself.",
+    "goals": [
+      "The owner hears about low disk space days before it breaks an upgrade or a build.",
+      "Freeing space is a matter of reading one report and running the suggested commands.",
+      "~/Downloads stays browsable without manual sorting, and nothing is ever lost."
+    ],
+    "non_goals": [
+      "Backups (deferred until an off-laptop target exists).",
+      "Automatic deletion of caches, snapshots or downloads.",
+      "Repartitioning the disk or shrinking /mnt/games.",
+      "A disk usage widget in archeotech-shell."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Disk space alert on the Arch partition",
+      "priority": "High",
+      "complexity": "Low",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC1", "AC4"],
+      "problem": [
+        "The Arch partition is at 85 % and nothing warns the owner before it fills; a full btrfs root breaks pacman, builds and snapper."
+      ],
+      "scope_in": [
+        "scripts/disk-alert.sh: reads free space for / (btrfs free estimate, df fallback), compares with warning and critical thresholds (defaults 15 % and 8 % free, overridable by env or a small config file).",
+        "Calls the item_171 notifier with kinds disk-warn / disk-critical (rate limit once a day per kind); the message gives free space and the top three consumers from disk-report.",
+        "config/.config/systemd/user/disk-alert.{service,timer}: every hour, Persistent=true; install.sh links and enables them.",
+        "Dry-run flag that prints instead of notifying."
+      ],
+      "scope_out": [
+        "/mnt/games and other partitions.",
+        "Cleaning anything up."
+      ],
+      "acceptance_criteria": [
+        "AC1: With thresholds set above the current usage (dry run), the warning fires once and a second run the same day stays silent; below the threshold nothing is sent.",
+        "AC1: The timer is active after a fresh install.sh run.",
+        "AC4: The unit and script are tracked and listed in docs/TOOLS.md."
+      ]
+    },
+    {
+      "title": "disk-report: where the space went and what is safe to clean",
+      "priority": "High",
+      "complexity": "Low",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC2"],
+      "problem": [
+        "When space runs low the owner has to guess between the pacman cache, paru builds, ~/.cache, snapshots and Downloads, and remember the safe command for each."
+      ],
+      "scope_in": [
+        "scripts/disk-report.sh (no root needed for the base report): free space, then sizes of /var/cache/pacman/pkg, paru clone/build cache, ~/.cache, ~/Downloads, the largest dirs under $HOME (top 10, one level deep, timed out on slow dirs), snapper snapshot count.",
+        "Each line carries its safe cleanup command (paccache -rk2 / paccache -ruk0, paru -Sc, snapper cleanup number, clearing a named cache dir) and never runs it.",
+        "Machine-readable output (--json) that disk-alert uses for its top consumers."
+      ],
+      "scope_out": [
+        "Running any cleanup.",
+        "Per-snapshot exclusive sizes (needs btrfs quotas; note it as an option)."
+      ],
+      "acceptance_criteria": [
+        "AC2: The report runs as the user in under 30 s, lists the known consumers with sizes, and each line has a cleanup command.",
+        "AC2: --json output is valid and lists the same entries."
+      ]
+    },
+    {
+      "title": "Downloads tidy: sort ~/Downloads into type folders on a schedule",
+      "priority": "Medium",
+      "complexity": "Low",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC3", "AC4"],
+      "problem": [
+        "~/Downloads holds 196 loose files of every type and is never sorted, so finding a recent PDF or slide deck means scrolling through images and archives."
+      ],
+      "scope_in": [
+        "scripts/downloads-tidy.sh: moves top-level files into Images, Documents (pdf, md, txt, office docs), Slides (pptx, odp, key), Archives (zip, tar.*, 7z), Media, Installers, Other; folder map at the top of the script.",
+        "Skips partial downloads (.part, .crdownload, .download), dotfiles, folders, and files modified in the last day; a name clash gets a numbered suffix, never an overwrite; never deletes.",
+        "--dry-run prints the moves; a log of moves in the state dir so a sort can be undone by hand.",
+        "config/.config/systemd/user/downloads-tidy.{service,timer}: daily, Persistent=true; install.sh links and enables them."
+      ],
+      "scope_out": [
+        "Deleting or archiving old files (owner decision later).",
+        "Sorting inside subfolders or other directories."
+      ],
+      "acceptance_criteria": [
+        "AC3: A dry run on the real folder lists the planned moves and changes nothing; a real run leaves no loose files older than a day except Other, and the file count before and after is equal.",
+        "AC3: A file being written (a .part file, or one modified within the day) is left in place.",
+        "AC4: Units and script are tracked and listed in docs/TOOLS.md."
+      ]
+    },
+    {
+      "title": "Housekeeping docs and the backup deferral note",
+      "priority": "Low",
+      "complexity": "Low",
+      "theme": "Machine upkeep",
+      "request_acs": ["AC4"],
+      "problem": [
+        "The housekeeping jobs and the reasons backups are deferred must be written where the owner looks later, so the backup question is picked up again when a target exists."
+      ],
+      "scope_in": [
+        "docs/TOOLS.md entries for disk-alert, disk-report and downloads-tidy (thresholds, how to change them, how to undo a Downloads sort).",
+        "A short backup note in docs/: no off-laptop target yet, why a same-disk partition copy is weak, @home has no snapper config, options to weigh later (external drive with btrfs send or restic, a snapper config for @home)."
+      ],
+      "scope_out": [
+        "Setting up any backup."
+      ],
+      "acceptance_criteria": [
+        "AC4: docs/TOOLS.md matches the shipped scripts and the backup note exists and is linked from it."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Orchestrate machine housekeeping",
+    "plan": [
+      "Check item_171 (update notifier) has landed; land it first if not, with generic kinds.",
+      "disk-report (disk-alert reads its --json output).",
+      "disk-alert script, unit and timer; dry-run against lowered thresholds, then enable.",
+      "downloads-tidy with a dry run on the real ~/Downloads shown to the owner before the first real run and before enabling the timer.",
+      "Docs and the backup deferral note."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/machine_housekeeping.json",
+    "mode": "summary-only",
+    "profile": "normal"
+  }
+}
