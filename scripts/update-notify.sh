@@ -6,6 +6,7 @@
 #   update-notify.sh [--dry-run] <kind> <message...>
 #
 # kind     a slug naming what needs the owner: tool-failed (user-tool job).
+#          Kinds ending in -failed are sent critical (red, stays until dismissed).
 #          System update notices are arch-update's own and do not come here.
 # --dry-run  print the notification instead of sending it; leaves the state
 #            untouched, so a rehearsal never eats the day's real notice.
@@ -28,10 +29,14 @@ kind=$1; shift
 message="$*"
 [[ $kind =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "${0##*/}: bad kind '$kind' (use a-z, 0-9, -)" >&2; exit 2; }
 
+# Failures go out critical: the shell draws them with a red border and keeps
+# them until dismissed (once a day at most, so they never pile up).
+urgency=normal
 case $kind in
-    tool-failed) title="Tool update failed"; icon=dialog-warning ;;
+    tool-failed) title="Tool update failed"; icon=dialog-error ;;
     *)           title="Updates: $kind";     icon=system-software-update ;;
 esac
+[[ $kind == *-failed ]] && urgency=critical
 
 today=$(date +%F)
 mkdir -p "$STATE_DIR"
@@ -52,7 +57,7 @@ if (( dry_run )); then
     exit 0
 fi
 
-"$NOTIFY_CMD" -a "Updates" -i "$icon" "$title" "$message"
+"$NOTIFY_CMD" -a "Updates" -u "$urgency" -i "$icon" "$title" "$message"
 
 tmp=$(mktemp "$STATE_DIR/.notified.XXXXXX")
 jq --arg k "$kind" --arg d "$today" --arg at "$(date -Is)" --arg m "$message" \

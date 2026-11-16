@@ -22,7 +22,9 @@ update-notify.sh [--dry-run] <kind> <message...>
 
 Sends one desktop notification (`notify-send`, app name "Updates") and records
 it. A second call with the same kind on the same day sends nothing; a different
-kind still sends. `--dry-run` prints the notice and leaves the state untouched.
+kind still sends. Kinds ending in `-failed` go out with critical urgency: the
+shell draws them with a red border and keeps them until dismissed. Other kinds
+are normal. `--dry-run` prints the notice and leaves the state untouched.
 
 Kinds in use: `tool-failed` (user-tool job). Any `a-z0-9-` slug works, so later
 jobs (for example the disk space alert, item_176) reuse it with their own kind.

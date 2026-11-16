@@ -27,10 +27,12 @@ check "dry-run leaves state untouched" '[[ $(jq -r ".\"tool-failed\" // \"none\"
 
 "$NOTIFY" tool-failed "rtk: exit 1" >/dev/null
 check "first call sends" '[[ $(sent_count) -eq 1 ]]'
+check "a -failed kind is sent critical" 'grep -q -- "-u critical" "$SENT"'
 out=$("$NOTIFY" tool-failed "cdx: exit 2")
 check "AC4: same kind same day sends nothing" '[[ $(sent_count) -eq 1 && $out == suppressed:* ]]'
 "$NOTIFY" disk-space "/ at 86 %" >/dev/null
 check "AC4: a different kind sends" '[[ $(sent_count) -eq 2 ]]'
+check "other kinds are sent normal" '[[ $(tail -1 "$SENT") == *"-u normal"* ]]'
 jq --arg d "$(date -d yesterday +%F)" '."tool-failed".date = $d' "$UPDATE_STATE_DIR/notified.json" >"$TMP/n" \
     && mv "$TMP/n" "$UPDATE_STATE_DIR/notified.json"
 "$NOTIFY" tool-failed "rtk: exit 1" >/dev/null
