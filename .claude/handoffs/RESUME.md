@@ -11,7 +11,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
 - **Automatic updates CLOSED (2026-11-17, req_013 / task_082 / prod_006 Done):** item_175 shipped
   ADR 036 (two tiers, no unattended -Syu or reboot) and the rollback runbook in `docs/UPDATES.md`.
   Root is `subvol=@` by path, so rollback is a manual subvolume swap, not `snapper rollback`;
-  `/boot` is ext4 and not snapshotted. Open owner decision: `linux-lts` fallback kernel.
+  `/boot` is ext4 and not snapshotted. `linux-lts` fallback kernel installed 2026-11-17.
   cr-0w req_045 now points at versions.json.
 - **Automatic updates history (2026-11-09):** system tier is
   arch-update (owner's pick over a custom sysup; item_174 Obsolete). item_173 Done:

@@ -37,13 +37,13 @@ flowchart LR
 - **No unattended reboot.** A kernel upgrade waits for the owner's yes in arch-update, or the next normal reboot.
 - **Cadence:** systemd user timers only (no login hook, no cron). `Persistent=true` catches up a missed daily run at the next login or resume; the script waits up to 30 min for DNS because a resume catch-up starts before Wi-Fi is back.
 - **Rollback** for the system tier is a snap-pac snapshot booted from the GRUB snapshot menu, then a manual subvolume swap (this layout mounts `subvol=@` by path, so `snapper rollback` alone does not take effect). Steps in `docs/UPDATES.md` (Rollback runbook).
-- **Fallback kernel:** none installed today (`linux` only). Adding `linux-lts` is an owner decision: it would give a second GRUB entry when a new kernel does not boot, at the cost of a second kernel to upgrade and about 45 MB on `/boot` (628 MB free on 2026-11-17).
+- **Fallback kernel:** `linux-lts` is installed (owner decision, 2026-11-17). It gives a second GRUB entry when a new `linux` does not boot, at the cost of a second kernel upgraded in the same arch-update run and about 40 MB on `/boot`.
 
 # Consequences
 - The owner acts only on a notification: system updates available (arch-update), a tool update failed (user-tool job). None when nothing is due.
 - System upgrades happen when the owner chooses, so a pending update can sit for days. The tray icon keeps it visible.
 - `/boot` is a separate ext4 partition, not snapshotted. Booting a snapshot after a kernel upgrade loads the new kernel against the snapshot's old modules, and rolling root back leaves `/boot` on the new kernel. The runbook reinstalls the matching `linux` package from the cache (kept by `KeepOldPackages=2`) after a rollback.
-- Without `linux-lts`, a kernel that fails to boot is fixed from a live USB (`arch-chroot`, `pacman -U` the previous `linux` from `/var/cache/pacman/pkg`).
+- A `linux` that fails to boot is bypassed with the `linux-lts` GRUB entry, then the previous `linux` is reinstalled from `/var/cache/pacman/pkg`. A live USB (`arch-chroot`) is only needed when both kernels fail.
 - grub-btrfs snapshot entries boot read-only (no overlayfs hook; the initramfs is systemd-based). That is enough to log in on a TTY and do the rollback.
 - crow (cr-0w req_045) reads `versions.json` and never runs an updater.
 

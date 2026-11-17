@@ -27,7 +27,8 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 |---------|---------|-------|
 | `base` | Arch Linux base system | Minimal Arch installation |
 | `base-devel` | Development tools | gcc, make, etc. Required for AUR |
-| `linux` | Linux kernel | Latest stable kernel. The only kernel: no `linux-lts` fallback yet (owner decision, see `docs/UPDATES.md`) |
+| `linux` | Linux kernel | Latest stable kernel |
+| `linux-lts` | Fallback kernel | Second GRUB entry when a new `linux` does not boot (installed 2026-11-17, see `docs/UPDATES.md`) |
 | `linux-firmware` | Hardware firmware | Includes WiFi, Bluetooth drivers |
 | `intel-ucode` | Intel microcode | CPU microcode updates for Intel |
 | `btrfs-progs` | Btrfs utilities | Filesystem management tools |

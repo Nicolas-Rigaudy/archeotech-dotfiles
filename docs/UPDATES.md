@@ -17,8 +17,8 @@ How this laptop stays up to date (req_013). The decision and its reasons are in
 - Notifications only when something needs the owner: system updates available
   (arch-update, with a run action) or a tool update failed (`tool-failed`, critical,
   at most once a day). A clean day is silent.
-- No fallback kernel is installed (`linux` only). Adding `linux-lts` is an open
-  owner decision: see Missing modules and a kernel that does not boot.
+- `linux-lts` is installed as a fallback kernel (2026-11-17): a second GRUB entry
+  when a new `linux` does not boot. See Missing modules and a kernel that does not boot.
 
 ## Daily flow
 
@@ -130,9 +130,15 @@ a USB stick, a new Bluetooth or audio device, a VPN (wireguard), a docker
 network. That is expected, not damage. Reboot (arch-update offers it). If you
 cannot reboot now, avoid plugging new hardware until you do.
 
-**After the reboot, if the new kernel does not boot:** the snapshot entries in
-GRUB do not help, because they all boot the same new kernel from `/boot`. With
-no fallback kernel the fix is a live USB:
+**After the reboot, if the new kernel does not boot:** pick
+*Advanced options for Arch Linux → Arch Linux, with Linux linux-lts* in GRUB.
+The snapshot entries for `linux` do not help, because they all boot the same new
+kernel from `/boot`. Once up on LTS, reinstall the previous kernel and hold it:
+`sudo pacman -U /var/cache/pacman/pkg/linux-<previous>-x86_64.pkg.tar.zst`, then
+`IgnorePkg = linux` in `/etc/pacman.conf` until a fixed kernel ships.
+
+If LTS does not boot either (both kernels upgraded in the same run, or `/boot`
+damaged), the fix is a live USB:
 
 1. Boot the Arch ISO, then
    `mount -o subvol=@ /dev/disk/by-uuid/0c172033-161d-41b4-aad4-3a0636d3e8c7 /mnt`,
@@ -142,8 +148,8 @@ no fallback kernel the fix is a live USB:
 3. Exit, reboot, add `IgnorePkg = linux` to `/etc/pacman.conf` until a fixed
    kernel ships.
 
-A fallback kernel (`linux-lts`, about 45 MB on `/boot`) would replace the live
-USB with a second GRUB entry. Installing it is the owner's call (req_013, ADR 036).
+`linux-lts` updates with every arch-update run like `linux`; it needs no
+separate step. It costs about 40 MB on `/boot`.
 
 **Booting a snapshot after a kernel upgrade** loads the new kernel against the
 snapshot's older `/usr/lib/modules`: root mounts (its drivers are in the
