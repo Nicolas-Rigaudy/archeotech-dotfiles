@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-11-16, item_172 user-tool updater landed; next item_175 update docs or task_083 housekeeping; shell next item_170 or item_169)
+# Resume here (last updated 2026-11-17, automatic updates closed (task_082 Done); next task_083 housekeeping; shell next item_170 or item_169)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -8,7 +8,12 @@ says where to look and what is next. Update it at the end of each session (`/wra
   alert (/ at 85 %), `disk-report`, Downloads tidy, docs. Reuses the item_171 notifier, so land
   171 first. Backups deferred by the owner: no off-laptop target yet; same-disk copy is weak and
   @home has no snapper config (only `root`). From the owner's Obsidian note "linux automation".
-- **Automatic updates (2026-11-09, req_013 / task_082, all pushed):** system tier is
+- **Automatic updates CLOSED (2026-11-17, req_013 / task_082 / prod_006 Done):** item_175 shipped
+  ADR 036 (two tiers, no unattended -Syu or reboot) and the rollback runbook in `docs/UPDATES.md`.
+  Root is `subvol=@` by path, so rollback is a manual subvolume swap, not `snapper rollback`;
+  `/boot` is ext4 and not snapshotted. Open owner decision: `linux-lts` fallback kernel.
+  cr-0w req_045 now points at versions.json.
+- **Automatic updates history (2026-11-09):** system tier is
   arch-update (owner's pick over a custom sysup; item_174 Obsolete). item_173 Done:
   tracked `config/.config/arch-update/arch-update.conf` (paru, keep 2, no flatpak),
   `xdg-terminals.list` (kitty), `arch-update.timer` (6 h check), mango `exec_once`
@@ -16,7 +21,7 @@ says where to look and what is next. Update it at the end of each session (`/wra
   run verified with snap-pac pairs. item_171 Done (35da7db): `update-notify.sh` +
   `update-state.sh` (versions.json), format in `docs/UPDATES.md`. item_172 Done: tracked
   `scripts/update-dev-tools.sh`, one updater per install method, per-tool timeout, versions.json,
-  `tests/test-update-dev-tools.sh`; first real run recorded 10 tools ok. Remaining: item_175 docs.
+  `tests/test-update-dev-tools.sh`; first real run recorded 10 tools ok.
 - **Cyberdeck + pack wallpapers (2026-11-06, all pushed):**
   - Netrunner register landed and approved (shell 1e0cdea, c240e26, efb5139, 979c5e3;
     task_080 + item_166 Done). item_154/item_156 and task_078/079 retired Obsolete
