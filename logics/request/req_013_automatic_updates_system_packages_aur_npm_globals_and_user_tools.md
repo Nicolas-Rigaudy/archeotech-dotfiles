@@ -1,13 +1,13 @@
 ## req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools - Automatic updates: system packages, AUR, npm globals and user tools
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence and linked backlog/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:44:32
+> Indicators reviewed: 2026-11-17 10:45:54
 
 # AI Context
 - Summary: Two-tier update plan for the Arch laptop. User tools in ~/.local update daily and unattended. pacman and AUR go through arch-update (AUR, owner choice 2026-11-09): its user timer checks without root and notifies, its tray icon in the bar opens it in kitty, and a run shows the Arch news, upgrades with paru, then offers pacnew, service restart and reboot steps. Nothing applies system updates or reboots unattended.
@@ -49,7 +49,7 @@
 
 # Companion docs
 - Product brief(s): `prod_006_automatic_machine_updates`
-- Architecture decision(s): (none yet)
+- Architecture decision(s): `adr_036_two_tier_machine_updates_unattended_user_tools_owner_run_arch_update`
 
 # References
 - cr-0w logics/request/req_045_periodic_tool_update_watch.md (reads versions and changelogs only; installing belongs here)

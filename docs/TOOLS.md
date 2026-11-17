@@ -394,6 +394,28 @@ yazi
 # Go back: q
 ```
 
+### Updates (arch-update + update-dev-tools)
+
+Two tiers, full runbook in `docs/UPDATES.md` (ADR 036):
+
+- **System (pacman + AUR):** `arch-update` checks at login and every 6 h
+  (`arch-update.timer`, no root) and shows a tray icon plus one notification.
+  The owner runs it: tray click, notification action or `arch-update` in kitty.
+  It shows the Arch news first, upgrades with paru (snap-pac snapshots), then
+  offers orphans, cache cleanup, pacnew, service restarts and the kernel reboot.
+  Config: `config/.config/arch-update/arch-update.conf`.
+- **User tools:** `update-dev-tools.timer` runs `scripts/update-dev-tools.sh`
+  daily; a red "Updates" notice means a tool failed.
+
+```bash
+arch-update -l                           # pending pacman/AUR updates
+arch-update -n 5                         # last 5 Arch news
+systemctl --user list-timers 'arch-update*' 'update-dev-tools*'
+update-dev-tools.sh --dry-run --no-wait  # what the daily job would do
+journalctl --user -u update-dev-tools    # last runs
+snapper -c root list | tail              # snapshots to roll back to
+```
+
 ### System Monitoring
 
 #### Btop (System Monitor)

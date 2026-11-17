@@ -1,12 +1,12 @@
 ## prod_006_automatic_machine_updates - Automatic machine updates
 > Date: 2026-11-09
-> Status: Proposed
+> Status: Settled
 > Related request: `req_013_automatic_updates_system_packages_aur_npm_globals_and_user_tools`
 > Related backlog: `item_171_update_notifier_and_state_file_shared_by_all_update_jobs`, `item_172_tracked_user_tool_updater_npm_globals_claude_code_codex_cdx_rtk_uv_pipx`, `item_173_daily_system_update_check_with_arch_news_gate`, `item_174_sysup_guarded_system_upgrade_command`, `item_175_update_policy_adr_rollback_runbook_and_docs`
 > Related task: `task_082_orchestrate_automatic_updates`
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:44:32
+> Indicators reviewed: 2026-11-17 10:45:55
 
 # Overview
 Scheduled, safe updates for the owner's Arch laptop: user tools update unattended, system packages are checked daily and applied with one guarded command, and the owner is notified only when something needs them.

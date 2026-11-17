@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:49:22
+> Indicators reviewed: 2026-11-17 10:45:55
 
 # AI Context
 - Summary: Sets up arch-update (AUR) as the system tier: tracked config, check timer, tray icon in the bar, kitty on click. A run shows Arch news, upgrades with paru and offers pacnew, service and reboot steps. Replaces the custom check and sysup plan (owner, 2026-11-09).
@@ -62,3 +62,9 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+
+# Tasks
+- `task_082_orchestrate_automatic_updates`
+
+# Notes
+- Task `task_082_orchestrate_automatic_updates` was finished via `logics-manager flow finish task` on 2026-11-17.

@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-09 17:44:36
+> Indicators reviewed: 2026-11-17 10:45:55
 
 # AI Context
 - Summary: Owner-run upgrade command: news acknowledgement, snapshot check, paru -Syu, pacnew and failed-unit report, reboot-needed notice, cache trim. No timer runs it and it never reboots.
@@ -56,3 +56,6 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+
+# Tasks
+- `task_082_orchestrate_automatic_updates`

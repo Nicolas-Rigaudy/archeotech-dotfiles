@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-16 18:38:59
+> Indicators reviewed: 2026-11-17 10:45:55
 
 # AI Context
 - Summary: Moves the untracked daily updater into the repo and gives each install method its own upgrade step: npm -g, Claude Code native, pipx (cdx), rtk release binary, uv tools, codebase-memory-mcp.
@@ -55,7 +55,11 @@
 # Notes
 - 2026-11-16: first slice landed. update-dev-tools.sh and its service/timer are tracked (scripts/, config/.config/systemd/user/) and linked/enabled by install.sh; the untracked copies are now symlinks. The script waits for DNS (github.com, registry.npmjs.org, up to 30 min) and retries each step 3 times, after the 2026-11-16 resume run failed offline. Still open: per-install-method updaters (npm -g, codex, claude update, pipx, uv, rtk, codebase-memory-mcp), per-tool timeouts, update-notify.sh and versions.json.
 - 2026-11-16: delivered. One updater per method (native claude update; npm logics-manager + codex, installed when missing; cdx self-update + `cdx update all`; every pipx venv; every uv tool; rtk release binary checked against checksums.txt, old kept as rtk.prev; codebase-memory-mcp versioned dirs, newest two kept). Each tool runs alone under `timeout` (10 min, 3 attempts), records to versions.json, and failures go to one `tool-failed` notice + exit 1. Proof: `tests/test-update-dev-tools.sh` (23 checks: forced claude failure leaves the 7 others ok, timeout killed and reported, versions.json has every tool); real service run 18:39-18:42 recorded 10 tools ok (codex installed 0.169.0, cbm 0.11.0 -> 0.12.1, uv/pipx/uv-tool upgrades); timer active. The cbm installer appended `fish_add_path` to the tracked config.fish: the updater now runs it with the target dir on PATH and strips its marker block. Docs: `docs/UPDATES.md`.
+- Task `task_082_orchestrate_automatic_updates` was finished via `logics-manager flow finish task` on 2026-11-17.
 
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+
+# Tasks
+- `task_082_orchestrate_automatic_updates`

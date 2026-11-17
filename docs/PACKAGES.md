@@ -27,7 +27,7 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 |---------|---------|-------|
 | `base` | Arch Linux base system | Minimal Arch installation |
 | `base-devel` | Development tools | gcc, make, etc. Required for AUR |
-| `linux` | Linux kernel | Latest stable kernel |
+| `linux` | Linux kernel | Latest stable kernel. The only kernel: no `linux-lts` fallback yet (owner decision, see `docs/UPDATES.md`) |
 | `linux-firmware` | Hardware firmware | Includes WiFi, Bluetooth drivers |
 | `intel-ucode` | Intel microcode | CPU microcode updates for Intel |
 | `btrfs-progs` | Btrfs utilities | Filesystem management tools |
@@ -330,6 +330,9 @@ Complete list of all packages used in this Arch + MangoWC/Hyprland setup, organi
 | `pacman-contrib` | Pacman extras | Provides `checkupdates` — dashboard SystemNotes uses it for an accurate "pending updates" count without needing root sync |
 | `arch-update-bin` (AUR) | Update notifier and applier | Checks pacman/AUR at login and every 6 h (`arch-update.timer`), tray icon in the bar, notification with a run action. A run shows Arch news, upgrades with paru, then offers pacnew, services and kernel reboot steps. Config: `config/.config/arch-update/arch-update.conf` |
 | `xdg-terminal-exec` | Terminal launcher | Opens `Terminal=true` desktop entries (arch-update tray click) in kitty, per `config/.config/xdg-terminals.list` |
+| `update-dev-tools.timer` | User-tool updates | Not a package: tracked systemd user timer (daily) running `scripts/update-dev-tools.sh` for tools installed outside pacman (npm -g, pipx, uv, Claude Code, rtk, codebase-memory-mcp); installed by install.sh |
+
+Update policy, the arch-update run and the snapshot rollback runbook: `docs/UPDATES.md`.
 
 ---
 
@@ -412,6 +415,8 @@ paru -S package-name
 # (or click the arch-update tray icon / notification)
 arch-update
 ```
+
+User tools in `~/.local` update on their own once a day. Policy and rollback: `docs/UPDATES.md`.
 
 ### Search Packages
 
