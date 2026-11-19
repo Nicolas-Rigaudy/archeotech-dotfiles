@@ -1,13 +1,14 @@
 ## item_148_per_monitor_wallpapers - Per-monitor wallpapers
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 95%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 35%
 > Complexity: High
 > Theme: Operator workflow and runtime integration
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-11-19 17:26:05
 
 # AI Context
 - Summary: Per-screen wallpapers: a fit mode per output (fill, fill + anchor, fit + blur, fit + stretched edges), a different image per output, and a Span mode, edited from a monitor arrangement in Settings > Appearance > Wallpaper; wallpaper-set routes each image to its output.
@@ -65,3 +66,6 @@
 - Hybrid rationale: Derived from request `req_006_wallpaper_modes` and kept bounded to one coherent delivery slice.
 - Source file: `logics/request/req_006_wallpaper_modes.md`.
 - Generated locally by logics-manager.
+
+# Tasks
+- `task_084_per_monitor_wallpapers`
