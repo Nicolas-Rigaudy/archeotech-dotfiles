@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 35%
+> Progress: 70%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -41,9 +41,11 @@
 
 # Validation
 - Wave 1 (archeotech-shell e701891): python3 -m unittest discover tests/py -> 72 OK (tests/py/test_wallpaper_fit.py: 7 tests, fake awww + temp HOME; fit crops, logo cache per fit/anchor/size, --warm-all, failure fallback to raw image). tests/run.sh -> 128 passed, 0 failed. scripts/golden.sh --root <wt>: settings-cyberdeck-netrunner changed by intent (new Fit card) and regenerated; wallpaper-dark/light/flat FLAKY (colour chip timing, 0 px on re-render); dashboard-cyberdeck-* fail on main too (pre-existing). qml-reviewer should-fixes applied.
+- Wave 2 (2026-11-19, archeotech-shell 24b34f1): tests/run.sh 136 passed (new tst_wallpaperslogic.qml); python3 -m unittest discover -s tests/py 82 OK (test_wallpaper_fit.py 17: --screen routing, restore/logo replay, missing per-screen file applies then exits 3, bad output names exit 2, per-screen fit inherit); bash -n ok; qmllint no new real warnings; scripts/golden.sh --root <wt> all pass except dashboard-cyberdeck-{netrunner,megacorp,deck} (fail on main too), settings-cyberdeck-netrunner regenerated (new Wallpaper on card). shot.sh 1920x1200 three-output review sheet: Same on all and Each screen (DP-3 mandelbrot + Fit Edges, HDMI-A-1 mountain, eDP-1 trees) correct. qml-reviewer: no blockers; should-fixes applied (apply-loop guard exit 3, spacing token, clear icon keyboard path + FocusRing).
 
 # Report
 - Wave 1 landed: wallpaper-set.sh renders each output with awww --outputs; fit modes fill (centre crop, Keep left/centre/right), blur (previous look), edges (image edge rows stretched into the bars); config keys wallpaper.fit (default fill) and wallpaper.anchor (default centre), passed by env so a click applies before the debounced config write; Settings > Appearance > Wallpaper gets a Fit selector + Keep row; logo composites cached as <hash>-<logo>-<fit>-<anchor>-<WxH>.png and built in a private scratch dir. The fit applies only when screen and image orientation differ; same-orientation screens always crop from the centre. Old *-l.png/*-p.png/plain-portrait.png caches in ~/.cache/wallpaper are orphaned. Pending: owner check on the live bar; wave 2 (per-screen images + arrangement editor) and wave 3 (Span).
+- Wave 2 landed: wallpaper-set.sh <image> [--screen NAME IMAGE]... writes last-screens and replays it on restore/logo toggle; config wallpaper.layout (same|screens) + wallpaper.screens.<output>.{light,dark,fit,anchor} with inheritance to the all-screens values; Wallpapers.qml per-screen light/dark slots, merged applies (_launched + watchdog so quick picks are not lost); Settings > Appearance > Wallpaper gets a Wallpaper on selector (All screens | Each screen), a DisplayArrangement showing each screen's wallpaper (click to target), per-screen Fit/Keep rows, and slots/picker targeting the chosen screen. Pending: owner check on the live bar (follows main); wave 3 Span.
 
 # Links
 - Request: `req_006_wallpaper_modes`
