@@ -53,3 +53,6 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+
+# Notes
+- 2026-11-19 owner approved wave 1 (review sheet): keep all four fit options as built: Fill centre (default), Fill with Keep left/centre/right, Blur, Edges. Next: wave 2 (per-screen images + arrangement editor).
