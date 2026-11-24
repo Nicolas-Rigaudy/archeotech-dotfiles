@@ -1,14 +1,15 @@
 ## item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash - Storage panel: Clean up tab with confirm, polkit and Trash
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Storage
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-24 11:33:39
+> Indicators reviewed: 2026-11-24 13:28:37
+> Owner: claude
 
 # AI Context
 - Summary: Clean up tab: Safe/Review checkbox rows, confirm step with exact commands, polkit for privileged ones, Trash for personal files, freed-space report.
