@@ -1649,3 +1649,7 @@ Same family: `flow progress task task_031_… --progress 30%` (an orchestrator) 
 ### update-dev-tools fails right after resume (item_172, 2026-11-16)
 - The timer is `Persistent=true`, so a run missed during suspend fires the second the laptop resumes, before Wi-Fi is back; `network-online.target` does not cover a resume. 2026-11-16 08:57:05: `cdx update` failed on DNS, `logics-manager update` hit its 60 s npm timeout.
 - Fix: `scripts/update-dev-tools.sh` waits until `getent hosts github.com registry.npmjs.org` resolves (up to 30 min, then tries anyway; raised from 5 min since Wi-Fi on a train can take a while) and retries each tool up to 3 times, 60 s apart. Script and units are now tracked (`scripts/`, `config/.config/systemd/user/update-dev-tools.{service,timer}`) and linked by `install.sh`. Logs: `journalctl --user -u update-dev-tools.service`.
+
+### Dark theme leaves GTK3 apps (Thunar) white (2026-11-24)
+- GTK3 ships no built-in `Adwaita-dark` (it comes from gnome-themes-extra), so `gtk-theme-name=Adwaita-dark` fell back to light Adwaita. The non-Catppuccin dark themes also lacked `mode`, so the shell treated them as light.
+- Fix (shell dcdb715): theme.json `"mode": "dark"`; `theme-switch.py apply_gtk` writes `gtk-application-prefer-dark-theme` and gsettings `color-scheme` from the mode, with `gtk.theme` plain `Adwaita`. Running GTK apps keep the old look until restarted (`thunar -q`).

@@ -1,9 +1,17 @@
-# Resume here (last updated 2026-11-17, automatic updates closed (task_082 Done); next task_083 housekeeping; shell next item_170 or item_169)
+# Resume here (last updated 2026-11-24, dark themes + wallpaper slots fixed; shell next item_170 or item_169)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
 
 ## Where things stand
+- **Dark themes + wallpapers fixed (2026-11-24, shell dcdb715, 6825935, 718ea42, pushed):**
+  dark theme.json files declare `family`/`flavor`/`mode`; GTK dark comes from
+  `gtk-application-prefer-dark-theme` + gsettings `color-scheme` (GTK3 has no built-in
+  Adwaita-dark). Any saved light/dark slot wallpaper applies, catalogue or not (only deleted
+  files are skipped); every pack's wallpapers are scanned; other packs' and off-mode ones are
+  hidden until Show all, never unavailable (owner's rule). Picker count label uses
+  textSecondary (owner's pick). Carousel overhang past the panel is a design choice: leave it.
+  Owner verified both on the live bar.
 - **Machine housekeeping scoped (2026-11-16, req_017 / task_083, items 176-179):** disk space
   alert (/ at 85 %), `disk-report`, Downloads tidy, docs. Reuses the item_171 notifier, so land
   171 first. Backups deferred by the owner: no off-laptop target yet; same-disk copy is weak and
