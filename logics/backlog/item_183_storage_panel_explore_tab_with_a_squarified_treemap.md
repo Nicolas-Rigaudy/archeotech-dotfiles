@@ -38,6 +38,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- Owner pick 2026-11-24 (after Catppuccin renders of the ExploreB mockup): colour by tier using theme tokens only, so it adapts to every theme: safe to clean = Appearance.colors.green, review = Appearance.colors.peach, yours = Appearance.colors.accent (follows the accent; no clash remapping).
 
 # Links
 - Product brief(s): `prod_008_storage_module`

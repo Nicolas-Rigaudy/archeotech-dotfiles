@@ -61,6 +61,7 @@
 # Report
 - item_181 done: scripts/storage-scan.py (read-only statvfs/du/btrfs scan, JSON), scripts/storage-sources.json (14 shipped sources), Services/System/Storage.qml + StorageLogic.js (free-space level every 5 min, rescan, scanFolder graft), storage.warnPct/critPct config keys, docs/STORAGE.md. Owner sources in dotfiles config/.config/archeotech/storage-sources.json (cdx uv cache 27.8G safe; 2 old cdx profiles 21.3G and arch-backup 3.3G as review/trash); install.sh mkdir guard so stow never folds ~/.config/archeotech. Owner step: stow -R config to link the file. Next: item_182 Clean up tab.
 - item_182 done: Clean up tab (CleanC), confirm with exact commands, pkexec run via the helper, review items to the Trash, Empty Trash offered on the result screen, run survives closing the panel, rescan queued while a scan runs.
+- 2026-11-24: items 183 + 184 core built and previewing on the live bar, awaiting owner approval. Polkit: mango had no agent, polkit-kde-agent added via exec_once (owner verified the prompt); shell-styled agent logged as item_185. uv (cdx) cleanup times out while uvx MCP servers hold the cache lock (owner reruns later).
 
 # Links
 - Request: `req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget`
