@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-11-24, Storage built and awaiting owner approval; then screensaver)
+# Resume here (last updated 2026-11-24, Storage landed; next screensaver)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -21,29 +21,17 @@ Images/Documents/Slides/Archives/Media/Installers/3D/Data/Other, never overwrite
 tests/test-downloads-tidy.sh. Extensionless files go to Documents (owner). Both timers enabled
 2026-11-24 (first disk-warn sent; first tidy 2026-11-25 00:49). Finding: / is 90 % used and btrfs
 is fully allocated (1 MiB unallocated): free space, then `sudo btrfs balance start -dusage=50 /`.
-- **Storage module: built, waiting for the owner's "approved" (req_018 / task_085).**
-  - item_181 (service) and item_182 (Clean up) landed on main (base f306187).
-  - item_183 (Explore tab: treemap + list + lazy folder scans) and item_184 core
-    (`Widgets/Bar/StorageWidget.qml`, registered in WidgetRegistry) are UNCOMMITTED in
-    worktree `~/Projects/archeotech-shell.wt/item_183` (branch `fix/item_183`). The live bar
-    is PREVIEWING that worktree; the bar was FOLLOWING main before, so end with
-    `archeotech-live.sh follow`, never `back` (back = stale pinned .live).
-  - Files to land by path: Services/System/{StorageLogic.js,Storage.qml}, Glyph.js,
-    Modules/Shell/Panels/Content/{StoragePanel.qml,Storage/Treemap.qml,Storage/ExploreView.qml},
-    PanelRegistry.qml, tests/qml/tst_storagelogic.qml, Widgets/Bar/StorageWidget.qml,
-    Services/Shell/WidgetRegistry.qml, scripts/storage-scan.py (clearer "no polkit agent" error).
-    Lint clean, tests/run.sh 154 passed; no goldens run (owner: review on the live bar instead).
-  - Owner's bar: `storage` added to the top bar before battery in the real
-    `~/.config/archeotech/shell-config.json` (backup `.bak-storage`).
-  - Dotfiles: mango `exec_once=/usr/lib/polkit-kde-authentication-agent-1` added (pkexec had no
-    agent under mango). Uncommitted, mixed with the owner's recolour lines in config.conf: stage
-    only that hunk. Owner verified the password prompt works.
-  - Follow-ups: item_185 (shell polkit agent: the KDE prompt opens behind panels, unstyled;
-    owner: later). `uv cache clean` on `~/.cdx/shared-cache/uv` (31 GB) times out while uvx
-    cloudwatch MCP servers hold the cache lock; owner reruns that row later. Never `--force`.
-    The disk-alert Open action (item_184 remainder) still needs item_119 notification actions.
-  - On approval: land, `follow`, close item_183 (+ item_184 if Open action is split off),
-    notes on task_085 (never `flow progress` on it), remove worktree + branch.
+- **Storage module LANDED (2026-11-24, shell f4d79d6, dotfiles 9022f7b; not pushed yet).**
+  - item_181 service, item_182 Clean up, item_183 Explore tab (treemap + list + lazy folder
+    scans) Done; item_184 In progress: bar widget + `qs ipc call storage open|toggle` landed,
+    the disk-alert Open action still waits on item_119 notification actions.
+  - Owner checked Explore on the live bar and approved. Live bar is FOLLOWING main again.
+  - Owner's bar: `storage` in the top bar before battery (real shell-config.json, backup
+    `.bak-storage`). Mango polkit agent committed (9022f7b).
+  - Follow-ups: item_185 (shell polkit agent; owner: later); item_186 (gvfsd-metadata wedge,
+    another session's draft); panel depth is not clamped to short screens (storage 1000 px,
+    other panels 940/900 px overflow at 720/1080 tall); `uv cache clean` row rerun later
+    (never `--force`).
 - **Then: screensaver** (req_012 / task_077): start with the item_161 mockups on one review page.
 - **Automatic updates CLOSED (2026-11-17, req_013 / task_082 / prod_006 Done):** item_175 shipped
   ADR 036 (two tiers, no unattended -Syu or reboot) and the rollback runbook in `docs/UPDATES.md`.

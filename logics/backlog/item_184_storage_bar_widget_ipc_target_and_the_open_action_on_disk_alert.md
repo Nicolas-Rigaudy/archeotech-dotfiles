@@ -1,14 +1,15 @@
 ## item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert - Storage bar widget, IPC target and the Open action on disk-alert
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Low
 > Theme: Storage
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-24 11:33:40
+> Indicators reviewed: 2026-11-24 18:03:11
+> Owner: claude
 
 # AI Context
 - Summary: Storage bar widget with warn/critical colours, the storage IPC target and the disk-alert notification Open action.
@@ -39,6 +40,7 @@
 # Decision framing
 - Product framing: Not needed
 - Architecture framing: Not needed
+- 2026-11-24: widget + storage IPC target (qs ipc call storage open|toggle) landed in archeotech-shell f4d79d6. Pending: the disk-alert notice's Open action, blocked on item_119 notification actions.
 
 # Links
 - Product brief(s): `prod_008_storage_module`

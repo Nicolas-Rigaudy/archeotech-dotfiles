@@ -1,10 +1,10 @@
 ## item_183_storage_panel_explore_tab_with_a_squarified_treemap - Storage panel: Explore tab with a squarified treemap
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 100%
 > Complexity: High
 > Theme: Storage
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
