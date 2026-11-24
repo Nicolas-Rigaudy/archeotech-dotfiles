@@ -1,0 +1,182 @@
+{
+  "title": "Storage module: disk cleanup panel, size map and bar widget",
+  "references": [
+    "scripts/disk-report.sh and scripts/disk-alert.sh in archeotech-dotfiles (req_017: the scan, tiers and cleanup commands this module turns into a UI)",
+    "Modules/Shell/Panels/Content/ (panel pattern) and Widgets/Bar/<Id>Widget.qml (filename-convention bar widgets, docs/WIDGET_API.md) in archeotech-shell",
+    "shell.qml IpcHandler targets (launcher/settings/dashboard open/toggle pattern)",
+    "logics/backlog/item_119_notifications_v2_actions_images_grouping_history.md (notification actions, needed for the Open button)",
+    "logics/backlog/item_121 (Quickshell Polkit and other native services not yet adopted)",
+    "GNOME Disk Usage Analyzer (baobab), KDE Filelight, WinDirStat / WizTree treemaps, ncdu, macOS Storage management, Windows Storage Sense (design references only)",
+    "Bruls, Huizing, van Wijk, 'Squarified Treemaps' (2000): the layout algorithm for the size map"
+  ],
+  "request": {
+    "complexity": "High",
+    "theme": "Storage",
+    "needs": [
+      "When the disk fills up the owner wants to open one place from the notification or the bar, see what takes the space, tick what to remove and free it, without copying commands into a terminal.",
+      "The owner wants a picture of where the space went: boxes drawn to the size of each folder and file, as in the Windows tree viewers (WinDirStat style), with drill-down.",
+      "Cleanup must be safe by default: it says what deleting each item costs, never offers personal folders, shows the real commands before running them and reports what was freed."
+    ],
+    "context": [
+      "2026-11-24 state: / is btrfs at 90 % used with 1 MiB unallocated and 2.6 G metadata free; disk-report.sh found a 28 G uv cache and 21 G of leftover cdx profile folders that the plain du view hid inside one 70 G line.",
+      "The dotfiles already have disk-report.sh (read-only scan, --json, --json --root instant) and disk-alert.sh (hourly timer, notifications through update-notify.sh). The shell module is the UI on top of the same idea.",
+      "archeotech-shell is public, so the module must be generic: cleanup sources are data (detect, size, cleanup command, tier, needs root), shipped for common Linux sources; machine-specific sources (e.g. ~/.cdx leftovers) live in the owner's private config.",
+      "Owner priority (2026-11-24): before the screensaver (task_077). Tabs: Clean up and Explore; Explore must include the size-proportional box view.",
+      "Owner rules that apply: render the options and open them in imv before asking (visual choices); panel lists read top to bottom with one header row (segmented tabs + search), hints in a muted footer; pick-one settings are ButtonGroupRow selectors; Prim.Divider and Prim.Tooltip; no fake toggles; tests in the isolated shot.sh session only.",
+      "Privileged cleanups (pacman cache, journal, snapper, btrfs balance) go through a polkit prompt (pkexec), never a terminal sudo; personal files go to the Trash (gio trash), caches are removed."
+    ],
+    "acceptance_criteria": [
+      "AC1: A storage service runs a read-only scan on demand in a helper process, caches the last result with its age, and exposes free space, btrfs metadata and unallocated space, and tiered cleanup entries to QML.",
+      "AC2: The Clean up tab lists entries grouped Safe / Review with checkbox, exact size and what deleting costs; personal folders are never offered; a confirm step shows the exact commands, privileged ones run through polkit, personal files go to the Trash, and the panel reports the space freed and rescans.",
+      "AC3: The Explore tab shows a squarified treemap of a folder (boxes sized by bytes, coloured by type or tier) with click to drill down, a breadcrumb back up and a largest-first list beside it, built from the scan without a second full walk.",
+      "AC4: A bar widget shows used space with warn and critical colours from the same thresholds as disk-alert, and opens the panel; an IPC target (storage open/toggle/rescan) opens it, and disk-alert's notification has an Open action once item_119 actions land.",
+      "AC5: Cleanup sources are data-driven: the shell ships generic sources and loads extra ones from user config; the dotfiles add the owner's sources, and the docs describe the source format.",
+      "AC6: The layout was picked by the owner from rendered mockups before building, and the shipped panel renders in shot.sh with realistic data (long lists, a deep tree, a privileged entry) on dark, light and Flat."
+    ]
+  },
+  "product": {
+    "title": "Storage module",
+    "overview": "A disk utility inside Archeotech: a panel that scans on demand, shows where the space went as a size map and a list, and frees space through tiered, previewed, reversible-where-possible cleanups; plus a bar widget and an Open action on the low-space notice.",
+    "goals": [
+      "Going from a low-space notice to freed space takes one click to open and one confirm to clean.",
+      "The size map makes the biggest folders obvious at a glance.",
+      "No cleanup surprises: every action says what it costs, shows its command, and personal files are recoverable from the Trash."
+    ],
+    "non_goals": [
+      "Duplicate-file finding and file previews.",
+      "Scheduled or automatic deletion (the dotfiles timers only notify and sort Downloads).",
+      "Partition management, resizing or formatting (GNOME Disks territory).",
+      "Per-snapshot sizes (they need btrfs quotas)."
+    ]
+  },
+  "backlog_items": [
+    {
+      "title": "Storage panel mockups: layout options for Clean up and Explore",
+      "priority": "High",
+      "complexity": "Medium",
+      "theme": "Storage",
+      "request_acs": ["AC6"],
+      "problem": [
+        "The panel has two dense views (a tiered cleanup list and a treemap) and the owner picks layouts from renders, not descriptions."
+      ],
+      "scope_in": [
+        "Standalone QML mockups rendered through shot.sh --qml at 1920x1200 with the real disk-report numbers: 2-3 layout options for Clean up (list density, where the confirm step sits) and for Explore (treemap and list side by side vs stacked, treemap colouring by type vs tier).",
+        "One combined contact sheet opened in imv, then AskUserQuestion for the pick."
+      ],
+      "scope_out": [
+        "Engine work and real cleanup."
+      ],
+      "acceptance_criteria": [
+        "AC6: The owner picked a Clean up layout and an Explore layout from rendered options; the pick is recorded in this item."
+      ]
+    },
+    {
+      "title": "Storage service and data-driven cleanup sources",
+      "priority": "High",
+      "complexity": "Medium",
+      "theme": "Storage",
+      "request_acs": ["AC1", "AC5"],
+      "problem": [
+        "The scan and cleanup knowledge lives in a private dotfiles script; the public shell needs a generic, data-driven backend that QML can bind to."
+      ],
+      "scope_in": [
+        "A scan helper shipped with the shell (port of disk-report.sh): free space, btrfs metadata/unallocated, sized entries per source, and a folder tree (bytes per dir, a few levels deep, top-N children) for Explore, as JSON; timeout and partial flag kept.",
+        "Source format (JSON): id, label, detect (path or command), size path, cleanup command, tier Safe/Review, cost text, needs_root, trash vs remove; shipped generic sources (pacman cache, paru, yay, journal, ~/.cache dirs, Trash, uv, pip, npm, flatpak unused, docker, snapper count); extra sources from user config.",
+        "Services/System/Storage.qml: runs the helper via Process, caches the last result and its time, exposes models; rescan(); no scan at startup beyond the instant free-space read.",
+        "Owner's sources (cdx leftovers, ~/.cdx uv cache) added in the dotfiles config; logic tests for parsing and tiering."
+      ],
+      "scope_out": [
+        "Running cleanups (next item).",
+        "Per-snapshot sizes."
+      ],
+      "acceptance_criteria": [
+        "AC1: Storage.qml exposes free, metadata, unallocated, entries and the tree after rescan(); the result and its age survive a panel close.",
+        "AC5: A source added in user config appears after rescan without a shell code change; tests cover the source format."
+      ]
+    },
+    {
+      "title": "Storage panel: Clean up tab with confirm, polkit and Trash",
+      "priority": "High",
+      "complexity": "High",
+      "theme": "Storage",
+      "request_acs": ["AC2", "AC6"],
+      "problem": [
+        "Freeing space today means reading a report and copying commands into a terminal with sudo."
+      ],
+      "scope_in": [
+        "Panel content with the owner-picked layout: header row (segmented Clean up | Explore, search), free-space bar with btrfs metadata warning, Safe and Review groups, checkbox rows with size and cost text, footer with scan age, Rescan and Free X.",
+        "Confirm step listing the exact commands; privileged ones run through pkexec (one prompt per run where possible); personal files via gio trash; caches removed.",
+        "Result: freed space reported, automatic rescan; after a large cleanup with no unallocated space, offer the btrfs balance as a separate confirmed step.",
+        "Renders with realistic probe data (long list, privileged rows, running and done states)."
+      ],
+      "scope_out": [
+        "Explore tab (next item)."
+      ],
+      "acceptance_criteria": [
+        "AC2: Ticking Safe entries and confirming runs exactly the commands shown, privileged ones behind a polkit prompt, and reports the freed bytes; personal folders never appear as entries.",
+        "AC6: Renders on dark, light and Flat with probe data pass the visual check."
+      ]
+    },
+    {
+      "title": "Storage panel: Explore tab with a squarified treemap",
+      "priority": "High",
+      "complexity": "High",
+      "theme": "Storage",
+      "request_acs": ["AC3", "AC6"],
+      "problem": [
+        "A list of sizes does not show at a glance where 70 G went; the owner wants size-proportional boxes as in the Windows tree viewers."
+      ],
+      "scope_in": [
+        "Squarified treemap (JS layout, tested) drawn from the scan tree: nested boxes sized by bytes, labels where they fit, colour by type or tier per the mockup pick, hover with Prim.Tooltip (path, size).",
+        "Click a box to drill into it, breadcrumb to go back up; largest-first list beside or below synced with the map; open a folder in the file manager.",
+        "Deeper levels loaded lazily by a scoped helper call on the clicked folder, not a second full walk."
+      ],
+      "scope_out": [
+        "Deleting from the Explore tab (Clean up owns deletion); duplicate finding."
+      ],
+      "acceptance_criteria": [
+        "AC3: The treemap areas are proportional to bytes (logic test), drill-down and breadcrumb work, and the list matches the map.",
+        "AC6: Renders with a deep, wide probe tree on dark, light and Flat pass the visual check."
+      ]
+    },
+    {
+      "title": "Storage bar widget, IPC target and the Open action on disk-alert",
+      "priority": "Medium",
+      "complexity": "Low",
+      "theme": "Storage",
+      "request_acs": ["AC4", "AC5"],
+      "problem": [
+        "The panel must be reachable from the bar and from the low-space notice."
+      ],
+      "scope_in": [
+        "Widgets/Bar/StorageWidget.qml: used-space ring or bar, warn/critical colours from the same thresholds as disk-alert (configSchema), click opens the panel, hover card with free space.",
+        "IpcHandler target storage: open, toggle, rescan.",
+        "Dotfiles: disk-alert's notification carries an Open action that calls the storage IPC (after item_119 lands notification actions); docs/TOOLS.md and the shell docs describe the module and the source format."
+      ],
+      "scope_out": [
+        "Notification actions themselves (item_119)."
+      ],
+      "acceptance_criteria": [
+        "AC4: The widget colour follows the thresholds, clicking it opens the panel, and qs ipc call storage open opens it in the isolated session.",
+        "AC4: With item_119 actions in place, the disk-alert notice's Open button opens the panel.",
+        "AC5: The docs describe the source format and the owner's private sources."
+      ]
+    }
+  ],
+  "orchestration_task": {
+    "title": "Orchestrate the storage module",
+    "plan": [
+      "1. Mockups: render Clean up and Explore layout options with real numbers, one contact sheet in imv, owner picks (AskUserQuestion).",
+      "2. Service + sources + scan helper with logic tests.",
+      "3. Clean up tab to the picked layout; polkit and Trash paths; probe-data renders.",
+      "4. Explore tab with the treemap; layout tests; probe-data renders.",
+      "5. Bar widget + IPC; disk-alert Open action once item_119 actions exist; docs.",
+      "6. Golden scenarios for the panel, golden.sh + tests/run.sh, qml-reviewer, owner review on the live bar via preview when they ask."
+    ]
+  },
+  "context_pack": {
+    "out": "logics/context-packs/storage_module.json",
+    "mode": "diff-first",
+    "profile": "normal"
+  }
+}

@@ -52,6 +52,7 @@
 | [prod_005_screensaver_engine](product/prod_005_screensaver_engine.md) | Screensaver engine | Proposed |  |  | product/prod_005_screensaver_engine.md |
 | [prod_006_automatic_machine_updates](product/prod_006_automatic_machine_updates.md) | Automatic machine updates | Settled |  |  | product/prod_006_automatic_machine_updates.md |
 | [prod_007_machine_housekeeping](product/prod_007_machine_housekeeping.md) | Machine housekeeping | Proposed |  |  | product/prod_007_machine_housekeeping.md |
+| [prod_008_storage_module](product/prod_008_storage_module.md) | Storage module | Proposed |  |  | product/prod_008_storage_module.md |
 
 ## Roadmaps
 
@@ -81,7 +82,8 @@
 | [req_014_mask_the_clock_in_the_cyberdeck_dashboard_goldens](request/req_014_mask_the_clock_in_the_cyberdeck_dashboard_goldens.md) | Mask the clock in the cyberdeck dashboard goldens | Draft |  |  | request/req_014_mask_the_clock_in_the_cyberdeck_dashboard_goldens.md |
 | [req_015_fix_bluetooth_device_removal_and_silent_panel_buttons](request/req_015_fix_bluetooth_device_removal_and_silent_panel_buttons.md) | Fix bluetooth device removal and silent panel buttons | Draft |  |  | request/req_015_fix_bluetooth_device_removal_and_silent_panel_buttons.md |
 | [req_016_tint_the_fastfetch_logo_with_the_theme_accent](request/req_016_tint_the_fastfetch_logo_with_the_theme_accent.md) | Tint the fastfetch logo with the theme accent | Draft |  |  | request/req_016_tint_the_fastfetch_logo_with_the_theme_accent.md |
-| [req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy](request/req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy.md) | Machine housekeeping: disk space alert, space report and Downloads tidy | Draft |  |  | request/req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy.md |
+| [req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy](request/req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy.md) | Machine housekeeping: disk space alert, space report and Downloads tidy | Done |  |  | request/req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy.md |
+| [req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget](request/req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget.md) | Storage module: disk cleanup panel, size map and bar widget | Draft |  |  | request/req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget.md |
 
 ## Backlog
 
@@ -234,7 +236,7 @@
 | [item_145_shortcuts_panel_replace_rofi](backlog/item_145_shortcuts_panel_replace_rofi.md) | Shortcuts panel: themed searchable keybind sheet replacing the rofi menu | Done |  | 100% | backlog/item_145_shortcuts_panel_replace_rofi.md |
 | [item_146_wallpaper_source_contract_one_owner_active_mode_plugin_hook](backlog/item_146_wallpaper_source_contract_one_owner_active_mode_plugin_hook.md) | Wallpaper source contract: one owner, active mode, plugin hook | Ready |  | 0% | backlog/item_146_wallpaper_source_contract_one_owner_active_mode_plugin_hook.md |
 | [item_147_wallpaper_rotation_through_a_selection](backlog/item_147_wallpaper_rotation_through_a_selection.md) | Wallpaper rotation through a selection | Ready |  | 0% | backlog/item_147_wallpaper_rotation_through_a_selection.md |
-| [item_148_per_monitor_wallpapers](backlog/item_148_per_monitor_wallpapers.md) | Per-monitor wallpapers | Ready |  | 0% | backlog/item_148_per_monitor_wallpapers.md |
+| [item_148_per_monitor_wallpapers](backlog/item_148_per_monitor_wallpapers.md) | Per-monitor wallpapers | In progress |  | 70% | backlog/item_148_per_monitor_wallpapers.md |
 | [item_149_weather_wallpapers_plugin](backlog/item_149_weather_wallpapers_plugin.md) | Weather wallpapers plugin | Ready |  | 0% | backlog/item_149_weather_wallpapers_plugin.md |
 | [item_150_animated_and_effect_wallpapers_plugin](backlog/item_150_animated_and_effect_wallpapers_plugin.md) | Animated and effect wallpapers plugin | Ready |  | 0% | backlog/item_150_animated_and_effect_wallpapers_plugin.md |
 | [item_151_theme_pack_wallpapers_grimdark_hud_angular](backlog/item_151_theme_pack_wallpapers_grimdark_hud_angular.md) | Theme pack wallpapers (grimdark, hud, angular) | Done |  | 100% | backlog/item_151_theme_pack_wallpapers_grimdark_hud_angular.md |
@@ -262,10 +264,15 @@
 | [item_173_daily_system_update_check_with_arch_news_gate](backlog/item_173_daily_system_update_check_with_arch_news_gate.md) | arch-update: system update check, tray and upgrade flow | Done |  | 100% | backlog/item_173_daily_system_update_check_with_arch_news_gate.md |
 | [item_174_sysup_guarded_system_upgrade_command](backlog/item_174_sysup_guarded_system_upgrade_command.md) | sysup: guarded system upgrade command | Obsolete |  | 0% | backlog/item_174_sysup_guarded_system_upgrade_command.md |
 | [item_175_update_policy_adr_rollback_runbook_and_docs](backlog/item_175_update_policy_adr_rollback_runbook_and_docs.md) | Update policy ADR, rollback runbook and docs | Done | corvus | 100% | backlog/item_175_update_policy_adr_rollback_runbook_and_docs.md |
-| [item_176_disk_space_alert_on_the_arch_partition](backlog/item_176_disk_space_alert_on_the_arch_partition.md) | Disk space alert on the Arch partition | Ready |  | 0% | backlog/item_176_disk_space_alert_on_the_arch_partition.md |
-| [item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean](backlog/item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean.md) | disk-report: where the space went and what is safe to clean | Ready |  | 0% | backlog/item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean.md |
-| [item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule](backlog/item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule.md) | Downloads tidy: sort ~/Downloads into type folders on a schedule | Ready |  | 0% | backlog/item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule.md |
-| [item_179_housekeeping_docs_and_the_backup_deferral_note](backlog/item_179_housekeeping_docs_and_the_backup_deferral_note.md) | Housekeeping docs and the backup deferral note | Ready |  | 0% | backlog/item_179_housekeeping_docs_and_the_backup_deferral_note.md |
+| [item_176_disk_space_alert_on_the_arch_partition](backlog/item_176_disk_space_alert_on_the_arch_partition.md) | Disk space alert on the Arch partition | Done |  | 100% | backlog/item_176_disk_space_alert_on_the_arch_partition.md |
+| [item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean](backlog/item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean.md) | disk-report: where the space went and what is safe to clean | Done |  | 100% | backlog/item_177_disk_report_where_the_space_went_and_what_is_safe_to_clean.md |
+| [item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule](backlog/item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule.md) | Downloads tidy: sort ~/Downloads into type folders on a schedule | Done |  | 100% | backlog/item_178_downloads_tidy_sort_downloads_into_type_folders_on_a_schedule.md |
+| [item_179_housekeeping_docs_and_the_backup_deferral_note](backlog/item_179_housekeeping_docs_and_the_backup_deferral_note.md) | Housekeeping docs and the backup deferral note | Done |  | 100% | backlog/item_179_housekeeping_docs_and_the_backup_deferral_note.md |
+| [item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore](backlog/item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore.md) | Storage panel mockups: layout options for Clean up and Explore | Ready |  | 0% | backlog/item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore.md |
+| [item_181_storage_service_and_data_driven_cleanup_sources](backlog/item_181_storage_service_and_data_driven_cleanup_sources.md) | Storage service and data-driven cleanup sources | Ready |  | 0% | backlog/item_181_storage_service_and_data_driven_cleanup_sources.md |
+| [item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash](backlog/item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash.md) | Storage panel: Clean up tab with confirm, polkit and Trash | Ready |  | 0% | backlog/item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash.md |
+| [item_183_storage_panel_explore_tab_with_a_squarified_treemap](backlog/item_183_storage_panel_explore_tab_with_a_squarified_treemap.md) | Storage panel: Explore tab with a squarified treemap | Ready |  | 0% | backlog/item_183_storage_panel_explore_tab_with_a_squarified_treemap.md |
+| [item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert](backlog/item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert.md) | Storage bar widget, IPC target and the Open action on disk-alert | Ready |  | 0% | backlog/item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert.md |
 
 ## Tasks
 
@@ -353,7 +360,9 @@
 | [task_080_cyberdeck_netrunner_register_matches_its_mockup](tasks/task_080_cyberdeck_netrunner_register_matches_its_mockup.md) | Cyberdeck Netrunner register matches its mockup | Done | claude | 100% | tasks/task_080_cyberdeck_netrunner_register_matches_its_mockup.md |
 | [task_081_theme_pack_wallpapers_grimdark_hud_angular](tasks/task_081_theme_pack_wallpapers_grimdark_hud_angular.md) | Theme pack wallpapers (grimdark, hud, angular) | Done | claude | 100% | tasks/task_081_theme_pack_wallpapers_grimdark_hud_angular.md |
 | [task_082_orchestrate_automatic_updates](tasks/task_082_orchestrate_automatic_updates.md) | Orchestrate automatic updates | Done | claude | 100% | tasks/task_082_orchestrate_automatic_updates.md |
-| [task_083_orchestrate_machine_housekeeping](tasks/task_083_orchestrate_machine_housekeeping.md) | Orchestrate machine housekeeping | Ready |  | 0% | tasks/task_083_orchestrate_machine_housekeeping.md |
+| [task_083_orchestrate_machine_housekeeping](tasks/task_083_orchestrate_machine_housekeeping.md) | Orchestrate machine housekeeping | Done |  | 100% | tasks/task_083_orchestrate_machine_housekeeping.md |
+| [task_084_per_monitor_wallpapers](tasks/task_084_per_monitor_wallpapers.md) | Per-monitor wallpapers | In progress | claude | 70% | tasks/task_084_per_monitor_wallpapers.md |
+| [task_085_orchestrate_the_storage_module](tasks/task_085_orchestrate_the_storage_module.md) | Orchestrate the storage module | Ready |  | 0% | tasks/task_085_orchestrate_the_storage_module.md |
 
 ## Runbooks
 

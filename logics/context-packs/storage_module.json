@@ -1,0 +1,576 @@
+{
+  "budgets": {
+    "max_docs": 28,
+    "max_docs_per_ref": 4
+  },
+  "changed_paths": [
+    "logics/backlog/item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore.md",
+    "logics/backlog/item_181_storage_service_and_data_driven_cleanup_sources.md",
+    "logics/backlog/item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash.md",
+    "logics/backlog/item_183_storage_panel_explore_tab_with_a_squarified_treemap.md",
+    "logics/backlog/item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert.md",
+    "logics/product/prod_008_storage_module.md",
+    "logics/request/req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget.md",
+    "logics/scaffold/storage_module.json",
+    "logics/tasks/task_085_orchestrate_the_storage_module.md"
+  ],
+  "command": "logics-manager sync context-pack req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore item_181_storage_service_and_data_driven_cleanup_sources item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash item_183_storage_panel_explore_tab_with_a_squarified_treemap item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert task_085_orchestrate_the_storage_module --mode diff-first --profile normal --handoff",
+  "companion_docs": [
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore",
+          "item_181_storage_service_and_data_driven_cleanup_sources",
+          "item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash",
+          "item_183_storage_panel_explore_tab_with_a_squarified_treemap",
+          "item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ],
+        "task": [
+          "task_085_orchestrate_the_storage_module"
+        ]
+      },
+      "path": "logics/product/prod_008_storage_module.md",
+      "ref": "prod_008_storage_module",
+      "sections": {
+        "Goals": [
+          "- Going from a low-space notice to freed space takes one click to open and one confirm to clean.",
+          "- The size map makes the biggest folders obvious at a glance.",
+          "- No cleanup surprises: every action says what it costs, shows its command, and personal files are recoverable from the Trash."
+        ],
+        "Key product decisions": [
+          "- Use structured input as the source of truth for generated docs.",
+          "- Keep generated write paths local and repo-bounded."
+        ],
+        "Overview": [
+          "A disk utility inside Archeotech: a panel that scans on demand, shows where the space went as a size map and a list, and frees space through tiered, previewed, reversible-where-possible cleanups; plus a bar widget and an Open action on the low-space notice."
+        ],
+        "References": [
+          "- Product back-reference: `req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget`",
+          "- Task back-reference: `task_085_orchestrate_the_storage_module`"
+        ]
+      },
+      "status": "Proposed",
+      "title": "Storage module"
+    },
+    {
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_003_verify_vscode_colorcustomizations_regen_on_non_catppuccin_themes"
+        ],
+        "prod": [
+          "prod_003_archeotech_1_0_after_the_2026_09_28_audit"
+        ],
+        "req": [
+          "req_005_2026_09_28_audit_upgrade_program"
+        ],
+        "task": [
+          "task_031_orchestrate_2026_09_28_audit_upgrade_program"
+        ]
+      },
+      "path": "logics/product/prod_003_archeotech_1_0_after_the_2026_09_28_audit.md",
+      "ref": "prod_003_archeotech_1_0_after_the_2026_09_28_audit",
+      "sections": {
+        "Goals": [
+          "- Development never touches the owner's live session; every visual change ships with an isolated before/after contact sheet across dark, light and packs.",
+          "- Correctness before polish: every audit-verified bug fixed and guarded by goldens or logic tests.",
+          "- A semantic, mode-aware design system where light themes are designed, not recoloured, and no pack chrome lives in core.",
+          "- Daily-utility parity with DMS/Noctalia/Caelestia (command-palette launcher, notifications v2) plus the developer layer no peer has (Contexts, dev radar, Claude Ask).",
+          "- Installable by a stranger on fresh Arch on MangoWC and Hyprland, with a versioned plugin API and URL-installable packs."
+        ],
+        "Key product decisions": [
+          "- 2026-09-28 (adr_032): Corvus Dataslate base identity; identity packs as add-ons; Contexts as the 1.0 headline; Angular and HUD retired to test fixtures.",
+          "- The product brief prod_001 remains the long-lived shell brief; this brief records the post-audit direction to 1.0."
+        ],
+        "Overview": [
+          "A public, community-ready Quickshell desktop shell whose base identity is Corvus Dataslate (violet on obsidian, restrained, per STYLE_GUIDE), whose headline 1.0 feature is Contexts (one switch for project, AWS/SSO, kube, git identity, layout, accent and focus mode), and whose identity packs (Grimdark/Warhammer, cyberpunk, gundam, ...) ship as installable add-ons through community pack support. Built with a safe, verifiable AI workflow: isolated renders, golden matrix, guard hooks.",
+          "```mermaid",
+          "flowchart LR",
+          "  S[Safety net] --> C[Correctness and goldens] --> D[Design system v2]",
+          "  D --> U[Utility layer] --> X[Contexts headline] --> R[1.0 release]",
+          "  R --> P[Add-on identity packs]"
+        ],
+        "References": [
+          "- Product back-reference: `item_003_verify_vscode_colorcustomizations_regen_on_non_catppuccin_themes`",
+          "- Task back-reference: `task_031_orchestrate_2026_09_28_audit_upgrade_program`"
+        ]
+      },
+      "status": "Settled",
+      "title": "Archeotech 1.0 after the 2026-09-28 audit"
+    }
+  ],
+  "docs": [
+    {
+      "ai_context": {
+        "keywords": "storage, module, disk, cleanup, panel, size, map, bar, widget",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "request",
+      "linked_refs": {
+        "item": [
+          "item_119_notifications_v2_actions_images_grouping_history",
+          "item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore",
+          "item_181_storage_service_and_data_driven_cleanup_sources",
+          "item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash",
+          "item_183_storage_panel_explore_tab_with_a_squarified_treemap",
+          "item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ]
+      },
+      "path": "logics/request/req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget.md",
+      "ref": "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A storage service runs a read-only scan on demand in a helper process, caches the last result with its age, and exposes free space, btrfs metadata and unallocated space, and tiered cleanup entries to QML.",
+          "- AC2: The Clean up tab lists entries grouped Safe / Review with checkbox, exact size and what deleting costs; personal folders are never offered; a confirm step shows the exact commands, privileged ones run through polkit, personal files go to the Trash, and the panel reports the space freed and rescans.",
+          "- AC3: The Explore tab shows a squarified treemap of a folder (boxes sized by bytes, coloured by type or tier) with click to drill down, a breadcrumb back up and a largest-first list beside it, built from the scan without a second full walk.",
+          "- AC4: A bar widget shows used space with warn and critical colours from the same thresholds as disk-alert, and opens the panel; an IPC target (storage open/toggle/rescan) opens it, and disk-alert's notification has an Open action once item_119 actions land.",
+          "- AC5: Cleanup sources are data-driven: the shell ships generic sources and loads extra ones from user config; the dotfiles add the owner's sources, and the docs describe the source format.",
+          "- AC6: The layout was picked by the owner from rendered mockups before building, and the shipped panel renders in shot.sh with realistic data (long lists, a deep tree, a privileged entry) on dark, light and Flat."
+        ],
+        "Needs": [
+          "- When the disk fills up the owner wants to open one place from the notification or the bar, see what takes the space, tick what to remove and free it, without copying commands into a terminal.",
+          "- The owner wants a picture of where the space went: boxes drawn to the size of each folder and file, as in the Windows tree viewers (WinDirStat style), with drill-down.",
+          "- Cleanup must be safe by default: it says what deleting each item costs, never offers personal folders, shows the real commands before running them and reports what was freed."
+        ]
+      },
+      "status": "Draft",
+      "title": "Storage module: disk cleanup panel, size map and bar widget"
+    },
+    {
+      "ai_context": {
+        "keywords": "notifications, actions, images, grouping, history",
+        "skip when": "Working outside this milestone; see road_001 for sequencing and .claude/audits/2026-09-28/ for evidence.",
+        "summary": "Notifications v2: actions, images, grouping, history. actionsSupported is false (Services/System/Notifications.qml:18)",
+        "use when": "Implementing or reviewing the 0.50 Utility layer milestone work on notifications."
+      },
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_119_notifications_v2_actions_images_grouping_history"
+        ],
+        "prod": [
+          "prod_003_archeotech_1_0_after_the_2026_09_28_audit"
+        ],
+        "req": [
+          "req_005_2026_09_28_audit_upgrade_program"
+        ],
+        "task": [
+          "task_031_orchestrate_2026_09_28_audit_upgrade_program",
+          "task_073_notifications_v2_actions_images_grouping_history"
+        ]
+      },
+      "path": "logics/backlog/item_119_notifications_v2_actions_images_grouping_history.md",
+      "ref": "item_119_notifications_v2_actions_images_grouping_history",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: A notification with actions exposes working buttons.",
+          "- AC2: History survives a shell reload.",
+          "- AC3: A body longer than 3 lines can be expanded to its full text, in the toast and in the notification center."
+        ],
+        "Problem": [
+          "- Bodies are cut at 3 lines with no expand (added 2026-11-24).",
+          "- actionsSupported is false (Services/System/Notifications.qml:18); no images, grouping, persisted history or keyboard navigation in the notification center."
+        ]
+      },
+      "status": "In progress",
+      "title": "Notifications v2: actions, images, grouping, history"
+    },
+    {
+      "ai_context": {
+        "keywords": "storage, panel, mockups, layout, options, clean, explore",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ],
+        "task": [
+          "task_085_orchestrate_the_storage_module"
+        ]
+      },
+      "path": "logics/backlog/item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore.md",
+      "ref": "item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC6: The owner picked a Clean up layout and an Explore layout from rendered options; the pick is recorded in this item."
+        ],
+        "Problem": [
+          "- The panel has two dense views (a tiered cleanup list and a treemap) and the owner picks layouts from renders, not descriptions."
+        ]
+      },
+      "status": "Ready",
+      "title": "Storage panel mockups: layout options for Clean up and Explore"
+    },
+    {
+      "ai_context": {
+        "keywords": "storage, service, data, driven, cleanup, sources",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_181_storage_service_and_data_driven_cleanup_sources"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ],
+        "task": [
+          "task_085_orchestrate_the_storage_module"
+        ]
+      },
+      "path": "logics/backlog/item_181_storage_service_and_data_driven_cleanup_sources.md",
+      "ref": "item_181_storage_service_and_data_driven_cleanup_sources",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC1: Storage.qml exposes free, metadata, unallocated, entries and the tree after rescan(); the result and its age survive a panel close.",
+          "- AC5: A source added in user config appears after rescan without a shell code change; tests cover the source format."
+        ],
+        "Problem": [
+          "- The scan and cleanup knowledge lives in a private dotfiles script; the public shell needs a generic, data-driven backend that QML can bind to."
+        ]
+      },
+      "status": "Ready",
+      "title": "Storage service and data-driven cleanup sources"
+    },
+    {
+      "ai_context": {
+        "keywords": "orchestrate, storage, module",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "task",
+      "linked_refs": {
+        "item": [
+          "item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore",
+          "item_181_storage_service_and_data_driven_cleanup_sources",
+          "item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash",
+          "item_183_storage_panel_explore_tab_with_a_squarified_treemap",
+          "item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ],
+        "task": [
+          "task_085_orchestrate_the_storage_module"
+        ]
+      },
+      "path": "logics/tasks/task_085_orchestrate_the_storage_module.md",
+      "ref": "task_085_orchestrate_the_storage_module",
+      "schema_version": "1.0",
+      "sections": {
+        "Context": [
+          "- Orchestrate the scaffolded request chain and keep sibling implementation slices linked."
+        ],
+        "Validation": [
+          "- (no validation recorded yet)"
+        ]
+      },
+      "status": "Ready",
+      "title": "Orchestrate the storage module"
+    },
+    {
+      "ai_context": {},
+      "execution_table": "",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "product",
+      "linked_refs": {
+        "item": [
+          "item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore",
+          "item_181_storage_service_and_data_driven_cleanup_sources",
+          "item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash",
+          "item_183_storage_panel_explore_tab_with_a_squarified_treemap",
+          "item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ],
+        "task": [
+          "task_085_orchestrate_the_storage_module"
+        ]
+      },
+      "path": "logics/product/prod_008_storage_module.md",
+      "ref": "prod_008_storage_module",
+      "schema_version": "1.0",
+      "sections": {},
+      "status": "Proposed",
+      "title": "Storage module"
+    },
+    {
+      "ai_context": {
+        "keywords": "storage, panel, clean, tab, confirm, polkit, trash",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ],
+        "task": [
+          "task_085_orchestrate_the_storage_module"
+        ]
+      },
+      "path": "logics/backlog/item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash.md",
+      "ref": "item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC2: Ticking Safe entries and confirming runs exactly the commands shown, privileged ones behind a polkit prompt, and reports the freed bytes; personal folders never appear as entries.",
+          "- AC6: Renders on dark, light and Flat with probe data pass the visual check."
+        ],
+        "Problem": [
+          "- Freeing space today means reading a report and copying commands into a terminal with sudo."
+        ]
+      },
+      "status": "Ready",
+      "title": "Storage panel: Clean up tab with confirm, polkit and Trash"
+    },
+    {
+      "ai_context": {
+        "keywords": "storage, panel, explore, tab, squarified, treemap",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_183_storage_panel_explore_tab_with_a_squarified_treemap"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ],
+        "task": [
+          "task_085_orchestrate_the_storage_module"
+        ]
+      },
+      "path": "logics/backlog/item_183_storage_panel_explore_tab_with_a_squarified_treemap.md",
+      "ref": "item_183_storage_panel_explore_tab_with_a_squarified_treemap",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC3: The treemap areas are proportional to bytes (logic test), drill-down and breadcrumb work, and the list matches the map.",
+          "- AC6: Renders with a deep, wide probe tree on dark, light and Flat pass the visual check."
+        ],
+        "Problem": [
+          "- A list of sizes does not show at a glance where 70 G went; the owner wants size-proportional boxes as in the Windows tree viewers."
+        ]
+      },
+      "status": "Ready",
+      "title": "Storage panel: Explore tab with a squarified treemap"
+    },
+    {
+      "ai_context": {
+        "keywords": "storage, bar, widget, ipc, target, open, action, disk, alert",
+        "skip when": "(unfilled: replace before this doc is used)",
+        "summary": "(unfilled: replace before this doc is used)",
+        "use when": "(unfilled: replace before this doc is used)"
+      },
+      "execution_table": "# Executions\n| When | Runner | Run id | Title | State | PR | Notes |\n| --- | --- | --- | --- | --- | --- | --- |\n\n",
+      "executions": {
+        "older_count": 0,
+        "rows": []
+      },
+      "kind": "backlog",
+      "linked_refs": {
+        "item": [
+          "item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert"
+        ],
+        "prod": [
+          "prod_008_storage_module"
+        ],
+        "req": [
+          "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget"
+        ],
+        "task": [
+          "task_085_orchestrate_the_storage_module"
+        ]
+      },
+      "path": "logics/backlog/item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert.md",
+      "ref": "item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert",
+      "schema_version": "1.0",
+      "sections": {
+        "Acceptance criteria": [
+          "- AC4: The widget colour follows the thresholds, clicking it opens the panel, and qs ipc call storage open opens it in the isolated session.",
+          "- AC4: With item_119 actions in place, the disk-alert notice's Open button opens the panel.",
+          "- AC5: The docs describe the source format and the owner's private sources."
+        ],
+        "Problem": [
+          "- The panel must be reachable from the bar and from the low-space notice."
+        ]
+      },
+      "status": "Ready",
+      "title": "Storage bar widget, IPC target and the Open action on disk-alert"
+    }
+  ],
+  "estimates": {
+    "char_count": 18345,
+    "companion_doc_count": 2,
+    "doc_count": 9
+  },
+  "generated_at": "2026-11-24T10:33:10Z",
+  "handoff": {
+    "companion_doc_count": 2,
+    "enabled": true,
+    "source_refs": [
+      "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget",
+      "item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore",
+      "item_181_storage_service_and_data_driven_cleanup_sources",
+      "item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash",
+      "item_183_storage_panel_explore_tab_with_a_squarified_treemap",
+      "item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert",
+      "task_085_orchestrate_the_storage_module"
+    ],
+    "validation_summary_count": 1
+  },
+  "i18n": {
+    "actions": [
+      "Choose the source locale for app-owned user-facing copy.",
+      "Run logics-manager i18n init --source-locale <locale>.",
+      "Route new UI copy through stable semantic keys."
+    ],
+    "applicable": null,
+    "configured": false,
+    "contract_path": "logics/i18n/contract.json",
+    "findings": [],
+    "next_action": "Run logics-manager i18n init --source-locale <locale> for a project that owns user-facing copy.",
+    "ok": true,
+    "state": "absent"
+  },
+  "mode": "diff-first",
+  "profile": "normal",
+  "ref": "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget,item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore,item_181_storage_service_and_data_driven_cleanup_sources,item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash,item_183_storage_panel_explore_tab_with_a_squarified_treemap,item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert,task_085_orchestrate_the_storage_module",
+  "refs": [
+    "req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget",
+    "item_180_storage_panel_mockups_layout_options_for_clean_up_and_explore",
+    "item_181_storage_service_and_data_driven_cleanup_sources",
+    "item_182_storage_panel_clean_up_tab_with_confirm_polkit_and_trash",
+    "item_183_storage_panel_explore_tab_with_a_squarified_treemap",
+    "item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert",
+    "task_085_orchestrate_the_storage_module"
+  ],
+  "release": {
+    "blocking_reasons": [
+      "Missing logics/release/contract.json."
+    ],
+    "configured": false,
+    "contract_path": "logics/release/contract.json",
+    "guidance": [
+      "Release readiness must come from project-owned evidence, not conversational memory.",
+      "Use release status or validate before preparing or claiming release readiness.",
+      "Publication-oriented actions are explicit operator actions and are separate from safe read/validate actions."
+    ],
+    "next_action": "Run logics-manager release discover --write, then review and promote logics/release/contract.draft.json to logics/release/contract.json.",
+    "publication_actions": [
+      "GitHub release publication",
+      "external publication"
+    ],
+    "required_gates": [],
+    "safe_actions": [
+      "logics-manager release status",
+      "logics-manager release plan <version>",
+      "logics-manager release validate <version>"
+    ],
+    "state": "not_configured",
+    "target_id": null,
+    "target_version": null,
+    "targets": []
+  },
+  "validation_summary": [
+    {
+      "items": [
+        "- (no validation recorded yet)"
+      ],
+      "path": "logics/tasks/task_085_orchestrate_the_storage_module.md",
+      "ref": "task_085_orchestrate_the_storage_module"
+    }
+  ]
+}
