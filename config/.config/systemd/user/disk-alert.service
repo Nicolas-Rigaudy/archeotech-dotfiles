@@ -1,0 +1,11 @@
+# Hourly check of free space on / (req_017 / item_176). Notifies through
+# update-notify.sh (once a day per level). Linked into ~/.config/systemd/user
+# by scripts/install.sh (enable_user_services).
+[Unit]
+Description=Warn when the root partition runs low on space
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/disk-alert.sh
+Nice=10
+IOSchedulingClass=idle

@@ -1,0 +1,11 @@
+# Runs disk-alert.service every hour; Persistent catches up after suspend.
+[Unit]
+Description=Hourly root partition space check
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

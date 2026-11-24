@@ -184,6 +184,9 @@ install_local_scripts() {
         "update-dev-tools.sh"
         "update-notify.sh"
         "update-state.sh"
+        "disk-report.sh"
+        "disk-alert.sh"
+        "downloads-tidy.sh"
     )
 
     for script in "${LOCAL_SCRIPTS[@]}"; do
@@ -197,7 +200,8 @@ enable_user_services() {
 
     # These units live in a pre-existing systemd dir stow can't manage
     mkdir -p "$HOME/.config/systemd/user"
-    for unit in battery-alert.service update-dev-tools.service update-dev-tools.timer; do
+    for unit in battery-alert.service update-dev-tools.service update-dev-tools.timer \
+            disk-alert.service disk-alert.timer downloads-tidy.service downloads-tidy.timer; do
         ln -sf "$DOTFILES_DIR/config/.config/systemd/user/$unit" \
             "$HOME/.config/systemd/user/$unit"
     done
@@ -214,6 +218,16 @@ enable_user_services() {
     systemctl --user enable --now update-dev-tools.timer >/dev/null 2>&1 \
         && print_success "update-dev-tools.timer enabled" \
         || print_warning "Could not enable update-dev-tools.timer"
+
+    # Hourly free-space check on / (disk-alert.sh, req_017).
+    systemctl --user enable --now disk-alert.timer >/dev/null 2>&1 \
+        && print_success "disk-alert.timer enabled" \
+        || print_warning "Could not enable disk-alert.timer"
+
+    # Daily sort of loose ~/Downloads files into type folders (never deletes).
+    systemctl --user enable --now downloads-tidy.timer >/dev/null 2>&1 \
+        && print_success "downloads-tidy.timer enabled" \
+        || print_warning "Could not enable downloads-tidy.timer"
 
     # arch-update checks for pacman/AUR updates at login and every 6 h and
     # notifies; upgrades only run when the owner starts arch-update (req_013).

@@ -5,7 +5,8 @@
 #
 #   update-notify.sh [--dry-run] <kind> <message...>
 #
-# kind     a slug naming what needs the owner: tool-failed (user-tool job).
+# kind     a slug naming what needs the owner: tool-failed (user-tool job),
+#          disk-warn / disk-critical (disk-alert.sh; critical is sent critical).
 #          Kinds ending in -failed are sent critical (red, stays until dismissed).
 #          System update notices are arch-update's own and do not come here.
 # --dry-run  print the notification instead of sending it; leaves the state
@@ -32,9 +33,13 @@ message="$*"
 # Failures go out critical: the shell draws them with a red border and keeps
 # them until dismissed (once a day at most, so they never pile up).
 urgency=normal
+app=Updates
 case $kind in
-    tool-failed) title="Tool update failed"; icon=dialog-error ;;
-    *)           title="Updates: $kind";     icon=system-software-update ;;
+    tool-failed)   title="Tool update failed"; icon=dialog-error ;;
+    # disk-alert.sh (item_176)
+    disk-warn)     title="Disk space low";     icon=drive-harddisk; app=System ;;
+    disk-critical) title="Disk almost full";   icon=dialog-warning; app=System; urgency=critical ;;
+    *)             title="Updates: $kind";     icon=system-software-update ;;
 esac
 [[ $kind == *-failed ]] && urgency=critical
 
@@ -57,7 +62,7 @@ if (( dry_run )); then
     exit 0
 fi
 
-"$NOTIFY_CMD" -a "Updates" -u "$urgency" -i "$icon" "$title" "$message"
+"$NOTIFY_CMD" -a "$app" -u "$urgency" -i "$icon" "$title" "$message"
 
 tmp=$(mktemp "$STATE_DIR/.notified.XXXXXX")
 jq --arg k "$kind" --arg d "$today" --arg at "$(date -Is)" --arg m "$message" \

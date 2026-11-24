@@ -1,0 +1,10 @@
+# Sorts loose files in ~/Downloads into type folders (req_017 / item_178).
+# Never deletes; moves are logged in ~/.local/state/downloads-tidy/moves.log.
+# Linked into ~/.config/systemd/user by scripts/install.sh.
+[Unit]
+Description=Sort loose files in Downloads into type folders
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/downloads-tidy.sh
+Nice=10

@@ -1,0 +1,11 @@
+# Runs downloads-tidy.service daily; Persistent catches up a missed day.
+[Unit]
+Description=Daily Downloads tidy
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target
