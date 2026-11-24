@@ -1,14 +1,14 @@
 ## item_181_storage_service_and_data_driven_cleanup_sources - Storage service and data-driven cleanup sources
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 10%
 > Complexity: Medium
 > Theme: Storage
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-11-24 11:33:38
+> Indicators reviewed: 2026-11-24 12:19:08
 
 # AI Context
 - Summary: Scan helper, data-driven cleanup source format and Services/System/Storage.qml exposing free space, btrfs state, entries and a folder tree.

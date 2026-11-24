@@ -1,14 +1,14 @@
 ## task_085_orchestrate_the_storage_module - Orchestrate the storage module
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
 > Progress: 0%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
-> Indicators reviewed: 2026-11-24 11:33:40
+> Indicators reviewed: 2026-11-24 12:19:08
 
 # AI Context
 - Summary: Orchestrates the Storage module: mockups first, then service, Clean up, Explore, bar widget and IPC, goldens.
