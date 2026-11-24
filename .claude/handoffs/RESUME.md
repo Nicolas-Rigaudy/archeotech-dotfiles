@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-11-24, housekeeping closed; screensaver next)
+# Resume here (last updated 2026-11-24, housekeeping closed; Storage module next, then screensaver)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -21,7 +21,8 @@ Images/Documents/Slides/Archives/Media/Installers/3D/Data/Other, never overwrite
 tests/test-downloads-tidy.sh. Extensionless files go to Documents (owner). Both timers enabled
 2026-11-24 (first disk-warn sent; first tidy 2026-11-25 00:49). Finding: / is 90 % used and btrfs
 is fully allocated (1 MiB unallocated): free space, then `sudo btrfs balance start -dusage=50 /`.
-- **Next: screensaver** (req_012 / task_077): start with the item_161 mockups on one review page.
+- **Next: Storage module** (req_018 / task_085, owner: before the screensaver). A panel with two tabs: Clean up (Safe/Review checkbox rows, a confirm step that shows the exact commands, polkit, Trash) and Explore (a squarified treemap, as in WinDirStat, which the owner asked for). Also a bar widget and a disk-alert Open action (needs item_119 actions). Step 1 is item_180: render the layout options with the real numbers, open them in imv, and let the owner pick.
+- **Then: screensaver** (req_012 / task_077): start with the item_161 mockups on one review page.
 - **Automatic updates CLOSED (2026-11-17, req_013 / task_082 / prod_006 Done):** item_175 shipped
   ADR 036 (two tiers, no unattended -Syu or reboot) and the rollback runbook in `docs/UPDATES.md`.
   Root is `subvol=@` by path, so rollback is a manual subvolume swap, not `snapper rollback`;
