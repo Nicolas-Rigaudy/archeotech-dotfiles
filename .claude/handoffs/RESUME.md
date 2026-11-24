@@ -21,7 +21,7 @@ Images/Documents/Slides/Archives/Media/Installers/3D/Data/Other, never overwrite
 tests/test-downloads-tidy.sh. Extensionless files go to Documents (owner). Both timers enabled
 2026-11-24 (first disk-warn sent; first tidy 2026-11-25 00:49). Finding: / is 90 % used and btrfs
 is fully allocated (1 MiB unallocated): free space, then `sudo btrfs balance start -dusage=50 /`.
-- **Storage module LANDED (2026-11-24, shell f4d79d6, dotfiles 9022f7b; not pushed yet).**
+- **Storage module LANDED (2026-11-24, shell f4d79d6, dotfiles 9022f7b; pushed).**
   - item_181 service, item_182 Clean up, item_183 Explore tab (treemap + list + lazy folder
     scans) Done; item_184 In progress: bar widget + `qs ipc call storage open|toggle` landed,
     the disk-alert Open action still waits on item_119 notification actions.
