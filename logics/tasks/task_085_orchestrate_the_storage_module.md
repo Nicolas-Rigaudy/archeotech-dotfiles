@@ -55,10 +55,10 @@
 - request-AC5 -> `item_184_storage_bar_widget_ipc_target_and_the_open_action_on_disk_alert`. Proof deferred to slice closeout.
 
 # Validation
-- (no validation recorded yet)
+- item_181 (archeotech-shell d0a5906): tests/run.sh 146 passed; python3 -m unittest discover -s tests/py OK (21 storage-scan tests: guard incl. ~/.ssh/<file>, /home/<other>, children base $HOME refused, {path} commands guarded, detail_command quoting, nested dedup, bad --mount); qmllint only the known Config.get false positive; qml-reviewer findings fixed (guard holes, quoting, folder-scan queue, clock expiry); golden.sh --root wt: 27/30 pass, the 3 dashboard-cyberdeck-* fail identically on unchanged main 718ea42 (pre-existing, not this item). Real read-only scan with the owner's sources: 17 rows, 0 rejected, 0 errors, 4.8 s, not partial.
 
 # Report
-- Not started.
+- item_181 done: scripts/storage-scan.py (read-only statvfs/du/btrfs scan, JSON), scripts/storage-sources.json (14 shipped sources), Services/System/Storage.qml + StorageLogic.js (free-space level every 5 min, rescan, scanFolder graft), storage.warnPct/critPct config keys, docs/STORAGE.md. Owner sources in dotfiles config/.config/archeotech/storage-sources.json (cdx uv cache 27.8G safe; 2 old cdx profiles 21.3G and arch-backup 3.3G as review/trash); install.sh mkdir guard so stow never folds ~/.config/archeotech. Owner step: stow -R config to link the file. Next: item_182 Clean up tab.
 
 # Links
 - Request: `req_018_storage_module_disk_cleanup_panel_size_map_and_bar_widget`

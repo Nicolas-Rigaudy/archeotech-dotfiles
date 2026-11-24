@@ -1,10 +1,10 @@
 ## item_181_storage_service_and_data_driven_cleanup_sources - Storage service and data-driven cleanup sources
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 10%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Storage
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.

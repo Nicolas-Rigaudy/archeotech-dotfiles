@@ -154,6 +154,12 @@ deploy_with_stow() {
 
     cd "$DOTFILES_DIR"
 
+    # ~/.config/archeotech holds the shell's own state (config.json, ...); the
+    # repo stows only storage-sources.json into it. Without a real folder there,
+    # stow would fold the whole dir into a symlink to the repo and the shell
+    # would write its state into git.
+    mkdir -p "$HOME/.config/archeotech"
+
     if [[ "$1" == "--dry-run" ]]; then
         print_info "DRY RUN - Showing what would be done:"
         stow -n -v -t ~ config

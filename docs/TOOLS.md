@@ -895,6 +895,11 @@ Current kitty setup can be improved to match Ptyxis features:
 - Stow creates symlinks from `~/.config/` to repo
 - Editing `~/.config/file` edits repo file directly
 - Changes auto-tracked by git
+- Exception: `~/.config/archeotech` is a real folder (the shell's own state); only
+  `storage-sources.json` (machine-specific Storage panel cleanup sources: cdx
+  leftovers, old backups, the cdx uv cache; format in archeotech-shell
+  `docs/STORAGE.md`) is stowed into it. `install.sh` creates the folder before stow
+  so it is never folded into a repo symlink
 
 **Usage:**
 ```bash

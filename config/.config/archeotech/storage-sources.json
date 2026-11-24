@@ -1,0 +1,33 @@
+{
+  "_comment": "Machine-specific cleanup sources for the archeotech Storage panel (format: archeotech-shell docs/STORAGE.md). Stowed as a single file into ~/.config/archeotech, which also holds the shell's own state.",
+  "sources": [
+    {
+      "id": "uv-cdx",
+      "label": "uv cache (cdx)",
+      "path": "~/.cdx/shared-cache/uv",
+      "requires": "uv",
+      "tier": "safe",
+      "action": "command",
+      "command": "uv cache clean --cache-dir {path}",
+      "cost": "Python packages download again on the next uv sync in a cdx session"
+    },
+    {
+      "id": "cdx-leftover",
+      "label": "Old cdx profile {name}",
+      "path": "~/.cdx/profiles/.*.remove.*",
+      "glob": true,
+      "tier": "review",
+      "action": "trash",
+      "cost": "A profile cdx marked for removal on {mtime}; it goes to the Trash"
+    },
+    {
+      "id": "arch-backup",
+      "label": "Old backup {name}",
+      "path": "~/arch-backup-*",
+      "glob": true,
+      "tier": "review",
+      "action": "trash",
+      "cost": "Backup made on {mtime}; check nothing in it is still needed. It goes to the Trash"
+    }
+  ]
+}
