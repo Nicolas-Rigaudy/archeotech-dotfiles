@@ -1,10 +1,10 @@
 ## item_176_disk_space_alert_on_the_arch_partition - Disk space alert on the Arch partition
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 85%
+> Progress: 100%
 > Complexity: Low
 > Theme: Machine upkeep
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -55,3 +55,6 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
+
+# Notes
+- Task `task_083_orchestrate_machine_housekeeping` was finished via `logics-manager flow finish task` on 2026-11-24.

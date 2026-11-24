@@ -1,7 +1,7 @@
 ## req_017_machine_housekeeping_disk_space_alert_space_report_and_downloads_tidy - Machine housekeeping: disk space alert, space report and Downloads tidy
 > From version: 1.0.0
 > Schema version: 1.0
-> Status: Draft
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
 > Complexity: Low
@@ -61,4 +61,3 @@
 # Executions
 | When | Runner | Run id | Title | State | PR | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-

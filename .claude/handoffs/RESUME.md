@@ -1,4 +1,4 @@
-# Resume here (last updated 2026-11-24, housekeeping built; screensaver next)
+# Resume here (last updated 2026-11-24, housekeeping closed; screensaver next)
 
 Short state of play for a fresh session. Details live in logics; this file only
 says where to look and what is next. Update it at the end of each session (`/wrap`).
@@ -12,14 +12,14 @@ says where to look and what is next. Update it at the end of each session (`/wra
   hidden until Show all, never unavailable (owner's rule). Picker count label uses
   textSecondary (owner's pick). Carousel overhang past the panel is a design choice: leave it.
   Owner verified both on the live bar.
-- **Machine housekeeping BUILT (2026-11-24, req_017 / task_083 85 %, items 176-179):**
+- **Machine housekeeping CLOSED (2026-11-24, req_017 / task_083 / items 176-179 Done):**
 `scripts/disk-report.sh` (read-only, `--json`, `--json --root` instant), `disk-alert.sh` (hourly
 timer; warn <=15 %, critical <=8 % or btrfs metadata <1 GiB with nothing unallocated; via
 update-notify.sh kinds disk-warn/disk-critical), `downloads-tidy.sh` (daily timer, owner's folders
 Images/Documents/Slides/Archives/Media/Installers/3D/Data/Other, never overwrites, moves.log undo),
 `docs/TOOLS.md` Housekeeping + `docs/BACKUPS.md` (deferral). Tests: tests/test-disk-alert.sh,
-tests/test-downloads-tidy.sh. **Open:** owner reviews the Downloads dry run (199 moves) and runs
-install.sh to enable both timers; then `flow closeout` task_083. Finding: / is 90 % used and btrfs
+tests/test-downloads-tidy.sh. Extensionless files go to Documents (owner). Both timers enabled
+2026-11-24 (first disk-warn sent; first tidy 2026-11-25 00:49). Finding: / is 90 % used and btrfs
 is fully allocated (1 MiB unallocated): free space, then `sudo btrfs balance start -dusage=50 /`.
 - **Next: screensaver** (req_012 / task_077): start with the item_161 mockups on one review page.
 - **Automatic updates CLOSED (2026-11-17, req_013 / task_082 / prod_006 Done):** item_175 shipped
