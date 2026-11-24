@@ -8,7 +8,7 @@
 > Complexity: Medium
 > Theme: Notifications
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-09-28 15:27:46
+> Indicators reviewed: 2026-11-24 11:31:04
 
 # AI Context
 - Summary: Notifications v2: actions, images, grouping, history. actionsSupported is false (Services/System/Notifications.qml:18)
@@ -17,16 +17,19 @@
 - Skip when: Working outside this milestone; see road_001 for sequencing and .claude/audits/2026-09-28/ for evidence.
 
 # Problem
+- Bodies are cut at 3 lines with no expand (added 2026-11-24).
 - actionsSupported is false (Services/System/Notifications.qml:18); no images, grouping, persisted history or keyboard navigation in the notification center.
 
 # Scope
 - In:
   - Actions and inline reply, images, per-app grouping, persisted history, keyboard navigation
+  - Long bodies expand: the toast (`Modules/NotificationCenter/NotifToast.qml:217`) and the center (`Modules/Shell/Panels/Content/NotificationCenter.qml:279`) cap the body at 3 lines with no way to read the rest (owner, 2026-11-24: a disk-alert notice could not be read in full). Click or a chevron expands to the full text.
 - Out:
 
 # Acceptance criteria
 - AC1: A notification with actions exposes working buttons.
 - AC2: History survives a shell reload.
+- AC3: A body longer than 3 lines can be expanded to its full text, in the toast and in the notification center.
 
 # AC Traceability
 - request-AC4 -> This backlog slice. Proof: AC1: A notification with actions exposes working buttons.
