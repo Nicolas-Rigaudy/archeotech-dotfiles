@@ -73,7 +73,9 @@ top=$(jq -r '[.entries[] | select(.group == "known" and .bytes != null)]
              | sort_by(-.bytes) | .[:3]
              | map(.label | sub("pacman package cache"; "pacman cache")
                           | sub("paru clones and builds"; "paru")
-                          | sub("systemd journal"; "journal")) as $l
+                          | sub("systemd journal"; "journal")
+                          | sub("^uv cache .*"; "uv cache")
+                          | sub("^leftover cdx profile .*"; "old cdx profile")) as $l
              | [$l, map(.bytes)] | transpose | map("\(.[0]) \(.[1])") | .[]' <<<"$json" \
       | while read -r line; do
             b=${line##* }; printf '%s %s, ' "${line% *}" "$(h "$b")"

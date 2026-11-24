@@ -89,18 +89,21 @@ check "a bad threshold is rejected (exit 2)" '[[ $? -eq 2 ]]'
 # --- disk-report on a temp $HOME ---------------------------------------------
 unset DISK_ALERT_FAKE_JSON
 H=$TMP/home
-mkdir -p "$H/Downloads" "$H/.cache/bigapp" "$H/Projects"
+mkdir -p "$H/Downloads" "$H/.cache/bigapp" "$H/Projects" "$H/.cache/uv" "$H/.local/share/Trash" "$H/.cdx/profiles/.old.remove.abc"
 head -c 2000000 /dev/zero >"$H/Projects/blob"
 head -c 1000 /dev/zero >"$H/Downloads/a.pdf"
 start=$(date +%s)
-J=$(HOME=$H XDG_CACHE_HOME='' "$REPORT" --json)
+J=$(HOME=$H XDG_CACHE_HOME='' XDG_DATA_HOME='' UV_CACHE_DIR='' "$REPORT" --json)
 took=$(( $(date +%s) - start ))
 check "AC2: --json is valid JSON" 'jq -e .root.free <<<"$J" >/dev/null'
 check "AC2: runs under 30 s" '[[ $took -lt 30 ]]'
 check "AC2: every entry carries a cleanup command" '[[ $(jq "[.entries[] | select((.cleanup // \"\") == \"\")] | length" <<<"$J") -eq 0 ]]'
 check "known consumers are listed" '[[ $(jq -r "[.entries[] | select(.group == \"known\") | .label] | join(\",\")" <<<"$J") == *"pacman package cache"*"Downloads"* ]]'
+check "uv cache, Trash and leftover cdx profiles are listed" \
+    '[[ $(jq -r "[.entries[].label] | join(\",\")" <<<"$J") == *"uv cache (~/.cache/uv)"*"Trash"*"leftover cdx profile .old.remove.abc"* ]]'
+check "uv cache is not listed twice" '[[ $(jq "[.entries[] | select(.label | test(\"uv\"))] | length" <<<"$J") -eq 1 ]]'
 check "largest home dir comes first" '[[ $(jq -r "[.entries[] | select(.group == \"home\")][0].label" <<<"$J") == "\$HOME/Projects" ]]'
-T=$(HOME=$H "$REPORT")
+T=$(HOME=$H UV_CACHE_DIR='' "$REPORT")
 check "human report has the same labels as --json" \
     '[[ $T == *"pacman package cache"* && $T == *"\$HOME/Projects"* && $T == *"Nothing was deleted"* ]]'
 R=$("$REPORT" --json --root)

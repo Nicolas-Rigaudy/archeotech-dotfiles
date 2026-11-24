@@ -8,8 +8,9 @@
 #   disk-report.sh --json --root   free space only, no scans (instant)
 #
 # Groups:
-#   known  the usual suspects: pacman cache, paru builds, ~/.cache dirs,
-#          journal, ~/Downloads, snapper snapshots
+#   known  the usual suspects: pacman cache, paru builds, uv caches, Trash,
+#          ~/.cache dirs, journal, ~/Downloads, leftover cdx profiles,
+#          snapper snapshots
 #   home   the largest dirs one level under $HOME (overlaps "known")
 # Not covered: per-snapshot exclusive sizes. They need btrfs quotas
 # (`sudo btrfs quota enable /`), which slow snapshot deletion; left off.
@@ -71,6 +72,23 @@ add known "pacman package cache" /var/cache/pacman/pkg "$(size /var/cache/pacman
     "sudo paccache -rk2 && sudo paccache -ruk0"
 paru_dir=${XDG_CACHE_HOME:-$HOME/.cache}/paru
 add known "paru clones and builds" "$paru_dir" "$(size "$paru_dir")" "paru -Sc"
+# uv caches: the default one and any UV_CACHE_DIR (cdx profiles share one
+# under ~/.cdx). Listed once each; `prune` keeps what installed envs use.
+declare -A seen_uv=()
+for d in "${UV_CACHE_DIR:-}" "${XDG_CACHE_HOME:-$HOME/.cache}/uv" "$HOME/.cdx/shared-cache/uv"; do
+    [[ -n $d && -d $d ]] || continue
+    d=$(readlink -f "$d"); [[ -z ${seen_uv[$d]:-} ]] || continue; seen_uv[$d]=1
+    add known "uv cache (${d/#"$HOME"/\~})" "$d" "$(size "$d")" \
+        "UV_CACHE_DIR='$d' uv cache prune  (or: uv cache clean)"
+done
+trash=${XDG_DATA_HOME:-$HOME/.local/share}/Trash
+add known "Trash" "$trash" "$(size "$trash")" "gio trash --empty"
+# Profile folders cdx renamed for removal but never deleted.
+for d in "$HOME"/.cdx/profiles/.*.remove.*; do
+    [[ -d $d ]] || continue
+    add known "leftover cdx profile ${d##*/}" "$d" "$(size "$d")" \
+        "rm -rf '$d'  (check you no longer need it)"
+done
 add known "systemd journal" /var/log/journal "$(size /var/log/journal)" \
     "sudo journalctl --vacuum-size=500M"
 add known "Downloads" "$HOME/Downloads" "$(size "$HOME/Downloads")" \
@@ -81,7 +99,7 @@ add known "Downloads" "$HOME/Downloads" "$(size "$HOME/Downloads")" \
 cache=${XDG_CACHE_HOME:-$HOME/.cache}
 if [[ -d $cache ]]; then
     while IFS=$'\t' read -r b p; do
-        [[ $p == "$cache" || $p == "$paru_dir" ]] && continue
+        [[ $p == "$cache" || $p == "$paru_dir" || $p == "$cache/uv" ]] && continue
         (( b >= 300*1024*1024 )) || continue
         name=${p#"$cache"/}
         add known "cache: $name" "$p" "$b" "rm -rf ~/.cache/$name  (close the app first)"
@@ -144,7 +162,7 @@ for group in known home; do
         echo "Largest under \$HOME$( (( home_partial )) && echo " (scan timed out after ${HOME_TIMEOUT}s: partial)")"; fi
     while IFS=$'\t' read -r g label _path b cmd; do
         [[ $g == "$group" ]] || continue
-        printf '  %7s  %-30s  %s\n' "$(h "$b")" "$label" "$cmd"
+        printf '  %7s  %-36s  %s\n' "$(h "$b")" "$label" "$cmd"
     done < <(printf '%s\n' "${entries[@]}" | sort -t$'\t' -k4,4nr)
 done
 echo
