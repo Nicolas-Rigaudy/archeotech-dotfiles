@@ -32,6 +32,7 @@ min_age=${DOWNLOADS_MIN_AGE_MIN:-1440}
 log=${XDG_STATE_HOME:-$HOME/.local/state}/downloads-tidy/moves.log
 
 # The folder map: extension (lowercase) -> folder. Multi-part endings first.
+# No extension (meeting notes, transcripts) -> Documents (owner, 2026-11-24).
 folder_for() {
     local name=${1,,}
     case $name in
@@ -39,7 +40,7 @@ folder_for() {
         *.pkg.tar.zst|*.pkg.tar.xz) echo Installers; return ;;
         *.tar.gz|*.tar.xz|*.tar.bz2|*.tar.zst) echo Archives; return ;;
     esac
-    [[ $name == *.* ]] || { echo Other; return; }
+    [[ $name == *.* ]] || { echo Documents; return; }
     case ${name##*.} in
         png|jpg|jpeg|gif|webp|svg|bmp|tif|tiff|heic|avif|ico) echo Images ;;
         pdf|md|txt|doc|docx|odt|rtf|xls|xlsx|ods|epub|html|htm) echo Documents ;;

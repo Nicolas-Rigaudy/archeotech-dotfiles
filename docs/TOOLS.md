@@ -426,7 +426,7 @@ Backups are not set up yet: the reasons and the options are in
 |--------|------|--------------|
 | `disk-alert.sh` | `disk-alert.timer` (hourly) | Notifies when `/` gets low: **Disk space low** at 15 % free or less, **Disk almost full** (critical, stays until dismissed) at 8 %, or when btrfs metadata has under 1 GiB left with no unallocated space to grow into. Once a day per level, through `update-notify.sh`. The message lists the three biggest known consumers. |
 | `disk-report.sh` | (run it yourself) | Free space, btrfs metadata headroom, the usual consumers (pacman cache, paru builds, `~/.cache` dirs, journal, Downloads, snapshot count) and the ten largest dirs in `$HOME`, each with the command that cleans it safely. Prints commands, never runs them. `--json` for scripts. |
-| `downloads-tidy.sh` | `downloads-tidy.timer` (daily) | Moves loose files in `~/Downloads` into Images, Documents, Slides, Archives, Media, Installers, 3D, Data and Other. Skips folders, dotfiles, partial downloads and files changed in the last day. A name clash becomes `name (2).ext`. |
+| `downloads-tidy.sh` | `downloads-tidy.timer` (daily) | Moves loose files in `~/Downloads` into Images, Documents, Slides, Archives, Media, Installers, 3D, Data and Other. Skips folders, dotfiles, partial downloads and files changed in the last day. Files with no extension go to Documents. A name clash becomes `name (2).ext`. |
 
 **Thresholds:** set `DISK_WARN_PCT=` / `DISK_CRIT_PCT=` (percent free) in
 `~/.config/disk-alert.conf`, one per line; environment variables win over

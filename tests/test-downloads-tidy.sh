@@ -36,7 +36,7 @@ check "AC3: file count before and after is equal" '[[ $before -eq $after ]]'
 check "AC3: only fresh, partial and hidden files stay loose" '[[ $(loose) == ".hidden big.zip.part fresh.pdf " ]]'
 for pair in Images/photo\ \(2\).PNG Documents/scan.pdf Slides/deck.pptx Archives/src.tar.gz \
         Installers/paru-1.pkg.tar.zst Media/clip.mov Installers/setup.exe 3D/part.stl \
-        Data/data.csv Data/conf.yaml Other/notes Other/weird.cdx "Images/space name.jpg"; do
+        Data/data.csv Data/conf.yaml Documents/notes Other/weird.cdx "Images/space name.jpg"; do
     check "sorted: $pair" '[[ -f "$DOWNLOADS_DIR/$pair" ]]'
 done
 check "a clash never overwrites" '[[ $(cat "$DOWNLOADS_DIR/Images/photo.PNG") == old ]]'
