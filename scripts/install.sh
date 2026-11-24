@@ -185,6 +185,7 @@ install_local_scripts() {
         "monitor-apply.sh"
         "monitor-hotplug.sh"
         "gaming-mode.sh"
+        "presentation-mode.sh"
         "shell-reload.sh"
         "project-jump.sh"
         "show-keybinds.sh"
