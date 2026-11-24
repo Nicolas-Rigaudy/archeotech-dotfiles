@@ -2,7 +2,7 @@
 
 Complete reference for all tools and utilities in this Arch + MangoWC/Hyprland setup.
 
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-11-24
 
 ---
 
@@ -414,6 +414,42 @@ systemctl --user list-timers 'arch-update*' 'update-dev-tools*'
 update-dev-tools.sh --dry-run --no-wait  # what the daily job would do
 journalctl --user -u update-dev-tools    # last runs
 snapper -c root list | tail              # snapshots to roll back to
+```
+
+### Housekeeping (disk-alert, disk-report, downloads-tidy)
+
+Three user jobs keep the disk in check (req_017). None of them deletes anything.
+Backups are not set up yet: the reasons and the options are in
+[BACKUPS.md](BACKUPS.md).
+
+| Script | Unit | What it does |
+|--------|------|--------------|
+| `disk-alert.sh` | `disk-alert.timer` (hourly) | Notifies when `/` gets low: **Disk space low** at 15 % free or less, **Disk almost full** (critical, stays until dismissed) at 8 %, or when btrfs metadata has under 1 GiB left with no unallocated space to grow into. Once a day per level, through `update-notify.sh`. The message lists the three biggest known consumers. |
+| `disk-report.sh` | (run it yourself) | Free space, btrfs metadata headroom, the usual consumers (pacman cache, paru builds, `~/.cache` dirs, journal, Downloads, snapshot count) and the ten largest dirs in `$HOME`, each with the command that cleans it safely. Prints commands, never runs them. `--json` for scripts. |
+| `downloads-tidy.sh` | `downloads-tidy.timer` (daily) | Moves loose files in `~/Downloads` into Images, Documents, Slides, Archives, Media, Installers, 3D, Data and Other. Skips folders, dotfiles, partial downloads and files changed in the last day. A name clash becomes `name (2).ext`. |
+
+**Thresholds:** set `DISK_WARN_PCT=` / `DISK_CRIT_PCT=` (percent free) in
+`~/.config/disk-alert.conf`, one per line; environment variables win over
+the file. **Folder map:** the `folder_for` case at the top of
+`scripts/downloads-tidy.sh`.
+
+**Undo a Downloads sort:** every move is logged as
+`<run time> TAB <from> TAB <to>` in `~/.local/state/downloads-tidy/moves.log`.
+To put the last run back:
+
+```bash
+log=~/.local/state/downloads-tidy/moves.log
+last=$(tail -1 "$log" | cut -f1)
+awk -F'\t' -v r="$last" '$1 == r {print $3 "\t" $2}' "$log" |
+    while IFS=$'\t' read -r to from; do mv -n -- "$to" "$from"; done
+```
+
+```bash
+disk-report.sh                     # where the space went + cleanup commands
+disk-alert.sh --dry-run            # what the hourly check would say now
+downloads-tidy.sh --dry-run        # planned moves, nothing changed
+systemctl --user list-timers 'disk-alert*' 'downloads-tidy*'
+tests/test-disk-alert.sh && tests/test-downloads-tidy.sh
 ```
 
 ### System Monitoring
