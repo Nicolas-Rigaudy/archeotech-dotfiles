@@ -1653,3 +1653,14 @@ Same family: `flow progress task task_031_… --progress 30%` (an orchestrator) 
 ### Dark theme leaves GTK3 apps (Thunar) white (2026-11-24)
 - GTK3 ships no built-in `Adwaita-dark` (it comes from gnome-themes-extra), so `gtk-theme-name=Adwaita-dark` fell back to light Adwaita. The non-Catppuccin dark themes also lacked `mode`, so the shell treated them as light.
 - Fix (shell dcdb715): theme.json `"mode": "dark"`; `theme-switch.py apply_gtk` writes `gtk-application-prefer-dark-theme` and gsettings `color-scheme` from the mode, with `gtk.theme` plain `Adwaita`. Running GTK apps keep the old look until restarted (`thunar -q`).
+
+## `stow -R config` aborts: "existing target is not owned by stow" (fixed 2026-11-24)
+Stow only replaces links it created itself (relative ones into the repo). Fourteen
+absolute links (`ln -s /home/corvus/Projects/...`) blocked every run, so stow had
+silently stopped deploying anything since about February: environment.d/*.conf,
+swaync, waypaper and wlogout made by hand, plus systemd/user units that
+`install.sh enable_user_services` re-created with its own `ln -sf` loop on every run.
+Fix: removed the loop (stow links unit files into an existing systemd/user folder),
+deleted the 14 links after checking each pointed at its repo file, ran `stow -R`.
+**Never `ln -s` a file that lives under `config/`; add it to the repo and restow.**
+Check: `stow -n -v -t ~ config` prints nothing but the simulation warning.

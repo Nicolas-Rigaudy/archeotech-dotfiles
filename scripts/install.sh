@@ -158,7 +158,10 @@ deploy_with_stow() {
     # repo stows only storage-sources.json into it. Without a real folder there,
     # stow would fold the whole dir into a symlink to the repo and the shell
     # would write its state into git.
-    mkdir -p "$HOME/.config/archeotech"
+    # Same for systemd/user (systemctl enable writes *.wants links there) and
+    # environment.d: real folders, so stow links the files inside them.
+    mkdir -p "$HOME/.config/archeotech" "$HOME/.config/systemd/user" \
+        "$HOME/.config/environment.d"
 
     if [[ "$1" == "--dry-run" ]]; then
         print_info "DRY RUN - Showing what would be done:"
@@ -204,14 +207,9 @@ install_local_scripts() {
 enable_user_services() {
     print_header "Enabling Systemd User Services"
 
-    # These units live in a pre-existing systemd dir stow can't manage
-    mkdir -p "$HOME/.config/systemd/user"
-    for unit in battery-alert.service update-dev-tools.service update-dev-tools.timer \
-            disk-alert.service disk-alert.timer downloads-tidy.service downloads-tidy.timer; do
-        ln -sf "$DOTFILES_DIR/config/.config/systemd/user/$unit" \
-            "$HOME/.config/systemd/user/$unit"
-    done
-
+    # The unit files are linked by stow (deploy_with_stow): it links each file
+    # into an existing ~/.config/systemd/user. Never ln them here: stow refuses
+    # links it did not create, and absolute ones made `stow -R config` abort.
     systemctl --user daemon-reload
 
     if systemctl --user enable --now battery-alert.service 2>/dev/null; then
