@@ -9,8 +9,8 @@
 #   disk-critical  free <= DISK_CRIT_PCT  (default 8), or btrfs metadata has
 #                  under 1 GiB free with no unallocated space left to grow into
 # Notifications go through update-notify.sh: once a day per kind at most.
-# The message names the free space and the top three consumers from
-# disk-report.sh, which also prints the cleanup command for each.
+# The message (kept to ~3 toast lines) names the free space and the top three
+# consumers; disk-report.sh prints the cleanup command for each.
 #
 # Thresholds: env DISK_WARN_PCT / DISK_CRIT_PCT, or the same KEY=value lines
 # in ${XDG_CONFIG_HOME:-~/.config}/disk-alert.conf (env wins).
@@ -68,13 +68,18 @@ fi
 
 [[ -n ${DISK_ALERT_FAKE_JSON:-} ]] || json=$(report)
 h() { numfmt --to=iec --format='%.1f' "$1"; }
+# Short labels: the shell's toast and notification center show 3 lines of body.
 top=$(jq -r '[.entries[] | select(.group == "known" and .bytes != null)]
-             | sort_by(-.bytes) | .[:3] | map("\(.label) \(.bytes)") | .[]' <<<"$json" \
+             | sort_by(-.bytes) | .[:3]
+             | map(.label | sub("pacman package cache"; "pacman cache")
+                          | sub("paru clones and builds"; "paru")
+                          | sub("systemd journal"; "journal")) as $l
+             | [$l, map(.bytes)] | transpose | map("\(.[0]) \(.[1])") | .[]' <<<"$json" \
       | while read -r line; do
             b=${line##* }; printf '%s %s, ' "${line% *}" "$(h "$b")"
         done)
 msg="/ has $(h "$free_b") free (${free_pct}%)."
-(( meta_tight )) && msg+=" btrfs metadata is nearly full ($(h "$meta_b") left)."
-msg+=" Biggest: ${top%, }. Run disk-report.sh for the cleanup commands."
+(( meta_tight )) && msg+=" btrfs metadata nearly full."
+msg+=" Top: ${top%, }. Details: disk-report.sh"
 
 "$here/update-notify.sh" "${dry[@]}" "$kind" "$msg"

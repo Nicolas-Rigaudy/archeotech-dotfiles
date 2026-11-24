@@ -50,8 +50,10 @@ out=$("$ALERT" --dry-run)
 check "AC1: dry run prints the warning" '[[ $out == "would notify [disk-warn]: Disk space low: "* ]]'
 check "AC1: dry run sends nothing" '[[ $(sent_count) -eq 0 ]]'
 check "message names the top three known consumers, biggest first" \
-    '[[ $out == *"Biggest: pacman package cache 8.0G, paru clones and builds 5.0G, Downloads 3.0G."* ]]'
+    '[[ $out == *"Top: pacman cache 8.0G, paru 5.0G, Downloads 3.0G. Details: disk-report.sh"* ]]'
 check "home-group dirs are not in the message" '[[ $out != *cdx* ]]'
+body=${out#*Disk space low: }
+check "body stays short enough for a 3-line toast" '[[ ${#body} -le 120 ]]'
 
 "$ALERT" >/dev/null
 check "AC1: warning fires once" '[[ $(sent_count) -eq 1 ]] && grep -q "Disk space low" "$SENT"'
@@ -66,7 +68,7 @@ check "critical below DISK_CRIT_PCT, sent critical" 'grep -q -- "-u critical" "$
 reset; fake 30 $((512 * 1024 * 1024)) $((1024 * 1024))
 out=$("$ALERT" --dry-run)
 check "critical when btrfs metadata is tight with nothing unallocated" \
-    '[[ $out == *"[disk-critical]"* && $out == *"metadata is nearly full"* ]]'
+    '[[ $out == *"[disk-critical]"* && $out == *"metadata nearly full"* ]]'
 fake 30 $((512 * 1024 * 1024)) $((20 * 1024 * 1024 * 1024))
 out=$("$ALERT" --dry-run)
 check "low metadata with room to grow is fine" '[[ $out == ok:* ]]'
